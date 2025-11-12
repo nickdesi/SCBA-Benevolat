@@ -1,0 +1,5 @@
+{
+  "name": "SCBA Bénévoles",
+  "description": "Une application web simple pour aider le club du Stade Clermontois Basket Auvergne à organiser les bénévoles pour les matchs des jeunes. Les parents peuvent facilement s'inscrire pour aider à la buvette, au chrono ou à la table de marque.",
+  "requestFramePermissions": []
+}
