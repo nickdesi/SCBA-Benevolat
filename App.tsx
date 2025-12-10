@@ -249,7 +249,7 @@ function App() {
               </button>
             )}
             <button
-              onClick={() => setIsAdminModalOpen(true)}
+              onClick={() => isAdmin ? setIsAdmin(false) : setIsAdminModalOpen(true)}
               className={`
                 px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all
                 ${isAdmin
@@ -258,7 +258,7 @@ function App() {
                 }
               `}
             >
-              {isAdmin ? 'Mode Admin Actif 🔒' : 'Accès Admin 🔑'}
+              {isAdmin ? 'Mode Admin Actif 🔓' : 'Accès Admin 🔒'}
             </button>
           </div>
         )}
