@@ -338,7 +338,7 @@ function App() {
       />
 
       <footer className="mt-20 py-8 text-center text-slate-400 text-sm">
-        <p>© 2024 Stade Clermontois Basket Auvergne</p>
+        <p>© {new Date().getFullYear()} Stade Clermontois Basket Auvergne</p>
       </footer>
     </div>
   );
