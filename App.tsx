@@ -64,29 +64,41 @@ function App() {
   useEffect(() => {
     const seedFirestore = async () => {
       try {
-        // Check for a system flag to prevent re-seeding after intentional deletion
+        // 1. Check if we've already initialized (Persistent Flag)
         const metadataRef = doc(db, "system", "metadata");
         const metadataSnap = await getDocs(collection(db, "system"));
 
-        // We check if the specific metadata doc exists OR if we've already set a flag locally in this session
-        // But checking Firestore is safest for cross-device.
-        // Let's check specifically for the metadata document.
-        const systemDoc = await getDocs(collection(db, "system"));
-        const isInitialized = !systemDoc.empty;
-
-        if (isInitialized) {
-          console.log("Database already initialized. Skipping seed.");
+        if (!metadataSnap.empty) {
+          console.log("System initialized (Flag detected). Skipping seed.");
           return;
         }
 
+        // 2. If no flag, check if we have games
         const colRef = collection(db, "matches");
         const snapshot = await getDocs(colRef);
 
+        // Define the flag setting helper
+        const setInitializedFlag = async () => {
+          const batch = writeBatch(db);
+          const metaRef = doc(db, "system", "metadata");
+          batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
+          await batch.commit();
+          console.log("System flag set to INITIALIZED.");
+        };
+
+        if (!snapshot.empty) {
+          // Case: Matches exist but no flag (Legacy/Existing app state)
+          // Just set the flag so we don't re-seed if they delete everything later.
+          console.log("Data exists but no flag. Setting flag now.");
+          await setInitializedFlag();
+          return;
+        }
+
+        // 3. Database is truly empty and no flag -> SEED
         if (snapshot.empty) {
-          console.log("Database empty. Seeding for the FIRST time...");
+          console.log("Database empty & no flag. Seeding...");
           const batch = writeBatch(db);
 
-          // Use localGames (from localStorage) if available, otherwise constants
           const gamesToImport = (localGames && localGames.length > 0) ? localGames : INITIAL_GAMES;
 
           gamesToImport.forEach(game => {
@@ -95,7 +107,7 @@ function App() {
             batch.set(docRef, cleanGame);
           });
 
-          // Mark as initialized
+          // Mark as initialized in the same batch
           const metaRef = doc(db, "system", "metadata");
           batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
 
