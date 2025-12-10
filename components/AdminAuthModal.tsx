@@ -92,7 +92,9 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
                         </form>
                     </div>
                 </div>
-                );
+            </div>
+        </div>
+    );
 };
 
-                export default AdminAuthModal;
+export default AdminAuthModal;
