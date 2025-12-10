@@ -1,33 +1,57 @@
-
 import React from 'react';
-
-const BasketballIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
-    className={className}
-  >
-    <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path>
-    <path d="M12 4c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4-1.794-4-4-4zm0 6c-1.103 0-2-.897-2-2s.897-2 2-2 2 .897 2 2-.897 2-2 2z"></path>
-    <path d="M12 14c-4.411 0-8 1.794-8 4h16c0-2.206-3.589-4-8-4z"></path>
-  </svg>
-);
-
 
 const Header: React.FC = () => {
   return (
-    <header className="bg-slate-900 text-white shadow-lg">
-      <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center">
-        <div className="flex items-center gap-3 mb-4 sm:mb-0">
-          <BasketballIcon className="w-10 h-10 text-red-500" />
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-            Stade Clermontois Basket Auvergne
-          </h1>
-        </div>
-        <div className="text-center sm:text-right">
-            <p className="text-lg font-semibold text-red-400">Salut les amigos !</p>
-            <p className="text-slate-300">Un gros week-end en perspective !</p>
+    <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: `radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.4) 0%, transparent 40%),
+                           radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.3) 0%, transparent 40%)`
+        }}></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-5 sm:py-6 relative z-10">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+          {/* Logo and Title */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            {/* Logo SCBA */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-30 rounded-full scale-150"></div>
+              <img
+                src="/logo-scba.png"
+                alt="Logo Stade Clermontois Basket Auvergne"
+                className="relative w-16 h-20 sm:w-20 sm:h-24 object-contain drop-shadow-lg"
+              />
+            </div>
+
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight">
+                <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
+                  Stade Clermontois
+                </span>
+                <br className="sm:hidden" />
+                <span className="text-white"> Basket Auvergne</span>
+              </h1>
+              <p className="text-blue-400/80 text-sm font-medium tracking-wide mt-1">
+                🏀 Espace Bénévoles
+              </p>
+            </div>
+          </div>
+
+          {/* Welcome message */}
+          <div className="flex flex-col items-center sm:items-end">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm 
+                          rounded-full border border-white/20 shadow-lg">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+              </span>
+              <p className="text-base font-semibold text-white">Bienvenue !</p>
+            </div>
+            <p className="text-slate-400 mt-2 text-sm">Ensemble, faisons vibrer le parquet ! 🔥</p>
+          </div>
         </div>
       </div>
     </header>

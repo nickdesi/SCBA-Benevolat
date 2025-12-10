@@ -2,57 +2,19 @@ import React, { useState, useCallback } from 'react';
 import Header from './components/Header';
 import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
+import AdminAuthModal from './components/AdminAuthModal';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import { INITIAL_GAMES } from './constants';
+import { PlusIcon } from './components/Icons';
 import type { Game } from './types';
+import './styles.css';
 
-const ADMIN_PASSWORD = 'SCBA2024'; // Simple hardcoded password
-
-const AdminAuthModal: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (password: string) => void;
-  error: string;
-}> = ({ isOpen, onClose, onSubmit, error }) => {
-  const [password, setPassword] = useState('');
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(password);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-8 shadow-2xl w-full max-w-sm">
-        <h2 className="text-xl font-bold text-slate-800 mb-4">Accès Administrateur</h2>
-        <form onSubmit={handleSubmit}>
-          <p className="text-sm text-slate-600 mb-4">Veuillez entrer le mot de passe pour continuer.</p>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 text-sm text-slate-700 bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-            placeholder="Mot de passe"
-            autoFocus
-          />
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          <div className="flex justify-end gap-4 mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">
-              Annuler
-            </button>
-            <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">
-              Valider
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+// Mot de passe depuis variable d'environnement (avec fallback)
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA2024';
 
 const App: React.FC = () => {
-  const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
+  // Utilisation de localStorage pour la persistance des données
+  const [games, setGames] = useLocalStorage<Game[]>('scba-games', INITIAL_GAMES);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
@@ -94,8 +56,8 @@ const App: React.FC = () => {
         return game;
       })
     );
-  }, []);
-  
+  }, [setGames]);
+
   const handleRemoveVolunteer = useCallback((gameId: string, roleId: string, volunteerName: string) => {
     setGames(prevGames =>
       prevGames.map(game => {
@@ -113,8 +75,8 @@ const App: React.FC = () => {
         return game;
       })
     );
-  }, []);
-  
+  }, [setGames]);
+
   const handleUpdateVolunteer = useCallback((gameId: string, roleId: string, oldName: string, newName: string) => {
     setGames(prevGames =>
       prevGames.map(game => {
@@ -132,7 +94,7 @@ const App: React.FC = () => {
         return game;
       })
     );
-  }, []);
+  }, [setGames]);
 
   const handleAddGame = (newGame: Omit<Game, 'id' | 'roles'>) => {
     const gameId = `game-${new Date().getTime()}`;
@@ -157,54 +119,105 @@ const App: React.FC = () => {
 
   const handleDeleteGame = (gameId: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce match ?')) {
-        setGames(prevGames => prevGames.filter(game => game.id !== gameId));
+      setGames(prevGames => prevGames.filter(game => game.id !== gameId));
     }
   };
 
   return (
-    <div className="bg-slate-100 min-h-screen">
-      <AdminAuthModal 
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100">
+      <AdminAuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSubmit={handleAdminLogin}
         error={authError}
       />
       <Header />
-      <main className="container mx-auto p-4 md:p-8">
-        <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-800">Prochains Matchs & Bénévolat</h2>
-            <p className="text-slate-600 mt-2 max-w-2xl mx-auto">
-              Pendant que nos chérubins s'entraînent, nous avons besoin de votre aide pour que tout se passe bien. Merci d'avance pour votre soutien !
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-b from-slate-800/5 to-transparent py-8 sm:py-12">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 mb-3">
+              Prochains Matchs & Bénévolat
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto text-base sm:text-lg px-4">
+              Pendant que nos chérubins s'entraînent, nous avons besoin de votre aide pour que tout se passe bien.
+              <span className="font-semibold text-red-500 block sm:inline"> Merci d'avance ! 🙏</span>
             </p>
-        </div>
-
-        <div className="mb-8 p-4 bg-white rounded-lg shadow-md flex justify-between items-center max-w-md mx-auto">
-            <h3 className="text-lg font-semibold text-slate-700">Mode Administrateur</h3>
-            <label htmlFor="admin-toggle" className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked={isAdmin} onChange={handleAdminToggle} id="admin-toggle" className="sr-only peer" />
-              <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-            </label>
-        </div>
-
-        {isAdmin && (
-          <div className="mb-8 max-w-4xl mx-auto">
-            {!isAddingGame ? (
-              <div className="text-center">
-                <button onClick={() => setIsAddingGame(true)} className="px-6 py-3 font-semibold text-white bg-slate-800 rounded-lg hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors shadow-lg">
-                  + Ajouter un match
-                </button>
-              </div>
-            ) : (
-              <GameForm onSave={handleAddGame} onCancel={() => setIsAddingGame(false)} />
-            )}
           </div>
-        )}
+        </section>
 
-        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-          {games.map(game => (
-            <GameCard 
-                key={game.id} 
-                game={game} 
+        <div className="container mx-auto px-4 pb-8">
+          {/* Admin Toggle */}
+          <div className="mb-8 max-w-md mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-5 
+                          flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl transition-all duration-300 ${isAdmin
+                    ? 'bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30'
+                    : 'bg-slate-100'
+                  }`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+                    stroke="currentColor" className={`w-5 h-5 sm:w-6 sm:h-6 ${isAdmin ? 'text-white' : 'text-slate-600'}`}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-800">Mode Admin</h3>
+                  <p className="text-xs sm:text-sm text-slate-500">{isAdmin ? '🟢 Activé' : '⚪ Désactivé'}</p>
+                </div>
+              </div>
+              <button
+                onClick={handleAdminToggle}
+                className={`
+                  relative w-14 h-8 rounded-full transition-all duration-300 ease-out
+                  ${isAdmin
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 shadow-lg shadow-red-500/30'
+                    : 'bg-slate-200'
+                  }
+                `}
+                aria-label="Basculer le mode administrateur"
+              >
+                <span className={`
+                  absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md
+                  transition-transform duration-300 ease-out
+                  ${isAdmin ? 'translate-x-6' : 'translate-x-0'}
+                `}></span>
+              </button>
+            </div>
+          </div>
+
+          {/* Add Game Button */}
+          {isAdmin && (
+            <div className="mb-8 max-w-4xl mx-auto">
+              {!isAddingGame ? (
+                <div className="text-center">
+                  <button
+                    onClick={() => setIsAddingGame(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4
+                             text-base sm:text-lg font-bold text-white 
+                             bg-gradient-to-r from-slate-700 to-slate-900 rounded-xl
+                             hover:from-slate-800 hover:to-black
+                             shadow-xl shadow-slate-900/30 hover:shadow-slate-900/50
+                             transition-all duration-300 transform hover:scale-105"
+                  >
+                    <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                    Ajouter un match
+                  </button>
+                </div>
+              ) : (
+                <GameForm onSave={handleAddGame} onCancel={() => setIsAddingGame(false)} />
+              )}
+            </div>
+          )}
+
+          {/* Games Grid */}
+          <div className="grid gap-6 sm:gap-8 md:grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto">
+            {games.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
                 onVolunteer={handleVolunteerSignUp}
                 onRemoveVolunteer={handleRemoveVolunteer}
                 onUpdateVolunteer={handleUpdateVolunteer}
@@ -214,12 +227,29 @@ const App: React.FC = () => {
                 onCancelEdit={() => setEditingGameId(null)}
                 onDeleteRequest={() => handleDeleteGame(game.id)}
                 onUpdateRequest={handleUpdateGame}
-            />
-          ))}
+              />
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {games.length === 0 && (
+            <div className="text-center py-16 sm:py-20">
+              <div className="text-6xl sm:text-7xl mb-4">🏀</div>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-700 mb-2">Aucun match prévu</h3>
+              <p className="text-slate-500">Les prochains matchs apparaîtront ici</p>
+            </div>
+          )}
         </div>
       </main>
-       <footer className="text-center p-4 mt-8 text-slate-500 text-sm">
-        <p>Fait avec ❤️ pour le Stade Clermontois Basket Auvergne</p>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 py-6 mt-auto">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-slate-400 text-sm sm:text-base">
+            Fait avec <span className="text-red-500">❤️</span> pour le
+            <span className="font-semibold text-slate-300"> Stade Clermontois Basket Auvergne</span>
+          </p>
+        </div>
       </footer>
     </div>
   );
