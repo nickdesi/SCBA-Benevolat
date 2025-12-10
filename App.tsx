@@ -143,12 +143,14 @@ function App() {
     }
   };
 
-  const handleDeleteGame = async () => {
-    if (!editingGameId) return;
+  const handleDeleteGame = async (gameId: string) => {
     if (window.confirm('Voulez-vous vraiment supprimer ce match ?')) {
       try {
-        await deleteDoc(doc(db, "matches", editingGameId));
-        setEditingGameId(null);
+        await deleteDoc(doc(db, "matches", gameId));
+        // If we were editing this game, stop editing
+        if (editingGameId === gameId) {
+          setEditingGameId(null);
+        }
       } catch (err) {
         console.error("Error deleting game:", err);
         alert("Erreur lors de la suppression du match");
@@ -292,7 +294,7 @@ function App() {
               onUpdateVolunteer={handleUpdateVolunteer}
               onEditRequest={() => setEditingGameId(game.id)}
               onCancelEdit={() => setEditingGameId(null)}
-              onDeleteRequest={handleDeleteGame}
+              onDeleteRequest={() => handleDeleteGame(game.id)}
               onUpdateRequest={handleUpdateGame}
             />
           ))}
