@@ -1,258 +1,334 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  writeBatch,
+  getDocs,
+  setDoc
+} from 'firebase/firestore';
+import { db } from './firebase';
 import Header from './components/Header';
 import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { INITIAL_GAMES } from './constants';
-import { PlusIcon } from './components/Icons';
-import type { Game } from './types';
-import './styles.css';
+import type { Game, Role } from './types';
 
-// Mot de passe depuis variable d'environnement (avec fallback)
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA2024';
-
-const App: React.FC = () => {
-  // Utilisation de localStorage pour la persistance des données
-  const [games, setGames] = useLocalStorage<Game[]>('scba-games', INITIAL_GAMES);
+function App() {
+  const [games, setGames] = useState<Game[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAddingGame, setIsAddingGame] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAddingGame, setIsAddingGame] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleAdminToggle = () => {
-    if (isAdmin) {
-      setIsAdmin(false);
-    } else {
-      setAuthError('');
-      setIsAuthModalOpen(true);
-    }
-  };
+  // Still use localStorage for purely local preferences/identity
+  // (We don't use the games from here anymore, but we might read it ONCE for migration)
+  const [localGames] = useLocalStorage<Game[]>('scba-games', INITIAL_GAMES);
 
-  const handleAdminLogin = (password: string) => {
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA2024';
+
+  // ---------------------------------------------------------------------------
+  // Firestore Synchronization
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "matches"), (snapshot) => {
+      const matchesData: Game[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Game));
+
+      // Sort by date (naive string sort YYYY-MM-DD or comparable is best, 
+      // strictly assuming DD/MM/YYYY text might need better parsing, 
+      // but let's keep consistency with current behavior)
+      // Since current dates are free text like "Samedi 15", sorting is tricky without proper Date objects.
+      // For now, we trust the order or just simple sort.
+      // Ideally we would add a 'sortOrder' or 'timestamp' field.
+      // For now, let's just set them.
+      setGames(matchesData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Data Seeding / Migration (Run once if Firestore is empty)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const seedFirestore = async () => {
+      try {
+        const colRef = collection(db, "matches");
+        const snapshot = await getDocs(colRef);
+
+        if (snapshot.empty) {
+          console.log("Database empty. Seeding from local data...");
+          const batch = writeBatch(db);
+
+          // Use localGames (from localStorage) if available, otherwise constants
+          const gamesToImport = (localGames && localGames.length > 0) ? localGames : INITIAL_GAMES;
+
+          gamesToImport.forEach(game => {
+            // Use setDoc to PRESERVE IDs (important for keeping "C'est vous" ownership valid)
+            const docRef = doc(db, "matches", game.id);
+            // Sanitize undefined/nulls
+            const cleanGame = JSON.parse(JSON.stringify(game));
+            batch.set(docRef, cleanGame);
+          });
+
+          await batch.commit();
+          console.log("Seeding complete!");
+        }
+      } catch (err) {
+        console.error("Error seeding database:", err);
+      }
+    };
+
+    // Small timeout to ensure SDK is ready
+    const timer = setTimeout(() => seedFirestore(), 1000);
+    return () => clearTimeout(timer);
+  }, []); // Run once on mount
+
+  // ---------------------------------------------------------------------------
+  // Actions
+  // ---------------------------------------------------------------------------
+
+  const handleAdminAuth = (password: string) => {
     if (password === ADMIN_PASSWORD) {
       setIsAdmin(true);
-      setIsAuthModalOpen(false);
+      setIsAdminModalOpen(false);
+      setAuthError('');
     } else {
-      setAuthError('Mot de passe incorrect.');
+      setAuthError('Mot de passe incorrect');
     }
   };
 
-  const handleVolunteerSignUp = useCallback((gameId: string, roleId: string, parentName: string) => {
-    setGames(prevGames =>
-      prevGames.map(game => {
-        if (game.id === gameId) {
-          return {
-            ...game,
-            roles: game.roles.map(role => {
-              if (role.id === roleId && role.volunteers.length < role.capacity) {
-                return { ...role, volunteers: [...role.volunteers, parentName] };
-              }
-              return role;
-            }),
-          };
-        }
-        return game;
-      })
-    );
-  }, [setGames]);
-
-  const handleRemoveVolunteer = useCallback((gameId: string, roleId: string, volunteerName: string) => {
-    setGames(prevGames =>
-      prevGames.map(game => {
-        if (game.id === gameId) {
-          return {
-            ...game,
-            roles: game.roles.map(role => {
-              if (role.id === roleId) {
-                return { ...role, volunteers: role.volunteers.filter(v => v !== volunteerName) };
-              }
-              return role;
-            })
-          };
-        }
-        return game;
-      })
-    );
-  }, [setGames]);
-
-  const handleUpdateVolunteer = useCallback((gameId: string, roleId: string, oldName: string, newName: string) => {
-    setGames(prevGames =>
-      prevGames.map(game => {
-        if (game.id === gameId) {
-          return {
-            ...game,
-            roles: game.roles.map(role => {
-              if (role.id === roleId) {
-                return { ...role, volunteers: role.volunteers.map(v => (v === oldName ? newName : v)) };
-              }
-              return role;
-            })
-          };
-        }
-        return game;
-      })
-    );
-  }, [setGames]);
-
-  const handleAddGame = (newGame: Omit<Game, 'id' | 'roles'>) => {
-    const gameId = `game-${new Date().getTime()}`;
-    const gameWithIdAndRoles: Game = {
-      ...newGame,
-      id: gameId,
-      roles: [
-        { id: `${gameId}-r1`, name: 'Buvette', volunteers: [], capacity: 2 },
-        { id: `${gameId}-r2`, name: 'Chrono', volunteers: [], capacity: 1 },
-        { id: `${gameId}-r3`, name: 'Table de marque', volunteers: [], capacity: 1 },
-        { id: `${gameId}-r4`, name: 'Goûter', volunteers: [], capacity: Infinity },
-      ],
-    };
-    setGames(prevGames => [gameWithIdAndRoles, ...prevGames]);
-    setIsAddingGame(false);
+  const handleAddGame = async (gameData: any) => {
+    try {
+      // New games get an auto-generated ID from Firestore
+      const newGame = {
+        ...gameData,
+        // Ensure roles are initialized if not present
+        roles: gameData.roles || [
+          { id: '1', name: 'Buvette', capacity: 2, volunteers: [] },
+          { id: '2', name: 'Chrono', capacity: 1, volunteers: [] },
+          { id: '3', name: 'Table de marque', capacity: 1, volunteers: [] },
+          { id: '4', name: 'Goûter', capacity: 0, volunteers: [] }, // 0 = unlimited
+        ]
+      };
+      await addDoc(collection(db, "matches"), newGame);
+      setIsAddingGame(false);
+    } catch (err) {
+      console.error("Error adding game:", err);
+      alert("Erreur lors de l'ajout du match");
+    }
   };
 
-  const handleUpdateGame = (updatedGame: Game) => {
-    setGames(prevGames => prevGames.map(game => (game.id === updatedGame.id ? updatedGame : game)));
-    setEditingGameId(null);
+  const handleUpdateGame = async (updatedGame: Game) => {
+    try {
+      const gameRef = doc(db, "matches", updatedGame.id);
+      // Don't send the ID itself in the update payload
+      const { id, ...data } = updatedGame;
+      await updateDoc(gameRef, data);
+      setEditingGameId(null);
+    } catch (err) {
+      console.error("Error updating game:", err);
+      alert("Erreur lors de la modification du match");
+    }
   };
 
-  const handleDeleteGame = (gameId: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce match ?')) {
-      setGames(prevGames => prevGames.filter(game => game.id !== gameId));
+  const handleDeleteGame = async () => {
+    if (!editingGameId) return;
+    if (window.confirm('Voulez-vous vraiment supprimer ce match ?')) {
+      try {
+        await deleteDoc(doc(db, "matches", editingGameId));
+        setEditingGameId(null);
+      } catch (err) {
+        console.error("Error deleting game:", err);
+        alert("Erreur lors de la suppression du match");
+      }
+    }
+  };
+
+  const handleVolunteer = async (gameId: string, roleId: string, parentName: string) => {
+    const game = games.find(g => g.id === gameId);
+    if (!game) return;
+
+    try {
+      const updatedRoles = game.roles.map(role => {
+        if (role.id === roleId) {
+          return { ...role, volunteers: [...role.volunteers, parentName] };
+        }
+        return role;
+      });
+
+      const gameRef = doc(db, "matches", gameId);
+      await updateDoc(gameRef, { roles: updatedRoles });
+    } catch (err) {
+      console.error("Error adding volunteer:", err);
+      alert("Erreur lors de l'inscription");
+    }
+  };
+
+  const handleRemoveVolunteer = async (gameId: string, roleId: string, volunteerName: string) => {
+    const game = games.find(g => g.id === gameId);
+    if (!game) return;
+
+    try {
+      const updatedRoles = game.roles.map(role => {
+        if (role.id === roleId) {
+          return { ...role, volunteers: role.volunteers.filter(v => v !== volunteerName) };
+        }
+        return role;
+      });
+
+      const gameRef = doc(db, "matches", gameId);
+      await updateDoc(gameRef, { roles: updatedRoles });
+    } catch (err) {
+      console.error("Error removing volunteer:", err);
+      alert("Erreur lors de la désinscription");
+    }
+  };
+
+  const handleUpdateVolunteer = async (gameId: string, roleId: string, oldName: string, newName: string) => {
+    const game = games.find(g => g.id === gameId);
+    if (!game) return;
+
+    try {
+      const updatedRoles = game.roles.map(role => {
+        if (role.id === roleId) {
+          return {
+            ...role,
+            volunteers: role.volunteers.map(v => v === oldName ? newName : v)
+          };
+        }
+        return role;
+      });
+
+      const gameRef = doc(db, "matches", gameId);
+      await updateDoc(gameRef, { roles: updatedRoles });
+    } catch (err) {
+      console.error("Error updating volunteer:", err);
+      alert("Erreur lors de la modification");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100">
-      <AdminAuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSubmit={handleAdminLogin}
-        error={authError}
-      />
+    <div className="min-h-screen bg-slate-50 font-outfit pb-12 transition-colors duration-500">
       <Header />
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-b from-slate-800/5 to-transparent py-8 sm:py-12">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 mb-3">
-              Prochains Matchs & Bénévolat
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto text-base sm:text-lg px-4">
-              Pendant que nos chérubins s'entraînent, nous avons besoin de votre aide pour que tout se passe bien.
-              <span className="font-semibold text-red-500 block sm:inline"> Merci d'avance ! 🙏</span>
-            </p>
-          </div>
-        </section>
+      <main className="container mx-auto px-4 -mt-8 relative z-20">
 
-        <div className="container mx-auto px-4 pb-8">
-          {/* Admin Toggle */}
-          <div className="mb-8 max-w-md mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-5 
-                          flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl transition-all duration-300 ${isAdmin
-                    ? 'bg-gradient-to-br from-red-500 to-orange-500 shadow-lg shadow-red-500/30'
-                    : 'bg-slate-100'
-                  }`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                    stroke="currentColor" className={`w-5 h-5 sm:w-6 sm:h-6 ${isAdmin ? 'text-white' : 'text-slate-600'}`}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-800">Mode Admin</h3>
-                  <p className="text-xs sm:text-sm text-slate-500">{isAdmin ? '🟢 Activé' : '⚪ Désactivé'}</p>
-                </div>
-              </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+          </div>
+        )}
+
+        {/* Filters / Admin Toggle */}
+        {!loading && (
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={() => setIsAdminModalOpen(true)}
+              className={`
+                px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all
+                ${isAdmin
+                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+                }
+              `}
+            >
+              {isAdmin ? 'Mode Admin Actif 🔒' : 'Accès Admin 🔑'}
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && games.length === 0 && !isAddingGame && (
+          <div className="bg-white rounded-3xl shadow-xl p-12 text-center max-w-2xl mx-auto">
+            <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-4xl">🏀</span>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">Aucun match prévu</h3>
+            <p className="text-slate-500 mb-8">Le calendrier est vide pour le moment.</p>
+            {isAdmin && (
               <button
-                onClick={handleAdminToggle}
-                className={`
-                  relative w-14 h-8 rounded-full transition-all duration-300 ease-out
-                  ${isAdmin
-                    ? 'bg-gradient-to-r from-red-500 to-orange-500 shadow-lg shadow-red-500/30'
-                    : 'bg-slate-200'
-                  }
-                `}
-                aria-label="Basculer le mode administrateur"
+                onClick={() => setIsAddingGame(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl font-bold hover:shadow-lg transition-all transform hover:-translate-y-1"
               >
-                <span className={`
-                  absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md
-                  transition-transform duration-300 ease-out
-                  ${isAdmin ? 'translate-x-6' : 'translate-x-0'}
-                `}></span>
+                Ajouter un match
               </button>
-            </div>
+            )}
           </div>
+        )}
 
-          {/* Add Game Button */}
-          {isAdmin && (
-            <div className="mb-8 max-w-4xl mx-auto">
-              {!isAddingGame ? (
-                <div className="text-center">
-                  <button
-                    onClick={() => setIsAddingGame(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-4
-                             text-base sm:text-lg font-bold text-white 
-                             bg-gradient-to-r from-slate-700 to-slate-900 rounded-xl
-                             hover:from-slate-800 hover:to-black
-                             shadow-xl shadow-slate-900/30 hover:shadow-slate-900/50
-                             transition-all duration-300 transform hover:scale-105"
-                  >
-                    <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                    Ajouter un match
-                  </button>
-                </div>
-              ) : (
-                <GameForm onSave={handleAddGame} onCancel={() => setIsAddingGame(false)} />
-              )}
-            </div>
-          )}
-
-          {/* Games Grid */}
-          <div className="grid gap-6 sm:gap-8 md:grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto">
-            {games.map((game) => (
-              <GameCard
-                key={game.id}
-                game={game}
-                onVolunteer={handleVolunteerSignUp}
-                onRemoveVolunteer={handleRemoveVolunteer}
-                onUpdateVolunteer={handleUpdateVolunteer}
-                isAdmin={isAdmin}
-                isEditing={editingGameId === game.id}
-                onEditRequest={() => setEditingGameId(game.id)}
-                onCancelEdit={() => setEditingGameId(null)}
-                onDeleteRequest={() => handleDeleteGame(game.id)}
-                onUpdateRequest={handleUpdateGame}
-              />
-            ))}
+        {/* Add Game Form */}
+        {isAddingGame && (
+          <div className="mb-8">
+            <GameForm
+              onSave={handleAddGame}
+              onCancel={() => setIsAddingGame(false)}
+            />
           </div>
+        )}
 
-          {/* Empty State */}
-          {games.length === 0 && (
-            <div className="text-center py-16 sm:py-20">
-              <div className="text-6xl sm:text-7xl mb-4">🏀</div>
-              <h3 className="text-xl sm:text-2xl font-bold text-slate-700 mb-2">Aucun match prévu</h3>
-              <p className="text-slate-500">Les prochains matchs apparaîtront ici</p>
-            </div>
-          )}
+        {/* Games List */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {games.map(game => (
+            <GameCard
+              key={game.id}
+              game={game}
+              isAdmin={isAdmin}
+              isEditing={editingGameId === game.id}
+              onVolunteer={handleVolunteer}
+              onRemoveVolunteer={handleRemoveVolunteer}
+              onUpdateVolunteer={handleUpdateVolunteer}
+              onEditRequest={() => setEditingGameId(game.id)}
+              onCancelEdit={() => setEditingGameId(null)}
+              onDeleteRequest={handleDeleteGame}
+              onUpdateRequest={handleUpdateGame}
+            />
+          ))}
         </div>
+
+        {/* Floating Action Button (Add Game) */}
+        {isAdmin && !isAddingGame && games.length > 0 && (
+          <button
+            onClick={() => setIsAddingGame(true)}
+            className="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full 
+                     shadow-2xl hover:scale-110 transition-transform z-50 group"
+            aria-label="Ajouter un match"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Ajouter un match
+            </span>
+          </button>
+        )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 py-6 mt-auto">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-slate-400 text-sm sm:text-base">
-            Fait avec <span className="text-red-500">❤️</span> pour le
-            <span className="font-semibold text-slate-300"> Stade Clermontois Basket Auvergne</span>
-          </p>
-        </div>
+      {/* Admin Auth Modal */}
+      <AdminAuthModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        onSubmit={handleAdminAuth}
+        error={authError}
+      />
+
+      <footer className="mt-20 py-8 text-center text-slate-400 text-sm">
+        <p>© 2024 Stade Clermontois Basket Auvergne</p>
       </footer>
     </div>
   );
-};
+}
 
 export default App;

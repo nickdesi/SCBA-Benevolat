@@ -9,6 +9,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 ### 👥 Pour les parents
 
 - **Inscription facile** : entrez votre nom et inscrivez-vous à un poste
+- **Temps réel** : visualisez les inscriptions des autres instantanément (Firebase)
 - **Confirmation d'inscription** : popup de confirmation avant validation
 - **Se désinscrire** : retirez-vous facilement (uniquement vos propres inscriptions)
 - **Badge "C'est vous !"** : identifiez rapidement vos inscriptions
@@ -43,11 +44,18 @@ cp .env.example .env.local
 
 ## ⚙️ Configuration
 
+### Environment Variables
+
 Créez un fichier `.env.local` :
 
 ```env
 VITE_ADMIN_PASSWORD=VotreMotDePasseAdmin
 ```
+
+### Firebase
+
+L'application utilise Firebase Firestore pour la synchronisation en temps réel.
+La configuration est définie dans `firebase.ts`.
 
 ## 🏃 Lancer l'application
 
@@ -65,7 +73,8 @@ npm run preview
 ## 📁 Structure du projet
 
 ```
-├── App.tsx                 # Composant principal
+├── App.tsx                 # Composant principal (Logique Firestore)
+├── firebase.ts             # Configuration Firebase
 ├── components/
 │   ├── Header.tsx          # En-tête avec logo SCBA
 │   ├── GameCard.tsx        # Carte de match
@@ -75,7 +84,7 @@ npm run preview
 │   ├── AdminAuthModal.tsx  # Authentification admin
 │   └── Icons.tsx           # Icônes SVG centralisées
 ├── hooks/
-│   └── useLocalStorage.ts  # Persistance localStorage + migration
+│   └── useLocalStorage.ts  # Persistance identité locale
 ├── public/
 │   └── logo-scba.png       # Logo du club
 ├── styles.css              # Design system
@@ -83,11 +92,12 @@ npm run preview
 └── types.ts                # Types TypeScript
 ```
 
-## 🔒 Sécurité
+## 🔒 Sécurité et Données
 
-- Mot de passe admin stocké en variable d'environnement
-- Inscription/désinscription liées au navigateur (localStorage)
-- Confirmation requise pour les actions importantes
+- **Firebase Firestore** : Synchronisation temps réel des matchs et inscriptions.
+- **Migration automatique** : Les données locales sont importées dans Firestore au premier lancement.
+- **Identité** : L'identification "C'est vous !" reste locale au navigateur pour garantir la confidentialité sans compte utilisateur complexe.
+- **Admin** : Mot de passe sécurisé requis pour les actions sensibles.
 
 ## 📱 Responsive
 
