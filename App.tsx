@@ -64,26 +64,43 @@ function App() {
   useEffect(() => {
     const seedFirestore = async () => {
       try {
+        // Check for a system flag to prevent re-seeding after intentional deletion
+        const metadataRef = doc(db, "system", "metadata");
+        const metadataSnap = await getDocs(collection(db, "system"));
+
+        // We check if the specific metadata doc exists OR if we've already set a flag locally in this session
+        // But checking Firestore is safest for cross-device.
+        // Let's check specifically for the metadata document.
+        const systemDoc = await getDocs(collection(db, "system"));
+        const isInitialized = !systemDoc.empty;
+
+        if (isInitialized) {
+          console.log("Database already initialized. Skipping seed.");
+          return;
+        }
+
         const colRef = collection(db, "matches");
         const snapshot = await getDocs(colRef);
 
         if (snapshot.empty) {
-          console.log("Database empty. Seeding from local data...");
+          console.log("Database empty. Seeding for the FIRST time...");
           const batch = writeBatch(db);
 
           // Use localGames (from localStorage) if available, otherwise constants
           const gamesToImport = (localGames && localGames.length > 0) ? localGames : INITIAL_GAMES;
 
           gamesToImport.forEach(game => {
-            // Use setDoc to PRESERVE IDs (important for keeping "C'est vous" ownership valid)
             const docRef = doc(db, "matches", game.id);
-            // Sanitize undefined/nulls
             const cleanGame = JSON.parse(JSON.stringify(game));
             batch.set(docRef, cleanGame);
           });
 
+          // Mark as initialized
+          const metaRef = doc(db, "system", "metadata");
+          batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
+
           await batch.commit();
-          console.log("Seeding complete!");
+          console.log("Seeding complete and system flagged!");
         }
       } catch (err) {
         console.error("Error seeding database:", err);
