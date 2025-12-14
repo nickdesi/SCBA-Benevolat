@@ -21,23 +21,12 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     onConfirm,
     onCancel,
 }) => {
-    // Lock body scroll when modal is open
+    // Prevent background scroll on mobile
     useEffect(() => {
         if (isOpen) {
-            // Save current scroll position and lock
-            const scrollY = window.scrollY;
-            document.body.style.position = 'fixed';
-            document.body.style.top = `-${scrollY}px`;
-            document.body.style.width = '100%';
             document.body.style.overflow = 'hidden';
-
             return () => {
-                // Restore scroll position when modal closes
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.width = '';
                 document.body.style.overflow = '';
-                window.scrollTo(0, scrollY);
             };
         }
     }, [isOpen]);
@@ -57,19 +46,16 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     };
 
     return (
-        <div
-            className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center p-4 pointer-events-none"
-            style={{ height: '100dvh', minHeight: '100vh' }}
-        >
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Invisible click area to close */}
             <div
-                className="absolute inset-0 pointer-events-auto"
+                className="absolute inset-0"
                 onClick={onCancel}
             />
 
             {/* Modal - centered on screen */}
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 
-                    animate-[fadeInUp_0.3s_ease-out] pointer-events-auto
+                    animate-[fadeInUp_0.3s_ease-out]
                     ring-1 ring-black/10">
                 {/* Icon */}
                 <div className="text-center mb-4">
