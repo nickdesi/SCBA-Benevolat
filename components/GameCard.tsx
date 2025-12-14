@@ -9,6 +9,7 @@ interface GameCardProps {
     onVolunteer: (gameId: string, roleId: string, parentName: string) => void;
     onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
+    onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
     isAdmin: boolean;
     isEditing: boolean;
     onEditRequest: () => void;
@@ -37,6 +38,7 @@ const GameCard: React.FC<GameCardProps> = ({
     onVolunteer,
     onRemoveVolunteer,
     onUpdateVolunteer,
+    onToast,
     isAdmin,
     isEditing,
     onEditRequest,
@@ -206,7 +208,10 @@ const GameCard: React.FC<GameCardProps> = ({
                                     role={role}
                                     gameId={game.id}
                                     isAdmin={isAdmin}
-                                    onVolunteer={(parentName) => onVolunteer(game.id, role.id, parentName)}
+                                    onVolunteer={(parentName) => {
+                                        onVolunteer(game.id, role.id, parentName);
+                                        if (onToast) onToast('Inscription confirmée !', 'success');
+                                    }}
                                     onRemoveVolunteer={(volunteerName) => onRemoveVolunteer(game.id, role.id, volunteerName)}
                                     onUpdateVolunteer={(oldName, newName) => onUpdateVolunteer(game.id, role.id, oldName, newName)}
                                     animationDelay={index * 0.1}

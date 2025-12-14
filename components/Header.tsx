@@ -1,6 +1,12 @@
 import React from 'react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  isAdmin: boolean;
+  onAdminClick: () => void;
+  onLogout: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ isAdmin, onAdminClick, onLogout }) => {
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white overflow-hidden">
       {/* Background decorations */}
@@ -40,8 +46,32 @@ const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Welcome message */}
-          <div className="flex flex-col items-center sm:items-end">
+          {/* Admin button and Welcome message */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            {/* Admin Button */}
+            {isAdmin ? (
+              <button
+                onClick={onLogout}
+                className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full 
+                         border border-emerald-400/30 hover:bg-emerald-500/30 
+                         transition-all text-sm font-semibold flex items-center gap-2"
+              >
+                <span>✓ Admin</span>
+                <span className="text-xs opacity-70">Déconnexion</span>
+              </button>
+            ) : (
+              <button
+                onClick={onAdminClick}
+                className="px-4 py-2 bg-white/10 text-white/80 rounded-full 
+                         border border-white/20 hover:bg-white/20 
+                         transition-all text-sm font-medium flex items-center gap-2"
+              >
+                <span>🔒</span>
+                <span>Admin</span>
+              </button>
+            )}
+
+            {/* Welcome badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm 
                           rounded-full border border-white/20 shadow-lg">
               <span className="relative flex h-2.5 w-2.5">
@@ -50,7 +80,6 @@ const Header: React.FC = () => {
               </span>
               <p className="text-base font-semibold text-white">Bienvenue !</p>
             </div>
-            <p className="text-slate-400 mt-2 text-sm">Ensemble, faisons vibrer le parquet ! 🔥</p>
           </div>
         </div>
       </div>

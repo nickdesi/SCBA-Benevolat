@@ -18,20 +18,20 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex justify-center items-center p-4">
-            {/* Backdrop Layer */}
+        <>
+            {/* Backdrop - semi-transparent */}
             <div
-                className="absolute inset-0 modal-backdrop"
+                className="fixed inset-0 bg-black/50 z-[9998]"
                 onClick={onClose}
-            ></div>
+            />
 
-            {/* Content Layer */}
-            <div className="relative z-10 w-full max-w-md p-1 animate-fade-in-up">
-                <div className="glass-card overflow-hidden relative">
-                    {/* Decorative gradient background opacity */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50 to-slate-100 opacity-90 z-0"></div>
-
-                    <div className="relative z-10 p-8">
+            {/* Modal container - centered */}
+            <div
+                className="fixed top-1/2 left-1/2 z-[9999] w-full max-w-md px-4"
+                style={{ transform: 'translate(-50%, -50%)' }}
+            >
+                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="p-8">
                         {/* Header */}
                         <div className="text-center mb-8">
                             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-3xl mb-6 shadow-xl shadow-red-500/20 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
@@ -93,7 +93,7 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

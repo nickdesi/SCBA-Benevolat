@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   collection,
   onSnapshot,
@@ -14,6 +14,7 @@ import Header from './components/Header';
 import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
+import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
 import type { Game, GameFormData } from './types';
 
@@ -25,6 +26,9 @@ function App() {
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Toast notifications
+  const { toasts, addToast, removeToast } = useToast();
 
   // Check localStorage for migration (legacy support)
   const localGames = (() => {
@@ -61,6 +65,30 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
+  // Sort games by date (parse "Samedi 13 décembre 2025" format)
+  const sortedGames = useMemo(() => {
+    const monthMap: Record<string, number> = {
+      'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+      'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+    };
+
+    return [...games].sort((a, b) => {
+      // Try to parse dates like "Samedi 13 décembre 2025"
+      const parseDate = (dateStr: string): Date => {
+        const parts = dateStr.toLowerCase().split(' ');
+        if (parts.length >= 4) {
+          const day = parseInt(parts[1]) || 1;
+          const month = monthMap[parts[2]] ?? 0;
+          const year = parseInt(parts[3]) || new Date().getFullYear();
+          return new Date(year, month, day);
+        }
+        return new Date();
+      };
+
+      return parseDate(a.date).getTime() - parseDate(b.date).getTime();
+    });
+  }, [games]);
 
   // ---------------------------------------------------------------------------
   // Data Seeding / Migration (Run once if Firestore is empty)
@@ -255,7 +283,14 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-outfit pb-12 transition-colors duration-500">
-      <Header />
+      <Header
+        isAdmin={isAdmin}
+        onAdminClick={() => setIsAdminModalOpen(true)}
+        onLogout={() => setIsAdmin(false)}
+      />
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       <main className="container mx-auto px-4 -mt-8 relative z-20">
 
@@ -266,13 +301,12 @@ function App() {
           </div>
         )}
 
-        {/* Filters / Admin Toggle */}
         {!loading && (
           <div className="flex justify-end mb-6 gap-4">
             {isAdmin && (
               <button
                 onClick={() => setIsAddingGame(true)}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-slate-700 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-slate-700 transition-all"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -280,18 +314,6 @@ function App() {
                 Ajouter un match
               </button>
             )}
-            <button
-              onClick={() => isAdmin ? setIsAdmin(false) : setIsAdminModalOpen(true)}
-              className={`
-                px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all
-                ${isAdmin
-                  ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-white text-slate-600 hover:bg-slate-50'
-                }
-              `}
-            >
-              {isAdmin ? 'Mode Admin Actif 🔓' : 'Accès Admin 🔒'}
-            </button>
           </div>
         )}
 
@@ -324,9 +346,9 @@ function App() {
           </div>
         )}
 
-        {/* Games List */}
+        {/* Games List - Sorted by date */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {games.map(game => (
+          {sortedGames.map(game => (
             <GameCard
               key={game.id}
               game={game}
@@ -335,6 +357,7 @@ function App() {
               onVolunteer={handleVolunteer}
               onRemoveVolunteer={handleRemoveVolunteer}
               onUpdateVolunteer={handleUpdateVolunteer}
+              onToast={addToast}
               onEditRequest={() => setEditingGameId(game.id)}
               onCancelEdit={() => setEditingGameId(null)}
               onDeleteRequest={() => handleDeleteGame(game.id)}
