@@ -7,17 +7,15 @@ import {
   deleteDoc,
   doc,
   writeBatch,
-  getDocs,
-  setDoc
+  getDocs
 } from 'firebase/firestore';
 import { db } from './firebase';
 import Header from './components/Header';
 import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { INITIAL_GAMES } from './constants';
-import type { Game, Role } from './types';
+import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
+import type { Game, GameFormData } from './types';
 
 function App() {
   const [games, setGames] = useState<Game[]>([]);
@@ -28,9 +26,15 @@ function App() {
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Still use localStorage for purely local preferences/identity
-  // (We don't use the games from here anymore, but we might read it ONCE for migration)
-  const [localGames] = useLocalStorage<Game[]>('scba-games', INITIAL_GAMES);
+  // Check localStorage for migration (legacy support)
+  const localGames = (() => {
+    try {
+      const stored = localStorage.getItem('scba-games');
+      return stored ? JSON.parse(stored) : INITIAL_GAMES;
+    } catch {
+      return INITIAL_GAMES;
+    }
+  })();
 
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA2024';
 
@@ -65,7 +69,6 @@ function App() {
     const seedFirestore = async () => {
       try {
         // 1. Check if we've already initialized (Persistent Flag)
-        const metadataRef = doc(db, "system", "metadata");
         const metadataSnap = await getDocs(collection(db, "system"));
 
         if (!metadataSnap.empty) {
@@ -138,18 +141,18 @@ function App() {
     }
   };
 
-  const handleAddGame = async (gameData: any) => {
+  const handleAddGame = async (gameData: GameFormData) => {
     try {
       // New games get an auto-generated ID from Firestore
+      // Use centralized DEFAULT_ROLES configuration
       const newGame = {
         ...gameData,
-        // Ensure roles are initialized if not present
-        roles: gameData.roles || [
-          { id: '1', name: 'Buvette', capacity: 2, volunteers: [] },
-          { id: '2', name: 'Chrono', capacity: 1, volunteers: [] },
-          { id: '3', name: 'Table de marque', capacity: 1, volunteers: [] },
-          { id: '4', name: 'Goûter', capacity: 0, volunteers: [] }, // 0 = unlimited
-        ]
+        roles: DEFAULT_ROLES.map((role, idx) => ({
+          id: String(idx + 1),
+          name: role.name,
+          capacity: role.capacity === 0 ? Infinity : role.capacity,
+          volunteers: []
+        }))
       };
       await addDoc(collection(db, "matches"), newGame);
       setIsAddingGame(false);

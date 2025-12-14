@@ -1,4 +1,12 @@
-import { Game } from './types';
+import { Game, RoleConfig } from './types';
+
+// Default roles configuration - centralized for reuse
+export const DEFAULT_ROLES: RoleConfig[] = [
+  { name: 'Buvette', capacity: 2, icon: '🍺' },
+  { name: 'Chrono', capacity: 1, icon: '⏱️' },
+  { name: 'Table de marque', capacity: 1, icon: '📋' },
+  { name: 'Goûter', capacity: 0, icon: '🍪' }, // 0 = unlimited
+];
 
 export const INITIAL_GAMES: Game[] = [
   {
@@ -29,7 +37,7 @@ export const INITIAL_GAMES: Game[] = [
       { id: 'g2-r4', name: 'Goûter', volunteers: [], capacity: Infinity },
     ],
   },
-    {
+  {
     id: 'game-3',
     team: 'U13 - Équipe 1',
     opponent: 'ASM Basket',

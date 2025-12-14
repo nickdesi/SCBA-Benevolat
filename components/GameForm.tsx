@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import type { Game, Role } from '../types';
+import type { Game, Role, GameFormData } from '../types';
+import { DEFAULT_ROLES } from '../constants';
 import { PlusIcon, CheckIcon } from './Icons';
 
 interface GameFormProps {
   gameToEdit?: Game;
-  onSave: (game: Omit<Game, 'id' | 'roles'> | Game) => void;
+  onSave: (game: GameFormData | Game) => void;
   onCancel: () => void;
 }
-
-// Default roles configuration
-const DEFAULT_ROLES = [
-  { name: 'Buvette', capacity: 2, icon: '🍺' },
-  { name: 'Chrono', capacity: 1, icon: '⏱️' },
-  { name: 'Table de marque', capacity: 1, icon: '📋' },
-  { name: 'Goûter', capacity: 0, icon: '🍪' }, // 0 = unlimited
-];
 
 const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => {
   const [formData, setFormData] = useState({

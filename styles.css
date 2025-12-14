@@ -223,22 +223,6 @@ html {
   transform: rotate(360deg) scale(1.1);
 }
 
-/* Glass Card */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: 1rem;
-  box-shadow: var(--glass-shadow);
-  transition: var(--transition-normal);
-}
-
-.glass-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl), var(--shadow-glow);
-}
-
 /* Modern Card Header */
 .card-header-gradient {
   background: var(--gradient-header);

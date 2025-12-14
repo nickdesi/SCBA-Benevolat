@@ -17,7 +17,7 @@ interface VolunteerSlotProps {
 const getBrowserId = (): string => {
     let browserId = localStorage.getItem('scba-browser-id');
     if (!browserId) {
-        browserId = `browser-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        browserId = `browser-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
         localStorage.setItem('scba-browser-id', browserId);
     }
     return browserId;
