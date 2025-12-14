@@ -57,16 +57,19 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div
+            className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center p-4 pointer-events-none"
+            style={{ height: '100dvh', minHeight: '100vh' }}
+        >
             {/* Invisible click area to close */}
             <div
                 className="absolute inset-0 pointer-events-auto"
                 onClick={onCancel}
             />
 
-            {/* Modal - only this is visible */}
+            {/* Modal - centered on screen */}
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 
-                    animate-[fadeInUp_0.3s_ease-out] mx-auto pointer-events-auto
+                    animate-[fadeInUp_0.3s_ease-out] pointer-events-auto
                     ring-1 ring-black/10">
                 {/* Icon */}
                 <div className="text-center mb-4">
