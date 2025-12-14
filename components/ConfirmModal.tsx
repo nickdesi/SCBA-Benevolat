@@ -21,7 +21,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     onConfirm,
     onCancel,
 }) => {
-    // Prevent background scroll on mobile
+    // Prevent background scroll
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -46,51 +46,54 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            {/* Invisible click area to close */}
+        <>
+            {/* Full screen overlay with backdrop */}
             <div
-                className="absolute inset-0"
+                className="fixed top-0 left-0 w-full h-full bg-black/50 z-[9998]"
                 onClick={onCancel}
             />
 
-            {/* Modal - centered on screen */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 
-                    animate-[fadeInUp_0.3s_ease-out]
-                    ring-1 ring-black/10">
-                {/* Icon */}
-                <div className="text-center mb-4">
-                    <span className="text-5xl">{icons[confirmStyle]}</span>
-                </div>
+            {/* Modal container - absolutely centered */}
+            <div
+                className="fixed top-1/2 left-1/2 z-[9999] w-full max-w-sm px-4"
+                style={{ transform: 'translate(-50%, -50%)' }}
+            >
+                <div className="bg-white rounded-2xl shadow-2xl p-6 ring-1 ring-black/10">
+                    {/* Icon */}
+                    <div className="text-center mb-4">
+                        <span className="text-5xl">{icons[confirmStyle]}</span>
+                    </div>
 
-                {/* Title */}
-                <h3 className="text-xl font-bold text-slate-800 text-center mb-2">
-                    {title}
-                </h3>
+                    {/* Title */}
+                    <h3 className="text-xl font-bold text-slate-800 text-center mb-2">
+                        {title}
+                    </h3>
 
-                {/* Message */}
-                <p className="text-slate-600 text-center mb-6">
-                    {message}
-                </p>
+                    {/* Message */}
+                    <p className="text-slate-600 text-center mb-6">
+                        {message}
+                    </p>
 
-                {/* Buttons */}
-                <div className="flex gap-3">
-                    <button
-                        onClick={onCancel}
-                        className="flex-1 py-3 px-4 text-base font-semibold text-slate-700 
-                     bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
-                    >
-                        {cancelText}
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className={`flex-1 py-3 px-4 text-base font-bold text-white rounded-xl 
-                      transition-all shadow-lg ${confirmButtonStyles[confirmStyle]}`}
-                    >
-                        {confirmText}
-                    </button>
+                    {/* Buttons */}
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onCancel}
+                            className="flex-1 py-3 px-4 text-base font-semibold text-slate-700 
+                         bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                        >
+                            {cancelText}
+                        </button>
+                        <button
+                            onClick={onConfirm}
+                            className={`flex-1 py-3 px-4 text-base font-bold text-white rounded-xl 
+                          transition-all shadow-lg ${confirmButtonStyles[confirmStyle]}`}
+                        >
+                            {confirmText}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
