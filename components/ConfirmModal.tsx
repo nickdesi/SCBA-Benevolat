@@ -11,6 +11,19 @@ interface ConfirmModalProps {
     onCancel: () => void;
 }
 
+// Style constants (outside component to prevent recreation)
+const CONFIRM_BUTTON_STYLES = {
+    primary: 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-red-500/30',
+    danger: 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-red-600/30',
+    success: 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/30',
+} as const;
+
+const CONFIRM_ICONS = {
+    primary: '✋',
+    danger: '⚠️',
+    success: '✅',
+} as const;
+
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
     isOpen,
     title,
@@ -33,18 +46,6 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     if (!isOpen) return null;
 
-    const confirmButtonStyles = {
-        primary: 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-red-500/30',
-        danger: 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-red-600/30',
-        success: 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/30',
-    };
-
-    const icons = {
-        primary: '✋',
-        danger: '⚠️',
-        success: '✅',
-    };
-
     return (
         <>
             {/* Full screen overlay with backdrop */}
@@ -61,7 +62,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 <div className="bg-white rounded-2xl shadow-2xl p-6 ring-1 ring-black/10">
                     {/* Icon */}
                     <div className="text-center mb-4">
-                        <span className="text-5xl">{icons[confirmStyle]}</span>
+                        <span className="text-5xl">{CONFIRM_ICONS[confirmStyle]}</span>
                     </div>
 
                     {/* Title */}
@@ -86,7 +87,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                         <button
                             onClick={onConfirm}
                             className={`flex-1 py-3 px-4 text-base font-bold text-white rounded-xl 
-                          transition-all shadow-lg ${confirmButtonStyles[confirmStyle]}`}
+                          transition-all shadow-lg ${CONFIRM_BUTTON_STYLES[confirmStyle]}`}
                         >
                             {confirmText}
                         </button>

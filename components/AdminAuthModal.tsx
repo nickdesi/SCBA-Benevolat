@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface AdminAuthModalProps {
     isOpen: boolean;
@@ -9,6 +9,23 @@ interface AdminAuthModalProps {
 
 const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubmit, error }) => {
     const [password, setPassword] = useState('');
+
+    // Clear password when modal closes
+    useEffect(() => {
+        if (!isOpen) {
+            setPassword('');
+        }
+    }, [isOpen]);
+
+    // Lock body scroll when open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = '';
+            };
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 

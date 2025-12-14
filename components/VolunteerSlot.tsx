@@ -60,16 +60,15 @@ const isMyRegistration = (key: string, name: string): boolean => {
     return registrations[key]?.includes(name) || false;
 };
 
-// Emoji mapping for roles
-const getRoleEmoji = (roleName: string): string => {
-    const emojis: Record<string, string> = {
-        'Buvette': '🍺',
-        'Chrono': '⏱️',
-        'Table de marque': '📋',
-        'Goûter': '🍪',
-    };
-    return emojis[roleName] || '👋';
+// Emoji mapping for roles (outside component to prevent recreation)
+const ROLE_EMOJIS: Record<string, string> = {
+    'Buvette': '🍺',
+    'Chrono': '⏱️',
+    'Table de marque': '📋',
+    'Goûter': '🍪',
 };
+
+const getRoleEmoji = (roleName: string): string => ROLE_EMOJIS[roleName] || '👋';
 
 const VolunteerSlot: React.FC<VolunteerSlotProps> = ({
     role,

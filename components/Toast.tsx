@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface Toast {
     id: number;
@@ -27,12 +27,14 @@ interface ToastItemProps {
 }
 
 const ToastItem: React.FC<ToastItemProps> = ({ toast, onClose }) => {
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose();
-        }, 3000);
-        return () => clearTimeout(timer);
+    const handleClose = useCallback(() => {
+        onClose();
     }, [onClose]);
+
+    useEffect(() => {
+        const timer = setTimeout(handleClose, 3000);
+        return () => clearTimeout(timer);
+    }, [handleClose]);
 
     const bgColors = {
         success: 'bg-emerald-500',

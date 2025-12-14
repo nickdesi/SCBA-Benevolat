@@ -30,17 +30,23 @@ function App() {
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();
 
-  // Check localStorage for migration (legacy support)
-  const localGames = (() => {
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA2024';
+
+  // Month mapping for date parsing (constant)
+  const monthMap: Record<string, number> = useMemo(() => ({
+    'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+    'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+  }), []);
+
+  // Check localStorage for migration (legacy support) - memoized
+  const localGames = useMemo(() => {
     try {
       const stored = localStorage.getItem('scba-games');
       return stored ? JSON.parse(stored) : INITIAL_GAMES;
     } catch {
       return INITIAL_GAMES;
     }
-  })();
-
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA2024';
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Firestore Synchronization
@@ -68,27 +74,19 @@ function App() {
 
   // Sort games by date (parse "Samedi 13 décembre 2025" format)
   const sortedGames = useMemo(() => {
-    const monthMap: Record<string, number> = {
-      'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
-      'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+    const parseDate = (dateStr: string): Date => {
+      const parts = dateStr.toLowerCase().split(' ');
+      if (parts.length >= 4) {
+        const day = parseInt(parts[1]) || 1;
+        const month = monthMap[parts[2]] ?? 0;
+        const year = parseInt(parts[3]) || new Date().getFullYear();
+        return new Date(year, month, day);
+      }
+      return new Date();
     };
 
-    return [...games].sort((a, b) => {
-      // Try to parse dates like "Samedi 13 décembre 2025"
-      const parseDate = (dateStr: string): Date => {
-        const parts = dateStr.toLowerCase().split(' ');
-        if (parts.length >= 4) {
-          const day = parseInt(parts[1]) || 1;
-          const month = monthMap[parts[2]] ?? 0;
-          const year = parseInt(parts[3]) || new Date().getFullYear();
-          return new Date(year, month, day);
-        }
-        return new Date();
-      };
-
-      return parseDate(a.date).getTime() - parseDate(b.date).getTime();
-    });
-  }, [games]);
+    return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+  }, [games, monthMap]);
 
   // ---------------------------------------------------------------------------
   // Data Seeding / Migration (Run once if Firestore is empty)
