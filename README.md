@@ -11,11 +11,14 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 - **Inscription facile** : entrez votre nom et inscrivez-vous à un poste
 - **Temps réel** : visualisez les inscriptions des autres instantanément (Firebase)
 - **Confirmation d'inscription** : popup de confirmation avant validation
+- **Toast de confirmation** : notification visuelle après inscription ✅
 - **Se désinscrire** : retirez-vous facilement (uniquement vos propres inscriptions)
 - **Badge "C'est vous !"** : identifiez rapidement vos inscriptions
+- **Matchs triés par date** : affichage chronologique automatique
 
 ### 🔧 Pour les administrateurs
 
+- **Accès rapide** : bouton Admin directement dans le header
 - **Gestion des matchs** : ajouter, modifier, supprimer
 - **Configuration des postes** : modifier le nombre de bénévoles par poste
 - **Gestion des inscriptions** : supprimer n'importe quel bénévole
@@ -24,6 +27,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 
 - Design responsive (mobile & desktop)
 - Animation de célébration quand un match est complet
+- Notifications toast avec auto-dismiss
 - Emojis pour chaque poste (🍺 Buvette, ⏱️ Chrono, 📋 Table de marque, 🍪 Goûter)
 - Logo officiel du club
 
@@ -55,7 +59,13 @@ VITE_ADMIN_PASSWORD=VotreMotDePasseAdmin
 ### Firebase
 
 L'application utilise Firebase Firestore pour la synchronisation en temps réel.
-La configuration est définie dans `firebase.ts`.
+La configuration peut être personnalisée via variables d'environnement (optionnel) :
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+```
 
 ## 🏃 Lancer l'application
 
@@ -73,22 +83,23 @@ npm run preview
 ## 📁 Structure du projet
 
 ```
-├── App.tsx                 # Composant principal (Logique Firestore)
-├── firebase.ts             # Configuration Firebase
+├── App.tsx                 # Composant principal (Logique Firestore + tri dates)
+├── firebase.ts             # Configuration Firebase (env vars)
 ├── components/
-│   ├── Header.tsx          # En-tête avec logo SCBA
+│   ├── Header.tsx          # En-tête avec logo + bouton Admin
 │   ├── GameCard.tsx        # Carte de match
 │   ├── GameForm.tsx        # Formulaire ajout/édition match
 │   ├── VolunteerSlot.tsx   # Gestion des inscriptions
 │   ├── ConfirmModal.tsx    # Modal de confirmation
 │   ├── AdminAuthModal.tsx  # Authentification admin
+│   ├── Toast.tsx           # Notifications toast
 │   └── Icons.tsx           # Icônes SVG centralisées
 ├── hooks/
 │   └── useLocalStorage.ts  # Persistance identité locale
 ├── public/
 │   └── logo-scba.png       # Logo du club
 ├── styles.css              # Design system
-├── constants.ts            # Données initiales
+├── constants.ts            # Données initiales + rôles par défaut
 └── types.ts                # Types TypeScript
 ```
 
