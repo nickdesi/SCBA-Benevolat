@@ -16,6 +16,7 @@ import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
+import FilterBar from './components/FilterBar';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
 import type { Game, GameFormData, CarpoolEntry } from './types';
@@ -28,6 +29,7 @@ function App() {
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();
@@ -88,7 +90,20 @@ function App() {
     };
 
     return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+    return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
   }, [games, monthMap]);
+
+  // Extract unique teams for filter
+  const teams = useMemo(() => {
+    const uniqueTeams = new Set(games.map(g => g.team));
+    return Array.from(uniqueTeams).sort();
+  }, [games]);
+
+  // Filtered games
+  const filteredGames = useMemo(() => {
+    if (!selectedTeam) return sortedGames;
+    return sortedGames.filter(g => g.team === selectedTeam);
+  }, [sortedGames, selectedTeam]);
 
   // ---------------------------------------------------------------------------
   // Data Seeding / Migration (Run once if Firestore is empty)
@@ -390,9 +405,18 @@ function App() {
           </div>
         )}
 
+        {/* Filter Bar */}
+        {!loading && games.length > 0 && !isAddingGame && (
+          <FilterBar
+            teams={teams}
+            selectedTeam={selectedTeam}
+            onSelectTeam={setSelectedTeam}
+          />
+        )}
+
         {/* Games List - Sorted by date */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {sortedGames.map((game, index) => (
+          {filteredGames.map((game, index) => (
             <div
               key={game.id}
               className={`animate-fade-in-up ${index % 4 === 1 ? 'stagger-1' : index % 4 === 2 ? 'stagger-2' : index % 4 === 3 ? 'stagger-3' : ''}`}
