@@ -14,6 +14,7 @@ import Header from './components/Header';
 import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
+import SkeletonLoader from './components/SkeletonLoader';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
 import type { Game, GameFormData } from './types';
@@ -293,11 +294,7 @@ function App() {
       <main className="container mx-auto px-4 -mt-8 relative z-20">
 
         {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
-          </div>
-        )}
+        {loading && <SkeletonLoader />}
 
         {!loading && (
           <div className="flex justify-end mb-6 gap-4">
@@ -317,17 +314,27 @@ function App() {
 
         {/* Empty State */}
         {!loading && games.length === 0 && !isAddingGame && (
-          <div className="bg-white rounded-3xl shadow-xl p-12 text-center max-w-2xl mx-auto">
-            <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">🏀</span>
+          <div className="bg-white rounded-3xl shadow-2xl p-16 text-center max-w-2xl mx-auto border border-slate-100 animate-fade-in-up">
+            <div className="relative mb-8 inline-block">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 blur-3xl opacity-20 scale-150"></div>
+              <div className="relative bg-gradient-to-br from-red-50 to-orange-50 w-32 h-32 rounded-3xl flex items-center justify-center shadow-lg">
+                <span className="text-6xl">🏀</span>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-2">Aucun match prévu</h3>
-            <p className="text-slate-500 mb-8">Le calendrier est vide pour le moment.</p>
+            <h3 className="text-3xl font-black text-slate-800 mb-3 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              Aucun match prévu
+            </h3>
+            <p className="text-lg text-slate-500 mb-10 max-w-md mx-auto">
+              Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !
+            </p>
             {isAdmin && (
               <button
                 onClick={() => setIsAddingGame(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl font-bold hover:shadow-lg transition-all transform hover:-translate-y-1"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-red-200 transition-all transform hover:-translate-y-1 hover:scale-105"
               >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
                 Ajouter un match
               </button>
             )}
@@ -346,21 +353,25 @@ function App() {
 
         {/* Games List - Sorted by date */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {sortedGames.map(game => (
-            <GameCard
+          {sortedGames.map((game, index) => (
+            <div
               key={game.id}
-              game={game}
-              isAdmin={isAdmin}
-              isEditing={editingGameId === game.id}
-              onVolunteer={handleVolunteer}
-              onRemoveVolunteer={handleRemoveVolunteer}
-              onUpdateVolunteer={handleUpdateVolunteer}
-              onToast={addToast}
-              onEditRequest={() => setEditingGameId(game.id)}
-              onCancelEdit={() => setEditingGameId(null)}
-              onDeleteRequest={() => handleDeleteGame(game.id)}
-              onUpdateRequest={handleUpdateGame}
-            />
+              className={`animate-fade-in-up ${index % 4 === 1 ? 'stagger-1' : index % 4 === 2 ? 'stagger-2' : index % 4 === 3 ? 'stagger-3' : ''}`}
+            >
+              <GameCard
+                game={game}
+                isAdmin={isAdmin}
+                isEditing={editingGameId === game.id}
+                onVolunteer={handleVolunteer}
+                onRemoveVolunteer={handleRemoveVolunteer}
+                onUpdateVolunteer={handleUpdateVolunteer}
+                onToast={addToast}
+                onEditRequest={() => setEditingGameId(game.id)}
+                onCancelEdit={() => setEditingGameId(null)}
+                onDeleteRequest={() => handleDeleteGame(game.id)}
+                onUpdateRequest={handleUpdateGame}
+              />
+            </div>
           ))}
         </div>
 

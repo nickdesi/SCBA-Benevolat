@@ -26,6 +26,10 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 ### 🎨 Interface moderne
 
 - Design responsive (mobile & desktop)
+- **Typographie premium** : Police Outfit pour une apparence moderne et professionnelle
+- **Skeleton Loader** : Chargement élégant avec aperçu de la structure pendant le chargement
+- **Animations fluides** : Cartes qui apparaissent progressivement avec effet décalé
+- **État vide amélioré** : Design engageant quand aucun match n'est programmé
 - Animation de célébration quand un match est complet
 - Notifications toast avec auto-dismiss
 - Emojis pour chaque poste (🍺 Buvette, ⏱️ Chrono, 📋 Table de marque, 🍪 Goûter)
@@ -92,6 +96,7 @@ npm run preview
 │   ├── VolunteerSlot.tsx   # Gestion des inscriptions
 │   ├── ConfirmModal.tsx    # Modal de confirmation
 │   ├── AdminAuthModal.tsx  # Authentification admin
+│   ├── SkeletonLoader.tsx  # Chargement élégant (skeleton)
 │   ├── Toast.tsx           # Notifications toast
 │   └── Icons.tsx           # Icônes SVG centralisées
 ├── hooks/
