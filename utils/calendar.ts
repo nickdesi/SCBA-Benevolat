@@ -19,10 +19,10 @@ const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end
     };
 
     // Try to parse date like "Samedi 14 décembre 2024" or "14/12/2024" or "2024-12-14"
-    let day: number, month: number, year: number;
+    let day: number = 0, month: number = -1, year: number = new Date().getFullYear();
 
-    // Format: "Jour XX mois YYYY" (e.g., "Samedi 13 décembre 2025")
-    const frenchMatch = dateStr.match(/(\d{1,2})\s+([a-zA-ZéèêëàâäùûüôöîïçÉÈÊËÀÂÄÙÛÜÔÖÎÏÇ]+)\s+(\d{4})/i);
+    // Format: "XX mois YYYY" or "Jour XX mois YYYY" (e.g., "21 décembre 2025" or "Samedi 13 décembre 2025")
+    const frenchMatch = dateStr.match(/(\d{1,2})\s+([a-zA-ZéèêëàâäùûüôöîïçÉÈÊËÀÂÄÙÛÜÔÖÎÏÇ]+)(?:\s+(\d{4}))?/i);
     if (frenchMatch) {
         day = parseInt(frenchMatch[1], 10);
         const monthStr = normalizeMonth(frenchMatch[2]);
@@ -35,14 +35,17 @@ const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end
             console.error('Could not parse month:', frenchMatch[2], '-> normalized:', monthStr);
             return null;
         }
-        year = parseInt(frenchMatch[3], 10);
+        // Use year from string if present, otherwise current year
+        if (frenchMatch[3]) {
+            year = parseInt(frenchMatch[3], 10);
+        }
     }
     // Format: "DD/MM/YYYY"
     else if (dateStr.includes('/')) {
         const parts = dateStr.split('/');
         day = parseInt(parts[0], 10);
         month = parseInt(parts[1], 10) - 1;
-        year = parseInt(parts[2], 10);
+        year = parseInt(parts[2], 10) || year;
     }
     // Format: "YYYY-MM-DD"
     else if (dateStr.includes('-')) {
