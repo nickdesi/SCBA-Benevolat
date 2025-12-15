@@ -89,7 +89,6 @@ function App() {
     };
 
     return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
-    return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
   }, [games, monthMap]);
 
   // Extract unique teams for filter

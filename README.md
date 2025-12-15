@@ -91,6 +91,7 @@ npm run preview
 ## 📁 Structure du projet
 
 ```
+├── index.tsx               # Point d'entrée (React + import CSS)
 ├── App.tsx                 # Composant principal (Logique Firestore + tri dates)
 ├── firebase.ts             # Configuration Firebase (env vars)
 ├── components/
@@ -98,16 +99,21 @@ npm run preview
 │   ├── GameCard.tsx        # Carte de match
 │   ├── GameForm.tsx        # Formulaire ajout/édition match
 │   ├── VolunteerSlot.tsx   # Gestion des inscriptions
+│   ├── CarpoolingSection.tsx # Section covoiturage
 │   ├── ConfirmModal.tsx    # Modal de confirmation
 │   ├── AdminAuthModal.tsx  # Authentification admin
 │   ├── SkeletonLoader.tsx  # Chargement élégant (skeleton)
+│   ├── ReloadPrompt.tsx    # PWA update prompt
 │   ├── Toast.tsx           # Notifications toast
+│   ├── SnowEffect.tsx      # Animation neige (Noël)
+│   ├── ChristmasGarland.tsx # Guirlande lumineuse (Noël)
 │   └── Icons.tsx           # Icônes SVG centralisées
-├── hooks/
-│   └── useLocalStorage.ts  # Persistance identité locale
+├── utils/
+│   └── calendar.ts         # Export calendrier (Google, Outlook, Apple)
 ├── public/
-│   └── logo-scba.png       # Logo du club
-├── styles.css              # Design system
+│   ├── logo-scba.png       # Logo du club
+│   └── pwa-*.png           # Icônes PWA (192x192, 512x512)
+├── styles.css              # Design system global
 ├── constants.ts            # Données initiales + rôles par défaut
 └── types.ts                # Types TypeScript
 ```
