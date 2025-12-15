@@ -552,3 +552,16 @@ html {
 .garland-light {
   animation: garland-blink 1.5s infinite ease-in-out;
 }
+
+/* Scrollbar hide utility - for horizontal scroll without visible scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
