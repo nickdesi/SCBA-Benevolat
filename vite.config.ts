@@ -50,17 +50,59 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigationPreload: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Don't precache - always fetch fresh
+        globPatterns: [],
+        // Use NetworkFirst for everything - always try network first
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+            // HTML pages - always fresh
+            urlPattern: /\.html$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'html-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 5 // 5 minutes only
+              },
+              networkTimeoutSeconds: 3
+            }
+          },
+          {
+            // JS/CSS bundles - network first with short cache
+            urlPattern: /\.(js|css)$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'assets-cache',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 10 // 10 minutes
+              },
+              networkTimeoutSeconds: 3
+            }
+          },
+          {
+            // Images/fonts - can be cached longer
+            urlPattern: /\.(png|jpg|jpeg|svg|gif|ico|woff2?)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
+          },
+          {
+            // Firebase/API - always network first
+            urlPattern: /^https:\/\/(firestore|firebase)\.googleapis\.com\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'firebase-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
-              }
+                maxAgeSeconds: 60 * 5 // 5 minutes
+              },
+              networkTimeoutSeconds: 5
             }
           }
         ]

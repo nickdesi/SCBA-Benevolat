@@ -11,14 +11,27 @@ const ReloadPrompt: React.FC = () => {
     } = useRegisterSW({
         onRegistered(r) {
             console.log('SW Registered: ' + r);
-            // Check for updates every 60 seconds
+            // Check for updates every 30 seconds (more aggressive)
             if (r) {
                 setInterval(() => {
                     console.log('Checking for SW updates...');
                     r.update();
-                }, 60 * 1000);
+                }, 30 * 1000);
                 // Also check immediately on mount
                 r.update();
+
+                // Clear old caches on registration
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            // Delete old workbox caches
+                            if (name.includes('workbox') || name.includes('precache')) {
+                                console.log('Clearing old cache:', name);
+                                caches.delete(name);
+                            }
+                        });
+                    });
+                }
             }
         },
         onRegisterError(error) {
