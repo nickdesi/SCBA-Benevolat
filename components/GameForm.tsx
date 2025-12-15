@@ -16,6 +16,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => 
     date: gameToEdit?.date || '',
     time: gameToEdit?.time || '',
     location: gameToEdit?.location || '',
+    isHome: gameToEdit?.isHome ?? true,  // Default to home game
   });
 
   // Initialize role capacities from existing game or defaults
@@ -111,8 +112,46 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => 
           ))}
         </div>
 
-        {/* Role Capacities Section - Only for editing existing games */}
-        {gameToEdit && (
+        {/* Home/Away Toggle - Modern Segmented Control */}
+        <div className="pt-4">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
+            <span>📍</span>
+            Type de match
+          </label>
+          <div className="flex bg-slate-100 rounded-xl p-1 border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, isHome: true }))}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${formData.isHome
+                ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30'
+                : 'text-slate-600 hover:bg-white/50'
+                }`}
+            >
+              <span className="text-lg">🏠</span>
+              Domicile
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, isHome: false }))}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${!formData.isHome
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30'
+                : 'text-slate-600 hover:bg-white/50'
+                }`}
+            >
+              <span className="text-lg">🚗</span>
+              Extérieur
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+            <span>💡</span>
+            {formData.isHome
+              ? 'Match à domicile : Bénévolat (Buvette, Chrono, Table, Goûter)'
+              : 'Match à l\'extérieur : Covoiturage uniquement'}
+          </p>
+        </div>
+
+        {/* Role Capacities Section - Only for editing existing HOME games */}
+        {gameToEdit && formData.isHome && (
           <div className="pt-4 border-t border-slate-200">
             <h4 className="flex items-center gap-2 text-base font-bold text-slate-800 mb-4">
               <span className="text-xl">👥</span>

@@ -16,6 +16,7 @@ export const INITIAL_GAMES: Game[] = [
     date: 'Samedi 15 Novembre',
     time: '11H00',
     location: 'Maison des Sports',
+    isHome: true,
     roles: [
       { id: 'g1-r1', name: 'Buvette', volunteers: [], capacity: 2 },
       { id: 'g1-r2', name: 'Chrono', volunteers: [], capacity: 1 },
@@ -30,6 +31,7 @@ export const INITIAL_GAMES: Game[] = [
     date: 'Samedi 15 Novembre',
     time: '13H30',
     location: 'Maison des Sports',
+    isHome: true,
     roles: [
       { id: 'g2-r1', name: 'Buvette', volunteers: ['Parent de Léo'], capacity: 2 },
       { id: 'g2-r2', name: 'Chrono', volunteers: [], capacity: 1 },
@@ -44,6 +46,7 @@ export const INITIAL_GAMES: Game[] = [
     date: 'Dimanche 16 Novembre',
     time: '10H00',
     location: 'Gymnase Thévenet',
+    isHome: true,
     roles: [
       { id: 'g3-r1', name: 'Buvette', volunteers: [], capacity: 2 },
       { id: 'g3-r2', name: 'Chrono', volunteers: [], capacity: 1 },

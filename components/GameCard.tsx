@@ -58,6 +58,9 @@ const GameCard: React.FC<GameCardProps> = ({
 
     const isFullyStaffed = isGameFullyStaffed(game);
 
+    // Default to home game if isHome is not defined (legacy matches)
+    const isHomeGame = game.isHome ?? true;
+
     const handleAddToCalendar = () => {
         const success = downloadGameCalendar(game);
         if (success && onToast) {
@@ -108,19 +111,32 @@ const GameCard: React.FC<GameCardProps> = ({
                     </div>
 
                     <div className="relative z-10">
-                        {/* Team and Badge */}
+                        {/* Team and Badges */}
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                             <h3 className="text-lg sm:text-xl font-bold text-white">{game.team}</h3>
-                            <span className={`
-                px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
-                shadow-lg animate-pulse
-                ${isFullyStaffed
-                                    ? 'bg-gradient-to-r from-yellow-400 to-amber-500 shadow-yellow-400/30'
-                                    : 'bg-gradient-to-r from-red-500 to-orange-500 shadow-red-500/30'
-                                }
-              `}>
-                                {isFullyStaffed ? '✅ COMPLET' : '🏀 MATCH'}
-                            </span>
+                            <div className="flex gap-2">
+                                {/* Home/Away Badge */}
+                                <span className={`
+                                    px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
+                                    ${isHomeGame
+                                        ? 'bg-gradient-to-r from-emerald-500 to-green-500 shadow-emerald-500/30'
+                                        : 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-blue-500/30'
+                                    } shadow-lg
+                                `}>
+                                    {isHomeGame ? '🏠 DOMICILE' : '🚗 EXTÉRIEUR'}
+                                </span>
+                                {/* Status Badge */}
+                                <span className={`
+                                    px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
+                                    shadow-lg animate-pulse
+                                    ${isFullyStaffed
+                                        ? 'bg-gradient-to-r from-yellow-400 to-amber-500 shadow-yellow-400/30'
+                                        : 'bg-gradient-to-r from-red-500 to-orange-500 shadow-red-500/30'
+                                    }
+                                `}>
+                                    {isFullyStaffed ? '✅ COMPLET' : '🏀 MATCH'}
+                                </span>
+                            </div>
                         </div>
 
                         {/* VS Opponent */}
@@ -212,54 +228,58 @@ const GameCard: React.FC<GameCardProps> = ({
                         <span>Ajouter à mon calendrier</span>
                     </button>
 
-                    {/* Volunteer Section */}
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className={`p-2 rounded-xl ${isFullyStaffed
-                                ? 'bg-gradient-to-br from-emerald-500 to-teal-500'
-                                : 'bg-gradient-to-br from-red-500 to-orange-500'
-                                }`}>
-                                <span className="text-xl">{isFullyStaffed ? '🏆' : '🙋'}</span>
+                    {/* Volunteer Section - Only for HOME games */}
+                    {isHomeGame && (
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className={`p-2 rounded-xl ${isFullyStaffed
+                                    ? 'bg-gradient-to-br from-emerald-500 to-teal-500'
+                                    : 'bg-gradient-to-br from-red-500 to-orange-500'
+                                    }`}>
+                                    <span className="text-xl">{isFullyStaffed ? '🏆' : '🙋'}</span>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800 text-lg">
+                                        {isFullyStaffed ? 'Tous les postes sont pourvus !' : 'Qui peut aider ?'}
+                                    </h4>
+                                    <p className="text-sm text-slate-500">
+                                        {isFullyStaffed ? 'Merci pour votre engagement' : 'Inscrivez-vous pour un poste'}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 text-lg">
-                                    {isFullyStaffed ? 'Tous les postes sont pourvus !' : 'Qui peut aider ?'}
-                                </h4>
-                                <p className="text-sm text-slate-500">
-                                    {isFullyStaffed ? 'Merci pour votre engagement' : 'Inscrivez-vous pour un poste'}
-                                </p>
+                            <div className="space-y-3">
+                                {game.roles.map((role, index) => (
+                                    <VolunteerSlot
+                                        key={role.id}
+                                        role={role}
+                                        gameId={game.id}
+                                        isAdmin={isAdmin}
+                                        onVolunteer={(parentName) => {
+                                            onVolunteer(game.id, role.id, parentName);
+                                            if (onToast) onToast('Inscription confirmée !', 'success');
+                                        }}
+                                        onRemoveVolunteer={(volunteerName) => onRemoveVolunteer(game.id, role.id, volunteerName)}
+                                        onUpdateVolunteer={(oldName, newName) => onUpdateVolunteer(game.id, role.id, oldName, newName)}
+                                        animationDelay={index * 0.1}
+                                    />
+                                ))}
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            {game.roles.map((role, index) => (
-                                <VolunteerSlot
-                                    key={role.id}
-                                    role={role}
-                                    gameId={game.id}
-                                    isAdmin={isAdmin}
-                                    onVolunteer={(parentName) => {
-                                        onVolunteer(game.id, role.id, parentName);
-                                        if (onToast) onToast('Inscription confirmée !', 'success');
-                                    }}
-                                    onRemoveVolunteer={(volunteerName) => onRemoveVolunteer(game.id, role.id, volunteerName)}
-                                    onUpdateVolunteer={(oldName, newName) => onUpdateVolunteer(game.id, role.id, oldName, newName)}
-                                    animationDelay={index * 0.1}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    )}
 
-                    {/* Carpooling Section */}
-                    <CarpoolingSection
-                        gameId={game.id}
-                        entries={game.carpool || []}
-                        isAdmin={isAdmin}
-                        onAddEntry={(entry) => {
-                            onAddCarpool(game.id, entry);
-                            if (onToast) onToast('🚗 Inscription covoiturage confirmée !', 'success');
-                        }}
-                        onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
-                    />
+                    {/* Carpooling Section - Only for AWAY games */}
+                    {!isHomeGame && (
+                        <CarpoolingSection
+                            gameId={game.id}
+                            entries={game.carpool || []}
+                            isAdmin={isAdmin}
+                            onAddEntry={(entry) => {
+                                onAddCarpool(game.id, entry);
+                                if (onToast) onToast('🚗 Inscription covoiturage confirmée !', 'success');
+                            }}
+                            onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
+                        />
+                    )}
                 </div>
             </div>
         </div>
