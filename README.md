@@ -23,6 +23,9 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 ### 🔧 Pour les administrateurs
 
 - **Accès rapide** : bouton Admin directement dans le header
+- **🏠 Matchs Domicile / 🚗 Extérieur** : différenciation des types de matchs
+  - **Domicile** : affiche les postes bénévolat (Buvette, Chrono, Table, Goûter)
+  - **Extérieur** : affiche uniquement le covoiturage
 - **Gestion des matchs** : ajouter, modifier, supprimer
 - **Configuration des postes** : modifier le nombre de bénévoles par poste
 - **Gestion des inscriptions** : supprimer n'importe quel bénévole
@@ -30,14 +33,22 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 ### 🎨 Interface moderne
 
 - Design responsive (mobile & desktop)
+- **Badges visuels** : 🏠 Domicile (vert) / 🚗 Extérieur (bleu) sur chaque carte
 - **Typographie premium** : Police Outfit pour une apparence moderne et professionnelle
 - **Skeleton Loader** : Chargement élégant avec aperçu de la structure pendant le chargement
+- **Spinner initial** : Animation pendant le chargement des scripts
 - **Animations fluides** : Cartes qui apparaissent progressivement avec effet décalé
 - **État vide amélioré** : Design engageant quand aucun match n'est programmé
 - Animation de célébration quand un match est complet
 - Notifications toast avec auto-dismiss
 - Emojis pour chaque poste (🍺 Buvette, ⏱️ Chrono, 📋 Table de marque, 🍪 Goûter)
 - Logo officiel du club
+
+### 📲 PWA & Cache
+
+- **Installation mobile** : Ajoutez l'app sur votre écran d'accueil
+- **Mises à jour automatiques** : Détection et rechargement automatique toutes les 30s
+- **Network First** : Toujours afficher la dernière version (pas de cache bloquant)
 
 ## 🚀 Installation
 
