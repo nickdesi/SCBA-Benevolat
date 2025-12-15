@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 const ReloadPrompt: React.FC = () => {
+    const [isUpdating, setIsUpdating] = useState(false);
+
     const {
         offlineReady: [offlineReady, setOfflineReady],
-        needRefresh: [needRefresh, setNeedRefresh],
+        needRefresh: [needRefresh],
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
@@ -15,57 +17,65 @@ const ReloadPrompt: React.FC = () => {
         },
     });
 
-    const close = () => {
+    // Auto-refresh when update is available
+    useEffect(() => {
+        if (needRefresh && !isUpdating) {
+            setIsUpdating(true);
+            console.log('Update detected, refreshing...');
+
+            // Small delay to show the notification, then refresh
+            const timer = setTimeout(async () => {
+                await updateServiceWorker(true);
+                window.location.reload();
+            }, 1500);
+
+            return () => clearTimeout(timer);
+        }
+    }, [needRefresh, isUpdating, updateServiceWorker]);
+
+    const closeOfflineReady = () => {
         setOfflineReady(false);
-        setNeedRefresh(false);
     };
 
-    if (!offlineReady && !needRefresh) return null;
-
-    return (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 z-[99999] w-[90%] md:w-auto">
-            <div className="bg-slate-800 text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex flex-col gap-3 animate-fade-in-up">
-                <div className="flex items-start gap-3">
-                    <span className="text-2xl">
-                        {offlineReady ? '✅' : '🚀'}
-                    </span>
+    // Show updating notification
+    if (isUpdating) {
+        return (
+            <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 z-[99999] w-[90%] md:w-auto">
+                <div className="bg-slate-800 text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-fade-in-up">
+                    <div className="animate-spin text-2xl">🔄</div>
                     <div>
-                        <h3 className="font-bold text-base">
-                            {offlineReady ? 'Application prête hors ligne' : 'Mise à jour disponible'}
-                        </h3>
-                        <p className="text-sm text-slate-300 mt-0.5">
-                            {offlineReady
-                                ? 'L\'application peut être utilisée sans internet.'
-                                : 'Une nouvelle version est disponible.'}
-                        </p>
+                        <h3 className="font-bold text-base">Mise à jour en cours...</h3>
+                        <p className="text-sm text-slate-300">La page va se rafraîchir automatiquement.</p>
                     </div>
                 </div>
+            </div>
+        );
+    }
 
-                <div className="flex gap-2 mt-1">
-                    {needRefresh && (
-                        <button
-                            onClick={async () => {
-                                await updateServiceWorker(true);
-                                // Force reload if SW update doesn't trigger it
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 100);
-                            }}
-                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Mettre à jour
-                        </button>
-                    )}
+    // Show offline ready notification
+    if (offlineReady) {
+        return (
+            <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 z-[99999] w-[90%] md:w-auto">
+                <div className="bg-slate-800 text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex flex-col gap-3 animate-fade-in-up">
+                    <div className="flex items-start gap-3">
+                        <span className="text-2xl">✅</span>
+                        <div>
+                            <h3 className="font-bold text-base">Application prête hors ligne</h3>
+                            <p className="text-sm text-slate-300 mt-0.5">L'application peut être utilisée sans internet.</p>
+                        </div>
+                    </div>
                     <button
-                        onClick={close}
-                        className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
+                        onClick={closeOfflineReady}
+                        className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
                     >
-                        Fermer
+                        OK
                     </button>
                 </div>
             </div>
-        </div>
-    );
+        );
+    }
+
+    return null;
 };
 
 export default ReloadPrompt;
