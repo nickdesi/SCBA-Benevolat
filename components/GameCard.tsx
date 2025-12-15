@@ -2,7 +2,8 @@ import React from 'react';
 import type { Game } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
-import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from './Icons';
+import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon, CalendarAddIcon } from './Icons';
+import { downloadGameCalendar } from '../utils/calendar';
 
 interface GameCardProps {
     game: Game;
@@ -51,6 +52,15 @@ const GameCard: React.FC<GameCardProps> = ({
     }
 
     const isFullyStaffed = isGameFullyStaffed(game);
+
+    const handleAddToCalendar = () => {
+        const success = downloadGameCalendar(game);
+        if (success && onToast) {
+            onToast('📅 Événement ajouté à votre calendrier !', 'success');
+        } else if (!success && onToast) {
+            onToast('Erreur lors de la création du fichier calendrier', 'error');
+        }
+    };
 
     return (
         <div className={`
@@ -153,7 +163,7 @@ const GameCard: React.FC<GameCardProps> = ({
                 {/* Card Body */}
                 <div className="p-5 sm:p-6">
                     {/* Info Grid - Responsive */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 pb-6 border-b border-slate-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                         <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
                             <div className="p-2 bg-red-100 rounded-lg">
                                 <CalendarIcon className="w-5 h-5 text-red-600" />
@@ -182,6 +192,18 @@ const GameCard: React.FC<GameCardProps> = ({
                             </div>
                         </div>
                     </div>
+
+                    {/* Add to Calendar Button */}
+                    <button
+                        onClick={handleAddToCalendar}
+                        className="w-full mb-6 py-2.5 px-4 flex items-center justify-center gap-2 
+                            bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600
+                            text-white font-semibold rounded-xl shadow-md hover:shadow-lg
+                            transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                        <CalendarAddIcon className="w-5 h-5" />
+                        <span>Ajouter à mon calendrier</span>
+                    </button>
 
                     {/* Volunteer Section */}
                     <div>
