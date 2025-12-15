@@ -32,13 +32,17 @@ const ReloadPrompt: React.FC = () => {
             setIsUpdating(true);
             console.log('Update detected, refreshing...');
 
-            // Small delay to show the notification, then refresh
-            const timer = setTimeout(async () => {
-                await updateServiceWorker(true);
-                window.location.reload();
-            }, 1500);
+            const performUpdate = async () => {
+                // Try to skip waiting (force activate)
+                updateServiceWorker(true);
 
-            return () => clearTimeout(timer);
+                // Wait a short moment for SW to activate, then reload unconditionally
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            };
+
+            performUpdate();
         }
     }, [needRefresh, isUpdating, updateServiceWorker]);
 
