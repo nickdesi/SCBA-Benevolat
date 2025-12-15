@@ -10,24 +10,24 @@ const FilterBar: React.FC<FilterBarProps> = ({ teams, selectedTeam, onSelectTeam
     if (teams.length === 0) return null;
 
     return (
-        <div className="mb-8 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 container mx-auto">
-            <div className="flex gap-2 min-w-max">
+        <div className="sticky top-0 z-30 mb-8 py-4 backdrop-blur-xl bg-slate-50/80 border-b border-slate-200/50 -mx-4 px-4 container mx-auto overflow-x-auto scrollbar-hide">
+            <div className="flex gap-3 min-w-max justify-center md:justify-start">
                 <button
                     onClick={() => onSelectTeam(null)}
-                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${selectedTeam === null
-                        ? 'bg-slate-800 text-white shadow-lg shadow-slate-200 ring-2 ring-slate-800 ring-offset-2'
-                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                    className={`px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 transform active:scale-95 ${selectedTeam === null
+                        ? 'bg-slate-800 text-white shadow-lg shadow-slate-800/20 scale-105'
+                        : 'bg-white text-slate-500 hover:text-slate-700 hover:bg-white/80 shadow-sm hover:shadow-md'
                         }`}
                 >
-                    Tous les matchs
+                    Tous
                 </button>
                 {teams.map((team) => (
                     <button
                         key={team}
                         onClick={() => onSelectTeam(team)}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap ${selectedTeam === team
-                            ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-200 ring-2 ring-red-500 ring-offset-2'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                        className={`px-5 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 transform active:scale-95 whitespace-nowrap ${selectedTeam === team
+                            ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/30 scale-105'
+                            : 'bg-white text-slate-500 hover:text-slate-700 hover:bg-white/80 shadow-sm hover:shadow-md'
                             }`}
                     >
                         {team}
