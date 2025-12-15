@@ -44,7 +44,13 @@ const ReloadPrompt: React.FC = () => {
                 <div className="flex gap-2 mt-1">
                     {needRefresh && (
                         <button
-                            onClick={() => updateServiceWorker(true)}
+                            onClick={async () => {
+                                await updateServiceWorker(true);
+                                // Force reload if SW update doesn't trigger it
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 100);
+                            }}
                             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors"
                         >
                             Mettre à jour
