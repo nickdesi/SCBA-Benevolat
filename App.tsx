@@ -16,7 +16,6 @@ import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
-import FilterBar from './components/FilterBar';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
 import type { Game, GameFormData, CarpoolEntry } from './types';
@@ -340,6 +339,9 @@ function App() {
         isAdmin={isAdmin}
         onAdminClick={() => setIsAdminModalOpen(true)}
         onLogout={() => setIsAdmin(false)}
+        teams={teams}
+        selectedTeam={selectedTeam}
+        onSelectTeam={setSelectedTeam}
       />
 
       {/* Toast Notifications */}
@@ -405,14 +407,7 @@ function App() {
           </div>
         )}
 
-        {/* Filter Bar */}
-        {!loading && games.length > 0 && !isAddingGame && (
-          <FilterBar
-            teams={teams}
-            selectedTeam={selectedTeam}
-            onSelectTeam={setSelectedTeam}
-          />
-        )}
+        {/* Filter Bar removed (moved to Header) */}
 
         {/* Games List - Sorted by date */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

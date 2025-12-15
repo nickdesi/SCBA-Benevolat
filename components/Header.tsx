@@ -6,9 +6,19 @@ interface HeaderProps {
   isAdmin: boolean;
   onAdminClick: () => void;
   onLogout: () => void;
+  teams?: string[];
+  selectedTeam?: string | null;
+  onSelectTeam?: (team: string | null) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isAdmin, onAdminClick, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({
+  isAdmin,
+  onAdminClick,
+  onLogout,
+  teams = [],
+  selectedTeam = null,
+  onSelectTeam = () => { }
+}) => {
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white overflow-hidden">
       {/* Background decorations */}
@@ -86,6 +96,37 @@ const Header: React.FC<HeaderProps> = ({ isAdmin, onAdminClick, onLogout }) => {
           </div>
         </div>
       </div>
+
+      {/* Filter Bar Integration - Seamless Glassmorphism */}
+      {teams.length > 0 && (
+        <div className="relative z-20 pb-6 pt-2">
+          <div className="container mx-auto px-4 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2.5 min-w-max justify-center md:justify-start">
+              <button
+                onClick={() => onSelectTeam(null)}
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === null
+                  ? 'bg-white text-slate-900 border-white shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105'
+                  : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-slate-500/50'
+                  }`}
+              >
+                Tous les matchs
+              </button>
+              {teams.map((team) => (
+                <button
+                  key={team}
+                  onClick={() => onSelectTeam(team)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === team
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.4)] scale-105'
+                    : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-slate-500/50'
+                    }`}
+                >
+                  {team}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
