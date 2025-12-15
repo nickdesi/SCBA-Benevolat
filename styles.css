@@ -532,3 +532,23 @@ html {
   border-radius: 1.5rem;
   overflow: hidden;
 }
+
+/* Christmas Garland Lights Animation */
+@keyframes garland-blink {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 8px currentColor;
+  }
+}
+
+.garland-light {
+  animation: garland-blink 1.5s infinite ease-in-out;
+}
