@@ -11,6 +11,15 @@ const ReloadPrompt: React.FC = () => {
     } = useRegisterSW({
         onRegistered(r) {
             console.log('SW Registered: ' + r);
+            // Check for updates every 60 seconds
+            if (r) {
+                setInterval(() => {
+                    console.log('Checking for SW updates...');
+                    r.update();
+                }, 60 * 1000);
+                // Also check immediately on mount
+                r.update();
+            }
         },
         onRegisterError(error) {
             console.log('SW registration error', error);
