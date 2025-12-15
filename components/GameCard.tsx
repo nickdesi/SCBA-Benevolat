@@ -2,7 +2,7 @@ import React from 'react';
 import type { Game } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
-import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon, CalendarAddIcon } from './Icons';
+import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from './Icons';
 import { downloadGameCalendar } from '../utils/calendar';
 
 interface GameCardProps {
@@ -196,15 +196,15 @@ const GameCard: React.FC<GameCardProps> = ({
                     {/* Add to Calendar Button */}
                     <button
                         onClick={handleAddToCalendar}
-                        className="group w-full mb-6 py-3 px-4 flex items-center justify-center gap-3 
+                        className="group w-full mb-6 py-3 px-4 flex items-center justify-center gap-2 
                             bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 
                             hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600
                             text-white font-bold rounded-2xl shadow-lg hover:shadow-xl
                             transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]
                             border border-white/20"
                     >
-                        <CalendarAddIcon className="w-5 h-5 transition-transform group-hover:scale-110" />
-                        <span>📅 Ajouter à mon calendrier</span>
+                        <span className="text-lg">📅</span>
+                        <span>Ajouter à mon calendrier</span>
                     </button>
 
                     {/* Volunteer Section */}
