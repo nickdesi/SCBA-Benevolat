@@ -31,7 +31,7 @@ function App() {
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();
 
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'SCBA4Benevole!';
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'changeme';
 
   // Month mapping for date parsing (constant)
   const monthMap: Record<string, number> = useMemo(() => ({
