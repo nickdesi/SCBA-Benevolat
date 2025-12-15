@@ -4,20 +4,37 @@ import type { Game } from '../types';
  * Converts a French date string (e.g., "Samedi 14 décembre 2024") and time to ICS format
  */
 const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end: Date } | null => {
-    // French month names mapping
+    // French month names mapping (with accent variations)
     const monthMap: Record<string, number> = {
-        'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
-        'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+        'janvier': 0, 'fevrier': 1, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+        'juillet': 6, 'aout': 7, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10,
+        'decembre': 11, 'décembre': 11
+    };
+
+    // Normalize accents for matching
+    const normalizeMonth = (str: string): string => {
+        return str.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
     };
 
     // Try to parse date like "Samedi 14 décembre 2024" or "14/12/2024" or "2024-12-14"
     let day: number, month: number, year: number;
 
-    // Format: "Jour XX mois YYYY"
-    const frenchMatch = dateStr.match(/(\d{1,2})\s+(\w+)\s+(\d{4})/i);
+    // Format: "Jour XX mois YYYY" (e.g., "Samedi 13 décembre 2025")
+    const frenchMatch = dateStr.match(/(\d{1,2})\s+([a-zA-ZéèêëàâäùûüôöîïçÉÈÊËÀÂÄÙÛÜÔÖÎÏÇ]+)\s+(\d{4})/i);
     if (frenchMatch) {
         day = parseInt(frenchMatch[1], 10);
-        month = monthMap[frenchMatch[2].toLowerCase()] ?? 0;
+        const monthStr = normalizeMonth(frenchMatch[2]);
+        // Find month by normalized matching
+        month = Object.entries(monthMap).find(([key]) =>
+            normalizeMonth(key) === monthStr
+        )?.[1] ?? -1;
+
+        if (month === -1) {
+            console.error('Could not parse month:', frenchMatch[2], '-> normalized:', monthStr);
+            return null;
+        }
         year = parseInt(frenchMatch[3], 10);
     }
     // Format: "DD/MM/YYYY"
@@ -35,12 +52,16 @@ const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end
         day = parseInt(parts[2], 10);
     }
     else {
+        console.error('Could not parse date format:', dateStr);
         return null;
     }
 
-    // Parse time like "14:30" or "14h30"
+    // Parse time like "14:30" or "14h30" or just "20:00"
     const timeMatch = timeStr.match(/(\d{1,2})[h:](\d{2})/);
-    if (!timeMatch) return null;
+    if (!timeMatch) {
+        console.error('Could not parse time:', timeStr);
+        return null;
+    }
 
     const hours = parseInt(timeMatch[1], 10);
     const minutes = parseInt(timeMatch[2], 10);
