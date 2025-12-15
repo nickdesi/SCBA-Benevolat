@@ -47,8 +47,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
             name: name.trim(),
             type: formType,
             ...(phone.trim() && { phone: phone.trim() }),
-            ...(formType === 'driver' && { seats }),
-            ...(departureLocation.trim() && { departureLocation: departureLocation.trim() })
+            ...({ seats }),  // Both drivers and passengers can specify seats
+            ...(formType === 'driver' && departureLocation.trim() && { departureLocation: departureLocation.trim() })
         };
 
         onAddEntry(entry);
@@ -157,7 +157,9 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
                                     <div className="flex items-center gap-2">
                                         <span className="text-lg">👤</span>
                                         <span className="font-semibold text-slate-800">{passenger.name}</span>
-                                        <span className="text-sm text-slate-500">cherche une place</span>
+                                        <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-lg">
+                                            cherche {passenger.seats || 1} place{(passenger.seats || 1) > 1 ? 's' : ''}
+                                        </span>
                                         {passenger.name.toLowerCase() === storedName.toLowerCase() && (
                                             <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded-full">
                                                 C'est vous !
@@ -261,39 +263,38 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
                             />
                         </div>
 
+                        {/* Seats selection - for both driver and passenger */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-600 mb-1">
+                                {formType === 'driver' ? 'Places disponibles' : 'Places recherchées'}
+                            </label>
+                            <select
+                                value={seats}
+                                onChange={(e) => setSeats(Number(e.target.value))}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
+                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                {(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => (
+                                    <option key={n} value={n}>{n} place{n > 1 ? 's' : ''}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* Driver-specific fields */}
                         {formType === 'driver' && (
-                            <>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-600 mb-1">
-                                        Places disponibles
-                                    </label>
-                                    <select
-                                        value={seats}
-                                        onChange={(e) => setSeats(Number(e.target.value))}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
-                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        {[1, 2, 3, 4, 5, 6, 7].map(n => (
-                                            <option key={n} value={n}>{n} place{n > 1 ? 's' : ''}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-600 mb-1">
-                                        Lieu de départ <span className="text-slate-400">(optionnel)</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={departureLocation}
-                                        onChange={(e) => setDepartureLocation(e.target.value)}
-                                        placeholder="Ex: Gerzat, Clermont centre..."
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
-                                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                            </>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-600 mb-1">
+                                    Lieu de départ <span className="text-slate-400">(optionnel)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={departureLocation}
+                                    onChange={(e) => setDepartureLocation(e.target.value)}
+                                    placeholder="Ex: Gerzat, Clermont centre..."
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
                         )}
                     </div>
 
