@@ -15,6 +15,7 @@ import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
 import SkeletonLoader from './components/SkeletonLoader';
+import ReloadPrompt from './components/ReloadPrompt';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
 import type { Game, GameFormData, CarpoolEntry } from './types';
@@ -441,6 +442,7 @@ function App() {
         error={authError}
       />
 
+      <ReloadPrompt />
       <footer className="mt-20 py-8 text-center text-slate-400 text-sm">
         <p>© {new Date().getFullYear()} Stade Clermontois Basket Auvergne</p>
       </footer>
