@@ -6,6 +6,16 @@ export interface Role {
   capacity: number;
 }
 
+// Carpooling entry
+export interface CarpoolEntry {
+  id: string;
+  name: string;
+  phone?: string;           // Optional phone number for contact
+  type: 'driver' | 'passenger';
+  seats?: number;           // For drivers: available seats
+  departureLocation?: string; // Optional: departure point
+}
+
 export interface Game {
   id: string;
   team: string;
@@ -14,6 +24,7 @@ export interface Game {
   time: string;
   location: string;
   roles: Role[];
+  carpool?: CarpoolEntry[]; // Optional carpooling entries
 }
 
 // Type for form data when creating/editing games

@@ -1,7 +1,8 @@
 import React from 'react';
-import type { Game } from '../types';
+import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
+import CarpoolingSection from './CarpoolingSection';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from './Icons';
 import { downloadGameCalendar } from '../utils/calendar';
 
@@ -10,6 +11,8 @@ interface GameCardProps {
     onVolunteer: (gameId: string, roleId: string, parentName: string) => void;
     onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
+    onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
+    onRemoveCarpool: (gameId: string, entryId: string) => void;
     onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
     isAdmin: boolean;
     isEditing: boolean;
@@ -39,6 +42,8 @@ const GameCard: React.FC<GameCardProps> = ({
     onVolunteer,
     onRemoveVolunteer,
     onUpdateVolunteer,
+    onAddCarpool,
+    onRemoveCarpool,
     onToast,
     isAdmin,
     isEditing,
@@ -243,6 +248,17 @@ const GameCard: React.FC<GameCardProps> = ({
                             ))}
                         </div>
                     </div>
+
+                    {/* Carpooling Section */}
+                    <CarpoolingSection
+                        gameId={game.id}
+                        entries={game.carpool || []}
+                        onAddEntry={(entry) => {
+                            onAddCarpool(game.id, entry);
+                            if (onToast) onToast('🚗 Inscription covoiturage confirmée !', 'success');
+                        }}
+                        onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
+                    />
                 </div>
             </div>
         </div>

@@ -17,7 +17,7 @@ import AdminAuthModal from './components/AdminAuthModal';
 import SkeletonLoader from './components/SkeletonLoader';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
-import type { Game, GameFormData } from './types';
+import type { Game, GameFormData, CarpoolEntry } from './types';
 
 function App() {
   const [games, setGames] = useState<Game[]>([]);
@@ -280,6 +280,44 @@ function App() {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Carpooling Actions
+  // ---------------------------------------------------------------------------
+
+  const handleAddCarpool = async (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => {
+    const game = games.find(g => g.id === gameId);
+    if (!game) return;
+
+    try {
+      const newEntry: CarpoolEntry = {
+        ...entry,
+        id: crypto.randomUUID()
+      };
+      const updatedCarpool = [...(game.carpool || []), newEntry];
+
+      const gameRef = doc(db, "matches", gameId);
+      await updateDoc(gameRef, { carpool: updatedCarpool });
+    } catch (err) {
+      console.error("Error adding carpool entry:", err);
+      alert("Erreur lors de l'inscription covoiturage");
+    }
+  };
+
+  const handleRemoveCarpool = async (gameId: string, entryId: string) => {
+    const game = games.find(g => g.id === gameId);
+    if (!game) return;
+
+    try {
+      const updatedCarpool = (game.carpool || []).filter(e => e.id !== entryId);
+
+      const gameRef = doc(db, "matches", gameId);
+      await updateDoc(gameRef, { carpool: updatedCarpool });
+    } catch (err) {
+      console.error("Error removing carpool entry:", err);
+      alert("Erreur lors de la désinscription covoiturage");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-outfit pb-12 transition-colors duration-500">
       <Header
@@ -365,6 +403,8 @@ function App() {
                 onVolunteer={handleVolunteer}
                 onRemoveVolunteer={handleRemoveVolunteer}
                 onUpdateVolunteer={handleUpdateVolunteer}
+                onAddCarpool={handleAddCarpool}
+                onRemoveCarpool={handleRemoveCarpool}
                 onToast={addToast}
                 onEditRequest={() => setEditingGameId(game.id)}
                 onCancelEdit={() => setEditingGameId(null)}
