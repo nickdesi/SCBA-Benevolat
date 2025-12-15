@@ -409,11 +409,11 @@ function App() {
         {/* Filter Bar removed (moved to Header) */}
 
         {/* Games List - Sorted by date */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           {filteredGames.map((game, index) => (
             <div
               key={game.id}
-              className={`animate-fade-in-up ${index % 4 === 1 ? 'stagger-1' : index % 4 === 2 ? 'stagger-2' : index % 4 === 3 ? 'stagger-3' : ''}`}
+              className={`h-full animate-fade-in-up ${index % 4 === 1 ? 'stagger-1' : index % 4 === 2 ? 'stagger-2' : index % 4 === 3 ? 'stagger-3' : ''}`}
             >
               <GameCard
                 game={game}

@@ -72,7 +72,7 @@ const GameCard: React.FC<GameCardProps> = ({
 
     return (
         <div className={`
-      relative overflow-hidden rounded-2xl shadow-xl transition-all duration-500
+      relative overflow-hidden rounded-2xl shadow-xl transition-all duration-500 h-full flex flex-col
       ${isFullyStaffed
                 ? 'ring-4 ring-emerald-400 ring-offset-2 shadow-emerald-200'
                 : 'border border-slate-200 hover:shadow-2xl hover:border-red-200 hover:-translate-y-1'
@@ -90,7 +90,7 @@ const GameCard: React.FC<GameCardProps> = ({
                 </>
             )}
 
-            <div className="bg-white">
+            <div className="bg-white flex-1 flex flex-col">
                 {/* Card Header */}
                 <div className={`
           relative p-5 sm:p-6 transition-all duration-500
