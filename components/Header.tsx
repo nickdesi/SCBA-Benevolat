@@ -99,8 +99,8 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Filter Bar Integration - Seamless Glassmorphism */}
       {teams.length > 0 && (
-        <div className="relative z-20 pb-6 pt-2">
-          <div className="container mx-auto px-4 overflow-x-auto scrollbar-hide">
+        <div className="relative z-20 pb-6 pt-2 overflow-hidden">
+          <div className="container mx-auto px-4 overflow-x-auto overflow-y-hidden scrollbar-hide">
             <div className="flex gap-2.5 min-w-max justify-center md:justify-start">
               <button
                 onClick={() => onSelectTeam(null)}
