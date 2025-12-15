@@ -59,8 +59,8 @@ const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end
         return null;
     }
 
-    // Parse time like "14:30" or "14h30" or just "20:00"
-    const timeMatch = timeStr.match(/(\d{1,2})[h:](\d{2})/);
+    // Parse time like "14:30" or "14h30" or "14H30" or just "20:00"
+    const timeMatch = timeStr.match(/(\d{1,2})[hH:](\d{2})/);
     if (!timeMatch) {
         console.error('Could not parse time:', timeStr);
         return null;
