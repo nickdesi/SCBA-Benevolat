@@ -253,6 +253,7 @@ const GameCard: React.FC<GameCardProps> = ({
                     <CarpoolingSection
                         gameId={game.id}
                         entries={game.carpool || []}
+                        isAdmin={isAdmin}
                         onAddEntry={(entry) => {
                             onAddCarpool(game.id, entry);
                             if (onToast) onToast('🚗 Inscription covoiturage confirmée !', 'success');

@@ -4,6 +4,7 @@ import type { CarpoolEntry } from '../types';
 interface CarpoolingSectionProps {
     gameId: string;
     entries: CarpoolEntry[];
+    isAdmin?: boolean;
     onAddEntry: (entry: Omit<CarpoolEntry, 'id'>) => void;
     onRemoveEntry: (entryId: string) => void;
 }
@@ -19,6 +20,7 @@ const getStoredName = (): string => {
 
 const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
     entries,
+    isAdmin = false,
     onAddEntry,
     onRemoveEntry
 }) => {
@@ -91,8 +93,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
                             <div
                                 key={driver.id}
                                 className={`p-3 rounded-xl transition-all ${driver.name.toLowerCase() === storedName.toLowerCase()
-                                        ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200'
-                                        : 'bg-slate-50 border border-slate-100'
+                                    ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200'
+                                    : 'bg-slate-50 border border-slate-100'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
@@ -109,7 +111,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
                                         <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg">
                                             {driver.seats || 1} place{(driver.seats || 1) > 1 ? 's' : ''}
                                         </span>
-                                        {driver.name.toLowerCase() === storedName.toLowerCase() && (
+                                        {(driver.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
                                             <button
                                                 onClick={() => handleRemove(driver.id, driver.name)}
                                                 className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -147,8 +149,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
                             <div
                                 key={passenger.id}
                                 className={`p-3 rounded-xl transition-all ${passenger.name.toLowerCase() === storedName.toLowerCase()
-                                        ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200'
-                                        : 'bg-slate-50 border border-slate-100'
+                                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200'
+                                    : 'bg-slate-50 border border-slate-100'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
@@ -162,7 +164,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
                                             </span>
                                         )}
                                     </div>
-                                    {passenger.name.toLowerCase() === storedName.toLowerCase() && (
+                                    {(passenger.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
                                         <button
                                             onClick={() => handleRemove(passenger.id, passenger.name)}
                                             className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
