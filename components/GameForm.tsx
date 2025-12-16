@@ -204,6 +204,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 id="date-picker"
                 value={getISODate(formData.date)}
                 onChange={handleDateChange}
+                onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                 onKeyDown={(e) => e.preventDefault()}
                 required
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
@@ -225,6 +226,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 id="time-picker"
                 value={getISOTime(formData.time)}
                 onChange={handleTimeChange}
+                onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                 onKeyDown={(e) => e.preventDefault()}
                 required
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
