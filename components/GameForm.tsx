@@ -204,18 +204,13 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 id="date-picker"
                 value={getISODate(formData.date)}
                 onChange={handleDateChange}
+                onKeyDown={(e) => e.preventDefault()}
                 required
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
                          focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
                          bg-white cursor-pointer"
                 style={{ colorScheme: 'light' }}
               />
-              {/* Overlay to show formatted date */}
-              {formData.date && (
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none bg-white pr-2">
-                  {formData.date}
-                </div>
-              )}
             </div>
           </div>
 
@@ -230,18 +225,13 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 id="time-picker"
                 value={getISOTime(formData.time)}
                 onChange={handleTimeChange}
+                onKeyDown={(e) => e.preventDefault()}
                 required
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
                          focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
                          bg-white cursor-pointer"
                 style={{ colorScheme: 'light' }}
               />
-              {/* Overlay to show formatted time */}
-              {formData.time && (
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none bg-white pr-2">
-                  {formData.time}
-                </div>
-              )}
             </div>
           </div>
 
