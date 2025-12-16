@@ -17,7 +17,7 @@ import AdminAuthModal from './components/AdminAuthModal';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
 import { ToastContainer, useToast } from './components/Toast';
-import { INITIAL_GAMES, DEFAULT_ROLES } from './constants';
+import { INITIAL_GAMES, DEFAULT_ROLES, MONTH_MAP } from './constants';
 import type { Game, GameFormData, CarpoolEntry } from './types';
 
 function App() {
@@ -34,12 +34,6 @@ function App() {
   const { toasts, addToast, removeToast } = useToast();
 
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'changeme';
-
-  // Month mapping for date parsing (constant)
-  const monthMap: Record<string, number> = useMemo(() => ({
-    'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
-    'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
-  }), []);
 
   // Check localStorage for migration (legacy support) - memoized
   const localGames = useMemo(() => {
@@ -81,7 +75,7 @@ function App() {
       const parts = dateStr.toLowerCase().split(' ');
       if (parts.length >= 4) {
         const day = parseInt(parts[1]) || 1;
-        const month = monthMap[parts[2]] ?? 0;
+        const month = MONTH_MAP[parts[2]] ?? 0;
         const year = parseInt(parts[3]) || new Date().getFullYear();
         return new Date(year, month, day);
       }
@@ -89,7 +83,7 @@ function App() {
     };
 
     return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
-  }, [games, monthMap]);
+  }, [games]);
 
   // Extract unique teams for filter
   const teams = useMemo(() => {
@@ -113,7 +107,6 @@ function App() {
         const metadataSnap = await getDocs(collection(db, "system"));
 
         if (!metadataSnap.empty) {
-          console.log("System initialized (Flag detected). Skipping seed.");
           return;
         }
 
@@ -127,20 +120,17 @@ function App() {
           const metaRef = doc(db, "system", "metadata");
           batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
           await batch.commit();
-          console.log("System flag set to INITIALIZED.");
         };
 
         if (!snapshot.empty) {
           // Case: Matches exist but no flag (Legacy/Existing app state)
           // Just set the flag so we don't re-seed if they delete everything later.
-          console.log("Data exists but no flag. Setting flag now.");
           await setInitializedFlag();
           return;
         }
 
         // 3. Database is truly empty and no flag -> SEED
         if (snapshot.empty) {
-          console.log("Database empty & no flag. Seeding...");
           const batch = writeBatch(db);
 
           const gamesToImport = (localGames && localGames.length > 0) ? localGames : INITIAL_GAMES;
@@ -156,7 +146,6 @@ function App() {
           batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
 
           await batch.commit();
-          console.log("Seeding complete and system flagged!");
         }
       } catch (err) {
         console.error("Error seeding database:", err);

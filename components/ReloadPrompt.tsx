@@ -10,11 +10,9 @@ const ReloadPrompt: React.FC = () => {
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
-            console.log('SW Registered: ' + r);
             // Check for updates every 30 seconds (more aggressive)
             if (r) {
                 setInterval(() => {
-                    console.log('Checking for SW updates...');
                     r.update();
                 }, 30 * 1000);
                 // Also check immediately on mount
@@ -26,7 +24,6 @@ const ReloadPrompt: React.FC = () => {
                         names.forEach(name => {
                             // Delete old workbox caches
                             if (name.includes('workbox') || name.includes('precache')) {
-                                console.log('Clearing old cache:', name);
                                 caches.delete(name);
                             }
                         });
@@ -35,7 +32,7 @@ const ReloadPrompt: React.FC = () => {
             }
         },
         onRegisterError(error) {
-            console.log('SW registration error', error);
+            console.warn('SW registration error', error);
         },
     });
 
@@ -43,7 +40,6 @@ const ReloadPrompt: React.FC = () => {
     useEffect(() => {
         if (needRefresh && !isUpdating) {
             setIsUpdating(true);
-            console.log('Update detected, refreshing...');
 
             const performUpdate = async () => {
                 // Try to skip waiting (force activate)

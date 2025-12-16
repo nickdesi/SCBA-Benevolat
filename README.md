@@ -107,25 +107,26 @@ npm run preview
 ├── firebase.ts             # Configuration Firebase (env vars)
 ├── components/
 │   ├── Header.tsx          # En-tête avec logo + bouton Admin
-│   ├── GameCard.tsx        # Carte de match
+│   ├── GameCard.tsx        # Carte de match (memoized)
 │   ├── GameForm.tsx        # Formulaire ajout/édition match
-│   ├── VolunteerSlot.tsx   # Gestion des inscriptions
-│   ├── CarpoolingSection.tsx # Section covoiturage
+│   ├── VolunteerSlot.tsx   # Gestion des inscriptions (memoized)
+│   ├── CarpoolingSection.tsx # Section covoiturage (memoized)
 │   ├── ConfirmModal.tsx    # Modal de confirmation
 │   ├── AdminAuthModal.tsx  # Authentification admin
-│   ├── SkeletonLoader.tsx  # Chargement élégant (skeleton)
+│   ├── SkeletonLoader.tsx  # Chargement élégant (memoized)
 │   ├── ReloadPrompt.tsx    # PWA update prompt
 │   ├── Toast.tsx           # Notifications toast
 │   ├── SnowEffect.tsx      # Animation neige (Noël)
 │   ├── ChristmasGarland.tsx # Guirlande lumineuse (Noël)
 │   └── Icons.tsx           # Icônes SVG centralisées
 ├── utils/
-│   └── calendar.ts         # Export calendrier (Google, Outlook, Apple)
+│   ├── calendar.ts         # Export calendrier (Google, Outlook, Apple)
+│   └── storage.ts          # Utilitaires localStorage partagés
 ├── public/
 │   ├── logo-scba.png       # Logo du club
 │   └── pwa-*.png           # Icônes PWA (192x192, 512x512)
 ├── styles.css              # Design system global
-├── constants.ts            # Données initiales + rôles par défaut
+├── constants.ts            # Constantes partagées (rôles, MONTH_MAP)
 └── types.ts                # Types TypeScript
 ```
 

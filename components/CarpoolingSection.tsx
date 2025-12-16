@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import type { CarpoolEntry } from '../types';
+import { getStoredName, setStoredName } from '../utils/storage';
 
 interface CarpoolingSectionProps {
     gameId: string;
@@ -9,16 +10,7 @@ interface CarpoolingSectionProps {
     onRemoveEntry: (entryId: string) => void;
 }
 
-// Get stored identity from localStorage
-const getStoredName = (): string => {
-    try {
-        return localStorage.getItem('scba-user-name') || '';
-    } catch {
-        return '';
-    }
-};
-
-const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
+const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
     entries,
     isAdmin = false,
     onAddEntry,
@@ -41,7 +33,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
         if (!name.trim()) return;
 
         // Store name for future use
-        localStorage.setItem('scba-user-name', name.trim());
+        setStoredName(name);
 
         const entry: Omit<CarpoolEntry, 'id'> = {
             name: name.trim(),
@@ -323,6 +315,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = ({
             )}
         </div>
     );
-};
+});
+
+CarpoolingSection.displayName = 'CarpoolingSection';
 
 export default CarpoolingSection;

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const SkeletonLoader: React.FC = () => {
+const SkeletonLoader: React.FC = memo(() => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {[1, 2].map((index) => (
@@ -60,6 +60,8 @@ const SkeletonLoader: React.FC = () => {
             ))}
         </div>
     );
-};
+});
+
+SkeletonLoader.displayName = 'SkeletonLoader';
 
 export default SkeletonLoader;

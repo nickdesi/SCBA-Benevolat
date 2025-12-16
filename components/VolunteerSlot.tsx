@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import type { Role } from '../types';
 import { RemoveUserIcon, EditPencilIcon, CheckIcon, UserIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
+import { saveMyRegistration, removeMyRegistration, isMyRegistration } from '../utils/storage';
 
 interface VolunteerSlotProps {
     role: Role;
@@ -13,53 +14,6 @@ interface VolunteerSlotProps {
     animationDelay?: number;
 }
 
-// Generate a unique browser ID for tracking ownership
-const getBrowserId = (): string => {
-    let browserId = localStorage.getItem('scba-browser-id');
-    if (!browserId) {
-        browserId = `browser-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-        localStorage.setItem('scba-browser-id', browserId);
-    }
-    return browserId;
-};
-
-// Track which registrations belong to this browser
-const getMyRegistrations = (): Record<string, string[]> => {
-    try {
-        const data = localStorage.getItem('scba-my-registrations');
-        return data ? JSON.parse(data) : {};
-    } catch {
-        return {};
-    }
-};
-
-const saveMyRegistration = (key: string, name: string) => {
-    const registrations = getMyRegistrations();
-    if (!registrations[key]) {
-        registrations[key] = [];
-    }
-    if (!registrations[key].includes(name)) {
-        registrations[key].push(name);
-    }
-    localStorage.setItem('scba-my-registrations', JSON.stringify(registrations));
-};
-
-const removeMyRegistration = (key: string, name: string) => {
-    const registrations = getMyRegistrations();
-    if (registrations[key]) {
-        registrations[key] = registrations[key].filter(n => n !== name);
-        if (registrations[key].length === 0) {
-            delete registrations[key];
-        }
-    }
-    localStorage.setItem('scba-my-registrations', JSON.stringify(registrations));
-};
-
-const isMyRegistration = (key: string, name: string): boolean => {
-    const registrations = getMyRegistrations();
-    return registrations[key]?.includes(name) || false;
-};
-
 // Emoji mapping for roles (outside component to prevent recreation)
 const ROLE_EMOJIS: Record<string, string> = {
     'Buvette': '🍺',
@@ -70,7 +24,7 @@ const ROLE_EMOJIS: Record<string, string> = {
 
 const getRoleEmoji = (roleName: string): string => ROLE_EMOJIS[roleName] || '👋';
 
-const VolunteerSlot: React.FC<VolunteerSlotProps> = ({
+const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     role,
     gameId,
     onVolunteer,
@@ -341,6 +295,8 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = ({
             </div>
         </>
     );
-};
+});
+
+VolunteerSlot.displayName = 'VolunteerSlot';
 
 export default VolunteerSlot;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
@@ -37,7 +37,7 @@ const isGameFullyStaffed = (game: Game): boolean => {
     return game.roles.every(isRoleComplete);
 };
 
-const GameCard: React.FC<GameCardProps> = ({
+const GameCard: React.FC<GameCardProps> = memo(({
     game,
     onVolunteer,
     onRemoveVolunteer,
@@ -284,6 +284,8 @@ const GameCard: React.FC<GameCardProps> = ({
             </div>
         </div>
     );
-};
+});
+
+GameCard.displayName = 'GameCard';
 
 export default GameCard;

@@ -1,5 +1,12 @@
 import { Game, RoleConfig } from './types';
 
+// French month names to number mapping (shared across date parsing)
+export const MONTH_MAP: Record<string, number> = {
+  'janvier': 0, 'fevrier': 1, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+  'juillet': 6, 'aout': 7, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10,
+  'decembre': 11, 'décembre': 11
+};
+
 // Default roles configuration - centralized for reuse
 export const DEFAULT_ROLES: RoleConfig[] = [
   { name: 'Buvette', capacity: 2, icon: '🍺' },

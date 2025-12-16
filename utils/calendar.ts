@@ -1,16 +1,10 @@
 import type { Game } from '../types';
+import { MONTH_MAP } from '../constants';
 
 /**
  * Converts a French date string (e.g., "Samedi 14 décembre 2024") and time to ICS format
  */
 const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end: Date } | null => {
-    // French month names mapping (with accent variations)
-    const monthMap: Record<string, number> = {
-        'janvier': 0, 'fevrier': 1, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
-        'juillet': 6, 'aout': 7, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10,
-        'decembre': 11, 'décembre': 11
-    };
-
     // Normalize accents for matching
     const normalizeMonth = (str: string): string => {
         return str.toLowerCase()
@@ -27,7 +21,7 @@ const parseGameDateTime = (dateStr: string, timeStr: string): { start: Date; end
         day = parseInt(frenchMatch[1], 10);
         const monthStr = normalizeMonth(frenchMatch[2]);
         // Find month by normalized matching
-        month = Object.entries(monthMap).find(([key]) =>
+        month = Object.entries(MONTH_MAP).find(([key]) =>
             normalizeMonth(key) === monthStr
         )?.[1] ?? -1;
 
