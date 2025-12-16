@@ -112,9 +112,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
                     <div className="relative z-10">
                         {/* Team and Badges */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <h3 className="text-lg sm:text-xl font-bold text-white">{game.team}</h3>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2 items-center">
                                 {/* Home/Away Badge */}
                                 <span className={`
                                     px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
@@ -136,36 +136,35 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 `}>
                                     {isFullyStaffed ? '✅ COMPLET' : '🏀 MATCH'}
                                 </span>
+                                {/* Admin Controls - Inline with badges */}
+                                {isAdmin && (
+                                    <>
+                                        <button
+                                            onClick={onEditRequest}
+                                            className="flex items-center gap-1.5 px-3 py-1 
+                                                     bg-blue-500 hover:bg-blue-600 
+                                                     text-white text-xs font-medium rounded-full
+                                                     transition-all duration-200 hover:scale-105 shadow-lg"
+                                            aria-label="Modifier le match"
+                                        >
+                                            <EditIcon className="w-3.5 h-3.5" />
+                                            <span>Modifier</span>
+                                        </button>
+                                        <button
+                                            onClick={onDeleteRequest}
+                                            className="flex items-center gap-1.5 px-3 py-1 
+                                                     bg-red-500 hover:bg-red-600 
+                                                     text-white text-xs font-medium rounded-full
+                                                     transition-all duration-200 hover:scale-105 shadow-lg"
+                                            aria-label="Supprimer le match"
+                                        >
+                                            <DeleteIcon className="w-3.5 h-3.5" />
+                                            <span>Supprimer</span>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
-
-                        {/* Admin Controls - Under badges */}
-                        {isAdmin && (
-                            <div className="flex gap-2 justify-end">
-                                <button
-                                    onClick={onEditRequest}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 
-                                             bg-blue-500 hover:bg-blue-600 
-                                             text-white text-sm font-medium rounded-lg
-                                             transition-all duration-200 hover:scale-105 shadow-lg"
-                                    aria-label="Modifier le match"
-                                >
-                                    <EditIcon className="w-4 h-4" />
-                                    <span>Modifier</span>
-                                </button>
-                                <button
-                                    onClick={onDeleteRequest}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 
-                                             bg-red-500 hover:bg-red-600 
-                                             text-white text-sm font-medium rounded-lg
-                                             transition-all duration-200 hover:scale-105 shadow-lg"
-                                    aria-label="Supprimer le match"
-                                >
-                                    <DeleteIcon className="w-4 h-4" />
-                                    <span>Supprimer</span>
-                                </button>
-                            </div>
-                        )}
 
                         {/* VS Opponent */}
                         <p className="text-2xl sm:text-3xl font-black text-white">
