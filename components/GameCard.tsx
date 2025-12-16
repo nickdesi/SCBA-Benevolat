@@ -141,7 +141,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
                         {/* Admin Controls - Under badges */}
                         {isAdmin && (
-                            <div className="flex gap-2 mb-3 justify-end">
+                            <div className="flex gap-2 justify-end">
                                 <button
                                     onClick={onEditRequest}
                                     className="flex items-center gap-1.5 px-3 py-1.5 
