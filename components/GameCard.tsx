@@ -147,24 +147,28 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 }`}>{game.opponent}</span>
                         </p>
 
-                        {/* Admin Controls */}
+                        {/* Admin Controls - Modern integrated design */}
                         {isAdmin && (
-                            <div className="absolute top-4 right-4 flex gap-2">
+                            <div className="absolute top-4 right-4 flex gap-1.5">
                                 <button
                                     onClick={onEditRequest}
-                                    className="p-2.5 bg-white/90 hover:bg-white text-slate-700 hover:text-blue-600 
-                           rounded-xl shadow-lg transition-all hover:scale-110"
+                                    className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-sm
+                                             text-white/80 hover:text-white rounded-full
+                                             transition-all duration-200 hover:scale-110"
                                     aria-label="Modifier le match"
+                                    title="Modifier"
                                 >
-                                    <EditIcon className="w-5 h-5" />
+                                    <EditIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={onDeleteRequest}
-                                    className="p-2.5 bg-white/90 hover:bg-white text-slate-700 hover:text-red-600 
-                           rounded-xl shadow-lg transition-all hover:scale-110"
+                                    className="p-2 bg-white/20 hover:bg-red-500/80 backdrop-blur-sm
+                                             text-white/80 hover:text-white rounded-full
+                                             transition-all duration-200 hover:scale-110"
                                     aria-label="Supprimer le match"
+                                    title="Supprimer"
                                 >
-                                    <DeleteIcon className="w-5 h-5" />
+                                    <DeleteIcon className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
