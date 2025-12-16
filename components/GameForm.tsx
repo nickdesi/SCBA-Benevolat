@@ -227,7 +227,9 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 value={getISOTime(formData.time)}
                 onChange={handleTimeChange}
                 onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                onKeyDown={(e) => e.preventDefault()}
+                min="08:00"
+                max="22:00"
+                step="600"
                 required
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
                          focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
