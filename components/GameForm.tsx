@@ -195,53 +195,53 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
 
           {/* DATE PICKER */}
           <div className="space-y-1">
-            <label htmlFor="date" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <label htmlFor="date-picker" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span>📅</span> Date
             </label>
             <div className="relative">
-              {/* Actual styled input showing the formatted text */}
-              <input
-                type="text"
-                value={formData.date}
-                readOnly
-                placeholder="Sélectionnez une date..."
-                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
-                         bg-slate-50 text-slate-600 focus:outline-none cursor-pointer"
-                onClick={() => (document.getElementById('date-picker') as HTMLInputElement)?.showPicker()}
-              />
-              {/* Hidden Date Picker triggered on click */}
               <input
                 type="date"
                 id="date-picker"
                 value={getISODate(formData.date)}
                 onChange={handleDateChange}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                required
+                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                         focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                         bg-white cursor-pointer"
+                style={{ colorScheme: 'light' }}
               />
+              {/* Overlay to show formatted date */}
+              {formData.date && (
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none bg-white pr-2">
+                  {formData.date}
+                </div>
+              )}
             </div>
           </div>
 
           {/* TIME PICKER */}
           <div className="space-y-1">
-            <label htmlFor="time" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <label htmlFor="time-picker" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span>⏰</span> Heure
             </label>
             <div className="relative">
-              <input
-                type="text"
-                value={formData.time}
-                readOnly
-                placeholder="--H--"
-                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
-                         bg-slate-50 text-slate-600 focus:outline-none cursor-pointer"
-                onClick={() => (document.getElementById('time-picker') as HTMLInputElement)?.showPicker()}
-              />
               <input
                 type="time"
                 id="time-picker"
                 value={getISOTime(formData.time)}
                 onChange={handleTimeChange}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                required
+                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                         focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                         bg-white cursor-pointer"
+                style={{ colorScheme: 'light' }}
               />
+              {/* Overlay to show formatted time */}
+              {formData.time && (
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 pointer-events-none bg-white pr-2">
+                  {formData.time}
+                </div>
+              )}
             </div>
           </div>
 
