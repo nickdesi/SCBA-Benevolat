@@ -80,14 +80,28 @@ const SnowEffect: React.FC = memo(() => {
             ctx.closePath();
             ctx.fill();
 
-            // Draw all particles with single fillStyle
-            ctx.beginPath();
+            // Draw all particles as snowflakes
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
 
-                // Draw circle (no save/restore, no text)
-                ctx.moveTo(p.x + p.radius, p.y);
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                // Draw snowflake (6-pointed star)
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.swayPhase * 0.5); // Slow rotation
+                ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                ctx.lineWidth = 1.5;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+
+                // Draw 3 lines crossing through center (6 points)
+                for (let j = 0; j < 3; j++) {
+                    const angle = (j * Math.PI) / 3;
+                    const len = p.radius * 1.5;
+                    ctx.moveTo(Math.cos(angle) * len, Math.sin(angle) * len);
+                    ctx.lineTo(Math.cos(angle + Math.PI) * len, Math.sin(angle + Math.PI) * len);
+                }
+                ctx.stroke();
+                ctx.restore();
 
                 // Update physics
                 p.y += p.speed;
@@ -111,8 +125,6 @@ const SnowEffect: React.FC = memo(() => {
                 if (p.x > canvas.width + 10) p.x = -10;
                 if (p.x < -10) p.x = canvas.width + 10;
             }
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.fill();
         };
 
         window.addEventListener('resize', resizeCanvas);
