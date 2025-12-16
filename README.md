@@ -24,8 +24,8 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 
 - **Accès rapide** : bouton Admin directement dans le header
 - **🏠 Matchs Domicile / 🚗 Extérieur** : différenciation des types de matchs
-  - **Domicile** : affiche les postes bénévolat (Buvette, Chrono, Table, Goûter)
-  - **Extérieur** : affiche uniquement le covoiturage
+  - **Domicile** : Menu déroulant strict ("Maison des Sports" ou "Gymnase Fleury")
+  - **Extérieur** : Champ libre avec auto-complétion intelligente des lieux existants
 - **Gestion des matchs** : ajouter, modifier, supprimer
 - **Configuration des postes** : modifier le nombre de bénévoles par poste
 - **Gestion des inscriptions** : supprimer n'importe quel bénévole

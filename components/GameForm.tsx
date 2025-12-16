@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Game, Role, GameFormData } from '../types';
-import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS } from '../constants';
+import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS, MONTH_MAP } from '../constants';
 import { PlusIcon, CheckIcon } from './Icons';
 
 interface GameFormProps {
@@ -8,9 +8,10 @@ interface GameFormProps {
   onSave: (game: GameFormData | Game) => void;
   onCancel: () => void;
   existingLocations?: string[];
+  existingOpponents?: string[];
 }
 
-const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, existingLocations = [] }) => {
+const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, existingLocations = [], existingOpponents = [] }) => {
   const [formData, setFormData] = useState({
     team: gameToEdit?.team || '',
     opponent: gameToEdit?.opponent || '',
@@ -90,6 +91,36 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
     setFormData(prev => ({ ...prev, time: formatted }));
   };
 
+  // Helper to sync hidden inputs with formatted state
+  const getISODate = (formattedDate: string): string => {
+    if (!formattedDate) return '';
+    try {
+      // Expected: "Samedi 15 Novembre 2025"
+      const parts = formattedDate.split(' ');
+      if (parts.length < 4) return '';
+
+      const day = parts[1];
+      const monthName = parts[2].toLowerCase();
+      const year = parts[3];
+
+      const monthIndex = MONTH_MAP[monthName as keyof typeof MONTH_MAP];
+      if (monthIndex === undefined) return '';
+
+      // Format to YYYY-MM-DD
+      const m = (monthIndex + 1).toString().padStart(2, '0');
+      const d = day.padStart(2, '0');
+      return `${year}-${m}-${d}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  const getISOTime = (formattedTime: string): string => {
+    if (!formattedTime) return '';
+    // Expected: "14H30" -> "14:30"
+    return formattedTime.replace('H', ':');
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 animate-fade-in-up">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -149,11 +180,17 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
               value={formData.opponent}
               onChange={handleChange}
               placeholder="Ex: Royat"
+              list="opponents-list"
               required
               className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
                        focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
                        bg-white"
             />
+            <datalist id="opponents-list">
+              {Array.from(new Set(existingOpponents)).sort().map(opp => (
+                <option key={opp} value={opp} />
+              ))}
+            </datalist>
           </div>
 
           {/* DATE PICKER */}
@@ -176,8 +213,9 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
               <input
                 type="date"
                 id="date-picker"
+                value={getISODate(formData.date)}
                 onChange={handleDateChange}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
               />
             </div>
           </div>
@@ -200,8 +238,9 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
               <input
                 type="time"
                 id="time-picker"
+                value={getISOTime(formData.time)}
                 onChange={handleTimeChange}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
               />
             </div>
           </div>
