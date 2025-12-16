@@ -139,6 +139,34 @@ const GameCard: React.FC<GameCardProps> = memo(({
                             </div>
                         </div>
 
+                        {/* Admin Controls - Under badges */}
+                        {isAdmin && (
+                            <div className="flex gap-2 mb-3">
+                                <button
+                                    onClick={onEditRequest}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 
+                                             bg-blue-500 hover:bg-blue-600 
+                                             text-white text-sm font-medium rounded-lg
+                                             transition-all duration-200 hover:scale-105 shadow-lg"
+                                    aria-label="Modifier le match"
+                                >
+                                    <EditIcon className="w-4 h-4" />
+                                    <span>Modifier</span>
+                                </button>
+                                <button
+                                    onClick={onDeleteRequest}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 
+                                             bg-red-500 hover:bg-red-600 
+                                             text-white text-sm font-medium rounded-lg
+                                             transition-all duration-200 hover:scale-105 shadow-lg"
+                                    aria-label="Supprimer le match"
+                                >
+                                    <DeleteIcon className="w-4 h-4" />
+                                    <span>Supprimer</span>
+                                </button>
+                            </div>
+                        )}
+
                         {/* VS Opponent */}
                         <p className="text-2xl sm:text-3xl font-black text-white">
                             vs <span className={`bg-clip-text text-transparent ${isFullyStaffed
@@ -146,32 +174,6 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 : 'bg-gradient-to-r from-red-400 via-orange-400 to-amber-400'
                                 }`}>{game.opponent}</span>
                         </p>
-
-                        {/* Admin Controls - Modern integrated design */}
-                        {isAdmin && (
-                            <div className="absolute top-4 right-4 flex gap-1.5">
-                                <button
-                                    onClick={onEditRequest}
-                                    className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-sm
-                                             text-white/80 hover:text-white rounded-full
-                                             transition-all duration-200 hover:scale-110"
-                                    aria-label="Modifier le match"
-                                    title="Modifier"
-                                >
-                                    <EditIcon className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={onDeleteRequest}
-                                    className="p-2 bg-white/20 hover:bg-red-500/80 backdrop-blur-sm
-                                             text-white/80 hover:text-white rounded-full
-                                             transition-all duration-200 hover:scale-110"
-                                    aria-label="Supprimer le match"
-                                    title="Supprimer"
-                                >
-                                    <DeleteIcon className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </div>
 
