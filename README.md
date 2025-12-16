@@ -1,5 +1,8 @@
 # SCBA Bénévoles 🏀
 
+[![demo online](https://img.shields.io/badge/demo-online-brightgreen)](https://scba.desimone.fr)
+[![Deploy with Coolify](https://img.shields.io/badge/🚀_Deploy_with-Coolify-blueviolet)](https://coolify.io)
+
 Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergne**.
 
 ![Logo SCBA](public/logo-scba.png)
