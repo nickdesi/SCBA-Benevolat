@@ -15,6 +15,30 @@ export const DEFAULT_ROLES: RoleConfig[] = [
   { name: 'Goûter', capacity: 0, icon: '🍪' }, // 0 = unlimited
 ];
 
+// Teams list from official structure
+export const SCBA_TEAMS = [
+  "SENIOR M1",
+  "SENIOR M2",
+  "U18 M1",
+  "U18 M2",
+  "U15 M1",
+  "U15 M2",
+  "U13 M1",
+  "U11 M1",
+  "U11 M2",
+  "U9 M1"
+];
+
+// Common venues for auto-completion
+export const COMMON_LOCATIONS = [
+  "Maison des Sports",
+  "Gymnase Thévenet",
+  "Gymnase Granouillet",
+  "Gymnase Autun",
+  "Gymnase Fleury"
+];
+
+
 export const INITIAL_GAMES: Game[] = [
   {
     id: 'game-1',

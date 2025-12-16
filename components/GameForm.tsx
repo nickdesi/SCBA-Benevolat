@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import type { Game, Role, GameFormData } from '../types';
-import { DEFAULT_ROLES } from '../constants';
+import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS } from '../constants';
 import { PlusIcon, CheckIcon } from './Icons';
 
 interface GameFormProps {
   gameToEdit?: Game;
   onSave: (game: GameFormData | Game) => void;
   onCancel: () => void;
+  existingLocations?: string[];
 }
 
-const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => {
+const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, existingLocations = [] }) => {
   const [formData, setFormData] = useState({
     team: gameToEdit?.team || '',
     opponent: gameToEdit?.opponent || '',
     date: gameToEdit?.date || '',
     time: gameToEdit?.time || '',
-    location: gameToEdit?.location || '',
+    location: gameToEdit?.location || 'Maison des Sports',
     isHome: gameToEdit?.isHome ?? true,  // Default to home game
   });
 
@@ -58,13 +59,36 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => 
     }
   };
 
-  const formFields = [
-    { name: 'team', label: 'Équipe', placeholder: 'Ex: U11 - Équipe 1', icon: '🏀' },
-    { name: 'opponent', label: 'Adversaire', placeholder: 'Ex: Royat', icon: '⚔️' },
-    { name: 'date', label: 'Date', placeholder: 'Ex: Samedi 15 Novembre', icon: '📅' },
-    { name: 'time', label: 'Heure', placeholder: 'Ex: 11H00', icon: '⏰' },
-    { name: 'location', label: 'Lieu', placeholder: 'Ex: Maison des Sports', icon: '📍' },
-  ];
+  // Helpers for date/time formatting
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawDate = e.target.valueAsDate; // Returns Date object (UTC)
+    if (!rawDate) return;
+
+    // Formatting to "Samedi 15 Novembre 2025"
+    // Use user's local timezone to avoid off-by-one day errors
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    };
+    // Create date from input string to avoid timezone shifts (YYYY-MM-DD is local)
+    const [y, m, d] = e.target.value.split('-').map(Number);
+    const localDate = new Date(y, m - 1, d);
+
+    const formatted = new Intl.DateTimeFormat('fr-FR', options).format(localDate);
+    // Capitalize first letter (Samedi) and Month if needed (optional but looks nice)
+    const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+    setFormData(prev => ({ ...prev, date: capitalized }));
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawTime = e.target.value; // "14:30"
+    if (!rawTime) return;
+    const formatted = rawTime.replace(':', 'H'); // "14H30"
+    setFormData(prev => ({ ...prev, time: formatted }));
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 animate-fade-in-up">
@@ -90,26 +114,142 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => 
 
         {/* Match Info Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {formFields.map(field => (
-            <div key={field.name} className="space-y-1">
-              <label htmlFor={field.name} className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                <span>{field.icon}</span>
-                {field.label}
-              </label>
+
+          {/* TEAM SELECTION */}
+          <div className="space-y-1">
+            <label htmlFor="team" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <span>🏀</span> Équipe
+            </label>
+            <select
+              id="team"
+              name="team"
+              value={formData.team}
+              onChange={(e) => setFormData(prev => ({ ...prev, team: e.target.value }))}
+              required
+              className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                       bg-white appearance-none"
+            >
+              <option value="" disabled>Choisir une équipe</option>
+              {SCBA_TEAMS.map(team => (
+                <option key={team} value={team}>{team}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* OPPONENT */}
+          <div className="space-y-1">
+            <label htmlFor="opponent" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <span>⚔️</span> Adversaire
+            </label>
+            <input
+              type="text"
+              id="opponent"
+              name="opponent"
+              value={formData.opponent}
+              onChange={handleChange}
+              placeholder="Ex: Royat"
+              required
+              className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                       bg-white"
+            />
+          </div>
+
+          {/* DATE PICKER */}
+          <div className="space-y-1">
+            <label htmlFor="date" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <span>📅</span> Date
+            </label>
+            <div className="relative">
+              {/* Actual styled input showing the formatted text */}
               <input
                 type="text"
-                id={field.name}
-                name={field.name}
-                value={formData[field.name as keyof typeof formData]}
+                value={formData.date}
+                readOnly
+                placeholder="Sélectionnez une date..."
+                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                         bg-slate-50 text-slate-600 focus:outline-none cursor-pointer"
+                onClick={() => (document.getElementById('date-picker') as HTMLInputElement)?.showPicker()}
+              />
+              {/* Hidden Date Picker triggered on click */}
+              <input
+                type="date"
+                id="date-picker"
+                onChange={handleDateChange}
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* TIME PICKER */}
+          <div className="space-y-1">
+            <label htmlFor="time" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <span>⏰</span> Heure
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.time}
+                readOnly
+                placeholder="--H--"
+                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                         bg-slate-50 text-slate-600 focus:outline-none cursor-pointer"
+                onClick={() => (document.getElementById('time-picker') as HTMLInputElement)?.showPicker()}
+              />
+              <input
+                type="time"
+                id="time-picker"
+                onChange={handleTimeChange}
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* LOCATION - Conditional Input */}
+          <div className="space-y-1 md:col-span-2">
+            <label htmlFor="location" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <span>📍</span> Lieu
+            </label>
+
+            {formData.isHome ? (
+              <select
+                id="location"
+                name="location"
+                value={formData.location}
                 onChange={handleChange}
-                placeholder={field.placeholder}
                 required
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
                          focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                         bg-white"
-              />
-            </div>
-          ))}
+                         bg-white appearance-none"
+              >
+                <option value="Maison des Sports">Maison des Sports</option>
+                <option value="Gymnase Fleury">Gymnase Fleury</option>
+              </select>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Ex: Gymnase Ceyrat"
+                  list="locations-list"
+                  required
+                  className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                           bg-white"
+                />
+                <datalist id="locations-list">
+                  {Array.from(new Set([...COMMON_LOCATIONS, ...existingLocations])).sort().map(loc => (
+                    <option key={loc} value={loc} />
+                  ))}
+                </datalist>
+              </>
+            )}
+          </div>
+
         </div>
 
         {/* Home/Away Toggle - Modern Segmented Control */}
@@ -121,7 +261,11 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => 
           <div className="flex bg-slate-100 rounded-xl p-1 border border-slate-200">
             <button
               type="button"
-              onClick={() => setFormData(prev => ({ ...prev, isHome: true }))}
+              onClick={() => setFormData(prev => ({
+                ...prev,
+                isHome: true,
+                location: 'Maison des Sports'
+              }))}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${formData.isHome
                 ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30'
                 : 'text-slate-600 hover:bg-white/50'
@@ -132,7 +276,11 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel }) => 
             </button>
             <button
               type="button"
-              onClick={() => setFormData(prev => ({ ...prev, isHome: false }))}
+              onClick={() => setFormData(prev => ({
+                ...prev,
+                isHome: false,
+                location: '' // Always clear when switching to Away to prompt manual entry
+              }))}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${!formData.isHome
                 ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30'
                 : 'text-slate-600 hover:bg-white/50'

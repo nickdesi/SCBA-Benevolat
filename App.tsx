@@ -91,6 +91,12 @@ function App() {
     return Array.from(uniqueTeams).sort();
   }, [games]);
 
+  // Extract unique locations for suggestions
+  const uniqueLocations = useMemo(() => {
+    const locations = new Set(games.map(g => g.location));
+    return Array.from(locations).filter(Boolean).sort();
+  }, [games]);
+
   // Filtered games
   const filteredGames = useMemo(() => {
     if (!selectedTeam) return sortedGames;
@@ -391,6 +397,7 @@ function App() {
             <GameForm
               onSave={handleAddGame}
               onCancel={() => setIsAddingGame(false)}
+              existingLocations={uniqueLocations}
             />
           </div>
         )}
