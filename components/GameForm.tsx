@@ -215,28 +215,49 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
             </div>
           </div>
 
-          {/* TIME PICKER */}
+          {/* TIME PICKER - Hybrid: Select dropdown + manual input */}
           <div className="space-y-1">
             <label htmlFor="time-picker" className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span>⏰</span> Heure
             </label>
-            <div className="relative">
-              <input
-                type="time"
+            <div className="flex gap-2">
+              {/* Dropdown for quick selection */}
+              <select
                 id="time-picker"
-                value={getISOTime(formData.time)}
-                onChange={handleTimeChange}
-                onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                min="08:00"
-                max="22:00"
-                step="600"
-                required
-                className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
+                value={formData.time}
+                onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
+                className="flex-1 px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
                          focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                         bg-white cursor-pointer"
-                style={{ colorScheme: 'light' }}
+                         bg-white appearance-none cursor-pointer"
+              >
+                <option value="">Choisir...</option>
+                {Array.from({ length: 15 }, (_, h) => h + 8).flatMap(hour =>
+                  [0, 10, 20, 30, 40, 50].map(min => {
+                    const timeStr = `${hour.toString().padStart(2, '0')}H${min.toString().padStart(2, '0')}`;
+                    return <option key={timeStr} value={timeStr}>{timeStr}</option>;
+                  })
+                )}
+              </select>
+              {/* Manual input for custom time */}
+              <input
+                type="text"
+                placeholder="Ex: 14H30"
+                value={formData.time}
+                onChange={(e) => {
+                  let val = e.target.value.toUpperCase();
+                  // Auto-format: add H after 2 digits if not present
+                  if (val.length === 2 && !val.includes('H')) {
+                    val = val + 'H';
+                  }
+                  setFormData(prev => ({ ...prev, time: val }));
+                }}
+                maxLength={5}
+                className="w-24 px-3 py-3 text-base text-center border-2 border-slate-200 rounded-xl 
+                         focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                         bg-white"
               />
             </div>
+            <p className="text-xs text-slate-500">Sélectionnez ou tapez l'heure (format: 14H30)</p>
           </div>
 
           {/* LOCATION - Conditional Input */}
