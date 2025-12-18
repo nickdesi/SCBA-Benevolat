@@ -30,21 +30,12 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
 
     if (upcomingGames.length === 0) return null;
 
-    // Create a list of 6 copies (reduced from 12 for performance) of the upcoming games
-    // to ensure the ticker is long enough to scroll smoothly.
-    const tickerItems = Array(6).fill(upcomingGames).flat();
-
-    // Calculate duration based on total items to maintain consistent speed
-    // 6 copies * N games.
-    // Adjusted to ~6 seconds per item based on performance feedback (Brave/Mobile).
-    const duration = tickerItems.length * 6;
+    // Duplicate content once (2 copies total) for seamless loop
+    const tickerItems = [...upcomingGames, ...upcomingGames];
 
     return (
         <div className="bg-slate-900 border-b border-slate-800 text-white overflow-hidden py-2 relative z-30">
-            <div
-                className="flex items-center animate-marquee whitespace-nowrap hover:pause"
-                style={{ animationDuration: `${duration}s` }}
-            >
+            <div className="flex items-center animate-marquee whitespace-nowrap hover:pause">
                 <div className="flex gap-8 items-center px-4">
                     {tickerItems.map((game, i) => {
                         // Determine Host and Visitor for display (Host vs Visitor)

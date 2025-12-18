@@ -254,27 +254,18 @@ html {
 
 @keyframes marquee {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translateX(0);
   }
 
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translateX(-50%);
   }
 }
 
 .animate-marquee {
   display: inline-flex;
-  will-change: transform;
-  /* Mobile: Faster (200s) because the user felt 400s was too slow on small screens */
-  animation: marquee 200s linear infinite;
-  min-width: 100%;
-}
-
-@media (min-width: 768px) {
-  .animate-marquee {
-    /* Desktop: Slower (400s) as validated previously */
-    animation: marquee 400s linear infinite;
-  }
+  animation: marquee 30s linear infinite;
+  min-width: 200%;
 }
 
 .hover\:pause:hover {
