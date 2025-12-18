@@ -26,7 +26,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
         }
     }, [csvContent, selectedTeam]);
 
-    // Enrich locations with Nominatim
+    // Enrich locations with Nominatim + Data ES
     const handleEnrichLocations = useCallback(async () => {
         setIsEnriching(true);
         const updatedMatches = [...parsedMatches];
@@ -50,17 +50,16 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
                 const cityNameLower = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                try {
+                // Parallel fetch from multiple sources
+                const fetchNominatim = async () => {
+                    const results: string[] = [];
                     const queries = [
                         `gymnase ${cityName}`,
                         `salle polyvalente ${cityName}`,
                         `complexe sportif ${cityName}`,
                         `stade ${cityName}`,
-                        `${cityName}` // Fallback generic
+                        `${cityName}`
                     ];
-
-                    const candidates: string[] = [];
-                    const seenAddresses = new Set<string>();
 
                     for (const query of queries) {
                         try {
@@ -69,9 +68,9 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=3&countrycodes=fr`,
                                 { headers: { 'Accept-Language': 'fr' } }
                             );
-                            const results = await response.json();
+                            const data = await response.json();
 
-                            for (const result of results) {
+                            for (const result of data) {
                                 const addr = result.address || {};
                                 const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
                                 const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -90,27 +89,67 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                         [postcode, city].filter(Boolean).join(' ')
                                     ].filter(Boolean).join(', ');
 
-                                    if (!seenAddresses.has(fullAddress)) {
-                                        seenAddresses.add(fullAddress);
-                                        candidates.push(fullAddress);
-                                    }
+                                    results.push(fullAddress);
                                 }
                             }
                         } catch (e) { /* ignore */ }
+                        if (results.length > 0 && queries.indexOf(query) < 2) break;
                     }
+                    return results;
+                };
 
-                    if (candidates.length > 0) {
-                        // Default to first one BUT keep candidates for user choice
-                        updatedMatches[index] = {
-                            ...match,
-                            location: candidates[0],
-                            candidates: candidates
-                        };
-                    } else {
-                        updatedMatches[index] = { ...match, location: `À ${cityName} (adresse introuvable)` };
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch address for", cityName, err);
+                const fetchDataES = async () => {
+                    const results: string[] = [];
+                    try {
+                        // API Data ES: search for "Gymnase" + City Name
+                        const response = await fetch(
+                            `https://equipements.sports.gouv.fr/api/explore/v2.1/catalog/datasets/data-es/records?` +
+                            `where=search(inst_nom, "${encodeURIComponent(cityName)}")` +
+                            `%20OR%20search(equip_nom, "${encodeURIComponent(cityName)}")` +
+                            `%20OR%20search(com_nom, "${encodeURIComponent(cityName)}")` +
+                            `&limit=8`
+                        );
+                        const data = await response.json();
+
+                        if (data.results) {
+                            for (const record of data.results) {
+                                const sports = record.aps_name || [];
+                                const isBasket = sports.some((s: string) => s && s.toLowerCase().includes('basket'));
+
+                                const recCity = (record.com_nom || record.lib_bdv || '').toLowerCase();
+                                const recCityNorm = recCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                                if (recCityNorm.includes(cityNameLower) && (isBasket || record.equip_type_name?.includes('Gymnase') || record.equip_type_name?.includes('Salle multisports'))) {
+                                    const name = record.equip_nom || record.inst_nom || 'Gymnase';
+                                    const address = record.inst_adresse || '';
+                                    const zip = record.inst_cp || '';
+                                    const city = record.lib_bdv || record.com_nom || cityName;
+
+                                    const fullAddress = [name, address, `${zip} ${city}`].filter(Boolean).join(', ');
+                                    results.push(fullAddress);
+                                }
+                            }
+                        }
+                    } catch (e) { console.error('Data ES error', e); }
+                    return results;
+                };
+
+                const [nominatimResults, dataEsResults] = await Promise.all([
+                    fetchNominatim(),
+                    fetchDataES()
+                ]);
+
+                // Merge and dedup
+                const candidates = Array.from(new Set([...dataEsResults, ...nominatimResults]));
+
+                if (candidates.length > 0) {
+                    updatedMatches[index] = {
+                        ...match,
+                        location: candidates[0],
+                        candidates: candidates
+                    };
+                } else {
+                    updatedMatches[index] = { ...match, location: `À ${cityName} (adresse introuvable)` };
                 }
             }));
 
