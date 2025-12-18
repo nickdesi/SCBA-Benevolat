@@ -264,7 +264,7 @@ html {
 
 .animate-marquee {
   display: inline-flex;
-  animation: marquee 120s linear infinite;
+  animation: marquee 400s linear infinite;
   min-width: 100%;
 }
 
