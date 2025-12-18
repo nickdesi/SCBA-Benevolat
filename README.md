@@ -31,6 +31,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
   - **Domicile** : Menu déroulant strict ("Maison des Sports" ou "Gymnase Fleury")
   - **Extérieur** : Champ libre avec auto-complétion intelligente des lieux existants
 - **Gestion des matchs** : ajouter, modifier, supprimer
+- **📥 Import en masse** : Copier-coller depuis le calendrier FFBB avec **recherche automatique des gymnases** (OpenStreetMap + Ministère des Sports)
 - **Configuration des postes** : modifier le nombre de bénévoles par poste
 - **Gestion des inscriptions** : supprimer n'importe quel bénévole
 
