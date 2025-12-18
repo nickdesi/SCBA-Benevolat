@@ -9,13 +9,12 @@
  * #123
  * J14
  * 14 janv. 20:00
- * Domicile
+ * Domicile (or explicit location address)
  * (empty)
  * Adversaire
  */
 
 import type { GameFormData } from '../types';
-import { DEFAULT_ROLES } from '../constants';
 
 export interface ParsedMatch {
     date: string;           // Display format: "Samedi 14 Décembre 2024"
@@ -23,7 +22,7 @@ export interface ParsedMatch {
     time: string;           // "15H00"
     team: string;           // "U11 - Équipe 1"
     opponent: string;       // "Royat"
-    location: string;       // "Maison des Sports"
+    location: string;       // "Maison des Sports" or "Extérieur (Ville)"
     isHome: boolean;        // true if SCBA is home team
 }
 
@@ -65,6 +64,24 @@ const normalizeTeamName = (team: string): string => {
 
     // Remove SCBA prefix if present and return cleaned name
     return team.replace(/SCBA|STADE CLERMONT/gi, '').trim();
+};
+
+/**
+ * Extract likely City name from Opponent team name
+ * Used to provide better "Extérieur" location context
+ * Example: "RIORGES BC" -> "RIORGES"
+ */
+const inferCityFromTeam = (opponent: string): string => {
+    // Remove common prefixes/suffixes
+    let cleanName = opponent.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*)/i, ''); // Prefixes
+    cleanName = cleanName.replace(/\b(BASKET|BC|CLUB|CS|US|AL|AS|ES|BB|SPORT|SPORTS|ASSOCIATION|AMICALE)\b/gi, ''); // Suffixes
+    cleanName = cleanName.replace(/[-]/g, ' '); // Replace dashes with spaces
+    cleanName = cleanName.replace(/\s+/g, ' ').trim(); // Clean spaces
+
+    // Capitalize properly (First letter upper, rest lower per word)
+    return cleanName.split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
 };
 
 /**
@@ -167,8 +184,7 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
             // 2. Try to find Date "10 janv. 20h00"
             const dateMatch = line.match(/(\d{1,2}\s+[a-zéû]+\.?)\s+(\d{1,2}[h:]\d{2})/i);
             if (dateMatch) {
-                // If we already had a match in progress but it wasn't finished, ignore it (or error?)
-                // Actually start a new match
+                // Start a new match
                 currentMatch = {};
 
                 const dateStr = dateMatch[1];
@@ -183,7 +199,7 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
                 }
             }
 
-            // 3. Try to find Location (Domicile/Extérieur)
+            // 3. Try to find Location (Domicile/Extérieur OR Explicit Address)
             if (line.toLowerCase() === 'domicile') {
                 currentMatch.isHome = true;
                 currentMatch.team = normalizeTeamName(defaultTeam);
@@ -195,17 +211,29 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
                 currentMatch.team = normalizeTeamName(defaultTeam);
                 currentMatch.location = 'Extérieur';
                 continue;
+            } else if (line.match(/(gymnase|salle|complexe|stade|palais|centre sportif)/i) || line.match(/\d{5}/)) {
+                // Explicit address detection (Gym type + zipcode usually)
+                currentMatch.location = line;
+                // If we found a specific address, we assume it's settled (could be home or away, but usually away if copying detail)
+                continue;
             }
 
-            // 4. Try to find Opponent (Anything else that's not a score or empty)
-            // It MUST come after we found date and location keywords
+            // 4. Try to find Opponent (Anything else that's not a score or empty or explicit keywords)
             if (currentMatch.date && typeof currentMatch.isHome !== 'undefined' && !currentMatch.opponent) {
                 // Ignore scores "0" or "-"
                 if (line === '0' || line === '-') continue;
 
-                // If line is not a number, it's the opponent
-                if (!line.match(/^\d+$/)) {
+                // If line is not a number and not "Lieu", it's the opponent
+                if (!line.match(/^\d+$/) && !line.match(/^Lieu$/i)) {
                     currentMatch.opponent = line;
+
+                    // Enhancement: Infer location city from opponent name if location is generic "Extérieur"
+                    if (!currentMatch.isHome && currentMatch.location === 'Extérieur') {
+                        const city = inferCityFromTeam(line);
+                        if (city.length > 2) { // Avoid garbage
+                            currentMatch.location = `Extérieur (${city})`;
+                        }
+                    }
 
                     // Match is complete!
                     result.success.push(currentMatch as ParsedMatch);
@@ -231,7 +259,6 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
 
             const parts = line.split(separator).map(p => p.trim()).filter(p => p !== '');
 
-            // Try to adapt to standard format with selectedTeam fallback
             let dateStr = '', timeStr = '', homeTeam = '', awayTeam = '', location = '';
 
             // Find explicit date format
@@ -239,24 +266,21 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
 
             if (dateIdx !== -1 && parts.length >= dateIdx + 2) {
                 dateStr = parts[dateIdx];
-                // Check if time is in same part or next
                 if (parts[dateIdx].match(/\d{2}:\d{2}/)) {
                     timeStr = parts[dateIdx].split(' ')[1] || '00:00';
                 } else {
                     timeStr = parts[dateIdx + 1];
                 }
 
-                // If standard line format (Dom/Vis)
                 if (parts.length >= dateIdx + 4) {
                     homeTeam = parts[dateIdx + 2];
                     awayTeam = parts[dateIdx + 3];
                     location = parts[dateIdx + 4] || '';
                 } else {
-                    // Incomplete line
                     continue;
                 }
             } else {
-                if (line.length > 5) // Ignore very short lines
+                if (line.length > 5)
                     result.errors.push({ line: i + 1, content: line, error: "Date introuvable" });
                 continue;
             }
@@ -269,15 +293,13 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
             let finalOpponent = isHome ? awayTeam : homeTeam;
             let finalIsHome = isHome;
 
-            // If SCBA not detected (e.g. web copy where user's team is implicit), use defaultTeam
+            // Fallback for detection
             if (!isSCBATeam(homeTeam) && !isSCBATeam(awayTeam)) {
-                // Check if we can infer from location
                 if (location.toLowerCase().includes('maison des sports') || location.toLowerCase().includes('clermont') || location.toLowerCase().includes('fleury')) {
                     finalIsHome = true;
                     finalTeam = defaultTeam;
                     finalOpponent = awayTeam;
                 } else {
-                    // Heuristic: Check if defaultTeam parts are in home/away
                     const teamParts = defaultTeam.split(' ');
                     const homeMatches = teamParts.some(p => homeTeam.toUpperCase().includes(p));
                     const awayMatches = teamParts.some(p => awayTeam.toUpperCase().includes(p));
@@ -291,21 +313,28 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
                         finalTeam = defaultTeam;
                         finalOpponent = homeTeam;
                     } else {
-                        // Default fallback: Assuming standard "Dom vs Vis".
-                        // If user selected "My Team", we assume the import is for "My Team".
-                        // We can't know for sure without location or team name match.
-                        // Let's assume standard FFBB column order: Home matches have user's team in col 1?
-                        // No, FFBB tables vary.
-
                         result.errors.push({ line: i + 1, content: line, error: "Impossible de déterminer Domicile/Extérieur (SCBA non détecté)" });
                         continue;
                     }
                 }
             }
 
-            // Define default home location based on team
             const normalizedTeam = normalizeTeamName(finalTeam);
-            const defaultHomeLocation = normalizedTeam === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
+            let finalLocation = location;
+
+            // Location Logic
+            if (finalIsHome) {
+                // If location is missing or generic "Domicile", set default
+                if (!finalLocation || finalLocation.toLowerCase() === 'domicile') {
+                    finalLocation = normalizedTeam === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
+                }
+            } else {
+                // If location is missing or generic "Extérieur", try to infer from Opponent
+                if (!finalLocation || finalLocation.toLowerCase() === 'extérieur' || finalLocation.toLowerCase() === 'exterieur') {
+                    const city = inferCityFromTeam(finalOpponent);
+                    finalLocation = city.length > 2 ? `Extérieur (${city})` : 'Extérieur';
+                }
+            }
 
             result.success.push({
                 date: parsedDate.display,
@@ -313,7 +342,7 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
                 time: parseTime(timeStr),
                 team: normalizedTeam,
                 opponent: finalOpponent,
-                location: location || (finalIsHome ? defaultHomeLocation : 'Extérieur'),
+                location: finalLocation,
                 isHome: finalIsHome
             });
 
