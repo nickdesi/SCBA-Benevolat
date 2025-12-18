@@ -499,15 +499,17 @@ function App() {
 
             return groups.map((group, groupIdx) => (
               <div key={`${group.label}-${groupIdx}`} className="relative">
-                <div className="sticky top-0 z-30 py-4 -mx-4 px-4 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200/50 mb-6">
-                  <h3 className="flex items-center gap-3 text-xl font-black text-slate-800 tracking-tight">
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600">
+                <div className="sticky top-0 z-30 pt-6 pb-3 bg-gradient-to-b from-slate-50 via-slate-50/95 to-transparent">
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent"></div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                       {group.label}
-                    </span>
-                    <span className="text-xs font-bold px-2.5 py-1 bg-slate-200 text-slate-600 rounded-lg">
-                      {group.games.length}
-                    </span>
-                  </h3>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-slate-200/80 text-slate-500 rounded">
+                        {group.games.length}
+                      </span>
+                    </h3>
+                    <div className="h-px flex-1 bg-gradient-to-l from-slate-300 to-transparent"></div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch transition-all">
