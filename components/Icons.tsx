@@ -75,22 +75,28 @@ export const UserIcon: React.FC<{ className?: string }> = ({ className }) => (
 // Google Calendar Icon (Official Style)
 export const GoogleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
+        {/* Background Canvas */}
         <rect fill="#fff" x="0" y="0" width="48" height="48" rx="8" ry="8" />
-        <path fill="#4285F4" d="M36.19 12.01L14.71 12.01C12.67 12.01 11 13.68 11 15.72L11 36.29C11 38.33 12.66 40 14.71 40L36.18 40C38.23 40 39.9 38.33 39.9 36.29L39.9 15.72C39.9 13.68 38.24 12.01 36.19 12.01Z" />
-        <path fill="#fff" d="M25.44 26.01C25.44 23.8 27.23 22.01 29.44 22.01C31.65 22.01 33.44 23.8 33.44 26.01C33.44 28.22 31.65 30.01 29.44 30.01C27.23 30.01 25.44 28.22 25.44 26.01Z" />
-        <path fill="#4285F4" d="M11 12h27.9c2.04 0 3.71 1.67 3.71 3.72v20.57c0 2.05-1.67 3.71-3.71 3.71H14.71c-2.05 0-3.71-1.67-3.71-3.71V12z" />
-        <path fill="#EA4335" d="M37.5,6v8.5H12V6c0-1.66,1.34-3,3-3h19.5C36.16,3,37.5,4.34,37.5,6z" />
-        <path fill="#34A853" d="M37.5,14.5v28c0,1.66-1.34,3-3,3h-22c-1.66,0-3-1.34-3-3v-28H37.5z" />
-        <path fill="#4285F4" d="M32.5 45.49L37.9 40.09C38.6 39.39 39 38.49 39 37.49L39 12.51C39 12.21 38.8 12.01 38.5 12.01L14.5 12.01L9.5 7.01C9 6.51 8.8 5.81 8.8 5.01L8.8 42.49C8.8 44.15 10.15 45.49 11.8 45.49L32.5 45.49Z" opacity="0" />
-        <g>
-            <path fill="#FBBC04" d="M12,41c0,1.66,1.34,3,3,3h23l-7-7H15C13.34,37,12,38.34,12,41z" />
-            <path fill="#1967D2" d="M37.5,14.5L37.5,14.5c0-1.66-1.34-3-3-3h-29L9.5,8L12,11.5l25.5,0V14.5z" />
+
+        {/* Blue Segment (Top-Left / Left) */}
+        <path fill="#4285F4" d="M37,6H11c-2.76,0-5,2.24-5,5v26c0,0.55,0.45,1,1,1h4V11c0-2.76,2.24-5,5-5h21V6z" />
+
+        {/* Green Segment (Bottom-Left / Bottom) */}
+        <path fill="#34A853" d="M11,42h26c0.55,0,1-0.45,1-1v-4H16c-2.76,0-5-2.24-5-5V12H6v25C6,39.76,8.24,42,11,42z" />
+
+        {/* Yellow Segment (Top-Right / Right) */}
+        <path fill="#FBBC04" d="M37,6c0.55,0,1,0.45,1,1v26h4V11c0-2.76-2.24-5-5-5H37z" />
+
+        {/* Red Segment (Bottom-Right / Corner) */}
+        <path fill="#EA4335" d="M37,42h-4v-5h5c2.76,0,5-2.24,5-5v-5h-5v14C38,41.55,37.55,42,37,42z" />
+
+        {/* Fold Effect (Red Triangle) */}
+        <path fill="#EA4335" d="M37,32l5,5v-5H37z" opacity="0.1" />
+
+        {/* 31 Text - High Fidelity via SVG path to avoid font issues */}
+        <g transform="translate(14, 15)">
+            <path fill="#4285F4" d="M3.5,0h4.8v2.4H6.3v1.5h2v2.4h-2V7.8h2.1v2.4H3.5V8.9H4V7.5H3.5V0z M12,0h2.4v10.2H12V3h-1.6L9.6,4.2L8.9,2.8L11.8,0.9H12z" transform="scale(1.5)" />
         </g>
-        <path d="M12,41c0,1.66,1.34,3,3,3h23c1.66,0,3-1.34,3-3v-6.5h-29V41z" fill="#34A853" />
-        <path d="M38,14.5c0-1.66-1.34-3-3-3H15c-1.66,0-3,1.34-3,3v20h26V14.5z" fill="#4285F4" />
-        <rect fill="#EA4335" x="12" y="6" width="26" height="8.5" />
-        <path fill="#FBBC04" d="M12,34.5v6.5c0,1.66,1.34,3,3,3h16V34.5H12z" />
-        <text x="50%" y="68%" textAnchor="middle" fill="#4285F4" fontSize="20" fontWeight="bold" fontFamily="Arial, Helvetica, sans-serif">31</text>
     </svg>
 );
 
