@@ -178,6 +178,63 @@ function App() {
   }, []); // Run once on mount
 
   // ---------------------------------------------------------------------------
+  // Automatic Cleanup of Past Matches
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const cleanupPastMatches = async () => {
+      try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Start of today
+        const todayISO = today.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
+        const colRef = collection(db, "matches");
+        const snapshot = await getDocs(colRef);
+
+        const matchesToDelete: string[] = [];
+
+        snapshot.docs.forEach(docSnap => {
+          const data = docSnap.data();
+
+          // Use dateISO if available, otherwise try to parse display date
+          let matchDateISO = data.dateISO;
+
+          if (!matchDateISO && data.date) {
+            // Fallback: try to parse "Samedi 14 Décembre 2024" format
+            const parts = data.date.toLowerCase().split(' ');
+            if (parts.length >= 4) {
+              const day = parseInt(parts[1]) || 1;
+              const month = MONTH_MAP[parts[2]] ?? 0;
+              const year = parseInt(parts[3]) || new Date().getFullYear();
+              matchDateISO = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
+          }
+
+          // If date is before today, mark for deletion
+          if (matchDateISO && matchDateISO < todayISO) {
+            matchesToDelete.push(docSnap.id);
+          }
+        });
+
+        // Batch delete past matches
+        if (matchesToDelete.length > 0) {
+          const batch = writeBatch(db);
+          matchesToDelete.forEach(id => {
+            batch.delete(doc(db, "matches", id));
+          });
+          await batch.commit();
+          console.log(`🧹 Nettoyage: ${matchesToDelete.length} match(s) passé(s) supprimé(s)`);
+        }
+      } catch (err) {
+        console.error("Error cleaning up past matches:", err);
+      }
+    };
+
+    // Run cleanup after a short delay (after seeding completes)
+    const timer = setTimeout(() => cleanupPastMatches(), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
 
