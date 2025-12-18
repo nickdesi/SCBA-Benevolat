@@ -254,16 +254,17 @@ html {
 
 @keyframes marquee {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .animate-marquee {
   display: inline-flex;
+  will-change: transform;
   /* Mobile: Faster (200s) because the user felt 400s was too slow on small screens */
   animation: marquee 200s linear infinite;
   min-width: 100%;
