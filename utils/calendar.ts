@@ -81,7 +81,9 @@ const formatICSDate = (date: Date): string => {
  * Generates an ICS calendar file content for a game
  */
 export const generateICSContent = (game: Game): string | null => {
-    const dateTime = parseGameDateTime(game.date, game.time);
+    // Use dateISO if available (new format), otherwise parse display date
+    const dateSource = game.dateISO || game.date;
+    const dateTime = parseGameDateTime(dateSource, game.time);
     if (!dateTime) return null;
 
     const title = `🏀 ${game.team} vs ${game.opponent}`;

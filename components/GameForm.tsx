@@ -16,6 +16,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
     team: gameToEdit?.team || '',
     opponent: gameToEdit?.opponent || '',
     date: gameToEdit?.date || '',
+    dateISO: gameToEdit?.dateISO || '',  // ISO format for reliable sorting
     time: gameToEdit?.time || '',
     location: gameToEdit?.location || 'Maison des Sports',
     isHome: gameToEdit?.isHome ?? true,  // Default to home game
@@ -62,26 +63,26 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
 
   // Helpers for date/time formatting
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawDate = e.target.valueAsDate; // Returns Date object (UTC)
-    if (!rawDate) return;
+    const isoDate = e.target.value; // "2025-11-15" (YYYY-MM-DD)
+    if (!isoDate) return;
+
+    // Create date from input string to avoid timezone shifts (YYYY-MM-DD is local)
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const localDate = new Date(y, m - 1, d);
 
     // Formatting to "Samedi 15 Novembre 2025"
-    // Use user's local timezone to avoid off-by-one day errors
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
       year: 'numeric'
     };
-    // Create date from input string to avoid timezone shifts (YYYY-MM-DD is local)
-    const [y, m, d] = e.target.value.split('-').map(Number);
-    const localDate = new Date(y, m - 1, d);
-
     const formatted = new Intl.DateTimeFormat('fr-FR', options).format(localDate);
-    // Capitalize first letter (Samedi) and Month if needed (optional but looks nice)
+    // Capitalize first letter (Samedi)
     const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
 
-    setFormData(prev => ({ ...prev, date: capitalized }));
+    // Store both ISO (for sorting) and display format
+    setFormData(prev => ({ ...prev, date: capitalized, dateISO: isoDate }));
   };
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

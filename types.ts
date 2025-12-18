@@ -20,7 +20,8 @@ export interface Game {
   id: string;
   team: string;
   opponent: string;
-  date: string;
+  date: string;                 // Display format: "Samedi 15 Novembre 2025"
+  dateISO: string;              // ISO format: "2025-11-15" for reliable sorting
   time: string;
   location: string;
   isHome: boolean;              // true = domicile (bénévolat), false = extérieur (covoiturage)
@@ -32,7 +33,8 @@ export interface Game {
 export interface GameFormData {
   team: string;
   opponent: string;
-  date: string;
+  date: string;                 // Display format
+  dateISO: string;              // ISO format for sorting
   time: string;
   location: string;
   isHome: boolean;

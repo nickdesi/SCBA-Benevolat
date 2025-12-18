@@ -51,3 +51,27 @@ export const getStoredName = (): string => {
 export const setStoredName = (name: string): void => {
     localStorage.setItem('scba-user-name', name.trim());
 };
+
+// ========================================
+// Identity Recovery Functions
+// ========================================
+
+/**
+ * Claim a specific registration as belonging to this browser.
+ * Used when a user says "C'est moi !" on a registration they made from another device.
+ */
+export const claimRegistration = (key: string, name: string): void => {
+    saveMyRegistration(key, name);
+    // Also store the name for future use
+    setStoredName(name);
+};
+
+/**
+ * Check if a name matches the stored user name (case-insensitive).
+ * Used to offer "C'est moi ?" option on registrations.
+ */
+export const mightBeMyRegistration = (name: string): boolean => {
+    const storedName = getStoredName();
+    if (!storedName) return false;
+    return name.toLowerCase().trim() === storedName.toLowerCase().trim();
+};

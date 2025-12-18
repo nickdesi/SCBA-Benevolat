@@ -112,6 +112,21 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                                 ✕
                                             </button>
                                         )}
+                                        {/* Identity recovery button - only shows if user has a stored name that matches */}
+                                        {storedName && driver.name.toLowerCase() !== storedName.toLowerCase() &&
+                                            driver.name.toLowerCase().includes(storedName.toLowerCase().split(' ')[0]) && !isAdmin && (
+                                                <button
+                                                    onClick={() => {
+                                                        setStoredName(driver.name);
+                                                        setName(driver.name);
+                                                    }}
+                                                    className="px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 
+                                                   hover:bg-amber-200 rounded-lg transition-colors"
+                                                    title="Récupérer cette inscription"
+                                                >
+                                                    C'est moi ?
+                                                </button>
+                                            )}
                                     </div>
                                 </div>
                                 {driver.departureLocation && (
@@ -167,6 +182,21 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                             ✕
                                         </button>
                                     )}
+                                    {/* Identity recovery button - only shows if user has a stored name that matches */}
+                                    {storedName && passenger.name.toLowerCase() !== storedName.toLowerCase() &&
+                                        passenger.name.toLowerCase().includes(storedName.toLowerCase().split(' ')[0]) && !isAdmin && (
+                                            <button
+                                                onClick={() => {
+                                                    setStoredName(passenger.name);
+                                                    setName(passenger.name);
+                                                }}
+                                                className="px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 
+                                               hover:bg-amber-200 rounded-lg transition-colors"
+                                                title="Récupérer cette inscription"
+                                            >
+                                                C'est moi ?
+                                            </button>
+                                        )}
                                 </div>
                                 {passenger.phone && (
                                     <p className="mt-1 text-sm text-slate-500 flex items-center gap-1">

@@ -2,7 +2,7 @@ import React, { useState, memo } from 'react';
 import type { Role } from '../types';
 import { RemoveUserIcon, EditPencilIcon, CheckIcon, UserIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
-import { saveMyRegistration, removeMyRegistration, isMyRegistration } from '../utils/storage';
+import { saveMyRegistration, removeMyRegistration, isMyRegistration, claimRegistration, mightBeMyRegistration } from '../utils/storage';
 
 interface VolunteerSlotProps {
     role: Role;
@@ -244,6 +244,21 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                             title="Modifier mon nom"
                                         >
                                             <EditPencilIcon className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                    {/* Identity recovery: "C'est moi ?" button - only shows if name matches stored name */}
+                                    {!isAdmin && !isMine && mightBeMyRegistration(volunteer) && (
+                                        <button
+                                            onClick={() => {
+                                                claimRegistration(registrationKey, volunteer);
+                                                // Force re-render by clearing state
+                                                setNewName('');
+                                            }}
+                                            className="px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 
+                                               hover:bg-amber-200 rounded-lg transition-colors"
+                                            title="Récupérer cette inscription sur cet appareil"
+                                        >
+                                            C'est moi ?
                                         </button>
                                     )}
                                 </div>

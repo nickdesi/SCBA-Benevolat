@@ -69,20 +69,26 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Sort games by date (parse "Samedi 13 décembre 2025" format)
+  // Sort games by date using dateISO (YYYY-MM-DD format)
+  // Fallback to parsing display date for legacy games without dateISO
   const sortedGames = useMemo(() => {
-    const parseDate = (dateStr: string): Date => {
-      const parts = dateStr.toLowerCase().split(' ');
+    const getDateValue = (game: Game): string => {
+      // Use dateISO if available (new format)
+      if (game.dateISO) return game.dateISO;
+
+      // Fallback: parse display date for legacy games
+      const parts = game.date.toLowerCase().split(' ');
       if (parts.length >= 4) {
         const day = parseInt(parts[1]) || 1;
         const month = MONTH_MAP[parts[2]] ?? 0;
         const year = parseInt(parts[3]) || new Date().getFullYear();
-        return new Date(year, month, day);
+        // Return ISO format for comparison
+        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       }
-      return new Date();
+      return '9999-12-31'; // Far future for unparseable dates
     };
 
-    return [...games].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+    return [...games].sort((a, b) => getDateValue(a).localeCompare(getDateValue(b)));
   }, [games]);
 
   // Extract unique teams for filter
