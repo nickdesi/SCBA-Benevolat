@@ -14,6 +14,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
     const [step, setStep] = useState<'input' | 'preview'>('input');
+    const [isEnriching, setIsEnriching] = useState(false);
 
     const handleParse = useCallback(() => {
         const result = parseCSV(csvContent, selectedTeam);
@@ -23,8 +24,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
             setStep('preview');
         }
     }, [csvContent, selectedTeam]);
-
-    const [isEnriching, setIsEnriching] = useState(false);
 
     const handleEnrichLocations = useCallback(async () => {
         setIsEnriching(true);
@@ -38,24 +37,51 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
             const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
 
             if (!match.isHome && cityMatch) {
-                const city = cityMatch[1];
+                const cityName = cityMatch[1];
                 try {
-                    // Search for "Gymnase" + City in standard French Address API
-                    const query = `Gymnase ${city}`;
-                    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=1&type=street`);
-                    const data = await response.json();
+                    // Step 1: Find the City (Municipality) to get INSEE code
+                    // This prevents finding "Rue du Gymnase" in Dijon when looking for Riorges
+                    const cityRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(cityName)}&type=municipality&limit=1`);
+                    const cityData = await cityRes.json();
 
-                    if (data.features && data.features.length > 0) {
-                        const feature = data.features[0];
-                        // Update location with found address
-                        updatedMatches[i] = {
-                            ...match,
-                            location: `${feature.properties.name}, ${feature.properties.postcode} ${feature.properties.city} (${city})`
-                        };
+                    if (cityData.features && cityData.features.length > 0) {
+                        const cityFeature = cityData.features[0];
+                        const cityCode = cityFeature.properties.citycode; // INSEE Code
+                        const postCode = cityFeature.properties.postcode;
+                        const labelCity = cityFeature.properties.city;
+
+                        // Step 2: Search for "Gymnase" OR "Salle" IN this specific city
+                        // We try "Gymnase" first, then "Complexe Sportif", then "Salle"
+                        let bestAddress = null;
+
+                        // Search strategies in order of preference
+                        const queries = ['Gymnase', 'Complexe Sportif', 'Salle des sports', 'Basket'];
+
+                        for (const q of queries) {
+                            const gymRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&citycode=${cityCode}&limit=1`);
+                            const gymData = await gymRes.json();
+                            if (gymData.features && gymData.features.length > 0) {
+                                bestAddress = gymData.features[0];
+                                break; // Found one!
+                            }
+                        }
+
+                        if (bestAddress) {
+                            updatedMatches[i] = {
+                                ...match,
+                                location: `${bestAddress.properties.name}, ${bestAddress.properties.city} (${cityName})`
+                            };
+                        } else {
+                            // Valid city found but no gym detected? 
+                            // Fallback: Just put "Ville, Code Postal" so it's clean
+                            updatedMatches[i] = {
+                                ...match,
+                                location: `${labelCity} (${postCode})`
+                            };
+                        }
                     }
                 } catch (err) {
-                    console.error("Failed to fetch address for", city, err);
-                    // Keep original location if fail
+                    console.error("Failed to fetch address for", cityName, err);
                 }
             }
         }
