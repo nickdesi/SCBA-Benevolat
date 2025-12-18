@@ -24,6 +24,46 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
         }
     }, [csvContent, selectedTeam]);
 
+    const [isEnriching, setIsEnriching] = useState(false);
+
+    const handleEnrichLocations = useCallback(async () => {
+        setIsEnriching(true);
+        const updatedMatches = [...parsedMatches];
+
+        for (let i = 0; i < updatedMatches.length; i++) {
+            const match = updatedMatches[i];
+
+            // Only enrich "Extérieur" matches where we have a City hint
+            // Expected format from parser: "Extérieur (CityName)"
+            const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
+
+            if (!match.isHome && cityMatch) {
+                const city = cityMatch[1];
+                try {
+                    // Search for "Gymnase" + City in standard French Address API
+                    const query = `Gymnase ${city}`;
+                    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=1&type=street`);
+                    const data = await response.json();
+
+                    if (data.features && data.features.length > 0) {
+                        const feature = data.features[0];
+                        // Update location with found address
+                        updatedMatches[i] = {
+                            ...match,
+                            location: `${feature.properties.name}, ${feature.properties.postcode} ${feature.properties.city} (${city})`
+                        };
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch address for", city, err);
+                    // Keep original location if fail
+                }
+            }
+        }
+
+        setParsedMatches(updatedMatches);
+        setIsEnriching(false);
+    }, [parsedMatches]);
+
     const handleImport = useCallback(() => {
         const gameData = parsedMatches.map(toGameFormData);
         onImport(gameData);
@@ -35,6 +75,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
         setParsedMatches([]);
         setErrors([]);
         setStep('input');
+        setIsEnriching(false);
         onClose();
     }, [onClose]);
 
@@ -125,9 +166,26 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         <>
                             {/* Preview */}
                             <div className="mb-4">
-                                <p className="text-sm font-semibold text-slate-700 mb-3">
-                                    ✅ {parsedMatches.length} match(s) détecté(s) :
-                                </p>
+                                <div className="flex justify-between items-center mb-3">
+                                    <p className="text-sm font-semibold text-slate-700">
+                                        ✅ {parsedMatches.length} match(s) détecté(s) :
+                                    </p>
+
+                                    {/* Enrichment Button */}
+                                    <button
+                                        onClick={handleEnrichLocations}
+                                        disabled={isEnriching}
+                                        className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 font-bold rounded-lg 
+                                                 hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+                                    >
+                                        {isEnriching ? (
+                                            <>⏳ Recherche...</>
+                                        ) : (
+                                            <>🔍 Trouver les gymnases</>
+                                        )}
+                                    </button>
+                                </div>
+
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
                                     {parsedMatches.map((match, i) => (
                                         <div
@@ -154,8 +212,11 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="mt-1 text-xs text-slate-500">
-                                                📅 {match.date} à {match.time} • 📍 {match.location}
+                                            <div className="mt-1 text-xs text-slate-500 flex items-center justify-between">
+                                                <span>📅 {match.date} à {match.time} • 📍 {match.location}</span>
+                                                {match.location.includes('Extérieur (') && (
+                                                    <span className="text-indigo-500 font-bold" title="Adresse déductible">💡</span>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
