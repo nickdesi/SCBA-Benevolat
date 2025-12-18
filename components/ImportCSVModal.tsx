@@ -33,52 +33,63 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
             const match = updatedMatches[i];
 
             // Only enrich "Extérieur" matches where we have a City hint
-            // Expected format from parser: "Extérieur (CityName)"
             const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
 
             if (!match.isHome && cityMatch) {
                 const cityName = cityMatch[1];
                 try {
-                    // Step 1: Find the City (Municipality) to get INSEE code
-                    // This prevents finding "Rue du Gymnase" in Dijon when looking for Riorges
-                    const cityRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(cityName)}&type=municipality&limit=1`);
-                    const cityData = await cityRes.json();
+                    // Use OpenStreetMap Nominatim API for POI search
+                    // This finds actual places like "Gymnase Gallieni" not just street addresses
+                    const queries = [
+                        `gymnase ${cityName}`,
+                        `salle de sport ${cityName}`,
+                        `complexe sportif ${cityName}`
+                    ];
 
-                    if (cityData.features && cityData.features.length > 0) {
-                        const cityFeature = cityData.features[0];
-                        const cityCode = cityFeature.properties.citycode; // INSEE Code
-                        const postCode = cityFeature.properties.postcode;
-                        const labelCity = cityFeature.properties.city;
+                    let bestResult = null;
 
-                        // Step 2: Search for "Gymnase" OR "Salle" IN this specific city
-                        // We try "Gymnase" first, then "Complexe Sportif", then "Salle"
-                        let bestAddress = null;
+                    for (const query of queries) {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/search?` +
+                            `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=fr`,
+                            { headers: { 'Accept-Language': 'fr' } }
+                        );
+                        const results = await response.json();
 
-                        // Search strategies in order of preference
-                        const queries = ['Gymnase', 'Complexe Sportif', 'Salle des sports', 'Basket'];
-
-                        for (const q of queries) {
-                            const gymRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&citycode=${cityCode}&limit=1`);
-                            const gymData = await gymRes.json();
-                            if (gymData.features && gymData.features.length > 0) {
-                                bestAddress = gymData.features[0];
-                                break; // Found one!
-                            }
+                        if (results && results.length > 0) {
+                            bestResult = results[0];
+                            break;
                         }
 
-                        if (bestAddress) {
-                            updatedMatches[i] = {
-                                ...match,
-                                location: `${bestAddress.properties.name}, ${bestAddress.properties.city} (${cityName})`
-                            };
-                        } else {
-                            // Valid city found but no gym detected? 
-                            // Fallback: Just put "Ville, Code Postal" so it's clean
-                            updatedMatches[i] = {
-                                ...match,
-                                location: `${labelCity} (${postCode})`
-                            };
-                        }
+                        // Small delay to respect Nominatim rate limits (1 req/sec)
+                        await new Promise(r => setTimeout(r, 300));
+                    }
+
+                    if (bestResult) {
+                        // Build address from Nominatim response
+                        const addr = bestResult.address;
+                        const street = addr.road || addr.pedestrian || '';
+                        const houseNumber = addr.house_number || '';
+                        const postcode = addr.postcode || '';
+                        const city = addr.city || addr.town || addr.village || cityName;
+                        const name = bestResult.name || 'Gymnase';
+
+                        const fullAddress = [
+                            name,
+                            [houseNumber, street].filter(Boolean).join(' '),
+                            [postcode, city].filter(Boolean).join(' ')
+                        ].filter(Boolean).join(', ');
+
+                        updatedMatches[i] = {
+                            ...match,
+                            location: fullAddress
+                        };
+                    } else {
+                        // Fallback: just use city name
+                        updatedMatches[i] = {
+                            ...match,
+                            location: `À ${cityName} (adresse à confirmer)`
+                        };
                     }
                 } catch (err) {
                     console.error("Failed to fetch address for", cityName, err);
