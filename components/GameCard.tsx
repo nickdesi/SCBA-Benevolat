@@ -126,16 +126,16 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                     {isHomeGame ? '🏠 DOMICILE' : '🚗 EXTÉRIEUR'}
                                 </span>
                                 {/* Status Badge */}
-                                <span className={`
-                                    px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
-                                    shadow-lg animate-pulse
-                                    ${isFullyStaffed
-                                        ? 'bg-gradient-to-r from-yellow-400 to-amber-500 shadow-yellow-400/30'
-                                        : 'bg-gradient-to-r from-red-500 to-orange-500 shadow-red-500/30'
-                                    }
-                                `}>
-                                    {isFullyStaffed ? '✅ COMPLET' : '🏀 MATCH'}
-                                </span>
+                                {/* Status Badge - Only show when full */}
+                                {isFullyStaffed && (
+                                    <span className="
+                                        px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
+                                        shadow-lg animate-pulse
+                                        bg-gradient-to-r from-yellow-400 to-amber-500 shadow-yellow-400/30
+                                    ">
+                                        ✅ COMPLET
+                                    </span>
+                                )}
                                 {/* Admin Controls - Inline with badges */}
                                 {isAdmin && (
                                     <>
