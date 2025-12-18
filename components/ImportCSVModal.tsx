@@ -37,9 +37,10 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
             if (!match.isHome && cityMatch) {
                 const cityName = cityMatch[1];
+                const cityNameLower = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
                 try {
                     // Use OpenStreetMap Nominatim API for POI search
-                    // This finds actual places like "Gymnase Gallieni" not just street addresses
                     const queries = [
                         `gymnase ${cityName}`,
                         `salle de sport ${cityName}`,
@@ -51,22 +52,31 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                     for (const query of queries) {
                         const response = await fetch(
                             `https://nominatim.openstreetmap.org/search?` +
-                            `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=fr`,
+                            `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=fr`,
                             { headers: { 'Accept-Language': 'fr' } }
                         );
                         const results = await response.json();
 
-                        if (results && results.length > 0) {
-                            bestResult = results[0];
-                            break;
+                        // Find a result that is actually IN the target city
+                        for (const result of results) {
+                            const addr = result.address || {};
+                            const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
+                            const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                            // Check if result city matches our target city
+                            if (resultCityNorm.includes(cityNameLower) || cityNameLower.includes(resultCityNorm)) {
+                                bestResult = result;
+                                break;
+                            }
                         }
 
-                        // Small delay to respect Nominatim rate limits (1 req/sec)
+                        if (bestResult) break;
+
+                        // Small delay to respect Nominatim rate limits
                         await new Promise(r => setTimeout(r, 300));
                     }
 
                     if (bestResult) {
-                        // Build address from Nominatim response
                         const addr = bestResult.address;
                         const street = addr.road || addr.pedestrian || '';
                         const houseNumber = addr.house_number || '';
@@ -85,7 +95,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                             location: fullAddress
                         };
                     } else {
-                        // Fallback: just use city name
+                        // No valid result found in the target city
                         updatedMatches[i] = {
                             ...match,
                             location: `À ${cityName} (adresse à confirmer)`
