@@ -24,6 +24,7 @@ export interface ParsedMatch {
     opponent: string;       // "Royat"
     location: string;       // "Maison des Sports" or "Extérieur (Ville)"
     isHome: boolean;        // true if SCBA is home team
+    candidates?: string[];  // List of potential addresses found
 }
 
 interface ImportResult {

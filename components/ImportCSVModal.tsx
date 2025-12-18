@@ -34,7 +34,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
             .map((m, i) => ({ match: m, index: i }))
             .filter(({ match }) => !match.isHome && (match.location === 'Extérieur' || match.location.startsWith('Extérieur (')));
 
-        // Processing in chunks of 3 to respect rate limits but be faster
         const CHUNK_SIZE = 3;
 
         for (let i = 0; i < matchesToEnrich.length; i += CHUNK_SIZE) {
@@ -44,74 +43,70 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 let cityName = '';
                 const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
 
-                if (cityMatch) {
-                    cityName = cityMatch[1];
-                } else {
-                    // Try to infer again if not present (legacy case)
-                    // But usually it should be there from parseCSV
-                    return;
-                }
+                if (cityMatch) cityName = cityMatch[1];
+                else return;
 
                 if (!cityName) return;
 
                 const cityNameLower = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 try {
-                    // Optimized queries - most likely first
                     const queries = [
                         `gymnase ${cityName}`,
                         `salle polyvalente ${cityName}`,
                         `complexe sportif ${cityName}`,
-                        `stade ${cityName}`
+                        `stade ${cityName}`,
+                        `${cityName}` // Fallback generic
                     ];
 
-                    let bestResult = null;
+                    const candidates: string[] = [];
+                    const seenAddresses = new Set<string>();
 
                     for (const query of queries) {
                         try {
                             const response = await fetch(
                                 `https://nominatim.openstreetmap.org/search?` +
-                                `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=fr`,
+                                `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=3&countrycodes=fr`,
                                 { headers: { 'Accept-Language': 'fr' } }
                             );
                             const results = await response.json();
 
-                            if (results && results.length > 0) {
-                                // Check if city matches roughly
-                                const result = results[0];
+                            for (const result of results) {
                                 const addr = result.address || {};
                                 const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
                                 const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                                // Loose matching: check if result city contains target city or vice versa
+                                // Loose matching
                                 if (resultCityNorm.includes(cityNameLower) || cityNameLower.includes(resultCityNorm)) {
-                                    bestResult = result;
-                                    break; // Found a good match
+                                    const name = result.name || 'Gymnase / Salle';
+                                    const street = addr.road || addr.pedestrian || '';
+                                    const houseNumber = addr.house_number || '';
+                                    const postcode = addr.postcode || '';
+                                    const city = addr.city || addr.town || addr.village || cityName;
+
+                                    const fullAddress = [
+                                        name,
+                                        [houseNumber, street].filter(Boolean).join(' '),
+                                        [postcode, city].filter(Boolean).join(' ')
+                                    ].filter(Boolean).join(', ');
+
+                                    if (!seenAddresses.has(fullAddress)) {
+                                        seenAddresses.add(fullAddress);
+                                        candidates.push(fullAddress);
+                                    }
                                 }
                             }
-                        } catch (e) {
-                            // ignore fetch error
-                        }
+                        } catch (e) { /* ignore */ }
                     }
 
-                    if (bestResult) {
-                        const addr = bestResult.address;
-                        const street = addr.road || addr.pedestrian || '';
-                        const houseNumber = addr.house_number || '';
-                        const postcode = addr.postcode || '';
-                        const city = addr.city || addr.town || addr.village || cityName;
-                        const name = bestResult.name || 'Gymnase'; // Name of the place
-
-                        // Format: "Gymnase Jean Jaurès, 12 rue de la Paix, 63000 Clermont-Ferrand"
-                        const fullAddress = [
-                            name,
-                            [houseNumber, street].filter(Boolean).join(' '),
-                            [postcode, city].filter(Boolean).join(' ')
-                        ].filter(Boolean).join(', ');
-
-                        updatedMatches[index] = { ...match, location: fullAddress };
+                    if (candidates.length > 0) {
+                        // Default to first one BUT keep candidates for user choice
+                        updatedMatches[index] = {
+                            ...match,
+                            location: candidates[0],
+                            candidates: candidates
+                        };
                     } else {
-                        // Keep as is or mark as not found but with city
                         updatedMatches[index] = { ...match, location: `À ${cityName} (adresse introuvable)` };
                     }
                 } catch (err) {
@@ -119,13 +114,8 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 }
             }));
 
-            // Update state incrementally to show progress
             setParsedMatches([...updatedMatches]);
-
-            // Small delay between chunks to be nice to API
-            if (i + CHUNK_SIZE < matchesToEnrich.length) {
-                await new Promise(r => setTimeout(r, 1000));
-            }
+            if (i + CHUNK_SIZE < matchesToEnrich.length) await new Promise(r => setTimeout(r, 600));
         }
 
         setIsEnriching(false);
@@ -261,8 +251,49 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                                 <span className="text-slate-500 mx-2">vs</span>
                                                 <span className="font-medium text-slate-700">{match.opponent}</span>
                                             </div>
-                                            <div className="mt-1 text-xs text-slate-500">
-                                                📅 {match.date} à {match.time} • 📍 {match.location}
+                                            <div className="mt-2 flex flex-col gap-1">
+                                                <div className="text-xs text-slate-500">
+                                                    📅 {match.date} à {match.time}
+                                                </div>
+
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-lg">📍</span>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="text"
+                                                            value={match.location}
+                                                            onChange={(e) => {
+                                                                const newMatches = [...parsedMatches];
+                                                                newMatches[i] = { ...match, location: e.target.value };
+                                                                setParsedMatches(newMatches);
+                                                            }}
+                                                            className="w-full text-xs p-1.5 border border-slate-300 rounded focus:border-blue-500 focus:outline-none"
+                                                            placeholder="Adresse du match"
+                                                        />
+
+                                                        {match.candidates && match.candidates.length > 1 && (
+                                                            <div className="flex gap-1 flex-wrap mt-1">
+                                                                {match.candidates.map((cand, cIdx) => (
+                                                                    <button
+                                                                        key={cIdx}
+                                                                        onClick={() => {
+                                                                            const newMatches = [...parsedMatches];
+                                                                            newMatches[i] = { ...match, location: cand };
+                                                                            setParsedMatches(newMatches);
+                                                                        }}
+                                                                        className={`text-[10px] px-2 py-1 rounded-full border transition-colors text-left truncate max-w-full
+                                                                            ${match.location === cand
+                                                                                ? 'bg-blue-100 border-blue-400 text-blue-800'
+                                                                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                                                                        title={cand}
+                                                                    >
+                                                                        {cand.split(',')[0]}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
