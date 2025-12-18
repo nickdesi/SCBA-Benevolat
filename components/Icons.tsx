@@ -72,38 +72,79 @@ export const UserIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
-// Google Calendar Icon (Brand Colors)
+// Google Calendar Icon (Official Style)
 export const GoogleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
-        <path fill="#4285F4" d="M36 8H12c-2.21 0-4 1.79-4 4v24c0 2.21 1.79 4 4 4h24c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4z" />
-        <path fill="#fff" d="M24 14c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-        <path fill="#fff" d="M23 19h2v6h-2zm0 8h2v2h-2z" />
-        <rect fill="#EA4335" x="8" y="8" width="12" height="4" />
-        <rect fill="#FBBC04" x="28" y="8" width="12" height="4" />
-        <rect fill="#34A853" x="8" y="36" width="12" height="4" />
-        <rect fill="#4285F4" x="28" y="36" width="12" height="4" />
+        <rect fill="#fff" x="0" y="0" width="48" height="48" rx="8" ry="8" />
+        <path fill="#4285F4" d="M36.19 12.01L14.71 12.01C12.67 12.01 11 13.68 11 15.72L11 36.29C11 38.33 12.66 40 14.71 40L36.18 40C38.23 40 39.9 38.33 39.9 36.29L39.9 15.72C39.9 13.68 38.24 12.01 36.19 12.01Z" />
+        <path fill="#fff" d="M25.44 26.01C25.44 23.8 27.23 22.01 29.44 22.01C31.65 22.01 33.44 23.8 33.44 26.01C33.44 28.22 31.65 30.01 29.44 30.01C27.23 30.01 25.44 28.22 25.44 26.01Z" />
+        <path fill="#4285F4" d="M11 12h27.9c2.04 0 3.71 1.67 3.71 3.72v20.57c0 2.05-1.67 3.71-3.71 3.71H14.71c-2.05 0-3.71-1.67-3.71-3.71V12z" />
+        <path fill="#EA4335" d="M37.5,6v8.5H12V6c0-1.66,1.34-3,3-3h19.5C36.16,3,37.5,4.34,37.5,6z" />
+        <path fill="#34A853" d="M37.5,14.5v28c0,1.66-1.34,3-3,3h-22c-1.66,0-3-1.34-3-3v-28H37.5z" />
+        <path fill="#4285F4" d="M32.5 45.49L37.9 40.09C38.6 39.39 39 38.49 39 37.49L39 12.51C39 12.21 38.8 12.01 38.5 12.01L14.5 12.01L9.5 7.01C9 6.51 8.8 5.81 8.8 5.01L8.8 42.49C8.8 44.15 10.15 45.49 11.8 45.49L32.5 45.49Z" opacity="0" />
+        <g>
+            <path fill="#FBBC04" d="M12,41c0,1.66,1.34,3,3,3h23l-7-7H15C13.34,37,12,38.34,12,41z" />
+            <path fill="#1967D2" d="M37.5,14.5L37.5,14.5c0-1.66-1.34-3-3-3h-29L9.5,8L12,11.5l25.5,0V14.5z" />
+        </g>
+        <path d="M12,41c0,1.66,1.34,3,3,3h23c1.66,0,3-1.34,3-3v-6.5h-29V41z" fill="#34A853" />
+        <path d="M38,14.5c0-1.66-1.34-3-3-3H15c-1.66,0-3,1.34-3,3v20h26V14.5z" fill="#4285F4" />
+        <rect fill="#EA4335" x="12" y="6" width="26" height="8.5" />
+        <path fill="#FBBC04" d="M12,34.5v6.5c0,1.66,1.34,3,3,3h16V34.5H12z" />
+        <text x="50%" y="68%" textAnchor="middle" fill="#4285F4" fontSize="20" fontWeight="bold" fontFamily="Arial, Helvetica, sans-serif">31</text>
     </svg>
 );
 
-// Outlook Calendar Icon (Brand Color)
+// Outlook Calendar Icon (Official Style)
 export const OutlookCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
-        <path fill="#0078D4" d="M44 12v24c0 2.21-1.79 4-4 4H8c-2.21 0-4-1.79-4-4V12c0-2.21 1.79-4 4-4h32c2.21 0 4 1.79 4 4z" />
-        <path fill="#fff" d="M24 34c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8z" />
-        <path fill="#fff" d="M24 18c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
-        <path fill="#0078D4" d="M24 20c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" />
+        <path fill="#0078D4" d="M2.5 10.37L16.29 6.7V39.9L2.5 36.23L2.5 10.37Z" />
+        <path fill="#50D1FF" d="M7 16h6v3H7zM7 21h6v3H7zM7 26h6v3H7z" />
+        <path fill="#28A8EA" d="M16.29 6.7L42.16 10.37V39.9L16.29 36.23V6.7Z" opacity="0.3" />
+        <path fill="#107C41" d="M16 6.7h29.5v33.2H16z" opacity="0" />
+        <rect x="16.29" y="10.37" width="29.21" height="25.86" fill="#0078D4" opacity="0" />
+        <path fill="#0078D4" d="M16.29 6.7L44.5 10.37V39.9L16.29 36.23V6.7Z" opacity="0" />
+        <rect fill="#0072C6" x="16" y="8" width="28" height="32" rx="2" ry="2" />
+        <rect fill="#fff" x="18" y="10" width="24" height="28" rx="2" ry="2" opacity="0.1" />
+        <rect fill="#fff" x="17" y="9" width="26" height="30" rx="1" ry="1" />
+
+        {/* Envelope O shape */}
+        <rect fill="#0078D4" x="20" y="13" width="20" height="22" rx="2" ry="2" />
+        <path fill="#fff" d="M22 17h16v-2h-16v2zm0 4h16v-2h-16v2zm0 4h16v-2h-16v2zm0 4h10v-2h-10v2z" opacity="0.8" />
+
+        <g transform="translate(4, 18)">
+            <text x="0" y="0" fontFamily="Segoe UI, sans-serif" fontWeight="bold" fontSize="16" fill="#fff">O</text>
+        </g>
+        <path fill="#0072C6" d="M2 11S1 11 1 12v24c0 1 1 2 2 2h14l.01-14.73 24.99-9.13V12c0-1-1-2-2-2H2zm26.06 9.87L15.01 26.68 2 20.87v-5l26.06 5z" />
+        <path fill="#50D1FF" d="M15.01 26.68l-13.01-5.81v14.72l13.01 5.81V26.68z" />
+        <path fill="#28A8EA" d="M42 15.87l-13.94 5L41.39 26.68 42 26.43V15.87z" />
+        <path fill="#004b8c" d="M42 38H15.01v-3.79l26.39-11.78L42 22.68V38z" opacity=".2" />
+        <path fill="#004b8c" d="M15.01 41.4l-13.01-5.81v2.41c0 1 1 2 2 2h11.01V41.4z" opacity=".2" />
+        <path fill="#0078D4" d="M26 12L2 20.87v2.32L26 14.32V12zm0 18.84l-11-4.89V12l11 4.91v13.93z" opacity="0" />
+        <g transform="translate(1,9) scale(0.95)">
+            <rect fill="#0078D4" x="0" y="0" width="16" height="32" />
+            <text x="8" y="22" textAnchor="middle" fill="#fff" fontSize="20" fontWeight="bold" fontFamily="Arial">O</text>
+        </g>
+        <g transform="translate(17,8) scale(1)">
+            <rect fill="#fff" x="0" y="0" width="28" height="32" rx="2" ry="2" />
+            <rect fill="#0078D4" x="3" y="10" width="22" height="4" rx="1" />
+            <rect fill="#0078D4" x="3" y="16" width="22" height="4" rx="1" />
+            <rect fill="#0078D4" x="3" y="22" width="16" height="4" rx="1" />
+            <circle fill="#0078D4" cx="24" cy="24" r="3" />
+            <path fill="#fff" stroke="#fff" strokeWidth="1" d="M22,23 L23.5,25 L26,22" fill-opacity="0" />
+        </g>
     </svg>
 );
 
-// Apple Calendar Icon (Brand Style)
+// Apple Calendar Icon (Official Style)
 export const AppleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
-        <rect fill="#fff" x="6" y="10" width="36" height="32" rx="4" />
-        <path fill="#FF3B30" d="M42 10H6c-2.21 0-4 1.79-4 4v4h44v-4c0-2.21-1.79-4-4-4z" />
-        <text x="24" y="34" textAnchor="middle" fill="#1C1C1E" fontSize="16" fontWeight="bold" fontFamily="system-ui, -apple-system, sans-serif">
+        <rect fill="#fff" x="4" y="4" width="40" height="40" rx="9" ry="9" />
+        <path fill="#FF3B30" d="M44 13C44 8.02944 39.9706 4 35 4H13C8.02944 4 4 8.02944 4 13V16H44V13Z" />
+        <text x="50%" y="65%" textAnchor="middle" fill="#1C1C1E" fontSize="22" fontWeight="500" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
             {new Date().getDate()}
         </text>
-        <circle cx="16" cy="14" r="2" fill="#fff" />
-        <circle cx="32" cy="14" r="2" fill="#fff" />
+        <text x="50%" y="35%" textAnchor="middle" fill="#FF3B30" fontSize="9" fontWeight="600" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" className="uppercase tracking-widest">
+            {new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(new Date()).toUpperCase().replace('.', '')}
+        </text>
     </svg>
 );
