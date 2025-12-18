@@ -64,22 +64,79 @@ const normalizeTeamName = (team: string): string => {
 /**
  * Parse a date string in DD/MM/YYYY format to display and ISO formats
  */
+/**
+ * Parse a date string to display and ISO formats
+ * Supports: 
+ * - DD/MM/YYYY
+ * - DD MMM (e.g. "13 sept.") -> infers year based on current season (Sep-Dec = current year, Jan-Jul = next year)
+ */
 const parseDate = (dateStr: string): { display: string; iso: string } | null => {
-    const match = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if (!match) return null;
+    // Try DD/MM/YYYY
+    const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (slashMatch) {
+        const day = parseInt(slashMatch[1], 10);
+        const month = parseInt(slashMatch[2], 10) - 1; // 0-indexed
+        const year = parseInt(slashMatch[3], 10);
 
-    const day = parseInt(match[1], 10);
-    const month = parseInt(match[2], 10) - 1; // 0-indexed
-    const year = parseInt(match[3], 10);
+        const date = new Date(year, month, day);
+        const weekday = WEEKDAYS[date.getDay()];
+        const monthName = MONTHS[month];
 
-    const date = new Date(year, month, day);
-    const weekday = WEEKDAYS[date.getDay()];
-    const monthName = MONTHS[month];
+        return {
+            display: `${weekday} ${day} ${monthName} ${year}`,
+            iso: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        };
+    }
 
-    return {
-        display: `${weekday} ${day} ${monthName} ${year}`,
-        iso: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    };
+    // Try text format (Web copy paste): "13 sept." or "13 sept"
+    const textMatch = dateStr.toLowerCase().match(/(\d{1,2})\s+([a-zéû]+)/);
+    if (textMatch) {
+        const day = parseInt(textMatch[1], 10);
+        const monthStr = textMatch[2].replace('.', ''); // remove dot if present
+
+        // Find month index
+        const monthIndex = MONTHS.findIndex(m => m.toLowerCase().startsWith(monthStr));
+        if (monthIndex === -1) return null;
+
+        // Infer year logic:
+        // Season starts in Sept (Month 8). 
+        // If current date is Oct 2024, and parsed month is Sept -> 2024
+        // If parsed month is Jan -> 2025
+        const now = new Date();
+        let year = now.getFullYear();
+
+        // If we are currently in late year (Aug-Dec), dates like Jan/Feb/Mar are typically for NEXT year
+        if (now.getMonth() >= 7 && monthIndex < 7) {
+            year += 1;
+        }
+        // If we are currently in early year (Jan-Jul), dates like Sept/Oct/Nov are typically for PREVIOUS year (last season part) 
+        // BUT usually we import future games. So if current is Jan 2025, and input is Dec -> Dec 2024? Or Dec 2025?
+        // Let's assume matches are for the CURRENT/COMING season.
+        // If importing in May 2025, and input is Sept -> Sept 2025 (next season start)
+
+        // Simplification for basketball season (Sept YYYY -> June YYYY+1)
+        // If Month is Sept-Dec (8-11), it uses the "Season Start Year"
+        // If Month is Jan-July (0-6), it uses "Season Start Year + 1"
+
+        // Current logic: Detect "current season start year"
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const seasonStartYear = currentMonth >= 7 ? currentYear : currentYear - 1;
+
+        const targetYear = (monthIndex >= 7) ? seasonStartYear : seasonStartYear + 1;
+
+        // Construct date
+        const date = new Date(targetYear, monthIndex, day);
+        const weekday = WEEKDAYS[date.getDay()];
+        const monthName = MONTHS[monthIndex];
+
+        return {
+            display: `${weekday} ${day} ${monthName} ${targetYear}`,
+            iso: `${targetYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        };
+    }
+
+    return null;
 };
 
 /**

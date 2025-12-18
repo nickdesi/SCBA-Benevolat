@@ -63,10 +63,13 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         <>
                             {/* Format info */}
                             <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <p className="text-sm text-slate-600 font-medium mb-2">📋 Format attendu :</p>
-                                <code className="text-xs text-slate-500 block">
-                                    Date;Heure;Domicile;Visiteur;Salle
-                                </code>
+                                <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
+                                <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
+                                    <li>Allez sur la page FFBB de l'équipe</li>
+                                    <li>Sélectionnez le tableau des matchs "A Venir"</li>
+                                    <li>Copiez le tableau (Ctrl+C)</li>
+                                    <li>Collez directement ci-dessous (Ctrl+V)</li>
+                                </ul>
                                 <button
                                     onClick={loadSample}
                                     className="mt-2 text-xs text-blue-600 hover:text-blue-700 underline"
@@ -79,7 +82,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                             <textarea
                                 value={csvContent}
                                 onChange={(e) => setCsvContent(e.target.value)}
-                                placeholder="Collez le contenu CSV ici...&#10;&#10;Exemple:&#10;14/12/2024;15:00;SCBA U11-1;ROYAT;Maison des Sports"
+                                placeholder="Collez le tableau FFBB ici...&#10;&#10;Exemple de ligne reconnue :&#10;14	Sam 14 déc.	20:30	STADE CLERMONTOIS...	IE - CTC CHABLAIS..."
                                 className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
                                          focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
                                          resize-none"
