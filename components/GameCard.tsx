@@ -3,7 +3,7 @@ import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
 import CarpoolingSection from './CarpoolingSection';
-import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from './Icons';
+import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon, GoogleCalendarIcon, OutlookCalendarIcon, AppleCalendarIcon } from './Icons';
 import { downloadGameCalendar, getGoogleCalendarUrl, getOutlookCalendarUrl } from '../utils/calendar';
 
 interface GameCardProps {
@@ -268,7 +268,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                     onClick={handleGoogleCalendar}
                                     className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left"
                                 >
-                                    <span className="text-2xl">📅</span>
+                                    <GoogleCalendarIcon className="w-8 h-8" />
                                     <div>
                                         <p className="font-semibold text-slate-800">Google Calendar</p>
                                         <p className="text-xs text-slate-500">Ouvre directement dans Google</p>
@@ -278,7 +278,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                     onClick={handleOutlookCalendar}
                                     className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-100"
                                 >
-                                    <span className="text-2xl">📧</span>
+                                    <OutlookCalendarIcon className="w-8 h-8" />
                                     <div>
                                         <p className="font-semibold text-slate-800">Outlook</p>
                                         <p className="text-xs text-slate-500">Ouvre dans Outlook.com</p>
@@ -288,7 +288,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                     onClick={handleAppleCalendar}
                                     className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-100"
                                 >
-                                    <span className="text-2xl">🍎</span>
+                                    <AppleCalendarIcon className="w-8 h-8" />
                                     <div>
                                         <p className="font-semibold text-slate-800">Apple Calendar / Autre</p>
                                         <p className="text-xs text-slate-500">Télécharge un fichier .ics</p>

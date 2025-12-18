@@ -71,3 +71,39 @@ export const UserIcon: React.FC<{ className?: string }> = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
     </svg>
 );
+
+// Google Calendar Icon (Brand Colors)
+export const GoogleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
+        <path fill="#4285F4" d="M36 8H12c-2.21 0-4 1.79-4 4v24c0 2.21 1.79 4 4 4h24c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4z" />
+        <path fill="#fff" d="M24 14c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+        <path fill="#fff" d="M23 19h2v6h-2zm0 8h2v2h-2z" />
+        <rect fill="#EA4335" x="8" y="8" width="12" height="4" />
+        <rect fill="#FBBC04" x="28" y="8" width="12" height="4" />
+        <rect fill="#34A853" x="8" y="36" width="12" height="4" />
+        <rect fill="#4285F4" x="28" y="36" width="12" height="4" />
+    </svg>
+);
+
+// Outlook Calendar Icon (Brand Color)
+export const OutlookCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
+        <path fill="#0078D4" d="M44 12v24c0 2.21-1.79 4-4 4H8c-2.21 0-4-1.79-4-4V12c0-2.21 1.79-4 4-4h32c2.21 0 4 1.79 4 4z" />
+        <path fill="#fff" d="M24 34c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8z" />
+        <path fill="#fff" d="M24 18c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+        <path fill="#0078D4" d="M24 20c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" />
+    </svg>
+);
+
+// Apple Calendar Icon (Brand Style)
+export const AppleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
+        <rect fill="#fff" x="6" y="10" width="36" height="32" rx="4" />
+        <path fill="#FF3B30" d="M42 10H6c-2.21 0-4 1.79-4 4v4h44v-4c0-2.21-1.79-4-4-4z" />
+        <text x="24" y="34" textAnchor="middle" fill="#1C1C1E" fontSize="16" fontWeight="bold" fontFamily="system-ui, -apple-system, sans-serif">
+            {new Date().getDate()}
+        </text>
+        <circle cx="16" cy="14" r="2" fill="#fff" />
+        <circle cx="32" cy="14" r="2" fill="#fff" />
+    </svg>
+);
