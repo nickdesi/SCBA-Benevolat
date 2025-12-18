@@ -10,18 +10,19 @@ interface ImportCSVModalProps {
 
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, onImport }) => {
     const [csvContent, setCsvContent] = useState('');
+    const [selectedTeam, setSelectedTeam] = useState<string>('SENIOR M1');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
     const [step, setStep] = useState<'input' | 'preview'>('input');
 
     const handleParse = useCallback(() => {
-        const result = parseCSV(csvContent);
+        const result = parseCSV(csvContent, selectedTeam);
         setParsedMatches(result.success);
         setErrors(result.errors);
         if (result.success.length > 0) {
             setStep('preview');
         }
-    }, [csvContent]);
+    }, [csvContent, selectedTeam]);
 
     const handleImport = useCallback(() => {
         const gameData = parsedMatches.map(toGameFormData);
@@ -61,7 +62,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 <div className="p-6 overflow-y-auto max-h-[60vh]">
                     {step === 'input' ? (
                         <>
-                            {/* Format info */}
                             <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
                                 <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
                                 <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
@@ -70,19 +70,36 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                     <li>Copiez le tableau (Ctrl+C)</li>
                                     <li>Collez directement ci-dessous (Ctrl+V)</li>
                                 </ul>
-                                <button
-                                    onClick={loadSample}
-                                    className="mt-2 text-xs text-blue-600 hover:text-blue-700 underline"
+                            </div>
+
+                            {/* Team Selector */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    Équipe concernée (si non détectée automatiquement)
+                                </label>
+                                <select
+                                    value={selectedTeam}
+                                    onChange={(e) => setSelectedTeam(e.target.value)}
+                                    className="w-full p-2 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-500 outline-none"
                                 >
-                                    Charger un exemple
-                                </button>
+                                    {[
+                                        "SENIOR M1", "SENIOR M2",
+                                        "U18 M1", "U18 M2",
+                                        "U15 M1", "U15 M2",
+                                        "U13 M1",
+                                        "U11 M1", "U11 M2",
+                                        "U9 M1"
+                                    ].map(team => (
+                                        <option key={team} value={team}>{team}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             {/* Textarea */}
                             <textarea
                                 value={csvContent}
                                 onChange={(e) => setCsvContent(e.target.value)}
-                                placeholder="Collez le tableau FFBB ici...&#10;&#10;Exemple de ligne reconnue :&#10;14	Sam 14 déc.	20:30	STADE CLERMONTOIS...	IE - CTC CHABLAIS..."
+                                placeholder="Collez le tableau FFBB ici...&#10;&#10;Texte brut supporté (voir exemple)"
                                 className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
                                          focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
                                          resize-none"

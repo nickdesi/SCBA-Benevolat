@@ -2,10 +2,16 @@
  * CSV Import Utility for FFBB match schedules
  * 
  * Expected CSV format (copy-paste from FFBB website):
- * Date;Heure;Domicile;Visiteur;Salle
+ * - Standard: Date;Heure;Domicile;Visiteur;Salle
+ * - Block: Multi-line text copy from FFBB "A Venir" table
  * 
- * Example:
- * 14/12/2024;15:00;SCBA U11-1;ROYAT;Maison des Sports
+ * Example Block:
+ * #123
+ * J14
+ * 14 janv. 20:00
+ * Domicile
+ * (empty)
+ * Adversaire
  */
 
 import type { GameFormData } from '../types';
@@ -62,9 +68,6 @@ const normalizeTeamName = (team: string): string => {
 };
 
 /**
- * Parse a date string in DD/MM/YYYY format to display and ISO formats
- */
-/**
  * Parse a date string to display and ISO formats
  * Supports: 
  * - DD/MM/YYYY
@@ -99,26 +102,7 @@ const parseDate = (dateStr: string): { display: string; iso: string } | null => 
         if (monthIndex === -1) return null;
 
         // Infer year logic:
-        // Season starts in Sept (Month 8). 
-        // If current date is Oct 2024, and parsed month is Sept -> 2024
-        // If parsed month is Jan -> 2025
         const now = new Date();
-        let year = now.getFullYear();
-
-        // If we are currently in late year (Aug-Dec), dates like Jan/Feb/Mar are typically for NEXT year
-        if (now.getMonth() >= 7 && monthIndex < 7) {
-            year += 1;
-        }
-        // If we are currently in early year (Jan-Jul), dates like Sept/Oct/Nov are typically for PREVIOUS year (last season part) 
-        // BUT usually we import future games. So if current is Jan 2025, and input is Dec -> Dec 2024? Or Dec 2025?
-        // Let's assume matches are for the CURRENT/COMING season.
-        // If importing in May 2025, and input is Sept -> Sept 2025 (next season start)
-
-        // Simplification for basketball season (Sept YYYY -> June YYYY+1)
-        // If Month is Sept-Dec (8-11), it uses the "Season Start Year"
-        // If Month is Jan-July (0-6), it uses "Season Start Year + 1"
-
-        // Current logic: Detect "current season start year"
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
         const seasonStartYear = currentMonth >= 7 ? currentYear : currentYear - 1;
@@ -157,99 +141,187 @@ const isSCBATeam = (team: string): boolean => {
 
 /**
  * Parse CSV content to match data
+ * Supports:
+ * - Standard CSV (semicolon/comma separated)
+ * - Tab-separated (Web copy paste)
+ * - Multi-line Block Format (FFBB "A Venir" table copy)
  */
-export const parseCSV = (csvContent: string): ImportResult => {
-    const lines = csvContent.trim().split('\n').filter(line => line.trim());
+export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'): ImportResult => {
+    const lines = csvContent.trim().split('\n').map(l => l.trim()).filter(l => l);
     const result: ImportResult = { success: [], errors: [] };
 
-    // Skip header line if detected (looks for "Date" or "Rencontre")
+    // Detect format type
+    // If lines look like blocks (contain "#123", "J12", then date, then "Domicile"...)
+    const isBlockFormat = lines.some(l => l.startsWith('#') || l.match(/^J\d+/));
+
+    if (isBlockFormat) {
+        let currentMatch: Partial<ParsedMatch> = {};
+
+        // We iterate line by line and build match objects
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // 1. Skip match ID (#123) and Day (J13)
+            if (line.startsWith('#') || line.match(/^J\d+$/)) continue;
+
+            // 2. Try to find Date "10 janv. 20h00"
+            const dateMatch = line.match(/(\d{1,2}\s+[a-zéû]+\.?)\s+(\d{1,2}[h:]\d{2})/i);
+            if (dateMatch) {
+                // If we already had a match in progress but it wasn't finished, ignore it (or error?)
+                // Actually start a new match
+                currentMatch = {};
+
+                const dateStr = dateMatch[1];
+                const timeStr = dateMatch[2];
+                const parsedDate = parseDate(dateStr);
+
+                if (parsedDate) {
+                    currentMatch.date = parsedDate.display;
+                    currentMatch.dateISO = parsedDate.iso;
+                    currentMatch.time = parseTime(timeStr);
+                    continue;
+                }
+            }
+
+            // 3. Try to find Location (Domicile/Extérieur)
+            if (line.toLowerCase() === 'domicile') {
+                currentMatch.isHome = true;
+                currentMatch.team = normalizeTeamName(defaultTeam);
+                // Specific rule for SENIOR M1: Gymnase Fleury
+                currentMatch.location = currentMatch.team === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
+                continue;
+            } else if (line.toLowerCase() === 'extérieur' || line.toLowerCase() === 'exterieur') {
+                currentMatch.isHome = false;
+                currentMatch.team = normalizeTeamName(defaultTeam);
+                currentMatch.location = 'Extérieur';
+                continue;
+            }
+
+            // 4. Try to find Opponent (Anything else that's not a score or empty)
+            // It MUST come after we found date and location keywords
+            if (currentMatch.date && typeof currentMatch.isHome !== 'undefined' && !currentMatch.opponent) {
+                // Ignore scores "0" or "-"
+                if (line === '0' || line === '-') continue;
+
+                // If line is not a number, it's the opponent
+                if (!line.match(/^\d+$/)) {
+                    currentMatch.opponent = line;
+
+                    // Match is complete!
+                    result.success.push(currentMatch as ParsedMatch);
+                    currentMatch = {}; // Reset
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // fallback to Line-by-Line CSV/TSV parser
     const headerLine = lines[0]?.toLowerCase();
     const startIndex = (headerLine.includes('date') || headerLine.includes('rencontre')) ? 1 : 0;
 
     for (let i = startIndex; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
+        const line = lines[i];
 
         try {
-            // Support ;, , and Tab (\t) as separators
-            // Tab is common when copying tables from websites
             let separator = ';';
             if (line.includes('\t')) separator = '\t';
             else if (line.includes(',')) separator = ',';
 
-            // Remove multiple spaces/tabs if using spaces as potential separator (unreliable, so we focus on explicit separators)
-            const parts = line.split(separator).map(p => p.trim()).filter(p => p !== ''); // Filter empty parts for tab-separated which might have double tabs
+            const parts = line.split(separator).map(p => p.trim()).filter(p => p !== '');
 
-            // If we have less than 4 parts, it might be a weird copy-paste.
-            // FFBB web format usually has: Match | Date | Heure | Domicile | Visiteur | Resultat | ...
-            // Or: Date | Heure | Domicile | Score | Visiteur | Lieu
-
-            // Let's try to identify columns by content type rather than fixed index
-
+            // Try to adapt to standard format with selectedTeam fallback
             let dateStr = '', timeStr = '', homeTeam = '', awayTeam = '', location = '';
 
-            // Strategy 1: Standard CSV (Date;Heure;Dom;Vis;Lieu)
-            if (parts.length >= 4 && parts[0].match(/\d{2}\/\d{2}/)) {
-                dateStr = parts[0];
-                timeStr = parts[1];
-                homeTeam = parts[2];
-                awayTeam = parts[3];
-                location = parts[4] || '';
-            }
-            // Strategy 2: Web Copy Paste (might have index or day name first)
-            // Example: "1	Dim 14/12/2024	15:00	SCBA...	ROYAT..."
-            else {
-                // Find date-like part
-                const dateIdx = parts.findIndex(p => p.match(/\d{2}\/\d{2}/));
-                if (dateIdx !== -1 && parts.length >= dateIdx + 4) {
-                    dateStr = parts[dateIdx];
+            // Find explicit date format
+            const dateIdx = parts.findIndex(p => p.match(/\d{2}\/\d{2}/) || p.match(/\d{1,2}\s+[a-zéû]+/i));
+
+            if (dateIdx !== -1 && parts.length >= dateIdx + 2) {
+                dateStr = parts[dateIdx];
+                // Check if time is in same part or next
+                if (parts[dateIdx].match(/\d{2}:\d{2}/)) {
+                    timeStr = parts[dateIdx].split(' ')[1] || '00:00';
+                } else {
                     timeStr = parts[dateIdx + 1];
+                }
+
+                // If standard line format (Dom/Vis)
+                if (parts.length >= dateIdx + 4) {
                     homeTeam = parts[dateIdx + 2];
                     awayTeam = parts[dateIdx + 3];
-
-                    // Sometimes score is between teams if match is played
-                    // Check if homeTeam or awayTeam looks like a score "64 - 55"
-                    if (homeTeam.match(/^\d+/) || awayTeam.match(/^\d+/)) {
-                        // Shift for score columns? This is tricky.
-                        // For future matches (what we care about), there is no score.
-                    }
-
                     location = parts[dateIdx + 4] || '';
                 } else {
-                    throw new Error("Impossible d'identifier les colonnes (Date introuvable)");
+                    // Incomplete line
+                    continue;
                 }
-            }
-
-            // Parse date
-            const parsedDate = parseDate(dateStr);
-            if (!parsedDate) {
-                result.errors.push({
-                    line: i + 1,
-                    content: line,
-                    error: `Date invalide: "${dateStr}" (format attendu: JJ/MM/AAAA)`
-                });
+            } else {
+                if (line.length > 5) // Ignore very short lines
+                    result.errors.push({ line: i + 1, content: line, error: "Date introuvable" });
                 continue;
             }
 
-            // Determine if SCBA is home or away
+            const parsedDate = parseDate(dateStr);
+            if (!parsedDate) continue;
+
             const isHome = isSCBATeam(homeTeam);
-            const scbaTeam = isHome ? homeTeam : awayTeam;
-            const opponent = isHome ? awayTeam : homeTeam;
+            let finalTeam = isHome ? homeTeam : awayTeam;
+            let finalOpponent = isHome ? awayTeam : homeTeam;
+            let finalIsHome = isHome;
+
+            // If SCBA not detected (e.g. web copy where user's team is implicit), use defaultTeam
+            if (!isSCBATeam(homeTeam) && !isSCBATeam(awayTeam)) {
+                // Check if we can infer from location
+                if (location.toLowerCase().includes('maison des sports') || location.toLowerCase().includes('clermont') || location.toLowerCase().includes('fleury')) {
+                    finalIsHome = true;
+                    finalTeam = defaultTeam;
+                    finalOpponent = awayTeam;
+                } else {
+                    // Heuristic: Check if defaultTeam parts are in home/away
+                    const teamParts = defaultTeam.split(' ');
+                    const homeMatches = teamParts.some(p => homeTeam.toUpperCase().includes(p));
+                    const awayMatches = teamParts.some(p => awayTeam.toUpperCase().includes(p));
+
+                    if (homeMatches && !awayMatches) {
+                        finalIsHome = true;
+                        finalTeam = defaultTeam;
+                        finalOpponent = awayTeam;
+                    } else if (!homeMatches && awayMatches) {
+                        finalIsHome = false;
+                        finalTeam = defaultTeam;
+                        finalOpponent = homeTeam;
+                    } else {
+                        // Default fallback: Assuming standard "Dom vs Vis".
+                        // If user selected "My Team", we assume the import is for "My Team".
+                        // We can't know for sure without location or team name match.
+                        // Let's assume standard FFBB column order: Home matches have user's team in col 1?
+                        // No, FFBB tables vary.
+
+                        result.errors.push({ line: i + 1, content: line, error: "Impossible de déterminer Domicile/Extérieur (SCBA non détecté)" });
+                        continue;
+                    }
+                }
+            }
+
+            // Define default home location based on team
+            const normalizedTeam = normalizeTeamName(finalTeam);
+            const defaultHomeLocation = normalizedTeam === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
 
             result.success.push({
                 date: parsedDate.display,
                 dateISO: parsedDate.iso,
                 time: parseTime(timeStr),
-                team: normalizeTeamName(scbaTeam),
-                opponent: opponent,
-                location: location || (isHome ? 'Maison des Sports' : 'Extérieur'),
-                isHome
+                team: normalizedTeam,
+                opponent: finalOpponent,
+                location: location || (finalIsHome ? defaultHomeLocation : 'Extérieur'),
+                isHome: finalIsHome
             });
+
         } catch (err) {
             result.errors.push({
                 line: i + 1,
                 content: line,
-                error: `Erreur de parsing: ${err}`
+                error: `Erreur: ${err}`
             });
         }
     }
