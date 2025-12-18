@@ -105,28 +105,63 @@ export const parseCSV = (csvContent: string): ImportResult => {
     const lines = csvContent.trim().split('\n').filter(line => line.trim());
     const result: ImportResult = { success: [], errors: [] };
 
-    // Skip header line if detected
-    const startIndex = lines[0]?.toLowerCase().includes('date') ? 1 : 0;
+    // Skip header line if detected (looks for "Date" or "Rencontre")
+    const headerLine = lines[0]?.toLowerCase();
+    const startIndex = (headerLine.includes('date') || headerLine.includes('rencontre')) ? 1 : 0;
 
     for (let i = startIndex; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
         try {
-            // Support both ; and , as separators
-            const separator = line.includes(';') ? ';' : ',';
-            const parts = line.split(separator).map(p => p.trim());
+            // Support ;, , and Tab (\t) as separators
+            // Tab is common when copying tables from websites
+            let separator = ';';
+            if (line.includes('\t')) separator = '\t';
+            else if (line.includes(',')) separator = ',';
 
-            if (parts.length < 4) {
-                result.errors.push({
-                    line: i + 1,
-                    content: line,
-                    error: 'Format invalide (attendu: Date;Heure;Domicile;Visiteur;Salle)'
-                });
-                continue;
+            // Remove multiple spaces/tabs if using spaces as potential separator (unreliable, so we focus on explicit separators)
+            const parts = line.split(separator).map(p => p.trim()).filter(p => p !== ''); // Filter empty parts for tab-separated which might have double tabs
+
+            // If we have less than 4 parts, it might be a weird copy-paste.
+            // FFBB web format usually has: Match | Date | Heure | Domicile | Visiteur | Resultat | ...
+            // Or: Date | Heure | Domicile | Score | Visiteur | Lieu
+
+            // Let's try to identify columns by content type rather than fixed index
+
+            let dateStr = '', timeStr = '', homeTeam = '', awayTeam = '', location = '';
+
+            // Strategy 1: Standard CSV (Date;Heure;Dom;Vis;Lieu)
+            if (parts.length >= 4 && parts[0].match(/\d{2}\/\d{2}/)) {
+                dateStr = parts[0];
+                timeStr = parts[1];
+                homeTeam = parts[2];
+                awayTeam = parts[3];
+                location = parts[4] || '';
             }
+            // Strategy 2: Web Copy Paste (might have index or day name first)
+            // Example: "1	Dim 14/12/2024	15:00	SCBA...	ROYAT..."
+            else {
+                // Find date-like part
+                const dateIdx = parts.findIndex(p => p.match(/\d{2}\/\d{2}/));
+                if (dateIdx !== -1 && parts.length >= dateIdx + 4) {
+                    dateStr = parts[dateIdx];
+                    timeStr = parts[dateIdx + 1];
+                    homeTeam = parts[dateIdx + 2];
+                    awayTeam = parts[dateIdx + 3];
 
-            const [dateStr, timeStr, homeTeam, awayTeam, location = ''] = parts;
+                    // Sometimes score is between teams if match is played
+                    // Check if homeTeam or awayTeam looks like a score "64 - 55"
+                    if (homeTeam.match(/^\d+/) || awayTeam.match(/^\d+/)) {
+                        // Shift for score columns? This is tricky.
+                        // For future matches (what we care about), there is no score.
+                    }
+
+                    location = parts[dateIdx + 4] || '';
+                } else {
+                    throw new Error("Impossible d'identifier les colonnes (Date introuvable)");
+                }
+            }
 
             // Parse date
             const parsedDate = parseDate(dateStr);
