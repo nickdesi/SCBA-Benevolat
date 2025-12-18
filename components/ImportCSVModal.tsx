@@ -1,6 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
 import { parseCSV, toGameFormData, type ParsedMatch } from '../utils/csvImport';
-import { parseFFBBTeamPage, isValidFFBBUrl } from '../utils/ffbbScraper';
 import type { GameFormData } from '../types';
 
 interface ImportCSVModalProps {
@@ -9,19 +8,13 @@ interface ImportCSVModalProps {
     onImport: (matches: GameFormData[]) => void;
 }
 
-type ImportMode = 'paste' | 'ffbb';
-
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, onImport }) => {
-    const [importMode, setImportMode] = useState<ImportMode>('paste');
     const [csvContent, setCsvContent] = useState('');
-    const [ffbbUrl, setFfbbUrl] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<string>('SENIOR M1');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
     const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0 });
 
     // Parse from CSV/paste
     const handleParse = useCallback(() => {
@@ -33,39 +26,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
         }
     }, [csvContent, selectedTeam]);
 
-    // Parse from FFBB URL
-    const handleFetchFFBB = useCallback(async () => {
-        if (!isValidFFBBUrl(ffbbUrl)) {
-            setErrors([{ line: 0, content: ffbbUrl, error: 'URL FFBB invalide' }]);
-            return;
-        }
-
-        setIsLoading(true);
-        setErrors([]);
-        setLoadingProgress({ current: 0, total: 0 });
-
-        try {
-            const result = await parseFFBBTeamPage(
-                ffbbUrl,
-                selectedTeam,
-                (current, total) => setLoadingProgress({ current, total })
-            );
-
-            setParsedMatches(result.success);
-            if (result.errors.length > 0) {
-                setErrors(result.errors.map((e, i) => ({ line: i, content: '', error: e })));
-            }
-            if (result.success.length > 0) {
-                setStep('preview');
-            }
-        } catch (err) {
-            setErrors([{ line: 0, content: '', error: `Erreur: ${err instanceof Error ? err.message : 'Erreur inconnue'}` }]);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [ffbbUrl, selectedTeam]);
-
-    // Enrich locations with Nominatim (for paste mode)
+    // Enrich locations with Nominatim
     const handleEnrichLocations = useCallback(async () => {
         setIsEnriching(true);
         const updatedMatches = [...parsedMatches];
@@ -151,12 +112,10 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
     const handleClose = useCallback(() => {
         setCsvContent('');
-        setFfbbUrl('');
         setParsedMatches([]);
         setErrors([]);
         setStep('input');
         setIsEnriching(false);
-        setIsLoading(false);
         onClose();
     }, [onClose]);
 
@@ -180,7 +139,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         📥 Importer des matchs
                     </h2>
                     <p className="text-blue-100 text-sm mt-1">
-                        Depuis FFBB ou copier-coller
+                        Copier-coller depuis le calendrier équipe FFBB
                     </p>
                 </div>
 
@@ -188,28 +147,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 <div className="p-6 overflow-y-auto max-h-[60vh]">
                     {step === 'input' ? (
                         <>
-                            {/* Mode Tabs */}
-                            <div className="flex gap-2 mb-4">
-                                <button
-                                    onClick={() => setImportMode('ffbb')}
-                                    className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${importMode === 'ffbb'
-                                            ? 'bg-orange-500 text-white shadow-md'
-                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                        }`}
-                                >
-                                    🌐 URL FFBB (recommandé)
-                                </button>
-                                <button
-                                    onClick={() => setImportMode('paste')}
-                                    className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold transition-all ${importMode === 'paste'
-                                            ? 'bg-blue-500 text-white shadow-md'
-                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                        }`}
-                                >
-                                    📋 Copier-Coller
-                                </button>
-                            </div>
-
                             {/* Team Selector */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -226,65 +163,25 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 </select>
                             </div>
 
-                            {/* FFBB URL Mode */}
-                            {importMode === 'ffbb' && (
-                                <>
-                                    <div className="mb-4 p-4 bg-orange-50 rounded-xl border border-orange-200">
-                                        <p className="text-sm text-orange-700 font-medium mb-2">🔗 Import automatique :</p>
-                                        <ul className="text-xs text-orange-600 list-disc list-inside space-y-1">
-                                            <li>Collez l'URL de la page équipe FFBB</li>
-                                            <li>L'app récupère automatiquement tous les matchs</li>
-                                            <li>Les salles exactes sont extraites directement</li>
-                                        </ul>
-                                    </div>
+                            {/* Instructions */}
+                            <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
+                                <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
+                                    <li>Allez sur la page FFBB de l'équipe</li>
+                                    <li>Sélectionnez le tableau des matchs (calendrier équipe)</li>
+                                    <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
+                                </ul>
+                            </div>
 
-                                    <input
-                                        type="url"
-                                        value={ffbbUrl}
-                                        onChange={(e) => setFfbbUrl(e.target.value)}
-                                        placeholder="https://competitions.ffbb.com/competitions/..."
-                                        className="w-full p-3 border-2 border-slate-200 rounded-xl text-sm
-                                                 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
-                                    />
-
-                                    {isLoading && (
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                                            <div className="flex items-center gap-3">
-                                                <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                                                <span className="text-sm text-blue-700">
-                                                    {loadingProgress.total > 0
-                                                        ? `Récupération match ${loadingProgress.current}/${loadingProgress.total}...`
-                                                        : 'Chargement de la page équipe...'
-                                                    }
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Paste Mode */}
-                            {importMode === 'paste' && (
-                                <>
-                                    <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                        <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
-                                        <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
-                                            <li>Allez sur la page FFBB de l'équipe</li>
-                                            <li>Sélectionnez le tableau des matchs</li>
-                                            <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
-                                        </ul>
-                                    </div>
-
-                                    <textarea
-                                        value={csvContent}
-                                        onChange={(e) => setCsvContent(e.target.value)}
-                                        placeholder="Collez le tableau FFBB ici..."
-                                        className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
-                                                 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                                                 resize-none"
-                                    />
-                                </>
-                            )}
+                            {/* Textarea */}
+                            <textarea
+                                value={csvContent}
+                                onChange={(e) => setCsvContent(e.target.value)}
+                                placeholder="Collez le tableau FFBB ici..."
+                                className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
+                                         focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
+                                         resize-none"
+                            />
 
                             {/* Errors */}
                             {errors.length > 0 && (
@@ -307,16 +204,14 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                         ✅ {parsedMatches.length} match(s) détecté(s)
                                     </p>
 
-                                    {importMode === 'paste' && (
-                                        <button
-                                            onClick={handleEnrichLocations}
-                                            disabled={isEnriching}
-                                            className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 font-bold rounded-lg 
-                                                     hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
-                                        >
-                                            {isEnriching ? <>⏳ Recherche...</> : <>🔍 Trouver les gymnases</>}
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={handleEnrichLocations}
+                                        disabled={isEnriching}
+                                        className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 font-bold rounded-lg 
+                                                 hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+                                    >
+                                        {isEnriching ? <>⏳ Recherche...</> : <>🔍 Trouver les gymnases</>}
+                                    </button>
                                 </div>
 
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -368,16 +263,13 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                     </button>
                     {step === 'input' ? (
                         <button
-                            onClick={importMode === 'ffbb' ? handleFetchFFBB : handleParse}
-                            disabled={importMode === 'ffbb' ? (!ffbbUrl.trim() || isLoading) : !csvContent.trim()}
-                            className={`px-6 py-2 text-sm font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all
+                            onClick={handleParse}
+                            disabled={!csvContent.trim()}
+                            className="px-6 py-2 text-sm font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all
                                       disabled:opacity-50 disabled:cursor-not-allowed
-                                      ${importMode === 'ffbb'
-                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
-                                    : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-                                }`}
+                                      bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
                         >
-                            {isLoading ? '⏳ Chargement...' : 'Récupérer les matchs →'}
+                            Analyser →
                         </button>
                     ) : (
                         <button
