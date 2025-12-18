@@ -15,6 +15,7 @@ import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
 import ImportCSVModal from './components/ImportCSVModal';
+import MatchTicker from './components/MatchTicker';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
 import { ToastContainer, useToast } from './components/Toast';
@@ -57,13 +58,6 @@ function App() {
         ...doc.data()
       } as Game));
 
-      // Sort by date (naive string sort YYYY-MM-DD or comparable is best, 
-      // strictly assuming DD/MM/YYYY text might need better parsing, 
-      // but let's keep consistency with current behavior)
-      // Since current dates are free text like "Samedi 15", sorting is tricky without proper Date objects.
-      // For now, we trust the order or just simple sort.
-      // Ideally we would add a 'sortOrder' or 'timestamp' field.
-      // For now, let's just set them.
       setGames(matchesData);
       setLoading(false);
     });
@@ -437,6 +431,9 @@ function App() {
         onSelectTeam={setSelectedTeam}
       />
 
+      {/* Ticker for upcoming matches */}
+      <MatchTicker games={sortedGames} />
+
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
@@ -513,8 +510,6 @@ function App() {
           </div>
         )}
 
-        {/* Filter Bar removed (moved to Header) */}
-
         {/* Grouped Games List */}
         <div className="space-y-12">
           {(() => {
@@ -539,9 +534,6 @@ function App() {
                 const parts = game.date.split(' ');
                 if (parts.length >= 3) {
                   // Heuristic: take last part as year, 3rd to last as month
-                  // But standard text is "Samedi 12 Janvier". Month is index 2.
-                  // This is fragile but acceptable for legacy. 
-                  // Better: Just use the month name if present.
                   label = parts.length > 2 ? parts.slice(2).join(' ') : game.date;
                 }
               }
@@ -562,11 +554,16 @@ function App() {
                                 bg-gradient-to-r from-slate-800 to-slate-700 
                                 rounded-full shadow-lg shadow-slate-900/20">
                     <span className="text-2xl">📅</span>
-                    <span className="text-lg font-black text-white tracking-wide">
-                      {group.label}
-                    </span>
-                    <span className="text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full">
-                      {group.games.length} match{group.games.length > 1 ? 's' : ''}
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-lg font-black text-white tracking-wide">
+                        {group.label}
+                      </span>
+                      <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">
+                        {group.games.filter(g => g.isHome !== false).length} Dom • {group.games.filter(g => g.isHome === false).length} Ext
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full ml-2">
+                      {group.games.length} matchs
                     </span>
                   </div>
                 </div>
