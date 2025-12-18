@@ -41,7 +41,10 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
                 try {
                     // Use OpenStreetMap Nominatim API for POI search
+                    // More specific terms for basketball venues
                     const queries = [
+                        `palais des sports ${cityName}`,
+                        `basket ${cityName}`,
                         `gymnase ${cityName}`,
                         `salle de sport ${cityName}`,
                         `complexe sportif ${cityName}`
@@ -63,8 +66,14 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                             const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
                             const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                            // Check if result city matches our target city
-                            if (resultCityNorm.includes(cityNameLower) || cityNameLower.includes(resultCityNorm)) {
+                            // Check if result city STARTS with our target city name
+                            // This prevents "Castelnau" matching "Castelnau-Magnoac" when we want "Castelnau-le-Lez"
+                            // We accept if: target starts with result OR result starts with target
+                            const isMatch = resultCityNorm.startsWith(cityNameLower) ||
+                                cityNameLower.startsWith(resultCityNorm) ||
+                                resultCityNorm === cityNameLower;
+
+                            if (isMatch && resultCityNorm.length > 0) {
                                 bestResult = result;
                                 break;
                             }
