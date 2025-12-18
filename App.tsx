@@ -498,21 +498,17 @@ function App() {
             });
 
             return groups.map((group, groupIdx) => (
-              <div key={`${group.label}-${groupIdx}`} className="relative">
-                <div className="sticky top-0 z-30 pt-6 pb-3 bg-gradient-to-b from-slate-50 via-slate-50/95 to-transparent">
-                  <div className="flex items-center gap-3">
-                    <div className="h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent"></div>
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      {group.label}
-                      <span className="text-[10px] px-1.5 py-0.5 bg-slate-200/80 text-slate-500 rounded">
-                        {group.games.length}
-                      </span>
-                    </h3>
-                    <div className="h-px flex-1 bg-gradient-to-l from-slate-300 to-transparent"></div>
-                  </div>
+              <div key={`${group.label}-${groupIdx}`}>
+                {/* Month Divider - Simple inline text, no background */}
+                <div className="flex items-center gap-4 my-8">
+                  <div className="h-px flex-1 bg-slate-200"></div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    {group.label} • {group.games.length}
+                  </span>
+                  <div className="h-px flex-1 bg-slate-200"></div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch transition-all">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
                   {group.games.map((game, index) => (
                     <div
                       key={game.id}
