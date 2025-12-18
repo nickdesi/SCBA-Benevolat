@@ -14,6 +14,7 @@ import Header from './components/Header';
 import GameCard from './components/GameCard';
 import GameForm from './components/GameForm';
 import AdminAuthModal from './components/AdminAuthModal';
+import ImportCSVModal from './components/ImportCSVModal';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
 import { ToastContainer, useToast } from './components/Toast';
@@ -26,6 +27,7 @@ function App() {
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
   const [isAddingGame, setIsAddingGame] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
@@ -210,6 +212,34 @@ function App() {
     }
   };
 
+  // Bulk import from CSV
+  const handleImportCSV = async (matchesData: GameFormData[]) => {
+    try {
+      const batch = writeBatch(db);
+
+      for (const gameData of matchesData) {
+        const newGame = {
+          ...gameData,
+          roles: DEFAULT_ROLES.map((role, idx) => ({
+            id: String(idx + 1),
+            name: role.name,
+            capacity: role.capacity === 0 ? Infinity : role.capacity,
+            volunteers: []
+          }))
+        };
+        const docRef = doc(collection(db, "matches"));
+        batch.set(docRef, newGame);
+      }
+
+      await batch.commit();
+      addToast(`${matchesData.length} match(s) importé(s) avec succès !`, 'success');
+      setIsImportModalOpen(false);
+    } catch (err) {
+      console.error("Error importing games:", err);
+      alert("Erreur lors de l'import des matchs");
+    }
+  };
+
   const handleUpdateGame = async (updatedGame: Game) => {
     try {
       const gameRef = doc(db, "matches", updatedGame.id);
@@ -361,15 +391,26 @@ function App() {
         {!loading && (
           <div className="flex justify-end mb-6 gap-4">
             {isAdmin && (
-              <button
-                onClick={() => setIsAddingGame(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-slate-700 transition-all"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Ajouter un match
-              </button>
+              <>
+                <button
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl text-sm font-bold shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                  Importer CSV
+                </button>
+                <button
+                  onClick={() => setIsAddingGame(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-slate-700 transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  Ajouter un match
+                </button>
+              </>
             )}
           </div>
         )}
@@ -467,6 +508,13 @@ function App() {
         onClose={() => setIsAdminModalOpen(false)}
         onSubmit={handleAdminAuth}
         error={authError}
+      />
+
+      {/* CSV Import Modal */}
+      <ImportCSVModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportCSV}
       />
 
       <ReloadPrompt />
