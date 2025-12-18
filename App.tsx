@@ -437,7 +437,7 @@ function App() {
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
-      <main className="container mx-auto px-4 -mt-8 relative z-20">
+      <main className="container mx-auto px-4 relative z-20">
 
         {/* Loading State */}
         {loading && <SkeletonLoader />}
