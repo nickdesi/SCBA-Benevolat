@@ -73,33 +73,46 @@ const normalizeTeamName = (team: string): string => {
  * Example: "RIORGES BC" -> "RIORGES"
  */
 const inferCityFromTeam = (opponent: string): string => {
-    // Remove common prefixes
+    // 0. Specific mappings for known complex cases
+    const MAPPINGS: Record<string, string> = {
+        'TAIN TOURNON': 'Tain-l\'Hermitage', // or Tournon-sur-Rhône, but search usually works better with Tain
+        'GOLFE JUAN': 'Vallauris', // Golfe-Juan is a locality in Vallauris 
+        'LYON SO': 'Lyon', // Lyon Sud Ouest
+        'ROCHE VENDÉE': 'La Roche-sur-Yon',
+    };
+
+    // Check exact or partial matches in mappings
+    const upperOpp = opponent.toUpperCase();
+    for (const [key, value] of Object.entries(MAPPINGS)) {
+        if (upperOpp.includes(key)) return value;
+    }
+
+    // 1. Remove common prefixes
     let cleanName = opponent.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*|ENTENTE\s*[-]?\s*|UNION\s*[-]?\s*)/i, '');
 
-    // Remove common suffixes/words
+    // 2. Remove common suffixes/words
     const noiseWords = [
         'BASKET', 'BC', 'CLUB', 'CS', 'US', 'AL', 'AS', 'ES', 'BB',
         'SPORT', 'SPORTS', 'ASSOCIATION', 'AMICALE', 'UMS', 'U.M.S',
-        'LOIRE', 'SUD', 'NORD', 'EST', 'OUEST', // Directions are often part of club names, rarely city names alone
-        'ST', 'SAINT' // Be careful with Saint, but "Saint" usually followed by name. 
+        'LOIRE', 'SUD', 'NORD', 'EST', 'OUEST',
+        'AG' // Avant-Garde (often in Tain Tournon AG)
     ];
-
-    // We want to keep "Saint" if it's part of the city name (e.g. Saint-Etienne), 
-    // but often it's "Saint Chamond Basket". 
-    // Let's rely on stripping the Basket/Club parts first.
 
     cleanName = cleanName.replace(new RegExp(`\\b(${noiseWords.join('|')})\\b`, 'gi'), '');
 
-    // Remove trailing numbers (e.g. - 1, - 2)
+    // 3. Remove trailing numbers/characters
     cleanName = cleanName.replace(/[-]?\s*\d+$/, '');
 
-    cleanName = cleanName.replace(/[-]/g, ' '); // Replace dashes with spaces
-    cleanName = cleanName.replace(/\s+/g, ' ').trim(); // Clean spaces
+    // 4. Handle hyphenated names logic
+    // If name contains hyphen but no spaces around, keep it (Saint-Etienne)
+    // If name contains hyphen with spaces, replace with space (Saint - Etienne -> Saint Etienne)
+    cleanName = cleanName.replace(/\s+-\s+/g, ' ');
 
-    // Filter out short words (1-2 chars) that might be leftovers
-    const parts = cleanName.split(' ').filter(p => p.length > 2 || p.toLowerCase() === 'le' || p.toLowerCase() === 'la');
+    cleanName = cleanName.replace(/\s+/g, ' ').trim();
 
-    // Capitalize properly
+    // 5. Filter garbage
+    const parts = cleanName.split(' ').filter(p => p.length > 2 || ['le', 'la', 'les', 'du', 'de', 'sur'].includes(p.toLowerCase()));
+
     return parts
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
         .join(' ');
