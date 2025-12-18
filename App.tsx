@@ -183,9 +183,9 @@ function App() {
   useEffect(() => {
     const cleanupPastMatches = async () => {
       try {
+        // Use local date to avoid timezone issues with toISOString()
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Start of today
-        const todayISO = today.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
         const colRef = collection(db, "matches");
         const snapshot = await getDocs(colRef);
