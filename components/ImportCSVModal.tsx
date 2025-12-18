@@ -30,50 +30,68 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
     const handleEnrichLocations = useCallback(async () => {
         setIsEnriching(true);
         const updatedMatches = [...parsedMatches];
+        const matchesToEnrich = updatedMatches
+            .map((m, i) => ({ match: m, index: i }))
+            .filter(({ match }) => !match.isHome && (match.location === 'Extérieur' || match.location.startsWith('Extérieur (')));
 
-        for (let i = 0; i < updatedMatches.length; i++) {
-            const match = updatedMatches[i];
-            const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
+        // Processing in chunks of 3 to respect rate limits but be faster
+        const CHUNK_SIZE = 3;
 
-            if (!match.isHome && cityMatch) {
-                const cityName = cityMatch[1];
+        for (let i = 0; i < matchesToEnrich.length; i += CHUNK_SIZE) {
+            const chunk = matchesToEnrich.slice(i, i + CHUNK_SIZE);
+
+            await Promise.all(chunk.map(async ({ match, index }) => {
+                let cityName = '';
+                const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
+
+                if (cityMatch) {
+                    cityName = cityMatch[1];
+                } else {
+                    // Try to infer again if not present (legacy case)
+                    // But usually it should be there from parseCSV
+                    return;
+                }
+
+                if (!cityName) return;
+
                 const cityNameLower = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 try {
+                    // Optimized queries - most likely first
                     const queries = [
-                        `palais des sports ${cityName}`,
-                        `basket ${cityName}`,
                         `gymnase ${cityName}`,
-                        `salle de sport ${cityName}`,
-                        `complexe sportif ${cityName}`
+                        `salle polyvalente ${cityName}`,
+                        `complexe sportif ${cityName}`,
+                        `stade ${cityName}`
                     ];
 
                     let bestResult = null;
 
                     for (const query of queries) {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/search?` +
-                            `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=fr`,
-                            { headers: { 'Accept-Language': 'fr' } }
-                        );
-                        const results = await response.json();
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/search?` +
+                                `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1&countrycodes=fr`,
+                                { headers: { 'Accept-Language': 'fr' } }
+                            );
+                            const results = await response.json();
 
-                        for (const result of results) {
-                            const addr = result.address || {};
-                            const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
-                            const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                            const isMatch = resultCityNorm.startsWith(cityNameLower) ||
-                                cityNameLower.startsWith(resultCityNorm) ||
-                                resultCityNorm === cityNameLower;
+                            if (results && results.length > 0) {
+                                // Check if city matches roughly
+                                const result = results[0];
+                                const addr = result.address || {};
+                                const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
+                                const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                            if (isMatch && resultCityNorm.length > 0) {
-                                bestResult = result;
-                                break;
+                                // Loose matching: check if result city contains target city or vice versa
+                                if (resultCityNorm.includes(cityNameLower) || cityNameLower.includes(resultCityNorm)) {
+                                    bestResult = result;
+                                    break; // Found a good match
+                                }
                             }
+                        } catch (e) {
+                            // ignore fetch error
                         }
-
-                        if (bestResult) break;
-                        await new Promise(r => setTimeout(r, 300));
                     }
 
                     if (bestResult) {
@@ -82,25 +100,34 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         const houseNumber = addr.house_number || '';
                         const postcode = addr.postcode || '';
                         const city = addr.city || addr.town || addr.village || cityName;
-                        const name = bestResult.name || 'Gymnase';
+                        const name = bestResult.name || 'Gymnase'; // Name of the place
 
+                        // Format: "Gymnase Jean Jaurès, 12 rue de la Paix, 63000 Clermont-Ferrand"
                         const fullAddress = [
                             name,
                             [houseNumber, street].filter(Boolean).join(' '),
                             [postcode, city].filter(Boolean).join(' ')
                         ].filter(Boolean).join(', ');
 
-                        updatedMatches[i] = { ...match, location: fullAddress };
+                        updatedMatches[index] = { ...match, location: fullAddress };
                     } else {
-                        updatedMatches[i] = { ...match, location: `À ${cityName} (adresse à confirmer)` };
+                        // Keep as is or mark as not found but with city
+                        updatedMatches[index] = { ...match, location: `À ${cityName} (adresse introuvable)` };
                     }
                 } catch (err) {
                     console.error("Failed to fetch address for", cityName, err);
                 }
+            }));
+
+            // Update state incrementally to show progress
+            setParsedMatches([...updatedMatches]);
+
+            // Small delay between chunks to be nice to API
+            if (i + CHUNK_SIZE < matchesToEnrich.length) {
+                await new Promise(r => setTimeout(r, 1000));
             }
         }
 
-        setParsedMatches(updatedMatches);
         setIsEnriching(false);
     }, [parsedMatches]);
 

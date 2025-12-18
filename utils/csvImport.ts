@@ -72,14 +72,34 @@ const normalizeTeamName = (team: string): string => {
  * Example: "RIORGES BC" -> "RIORGES"
  */
 const inferCityFromTeam = (opponent: string): string => {
-    // Remove common prefixes/suffixes
-    let cleanName = opponent.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*)/i, ''); // Prefixes
-    cleanName = cleanName.replace(/\b(BASKET|BC|CLUB|CS|US|AL|AS|ES|BB|SPORT|SPORTS|ASSOCIATION|AMICALE)\b/gi, ''); // Suffixes
+    // Remove common prefixes
+    let cleanName = opponent.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*|ENTENTE\s*[-]?\s*|UNION\s*[-]?\s*)/i, '');
+
+    // Remove common suffixes/words
+    const noiseWords = [
+        'BASKET', 'BC', 'CLUB', 'CS', 'US', 'AL', 'AS', 'ES', 'BB',
+        'SPORT', 'SPORTS', 'ASSOCIATION', 'AMICALE', 'UMS', 'U.M.S',
+        'LOIRE', 'SUD', 'NORD', 'EST', 'OUEST', // Directions are often part of club names, rarely city names alone
+        'ST', 'SAINT' // Be careful with Saint, but "Saint" usually followed by name. 
+    ];
+
+    // We want to keep "Saint" if it's part of the city name (e.g. Saint-Etienne), 
+    // but often it's "Saint Chamond Basket". 
+    // Let's rely on stripping the Basket/Club parts first.
+
+    cleanName = cleanName.replace(new RegExp(`\\b(${noiseWords.join('|')})\\b`, 'gi'), '');
+
+    // Remove trailing numbers (e.g. - 1, - 2)
+    cleanName = cleanName.replace(/[-]?\s*\d+$/, '');
+
     cleanName = cleanName.replace(/[-]/g, ' '); // Replace dashes with spaces
     cleanName = cleanName.replace(/\s+/g, ' ').trim(); // Clean spaces
 
-    // Capitalize properly (First letter upper, rest lower per word)
-    return cleanName.split(' ')
+    // Filter out short words (1-2 chars) that might be leftovers
+    const parts = cleanName.split(' ').filter(p => p.length > 2 || p.toLowerCase() === 'le' || p.toLowerCase() === 'la');
+
+    // Capitalize properly
+    return parts
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
         .join(' ');
 };
