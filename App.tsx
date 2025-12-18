@@ -458,30 +458,86 @@ function App() {
 
         {/* Filter Bar removed (moved to Header) */}
 
-        {/* Games List - Sorted by date */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          {filteredGames.map((game, index) => (
-            <div
-              key={game.id}
-              className={`h-full animate-fade-in-up ${index % 4 === 1 ? 'stagger-1' : index % 4 === 2 ? 'stagger-2' : index % 4 === 3 ? 'stagger-3' : ''}`}
-            >
-              <GameCard
-                game={game}
-                isAdmin={isAdmin}
-                isEditing={editingGameId === game.id}
-                onVolunteer={handleVolunteer}
-                onRemoveVolunteer={handleRemoveVolunteer}
-                onUpdateVolunteer={handleUpdateVolunteer}
-                onAddCarpool={handleAddCarpool}
-                onRemoveCarpool={handleRemoveCarpool}
-                onToast={addToast}
-                onEditRequest={() => setEditingGameId(game.id)}
-                onCancelEdit={() => setEditingGameId(null)}
-                onDeleteRequest={() => handleDeleteGame(game.id)}
-                onUpdateRequest={handleUpdateGame}
-              />
-            </div>
-          ))}
+        {/* Grouped Games List */}
+        <div className="space-y-12">
+          {(() => {
+            // Group games by Month-Year
+            // Since filteredGames is already sorted by date, we can just iterate
+            const groups: { label: string; games: Game[] }[] = [];
+
+            filteredGames.forEach(game => {
+              // Determine Month label from date
+              let label = "Date inconnue";
+
+              if (game.dateISO) {
+                const date = new Date(game.dateISO);
+                if (!isNaN(date.getTime())) {
+                  label = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                  // Capitalize first letter
+                  label = label.charAt(0).toUpperCase() + label.slice(1);
+                }
+              } else {
+                // Fallback for legacy dates (try to extract month)
+                // Assuming format "Samedi 10 Janvier 2024" or similar
+                const parts = game.date.split(' ');
+                if (parts.length >= 3) {
+                  // Heuristic: take last part as year, 3rd to last as month
+                  // But standard text is "Samedi 12 Janvier". Month is index 2.
+                  // This is fragile but acceptable for legacy. 
+                  // Better: Just use the month name if present.
+                  label = parts.length > 2 ? parts.slice(2).join(' ') : game.date;
+                }
+              }
+
+              const lastGroup = groups[groups.length - 1];
+              if (lastGroup && lastGroup.label === label) {
+                lastGroup.games.push(game);
+              } else {
+                groups.push({ label, games: [game] });
+              }
+            });
+
+            return groups.map((group, groupIdx) => (
+              <div key={`${group.label}-${groupIdx}`} className="relative">
+                <div className="sticky top-0 z-30 py-4 -mx-4 px-4 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200/50 mb-6">
+                  <h3 className="flex items-center gap-3 text-xl font-black text-slate-800 tracking-tight">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600">
+                      {group.label}
+                    </span>
+                    <span className="text-xs font-bold px-2.5 py-1 bg-slate-200 text-slate-600 rounded-lg">
+                      {group.games.length}
+                    </span>
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch transition-all">
+                  {group.games.map((game, index) => (
+                    <div
+                      key={game.id}
+                      className="h-full animate-fade-in-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <GameCard
+                        game={game}
+                        isAdmin={isAdmin}
+                        isEditing={editingGameId === game.id}
+                        onVolunteer={handleVolunteer}
+                        onRemoveVolunteer={handleRemoveVolunteer}
+                        onUpdateVolunteer={handleUpdateVolunteer}
+                        onAddCarpool={handleAddCarpool}
+                        onRemoveCarpool={handleRemoveCarpool}
+                        onToast={addToast}
+                        onEditRequest={() => setEditingGameId(game.id)}
+                        onCancelEdit={() => setEditingGameId(null)}
+                        onDeleteRequest={() => handleDeleteGame(game.id)}
+                        onUpdateRequest={handleUpdateGame}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
 
         {/* Floating Action Button (Add Game) */}
