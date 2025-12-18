@@ -23,6 +23,8 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 - **Badge "C'est vous !"** : identifiez rapidement vos inscriptions
 - **🔑 Récupération d'identité** : bouton "C'est moi ?" pour récupérer vos inscriptions sur un nouvel appareil
 - **Matchs triés par date** : affichage chronologique automatique (stockage ISO fiable)
+- **⚡ Match Ticker** : Bandeau défilant des matchs à venir (J-14)
+- **📊 Stats Breakdown** : Récapitulatif mensuel des matchs (Total / Domicile / Extérieur)
 
 ### 🔧 Pour les administrateurs
 
@@ -44,6 +46,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 - **Spinner initial** : Animation pendant le chargement des scripts
 - **Animations fluides** : Cartes qui apparaissent progressivement avec effet décalé
 - **État vide amélioré** : Design engageant quand aucun match n'est programmé
+- **Match Ticker** : Animation fluide avec inversion intelligente des équipes pour les matchs extérieurs
 - Animation de célébration quand un match est complet
 - Notifications toast avec auto-dismiss
 - Emojis pour chaque poste (🍺 Buvette, ⏱️ Chrono, 📋 Table de marque, 🍪 Goûter)
@@ -112,6 +115,7 @@ npm run preview
 ├── firebase.ts             # Configuration Firebase (env vars)
 ├── components/
 │   ├── Header.tsx          # En-tête avec logo + bouton Admin
+│   ├── MatchTicker.tsx     # Bandeau défilant des matchs à venir
 │   ├── GameCard.tsx        # Carte de match (memoized)
 │   ├── GameForm.tsx        # Formulaire ajout/édition match
 │   ├── VolunteerSlot.tsx   # Gestion des inscriptions (memoized)
@@ -124,6 +128,7 @@ npm run preview
 │   ├── SnowEffect.tsx      # Animation neige (Noël)
 │   ├── ChristmasGarland.tsx # Guirlande lumineuse (Noël)
 │   └── Icons.tsx           # Icônes SVG centralisées
+│   └── AddressAutocomplete.tsx # Autocomplétion d'adresses
 ├── utils/
 │   ├── calendar.ts         # Export calendrier (Google, Outlook, Apple)
 │   └── storage.ts          # Utilitaires localStorage partagés
