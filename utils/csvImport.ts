@@ -36,18 +36,29 @@ const MONTHS = [
 ];
 
 /**
- * Normalize team name from FFBB format to display format
- * Example: "SCBA U11-1" -> "U11 - Équipe 1"
+ * Normalize team name from FFBB format to SCBA format
+ * Example: "SCBA U11-1" -> "U11 M1", "STADE CLERMONT SM2" -> "SENIOR M2"
  */
 const normalizeTeamName = (team: string): string => {
-    // Extract category and team number
-    const match = team.match(/U(\d+)[-\s]?(\d)?/i);
-    if (match) {
-        const category = match[1];
-        const number = match[2] || '1';
-        return `U${category} - Équipe ${number}`;
+    const upperTeam = team.toUpperCase();
+
+    // Senior teams
+    if (upperTeam.includes('SENIOR') || upperTeam.includes('SM')) {
+        const numMatch = upperTeam.match(/(\d)/);
+        const num = numMatch ? numMatch[1] : '1';
+        return `SENIOR M${num}`;
     }
-    return team;
+
+    // Youth categories (U9, U11, U13, U15, U18)
+    const categoryMatch = upperTeam.match(/U(\d+)[-\s]?M?(\d)?/i);
+    if (categoryMatch) {
+        const category = categoryMatch[1];
+        const number = categoryMatch[2] || '1';
+        return `U${category} M${number}`;
+    }
+
+    // Remove SCBA prefix if present and return cleaned name
+    return team.replace(/SCBA|STADE CLERMONT/gi, '').trim();
 };
 
 /**
@@ -172,8 +183,9 @@ export const toGameFormData = (match: ParsedMatch): GameFormData => ({
  */
 export const getSampleCSV = (): string => {
     return `Date;Heure;Domicile;Visiteur;Salle
-14/12/2024;15:00;SCBA U11-1;ROYAT BC;Maison des Sports
-14/12/2024;17:00;SCBA U13-1;ASM BASKET;Gymnase Thévenet
-21/12/2024;10:30;PONT DU CHATEAU;SCBA U11-2;Gymnase PDC
-21/12/2024;14:00;SCBA U15-1;LEMPDES;Maison des Sports`;
+14/12/2024;15:00;SCBA U11 M1;ROYAT BC;Maison des Sports
+14/12/2024;17:00;SCBA U13 M1;ASM BASKET;Gymnase Thévenet
+21/12/2024;10:30;PONT DU CHATEAU;SCBA U11 M2;Gymnase PDC
+21/12/2024;14:00;SCBA SENIOR M2;LEMPDES;Maison des Sports
+21/12/2024;20:30;VEAUCHE;SCBA SENIOR M1;Gymnase Veauche`;
 };
