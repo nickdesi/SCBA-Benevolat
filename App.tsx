@@ -499,13 +499,19 @@ function App() {
 
             return groups.map((group, groupIdx) => (
               <div key={`${group.label}-${groupIdx}`}>
-                {/* Month Divider - Simple inline text, no background */}
-                <div className="flex items-center gap-4 my-8">
-                  <div className="h-px flex-1 bg-slate-200"></div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    {group.label} • {group.games.length}
-                  </span>
-                  <div className="h-px flex-1 bg-slate-200"></div>
+                {/* Month Header - Modern pill style */}
+                <div className="flex items-center justify-center my-10">
+                  <div className="inline-flex items-center gap-3 px-6 py-3 
+                                bg-gradient-to-r from-slate-800 to-slate-700 
+                                rounded-full shadow-lg shadow-slate-900/20">
+                    <span className="text-2xl">📅</span>
+                    <span className="text-lg font-black text-white tracking-wide">
+                      {group.label}
+                    </span>
+                    <span className="text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full">
+                      {group.games.length} match{group.games.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
