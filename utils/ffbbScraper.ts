@@ -1,6 +1,9 @@
 /**
  * FFBB Scraper - Fetches match data from FFBB competition pages
  * Uses a CORS proxy to bypass browser same-origin policy
+ * 
+ * Note: FFBB site is a Next.js app with server-side rendering.
+ * We parse the embedded JSON data from script tags.
  */
 
 import type { ParsedMatch } from './csvImport';
@@ -66,8 +69,6 @@ function inferYear(month: number): number {
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // If the match month is before current month (e.g., January when we're in December),
-    // the match is likely next year
     if (month < currentMonth - 1) {
         return currentYear + 1;
     }
@@ -75,54 +76,60 @@ function inferYear(month: number): number {
 }
 
 /**
- * Parse a date string like "17 janv. 20h00" or "Samedi 10 janvier 2025 20:00"
+ * Get visible text from HTML, excluding script content
  */
-function parseFrenchDate(text: string): { dateISO: string; time: string; displayDate: string } | null {
-    // Clean the text
-    const cleanText = text.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+function getVisibleText(html: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
 
-    // Try patterns
-    // Pattern 1: "17 janv 20h00" (no year)
-    // Pattern 2: "samedi 17 janvier 2025 20h00" (with year)
-    // Pattern 3: "10/01/2025 20:00"
+    // Remove all script and style elements
+    doc.querySelectorAll('script, style, noscript').forEach(el => el.remove());
 
-    let day = 0, monthNum = 0, year = 0, hour = 20, minute = 0;
+    // Get text content from body
+    return doc.body?.textContent?.replace(/\s+/g, ' ') || '';
+}
 
-    // Try to extract date from text
-    const patterns = [
-        // "17 janv 20h00" or "17 janvier 20h00"
-        /(\d{1,2})\s*(janvier|janv|jan|février|fevrier|févr|fevr|fév|fev|mars|mar|avril|avr|mai|juin|jun|juillet|juil|jul|août|aout|aoû|septembre|sept|sep|octobre|oct|novembre|nov|décembre|decembre|déc|dec)\s*(?:(\d{4})\s*)?(\d{1,2})h(\d{2})/i,
-        // "samedi 17 janvier 2025 20h00"
-        /(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s*(\d{1,2})\s*(janvier|janv|jan|février|fevrier|févr|fevr|fév|fev|mars|mar|avril|avr|mai|juin|jun|juillet|juil|jul|août|aout|aoû|septembre|sept|sep|octobre|oct|novembre|nov|décembre|decembre|déc|dec)\s*(?:(\d{4})\s*)?(\d{1,2})h(\d{2})/i
-    ];
-
-    for (const pattern of patterns) {
-        const match = cleanText.match(pattern);
-        if (match) {
-            day = parseInt(match[1]);
-            const monthStr = match[2].replace(/[éèêë]/g, 'e').replace(/[àâä]/g, 'a').replace(/[ûù]/g, 'u');
-            monthNum = MONTHS[monthStr] || 0;
-            year = match[3] ? parseInt(match[3]) : inferYear(monthNum);
-            hour = parseInt(match[4]);
-            minute = parseInt(match[5]);
-            break;
+/**
+ * Extract match info from embedded JSON in page (Next.js RSC format)
+ */
+function extractFromNextJsData(html: string): {
+    opponent?: string;
+    isHome?: boolean;
+    venue?: string;
+    date?: string;
+    time?: string;
+} | null {
+    try {
+        // Look for match title in meta description
+        const metaMatch = html.match(/<meta[^>]*name="description"[^>]*content="([^"]+)"/i);
+        if (metaMatch) {
+            const description = metaMatch[1];
+            // Format: "13 sept. 2025 20h00 - Nationale Masculine 3 : Team A - Team B : horaires..."
+            const parts = description.match(/(\d{1,2}\s+\w+\.?\s*\d{4})\s+(\d{1,2}h\d{2})\s*-\s*[^:]+:\s*(.+?)\s*:\s*horaires/i);
+            if (parts) {
+                return {
+                    date: parts[1],
+                    time: parts[2].replace(':', 'H'),
+                };
+            }
         }
+
+        // Look for salle/venue info
+        const salleMatch = html.match(/"type":"salle"[^}]*"informations":\[([^\]]+)\]/i);
+        if (salleMatch) {
+            const infoStr = salleMatch[1];
+            const nameMatch = infoStr.match(/"label":"Nom"[^}]*"value":"([^"]+)"/);
+            const addrMatch = infoStr.match(/"label":"Adresse"[^}]*"value":"([^"]+)"/);
+            if (nameMatch || addrMatch) {
+                return {
+                    venue: [nameMatch?.[1], addrMatch?.[1]].filter(Boolean).join(', ')
+                };
+            }
+        }
+    } catch (e) {
+        console.error('Failed to parse Next.js data:', e);
     }
-
-    if (day === 0 || monthNum === 0) {
-        return null;
-    }
-
-    const dateISO = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const time = `${String(hour).padStart(2, '0')}H${String(minute).padStart(2, '0')}`;
-
-    // Format display date
-    const dateObj = new Date(year, monthNum - 1, day);
-    const dayOfWeek = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
-    const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'long' });
-    const displayDate = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} ${day} ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
-
-    return { dateISO, time, displayDate };
+    return null;
 }
 
 /**
@@ -131,65 +138,79 @@ function parseFrenchDate(text: string): { dateISO: string; time: string; display
 async function fetchMatchDetails(matchUrl: string): Promise<Partial<ParsedMatch> | null> {
     try {
         const html = await fetchWithProxy(matchUrl);
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const textContent = doc.body?.textContent || '';
-
         const result: Partial<ParsedMatch> = {};
 
-        // 1. Parse date and time from full text
-        const dateInfo = parseFrenchDate(textContent);
-        if (dateInfo) {
-            result.dateISO = dateInfo.dateISO;
-            result.time = dateInfo.time;
-            result.date = dateInfo.displayDate;
+        // Get clean visible text (no scripts)
+        const visibleText = getVisibleText(html);
+
+        // Try to extract from Next.js embedded data first
+        const nextData = extractFromNextJsData(html);
+        if (nextData?.venue) {
+            result.location = nextData.venue;
         }
 
-        // 2. Parse teams from title (usually in h1 or major heading)
-        // Look for pattern like "TEAM A - TEAM B" in the page
-        const titlePatterns = [
-            /STADE CLERMONTOIS[^-]*-\s*([^\n]+)/i,
-            /([^\n-]+)\s*-\s*STADE CLERMONTOIS/i,
-            /SCBA[^-]*-\s*([^\n]+)/i,
-            /([^\n-]+)\s*-\s*SCBA/i
+        // 1. Parse date/time from meta og:description or visible text
+        // Look for date pattern like "13 sept. 2025 20h00" or "Samedi 13 septembre 2025"
+        const datePatterns = [
+            /(\d{1,2})\s*(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|janv\.?|févr\.?|mars|avr\.?|mai|juin|juil\.?|août|sept\.?|oct\.?|nov\.?|déc\.?)\s*(\d{4})?\s*(?:à\s*)?(\d{1,2})h(\d{2})/gi
         ];
 
-        for (const pattern of titlePatterns) {
-            const match = textContent.match(pattern);
+        for (const pattern of datePatterns) {
+            const match = visibleText.match(pattern);
             if (match) {
-                const opponent = match[1].trim()
-                    .replace(/\s*\d+\s*-\s*\d+\s*$/, '') // Remove score
-                    .replace(/\s+/g, ' ')
-                    .trim();
+                // Parse the first match
+                const fullMatch = match[0];
+                const parts = fullMatch.match(/(\d{1,2})\s*(\w+)\.?\s*(\d{4})?\s*(?:à\s*)?(\d{1,2})h(\d{2})/i);
+                if (parts) {
+                    const day = parseInt(parts[1]);
+                    const monthStr = parts[2].toLowerCase().replace('.', '');
+                    const monthNum = MONTHS[monthStr] || 1;
+                    const year = parts[3] ? parseInt(parts[3]) : inferYear(monthNum);
+                    const hour = parseInt(parts[4]);
+                    const minute = parseInt(parts[5]);
 
-                if (opponent.length > 2 && opponent.length < 50) {
-                    result.opponent = opponent;
-                    // Determine home/away based on which team comes first
-                    result.isHome = pattern.source.startsWith('STADE') || pattern.source.startsWith('SCBA');
+                    result.dateISO = `${year}-${String(monthNum).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    result.time = `${String(hour).padStart(2, '0')}H${String(minute).padStart(2, '0')}`;
+
+                    // Format display date
+                    const dateObj = new Date(year, monthNum - 1, day);
+                    const dayOfWeek = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
+                    const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'long' });
+                    result.date = `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} ${day} ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
                     break;
                 }
             }
         }
 
-        // 3. Parse venue from "Salle" section
-        // The page has "Nom:" and "Adresse:" labels
-        const nomMatch = textContent.match(/Nom\s*[:\s]+([^\n]+)/i);
-        const adresseMatch = textContent.match(/Adresse\s*[:\s]+([^\n]+)/i);
+        // 2. Parse teams from page title (in og:title or regular title)
+        const titleMatch = html.match(/<title>([^<]+)<\/title>/i) ||
+            html.match(/og:title[^>]*content="([^"]+)"/i);
+        if (titleMatch) {
+            const title = titleMatch[1];
+            // Format: "Match - NM3 : Team A - Team B | FFBB"
+            const teamsMatch = title.match(/:\s*(.+?)\s*-\s*(.+?)\s*\|/i) ||
+                title.match(/:\s*(.+?)\s*-\s*(.+?)$/i);
+            if (teamsMatch) {
+                const team1 = teamsMatch[1].trim();
+                const team2 = teamsMatch[2].trim();
 
-        if (nomMatch && adresseMatch) {
-            const venueName = nomMatch[1].trim().replace(/\s+/g, ' ');
-            const venueAddress = adresseMatch[1].trim().replace(/\s+/g, ' ');
-            result.location = `${venueName}, ${venueAddress}`;
-        } else if (nomMatch) {
-            result.location = nomMatch[1].trim();
+                // Check which is our team
+                if (team1.match(/stade clermontois|scba/i)) {
+                    result.isHome = true;
+                    result.opponent = team2.replace(/\s*\|\s*FFBB$/i, '').trim();
+                } else if (team2.match(/stade clermontois|scba/i)) {
+                    result.isHome = false;
+                    result.opponent = team1.trim();
+                }
+            }
         }
 
-        // If we still don't have home/away, check for "Domicile" keyword
-        if (typeof result.isHome === 'undefined') {
-            if (textContent.includes('Domicile')) {
-                result.isHome = true;
-            } else if (textContent.includes('Extérieur')) {
-                result.isHome = false;
+        // 3. Parse venue from embedded JSON (salle section)
+        if (!result.location) {
+            const salleMatch = html.match(/"label":"Nom","value":"([^"]+)"/);
+            const addrMatch = html.match(/"label":"Adresse","value":"([^"]+)"/);
+            if (salleMatch || addrMatch) {
+                result.location = [salleMatch?.[1], addrMatch?.[1]].filter(Boolean).join(', ');
             }
         }
 
@@ -227,7 +248,6 @@ export async function parseFFBBTeamPage(
         }
 
         // Step 3: Fetch each match detail
-        let successCount = 0;
         for (let i = 0; i < matchLinks.length; i++) {
             onProgress?.(i + 1, matchLinks.length);
 
@@ -235,24 +255,23 @@ export async function parseFFBBTeamPage(
 
             // Require at least date to consider it valid
             if (matchData && matchData.date) {
-                successCount++;
                 result.success.push({
                     date: matchData.date,
                     dateISO: matchData.dateISO || '',
                     time: matchData.time || '20H00',
                     team: defaultTeam,
-                    opponent: matchData.opponent || 'Adversaire inconnu',
+                    opponent: matchData.opponent || 'Adversaire',
                     location: matchData.location || (matchData.isHome ? 'Domicile' : 'Extérieur'),
                     isHome: matchData.isHome ?? false
                 });
             }
 
-            // Small delay to avoid rate limiting
+            // Delay between requests
             await new Promise(r => setTimeout(r, 400));
         }
 
-        if (successCount === 0) {
-            result.errors.push(`0 matchs parsés sur ${matchLinks.length} liens trouvés. Le format de page a peut-être changé.`);
+        if (result.success.length === 0) {
+            result.errors.push(`0 matchs parsés sur ${matchLinks.length} liens. Essayez le mode copier-coller.`);
         }
 
     } catch (err) {
@@ -263,7 +282,7 @@ export async function parseFFBBTeamPage(
 }
 
 /**
- * Validate if a URL is a valid FFBB competition URL
+ * Validate if a URL is a valid FFBB URL
  */
 export function isValidFFBBUrl(url: string): boolean {
     return url.includes('competitions.ffbb.com') || url.includes('ffbb.com/competitions');
