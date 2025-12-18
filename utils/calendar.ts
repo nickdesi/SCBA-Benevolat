@@ -140,3 +140,61 @@ export const downloadGameCalendar = (game: Game): boolean => {
     URL.revokeObjectURL(url);
     return true;
 };
+
+/**
+ * Generates a Google Calendar URL for adding an event
+ * Opens the event creation form pre-filled with game details
+ */
+export const getGoogleCalendarUrl = (game: Game): string | null => {
+    const dateSource = game.dateISO || game.date;
+    const dateTime = parseGameDateTime(dateSource, game.time);
+    if (!dateTime) return null;
+
+    const formatGoogleDate = (date: Date): string => {
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
+    };
+
+    const title = `🏀 ${game.team} vs ${game.opponent}`;
+    const details = `Match de basket - ${game.team} contre ${game.opponent}\nBénévolat SCBA`;
+    const dates = `${formatGoogleDate(dateTime.start)}/${formatGoogleDate(dateTime.end)}`;
+
+    const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: title,
+        dates: dates,
+        details: details,
+        location: game.location,
+    });
+
+    return `https://www.google.com/calendar/render?${params.toString()}`;
+};
+
+/**
+ * Generates an Outlook.com Calendar URL for adding an event
+ * Opens the event creation form pre-filled with game details
+ */
+export const getOutlookCalendarUrl = (game: Game): string | null => {
+    const dateSource = game.dateISO || game.date;
+    const dateTime = parseGameDateTime(dateSource, game.time);
+    if (!dateTime) return null;
+
+    const formatOutlookDate = (date: Date): string => {
+        return date.toISOString();
+    };
+
+    const title = `🏀 ${game.team} vs ${game.opponent}`;
+    const body = `Match de basket - ${game.team} contre ${game.opponent}\nBénévolat SCBA`;
+
+    const params = new URLSearchParams({
+        path: '/calendar/action/compose',
+        rru: 'addevent',
+        subject: title,
+        startdt: formatOutlookDate(dateTime.start),
+        enddt: formatOutlookDate(dateTime.end),
+        body: body,
+        location: game.location,
+    });
+
+    return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
+};

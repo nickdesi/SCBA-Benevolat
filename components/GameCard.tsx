@@ -4,7 +4,7 @@ import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
 import CarpoolingSection from './CarpoolingSection';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from './Icons';
-import { downloadGameCalendar } from '../utils/calendar';
+import { downloadGameCalendar, getGoogleCalendarUrl, getOutlookCalendarUrl } from '../utils/calendar';
 
 interface GameCardProps {
     game: Game;
@@ -61,13 +61,39 @@ const GameCard: React.FC<GameCardProps> = memo(({
     // Default to home game if isHome is not defined (legacy matches)
     const isHomeGame = game.isHome ?? true;
 
-    const handleAddToCalendar = () => {
+    // Calendar picker state
+    const [showCalendarPicker, setShowCalendarPicker] = React.useState(false);
+
+    const handleGoogleCalendar = () => {
+        const url = getGoogleCalendarUrl(game);
+        if (url) {
+            window.open(url, '_blank');
+            if (onToast) onToast('📅 Ouverture de Google Calendar...', 'success');
+        } else if (onToast) {
+            onToast('Erreur lors de la création du lien calendrier', 'error');
+        }
+        setShowCalendarPicker(false);
+    };
+
+    const handleOutlookCalendar = () => {
+        const url = getOutlookCalendarUrl(game);
+        if (url) {
+            window.open(url, '_blank');
+            if (onToast) onToast('📅 Ouverture de Outlook...', 'success');
+        } else if (onToast) {
+            onToast('Erreur lors de la création du lien calendrier', 'error');
+        }
+        setShowCalendarPicker(false);
+    };
+
+    const handleAppleCalendar = () => {
         const success = downloadGameCalendar(game);
         if (success && onToast) {
-            onToast('📅 Événement ajouté à votre calendrier !', 'success');
+            onToast('📅 Fichier ICS téléchargé (ouvrez-le pour l\'ajouter)', 'success');
         } else if (!success && onToast) {
             onToast('Erreur lors de la création du fichier calendrier', 'error');
         }
+        setShowCalendarPicker(false);
     };
 
     return (
@@ -219,19 +245,58 @@ const GameCard: React.FC<GameCardProps> = memo(({
                         </div>
                     </div>
 
-                    {/* Add to Calendar Button */}
-                    <button
-                        onClick={handleAddToCalendar}
-                        className="group w-full mb-6 py-3 px-4 flex items-center justify-center gap-2 
-                            bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 
-                            hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600
-                            text-white font-bold rounded-2xl shadow-lg hover:shadow-xl
-                            transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]
-                            border border-white/20"
-                    >
-                        <span className="text-lg">📅</span>
-                        <span>Ajouter à mon calendrier</span>
-                    </button>
+                    {/* Add to Calendar Picker */}
+                    <div className="relative mb-6">
+                        <button
+                            onClick={() => setShowCalendarPicker(!showCalendarPicker)}
+                            className="group w-full py-3 px-4 flex items-center justify-center gap-2 
+                                bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 
+                                hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600
+                                text-white font-bold rounded-2xl shadow-lg hover:shadow-xl
+                                transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]
+                                border border-white/20"
+                        >
+                            <span className="text-lg">📅</span>
+                            <span>Ajouter à mon calendrier</span>
+                            <span className={`transition-transform duration-200 ${showCalendarPicker ? 'rotate-180' : ''}`}>▼</span>
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {showCalendarPicker && (
+                            <div className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
+                                <button
+                                    onClick={handleGoogleCalendar}
+                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left"
+                                >
+                                    <span className="text-2xl">📅</span>
+                                    <div>
+                                        <p className="font-semibold text-slate-800">Google Calendar</p>
+                                        <p className="text-xs text-slate-500">Ouvre directement dans Google</p>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={handleOutlookCalendar}
+                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-100"
+                                >
+                                    <span className="text-2xl">📧</span>
+                                    <div>
+                                        <p className="font-semibold text-slate-800">Outlook</p>
+                                        <p className="text-xs text-slate-500">Ouvre dans Outlook.com</p>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={handleAppleCalendar}
+                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-100"
+                                >
+                                    <span className="text-2xl">🍎</span>
+                                    <div>
+                                        <p className="font-semibold text-slate-800">Apple Calendar / Autre</p>
+                                        <p className="text-xs text-slate-500">Télécharge un fichier .ics</p>
+                                    </div>
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Volunteer Section - Only for HOME games */}
                     {isHomeGame && (
