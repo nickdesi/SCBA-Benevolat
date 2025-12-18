@@ -34,9 +34,17 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
     // to scroll smoothly even on wide screens with few items.
     const tickerItems = Array(12).fill(upcomingGames).flat();
 
+    // Calculate duration based on total items to maintain consistent speed
+    // 12 copies * N games.
+    // Let's aim for ~8 seconds per item for a slow, readable speed.
+    const duration = tickerItems.length * 8; // e.g. 10 games * 12 = 120 items * 8s = 960s.
+
     return (
         <div className="bg-slate-900 border-b border-slate-800 text-white overflow-hidden py-2 relative z-30">
-            <div className="flex items-center animate-marquee whitespace-nowrap hover:pause">
+            <div
+                className="flex items-center animate-marquee whitespace-nowrap hover:pause"
+                style={{ animationDuration: `${duration}s` }}
+            >
                 <div className="flex gap-8 items-center px-4">
                     {tickerItems.map((game, i) => {
                         // Determine Host and Visitor for display (Host vs Visitor)
