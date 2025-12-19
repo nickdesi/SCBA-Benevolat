@@ -22,6 +22,8 @@ import Footer from './components/Footer';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES, MONTH_MAP } from './constants';
 import type { Game, GameFormData, CarpoolEntry } from './types';
+import BottomNav from './components/BottomNav';
+import { getStoredName } from './utils/storage';
 
 function App() {
   const [games, setGames] = useState<Game[]>([]);
@@ -106,11 +108,39 @@ function App() {
     return Array.from(opponents).filter(Boolean).sort();
   }, [games]);
 
-  // Filtered games
+  const [currentView, setCurrentView] = useState<'home' | 'planning'>('home');
+
+  // Filtered games logic
   const filteredGames = useMemo(() => {
-    if (!selectedTeam) return sortedGames;
-    return sortedGames.filter(g => g.team === selectedTeam);
-  }, [sortedGames, selectedTeam]);
+    let result = sortedGames;
+
+    // 1. Filter by Team (Dropdown)
+    if (selectedTeam) {
+      result = result.filter(g => g.team === selectedTeam);
+    }
+
+    // 2. Filter by View (Home vs Planning)
+    if (currentView === 'planning') {
+      const myName = getStoredName()?.toLowerCase();
+      if (!myName) return []; // No stored name = no planning
+
+      result = result.filter(game => {
+        // Check if user is a volunteer
+        const isVolunteer = game.roles.some(role =>
+          role.volunteers.some(v => v.toLowerCase() === myName)
+        );
+
+        // Check if user is in carpool (driver or passenger)
+        const isCarpool = game.carpool?.some(entry =>
+          entry.name.toLowerCase() === myName
+        );
+
+        return isVolunteer || isCarpool;
+      });
+    }
+
+    return result;
+  }, [sortedGames, selectedTeam, currentView]);
 
   // ---------------------------------------------------------------------------
   // Data Seeding / Migration (Run once if Firestore is empty)
@@ -632,8 +662,36 @@ function App() {
         onImport={handleImportCSV}
       />
 
+      {/* Empty State for Scheduling */}
+      {!loading && currentView === 'planning' && filteredGames.length === 0 && (
+        <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md mx-auto border border-slate-100 mt-8 mb-20 animate-fade-in-up">
+          <div className="text-6xl mb-4">📅</div>
+          <h3 className="text-2xl font-bold text-slate-800 mb-2">
+            Planning vide
+          </h3>
+          <p className="text-slate-500 mb-6">
+            Vous n'êtes inscrit à aucun match pour le moment.
+            Retournez à l'accueil pour vous inscrire !
+          </p>
+          <button
+            onClick={() => setCurrentView('home')}
+            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
+          >
+            Voir tous les matchs
+          </button>
+        </div>
+      )}
+
       <ReloadPrompt />
       <Footer />
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        isAdmin={isAdmin}
+        onAdminClick={() => setIsAdminModalOpen(true)}
+      />
     </div>
   );
 }

@@ -22,6 +22,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 - **Se désinscrire** : retirez-vous facilement (uniquement vos propres inscriptions)
 - **Badge "C'est vous !"** : identifiez rapidement vos inscriptions
 - **🔑 Récupération d'identité** : bouton "C'est moi ?" pour récupérer vos inscriptions sur un nouvel appareil
+- **📅 Mon Planning** : Vue personnalisée filtrant uniquement vos matchs (via barre de navigation mobile)
 - **Matchs triés par date** : affichage chronologique automatique (stockage ISO fiable)
 - **⚡ Match Ticker** : Bandeau défilant des matchs à venir (J-14)
 - **📊 Stats Breakdown** : Récapitulatif mensuel des matchs (Total / Domicile / Extérieur)
@@ -151,7 +152,7 @@ npm run preview
 
 L'application est optimisée pour :
 
-- 📱 Mobile (boutons pleine largeur, navigation tactile)
+- 📱 Mobile (boutons pleine largeur, navigation tactile, barre de menu en bas)
 - 💻 Desktop (grille 2 colonnes, hover effects)
 
 ## 🎉 Célébration automatique

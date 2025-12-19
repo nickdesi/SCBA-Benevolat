@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({
   onLogout,
   teams = [],
   selectedTeam = null,
-  onSelectTeam = () => { }
+  onSelectTeam = (_team) => { }
 }) => {
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white overflow-hidden">
@@ -56,8 +56,8 @@ const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
 
-          {/* Admin Button - Right */}
-          <div className="flex-shrink-0">
+          {/* Admin Button - Right (Desktop Only) */}
+          <div className="flex-shrink-0 hidden md:block">
             {isAdmin ? (
               <button
                 onClick={onLogout}
