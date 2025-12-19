@@ -14,7 +14,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 - **Inscription facile** : entrez votre nom et inscrivez-vous à un poste
 - **Interface moderne** : Design épuré avec dégradés, cartes animées et mode sombre. ❄️ *Thème Noël activé : Neige et Guirlandes !*
 - **📅 Ajouter au calendrier** : exportez les matchs vers Google Agenda, Apple Calendar ou Outlook en un clic
-- **🚗 Covoiturage** : proposez des places (conducteur) ou cherchez une place (passager) pour chaque match
+- **🚗 Covoiturage** : proposez des places (conducteur) ou cherchez une place (passager) pour chaque match. *🔒 Numéros de téléphone masqués par défaut pour protéger la vie privée*
 - **🔄 Mise à jour automatique** : l'application se met à jour automatiquement à l'arrivée sur le site
 - **Synchronisation temps réel** : Mises à jour instantanées via Firebase
 - **Confirmation d'inscription** : popup de confirmation avant validation
