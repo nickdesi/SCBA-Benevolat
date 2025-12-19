@@ -46,7 +46,7 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 - **Spinner initial** : Animation pendant le chargement des scripts
 - **Animations fluides** : Cartes qui apparaissent progressivement avec effet décalé
 - **État vide amélioré** : Design engageant quand aucun match n'est programmé
-- **Match Ticker** : Animation fluide avec inversion intelligente des équipes pour les matchs extérieurs
+- **Match Ticker** : Animation fluide avec inversion intelligente des équipes pour les matchs extérieurs *(compatible `prefers-reduced-motion`)*
 - Animation de célébration quand un match est complet
 - Notifications toast avec auto-dismiss
 - Emojis pour chaque poste (🍺 Buvette, ⏱️ Chrono, 📋 Table de marque, 🍪 Goûter)

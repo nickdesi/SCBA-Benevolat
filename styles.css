@@ -240,7 +240,7 @@ html {
   display: none;
 }
 
-/* Reduced motion */
+/* Reduced motion - respects user preference while keeping essential animations */
 @media (prefers-reduced-motion: reduce) {
 
   *,
@@ -249,6 +249,12 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Exception: Ticker marquee is informational, not decorative - keep it running */
+  .animate-marquee {
+    animation-duration: 30s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 
