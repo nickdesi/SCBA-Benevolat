@@ -3,9 +3,9 @@ import React, { useState, memo } from 'react';
 const APP_VERSION = 'v1.2.0';
 
 const CHANGELOG = [
-    { version: 'v1.2.0', date: '19/12/2024', changes: ['🔒 Masquage des numéros de téléphone pour la vie privée'] },
-    { version: 'v1.1.0', date: '18/12/2024', changes: ['📅 Export calendrier (Google, Outlook, Apple)', '🚗 Module covoiturage'] },
-    { version: 'v1.0.0', date: '14/12/2024', changes: ['🚀 Lancement initial', '📲 PWA installable'] },
+    { version: 'v1.2.0', date: '19/12/2025', changes: ['🔒 Masquage des numéros de téléphone pour la vie privée'] },
+    { version: 'v1.1.0', date: '18/12/2025', changes: ['📅 Export calendrier (Google, Outlook, Apple)', '🚗 Module covoiturage'] },
+    { version: 'v1.0.0', date: '14/12/2025', changes: ['🚀 Lancement initial', '📲 PWA installable'] },
 ];
 
 const Footer: React.FC = memo(() => {
