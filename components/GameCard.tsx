@@ -58,6 +58,14 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     const isFullyStaffed = isGameFullyStaffed(game);
 
+    // Calculate total carpool seats available
+    const totalCarpoolSeats = React.useMemo(() => {
+        if (!game.carpool) return 0;
+        return game.carpool
+            .filter(e => e.type === 'driver')
+            .reduce((sum, driver) => sum + (driver.seats || 0), 0);
+    }, [game.carpool]);
+
     // Default to home game if isHome is not defined (legacy matches)
     const isHomeGame = game.isHome ?? true;
 
@@ -169,6 +177,19 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 `}>
                                     {isHomeGame ? '🏠 DOMICILE' : '🚗 EXTÉRIEUR'}
                                 </span>
+
+                                {/* Carpool Availability Badge - Magic Pill 💊 */}
+                                {!isHomeGame && totalCarpoolSeats > 0 && (
+                                    <span className="
+                                        px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
+                                        bg-gradient-to-r from-emerald-500 to-green-400 shadow-emerald-500/30 shadow-lg
+                                        flex items-center gap-1 animate-pulse
+                                    ">
+                                        <span>🚗</span>
+                                        <span>{totalCarpoolSeats} place{totalCarpoolSeats > 1 ? 's' : ''}</span>
+                                    </span>
+                                )}
+
                                 {/* Status Badge */}
                                 {/* Status Badge - Only show when full */}
                                 {isFullyStaffed && (
