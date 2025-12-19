@@ -18,6 +18,7 @@ import ImportCSVModal from './components/ImportCSVModal';
 import MatchTicker from './components/MatchTicker';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
+import Footer from './components/Footer';
 import { ToastContainer, useToast } from './components/Toast';
 import { INITIAL_GAMES, DEFAULT_ROLES, MONTH_MAP } from './constants';
 import type { Game, GameFormData, CarpoolEntry } from './types';
@@ -632,9 +633,7 @@ function App() {
       />
 
       <ReloadPrompt />
-      <footer className="mt-20 py-8 text-center text-slate-400 text-sm">
-        <p>© {new Date().getFullYear()} Stade Clermontois Basket Auvergne</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
