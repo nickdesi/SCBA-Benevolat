@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useRef, useEffect } from 'react';
 import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import GameForm from './GameForm';
@@ -63,6 +63,24 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     // Calendar picker state
     const [showCalendarPicker, setShowCalendarPicker] = React.useState(false);
+    const calendarPickerRef = useRef<HTMLDivElement>(null);
+
+    // Close calendar picker when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (calendarPickerRef.current && !calendarPickerRef.current.contains(event.target as Node)) {
+                setShowCalendarPicker(false);
+            }
+        };
+
+        if (showCalendarPicker) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showCalendarPicker]);
 
     const handleGoogleCalendar = () => {
         const url = getGoogleCalendarUrl(game);
@@ -246,7 +264,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     </div>
 
                     {/* Add to Calendar Picker */}
-                    <div className="relative mb-6">
+                    <div ref={calendarPickerRef} className="relative mb-6">
                         <button
                             onClick={() => setShowCalendarPicker(!showCalendarPicker)}
                             className="group w-full py-3 px-4 flex items-center justify-center gap-2 
