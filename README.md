@@ -7,58 +7,75 @@ Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergn
 
 ![Logo SCBA](public/logo-scba.png)
 
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend (React + Vite)"
+        App[App.tsx]
+        useGames[useGames Hook]
+        GameList[GameList]
+        GameCard[GameCard]
+    end
+    
+    subgraph "Firebase"
+        Auth[Firebase Auth]
+        Firestore[(Firestore DB)]
+    end
+    
+    App --> useGames
+    App --> GameList
+    GameList --> GameCard
+    useGames --> Firestore
+    App --> Auth
+```
+
+### Flux de données
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant A as App.tsx
+    participant H as useGames Hook
+    participant F as Firebase
+    
+    U->>A: Ouvre l'application
+    A->>H: useGames({ selectedTeam, currentView })
+    H->>F: onSnapshot(matches)
+    F-->>H: Real-time data
+    H-->>A: { games, sortedGames, filteredGames, handlers... }
+    A->>GameList: Render games
+    U->>A: S'inscrit comme bénévole
+    A->>H: handleVolunteer()
+    H->>F: updateDoc()
+    F-->>H: Update propagé
+```
+
 ## ✨ Fonctionnalités
 
 ### 👥 Pour les parents
 
 - **Inscription facile** : entrez votre nom et inscrivez-vous à un poste
-- **Interface moderne** : Design épuré avec dégradés, cartes animées et mode sombre. ❄️ *Thème Noël activé : Neige et Guirlandes !*
-- **📅 Ajouter au calendrier** : exportez les matchs vers Google Agenda, Apple Calendar ou Outlook en un clic
-- **🚗 Covoiturage** : proposez des places (conducteur) ou cherchez une place (passager) pour chaque match. *🔒 Numéros de téléphone masqués par défaut pour protéger la vie privée*
-- **🔄 Mise à jour automatique** : l'application se met à jour automatiquement à l'arrivée sur le site
-- **Synchronisation temps réel** : Mises à jour instantanées via Firebase
-- **Confirmation d'inscription** : popup de confirmation avant validation
-- **Toast de confirmation** : notification visuelle après inscription ✅
-- **Se désinscrire** : retirez-vous facilement (uniquement vos propres inscriptions)
-- **Badge "C'est vous !"** : identifiez rapidement vos inscriptions
-- **🔑 Récupération d'identité** : bouton "C'est moi ?" pour récupérer vos inscriptions sur un nouvel appareil
-- **📅 Mon Planning** : Vue personnalisée filtrant uniquement vos matchs (via barre de navigation mobile)
-- **💊 Badge Covoiturage** : Notification immédiate des places dispo (ex: "🚗 3 places") directement sur la carte
-- **Matchs triés par date** : affichage chronologique automatique (stockage ISO fiable)
-- **⚡ Match Ticker** : Bandeau défilant des matchs à venir (J-14)
-- **📊 Stats Breakdown** : Récapitulatif mensuel des matchs (Total / Domicile / Extérieur)
+- **Interface moderne** : Design épuré avec dégradés, cartes animées
+- **📅 Ajouter au calendrier** : exportez vers Google Agenda, Apple Calendar ou Outlook
+- **🚗 Covoiturage** : proposez des places (conducteur) ou cherchez une place (passager)
+- **🔄 Mise à jour automatique** : synchronisation temps réel via Firebase
+- **📅 Mon Planning** : Vue personnalisée filtrant uniquement vos matchs
+- **💊 Badge Covoiturage** : Notification immédiate des places dispo
 
 ### 🔧 Pour les administrateurs
 
-- **Accès rapide** : bouton Admin directement dans le header
+- **🔐 Authentification Firebase** : Connexion sécurisée par email/mot de passe
 - **🏠 Matchs Domicile / 🚗 Extérieur** : différenciation des types de matchs
-  - **Domicile** : Menu déroulant strict ("Maison des Sports" ou "Gymnase Fleury")
-  - **Extérieur** : Champ libre avec auto-complétion intelligente des lieux existants
+- **📥 Import en masse** : Copier-coller depuis le calendrier FFBB
 - **Gestion des matchs** : ajouter, modifier, supprimer
-- **📥 Import en masse** : Copier-coller depuis le calendrier FFBB avec **recherche automatique des gymnases** (OpenStreetMap + Ministère des Sports)
-- **Configuration des postes** : modifier le nombre de bénévoles par poste
-- **Gestion des inscriptions** : supprimer n'importe quel bénévole
 
 ### 🎨 Interface moderne
 
 - Design responsive (mobile & desktop)
-- **Badges visuels** : 🏠 Domicile (vert) / 🚗 Extérieur (bleu) sur chaque carte
-- **Typographie premium** : Police Outfit pour une apparence moderne et professionnelle
-- **Skeleton Loader** : Chargement élégant avec aperçu de la structure pendant le chargement
-- **Spinner initial** : Animation pendant le chargement des scripts
-- **Animations fluides** : Cartes qui apparaissent progressivement avec effet décalé
-- **État vide amélioré** : Design engageant quand aucun match n'est programmé
-- **Match Ticker** : Animation fluide avec inversion intelligente des équipes pour les matchs extérieurs *(compatible `prefers-reduced-motion`)*
+- Skeleton Loader pendant le chargement
 - Animation de célébration quand un match est complet
 - Notifications toast avec auto-dismiss
-- Emojis pour chaque poste (🍺 Buvette, ⏱️ Chrono, 📋 Table de marque, 🍪 Goûter)
-- Logo officiel du club
-
-### 📲 PWA & Cache
-
-- **Installation mobile** : Ajoutez l'app sur votre écran d'accueil
-- **Mises à jour automatiques** : Détection et rechargement automatique toutes les 30s
-- **Network First** : Toujours afficher la dernière version (pas de cache bloquant)
 
 ## 🚀 Installation
 
@@ -70,25 +87,21 @@ cd SCBA-Benevolat
 # Installer les dépendances
 npm install
 
-# Configurer le mot de passe admin
-cp .env.example .env.local
-# Éditer .env.local avec votre mot de passe
+# Lancer en développement
+npm run dev
 ```
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### Firebase Authentication
 
-Créez un fichier `.env.local` :
+L'authentification admin utilise **Firebase Auth (Email/Mot de passe)**.
 
-```env
-VITE_ADMIN_PASSWORD=VotreMotDePasseAdmin
-```
+1. Allez dans [Firebase Console](https://console.firebase.google.com/)
+2. Sélectionnez votre projet → **Authentication** → **Users**
+3. Cliquez **"Add user"** et créez un compte admin
 
-### Firebase
-
-L'application utilise Firebase Firestore pour la synchronisation en temps réel.
-La configuration peut être personnalisée via variables d'environnement (optionnel) :
+### Variables d'environnement (optionnel)
 
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
@@ -96,64 +109,48 @@ VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
 ```
 
-## 🏃 Lancer l'application
-
-```bash
-# Mode développement
-npm run dev
-
-# Build production
-npm run build
-
-# Prévisualiser le build
-npm run preview
-```
-
 ## 📁 Structure du projet
 
 ```
-├── index.tsx               # Point d'entrée (React + import CSS)
-├── App.tsx                 # Composant principal (Logique Firestore + tri dates)
-├── firebase.ts             # Configuration Firebase (env vars)
+├── App.tsx                 # Composant principal (UI + state)
+├── firebase.ts             # Config Firebase (Firestore + Auth)
+│
 ├── components/
-│   ├── Header.tsx          # En-tête avec logo + bouton Admin
-│   ├── MatchTicker.tsx     # Bandeau défilant des matchs à venir
+│   ├── GameList.tsx        # [NEW] Liste groupée des matchs
 │   ├── GameCard.tsx        # Carte de match (memoized)
-│   ├── GameForm.tsx        # Formulaire ajout/édition match
-│   ├── VolunteerSlot.tsx   # Gestion des inscriptions (memoized)
-│   ├── CarpoolingSection.tsx # Section covoiturage (memoized)
-│   ├── ConfirmModal.tsx    # Modal de confirmation
-│   ├── AdminAuthModal.tsx  # Authentification admin
-│   ├── SkeletonLoader.tsx  # Chargement élégant (memoized)
-│   ├── ReloadPrompt.tsx    # PWA update prompt
-│   ├── Toast.tsx           # Notifications toast
-│   ├── SnowEffect.tsx      # Animation neige (Noël)
-│   ├── ChristmasGarland.tsx # Guirlande lumineuse (Noël)
-│   └── Icons.tsx           # Icônes SVG centralisées
-│   └── AddressAutocomplete.tsx # Autocomplétion d'adresses
+│   ├── GameForm.tsx        # Formulaire ajout/édition
+│   ├── VolunteerSlot.tsx   # Inscriptions bénévoles
+│   ├── CarpoolingSection.tsx # Section covoiturage
+│   ├── AdminAuthModal.tsx  # Login Firebase Email/Password
+│   ├── Header.tsx          # En-tête avec filtre équipe
+│   ├── BottomNav.tsx       # Navigation mobile
+│   ├── MatchTicker.tsx     # Bandeau défilant
+│   └── ...
+│
 ├── utils/
-│   ├── calendar.ts         # Export calendrier (Google, Outlook, Apple)
-│   └── storage.ts          # Utilitaires localStorage partagés
-├── public/
-│   ├── logo-scba.png       # Logo du club
-│   └── pwa-*.png           # Icônes PWA (192x192, 512x512)
-├── styles.css              # Design system global
-├── constants.ts            # Constantes partagées (rôles, MONTH_MAP)
-└── types.ts                # Types TypeScript
+│   ├── useGames.ts         # [NEW] Hook Firebase (CRUD + listeners)
+│   ├── authStore.ts        # [NEW] Auth Firebase (signIn/signOut)
+│   ├── dateUtils.ts        # [NEW] Parsing dates centralisé
+│   ├── calendar.ts         # Export calendrier (ICS, Google, Outlook)
+│   └── storage.ts          # Utilitaires localStorage
+│
+├── types.ts                # Types TypeScript
+├── constants.ts            # Constantes (rôles, mois)
+└── styles.css              # Design system global
 ```
 
-## 🔒 Sécurité et Données
+## 🔒 Sécurité
 
-- **Firebase Firestore** : Synchronisation temps réel des matchs et inscriptions.
-- **Migration automatique** : Les données locales sont importées dans Firestore au premier lancement.
-- **Identité** : L'identification "C'est vous !" reste locale au navigateur pour garantir la confidentialité sans compte utilisateur complexe.
-- **Admin** : Mot de passe sécurisé requis pour les actions sensibles.
+- **Firebase Auth** : Authentification sécurisée par email/mot de passe
+- **Firebase Firestore** : Synchronisation temps réel des données
+- **TypeScript Strict** : Mode strict activé pour plus de sécurité
+- **Données locales** : L'identité "C'est vous !" reste locale au navigateur
 
 ## 📱 Responsive
 
 L'application est optimisée pour :
 
-- 📱 Mobile (boutons pleine largeur, navigation tactile, barre de menu en bas)
+- 📱 Mobile (boutons pleine largeur, navigation tactile)
 - 💻 Desktop (grille 2 colonnes, hover effects)
 
 ## 🎉 Célébration automatique
@@ -163,8 +160,6 @@ Quand tous les postes d'un match sont pourvus :
 - Carte passe en vert avec animation
 - Badge "COMPLET" affiché
 - Message de remerciement
-
-**Note** : Le poste Goûter (illimité) est considéré complet avec minimum 2 personnes.
 
 ---
 

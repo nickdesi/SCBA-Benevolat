@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { signIn } from '../utils/authStore';
 
 interface AdminAuthModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (password: string) => void;
-    error: string;
+    onSuccess: () => void;
 }
 
-const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubmit, error }) => {
+const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Clear password when modal closes
+    // Clear form when modal closes
     useEffect(() => {
         if (!isOpen) {
+            setEmail('');
             setPassword('');
             setShowPassword(false);
+            setError('');
+            setIsLoading(false);
         }
     }, [isOpen]);
 
@@ -31,9 +37,20 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(password);
+        setError('');
+        setIsLoading(true);
+
+        try {
+            await signIn(email, password);
+            onSuccess();
+            onClose();
+        } catch (err: any) {
+            setError(err.message || 'Erreur de connexion');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -66,6 +83,21 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
 
                         {/* Form */}
                         <form onSubmit={handleSubmit}>
+                            {/* Email Field */}
+                            <div className="mb-4">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="input-modern px-4 py-4 text-base"
+                                    placeholder="Email"
+                                    autoFocus
+                                    disabled={isLoading}
+                                    required
+                                />
+                            </div>
+
+                            {/* Password Field */}
                             <div className="relative mb-4">
                                 <input
                                     type={showPassword ? "text" : "password"}
@@ -73,7 +105,8 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="input-modern pl-4 pr-12 py-4 text-base"
                                     placeholder="Mot de passe"
-                                    autoFocus
+                                    disabled={isLoading}
+                                    required
                                 />
                                 {/* Show/Hide Password Toggle */}
                                 <button
@@ -111,14 +144,24 @@ const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSubm
                                     type="button"
                                     onClick={onClose}
                                     className="flex-1 px-4 py-3 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                                    disabled={isLoading}
                                 >
                                     Annuler
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 btn-primary py-3 rounded-xl text-base"
+                                    className="flex-1 btn-primary py-3 rounded-xl text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={isLoading}
                                 >
-                                    Valider
+                                    {isLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            Connexion...
+                                        </span>
+                                    ) : 'Se connecter'}
                                 </button>
                             </div>
                         </form>
