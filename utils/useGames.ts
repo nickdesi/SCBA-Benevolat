@@ -147,6 +147,8 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
                 );
                 const snapshot = await getDocs(pastMatchesQuery);
 
+                const matchesToDelete: string[] = [];
+
                 // No need for client-side filtering anymore
                 snapshot.docs.forEach(docSnap => {
                     matchesToDelete.push(docSnap.id);
