@@ -140,24 +140,16 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             try {
                 const todayISO = getTodayISO();
                 const colRef = collection(db, "matches");
-                const snapshot = await getDocs(colRef);
+                // Optimized cleanup: only fetch past matches using Query
+                const pastMatchesQuery = query(
+                    colRef,
+                    where("dateISO", "<", todayISO)
+                );
+                const snapshot = await getDocs(pastMatchesQuery);
 
-                const matchesToDelete: string[] = [];
-
+                // No need for client-side filtering anymore
                 snapshot.docs.forEach(docSnap => {
-                    const data = docSnap.data();
-                    let matchDateISO = data.dateISO;
-
-                    if (!matchDateISO && data.date) {
-                        const parsed = parseFrenchDate(data.date);
-                        if (parsed) {
-                            matchDateISO = toISODateString(parsed);
-                        }
-                    }
-
-                    if (matchDateISO && matchDateISO < todayISO) {
-                        matchesToDelete.push(docSnap.id);
-                    }
+                    matchesToDelete.push(docSnap.id);
                 });
 
                 if (matchesToDelete.length > 0) {
