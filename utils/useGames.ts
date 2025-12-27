@@ -13,7 +13,7 @@ import {
     orderBy
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { INITIAL_GAMES, DEFAULT_ROLES } from '../constants';
+import { DEFAULT_ROLES } from '../constants';
 import type { Game, GameFormData, CarpoolEntry } from '../types';
 import { getGameDateValue, getTodayISO, parseFrenchDate, toISODateString } from './dateUtils';
 import { getStoredName } from './storage';
@@ -50,36 +50,27 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Check localStorage for migration (legacy support)
-    const localGames = useMemo(() => {
-        try {
-            const stored = localStorage.getItem('scba-games');
-            return stored ? JSON.parse(stored) : INITIAL_GAMES;
-        } catch {
-            return INITIAL_GAMES;
-        }
-    }, []);
+
 
     // ---------------------------------------------------------------------------
     // Firestore Synchronization with Query Optimization
     // ---------------------------------------------------------------------------
     useEffect(() => {
-        // Optimized query: only fetch games from today onwards
+        // Optimized query: only fetch games from today onwards using Firestore query
         const todayISO = getTodayISO();
 
-        // Note: We can't use Firestore range query directly on dateISO because 
-        // legacy games might not have it. We'll filter client-side for safety.
-        const unsubscribe = onSnapshot(collection(db, "matches"), (snapshot) => {
-            const matchesData: Game[] = snapshot.docs
-                .map(docSnap => ({
-                    id: docSnap.id,
-                    ...docSnap.data()
-                } as Game))
-                // Filter out past games (optimization)
-                .filter(game => {
-                    const gameDate = getGameDateValue(game);
-                    return gameDate >= todayISO;
-                });
+        // Use Firestore query to filter server-side
+        const matchesQuery = query(
+            collection(db, "matches"),
+            where("dateISO", ">=", todayISO),
+            orderBy("dateISO", "asc")
+        );
+
+        const unsubscribe = onSnapshot(matchesQuery, (snapshot) => {
+            const matchesData: Game[] = snapshot.docs.map(docSnap => ({
+                id: docSnap.id,
+                ...docSnap.data()
+            } as Game));
 
             setGames(matchesData);
             setLoading(false);
@@ -139,52 +130,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return result;
     }, [sortedGames, selectedTeam, currentView]);
 
-    // ---------------------------------------------------------------------------
-    // Data Seeding / Migration (Run once if Firestore is empty)
-    // ---------------------------------------------------------------------------
-    useEffect(() => {
-        const seedFirestore = async () => {
-            try {
-                const metadataSnap = await getDocs(collection(db, "system"));
-                if (!metadataSnap.empty) return;
 
-                const colRef = collection(db, "matches");
-                const snapshot = await getDocs(colRef);
-
-                const setInitializedFlag = async () => {
-                    const batch = writeBatch(db);
-                    const metaRef = doc(db, "system", "metadata");
-                    batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
-                    await batch.commit();
-                };
-
-                if (!snapshot.empty) {
-                    await setInitializedFlag();
-                    return;
-                }
-
-                if (snapshot.empty) {
-                    const batch = writeBatch(db);
-                    const gamesToImport = (localGames && localGames.length > 0) ? localGames : INITIAL_GAMES;
-
-                    gamesToImport.forEach((game: Game) => {
-                        const docRef = doc(db, "matches", game.id);
-                        const cleanGame = JSON.parse(JSON.stringify(game));
-                        batch.set(docRef, cleanGame);
-                    });
-
-                    const metaRef = doc(db, "system", "metadata");
-                    batch.set(metaRef, { initialized: true, date: new Date().toISOString() });
-                    await batch.commit();
-                }
-            } catch (err) {
-                console.error("Error seeding database:", err);
-            }
-        };
-
-        const timer = setTimeout(() => seedFirestore(), 1000);
-        return () => clearTimeout(timer);
-    }, [localGames]);
 
     // ---------------------------------------------------------------------------
     // Automatic Cleanup of Past Matches

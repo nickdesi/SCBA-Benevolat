@@ -1,6 +1,5 @@
 import React from 'react';
-import SnowEffect from './SnowEffect';
-import ChristmasGarland from './ChristmasGarland';
+
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -23,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0">
-        <SnowEffect />
+
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: `radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.4) 0%, transparent 40%),
                            radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.3) 0%, transparent 40%)`
@@ -34,14 +33,14 @@ const Header: React.FC<HeaderProps> = ({
       <div className="container mx-auto px-4 py-4 relative z-10">
         <div className="flex items-center justify-between">
           {/* Logo - Left */}
-          <ChristmasGarland className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 rounded-full scale-150"></div>
             <img
               src="/logo-scba.png"
               alt="Logo Stade Clermontois Basket Auvergne"
               className="relative w-14 h-16 sm:w-16 sm:h-20 object-contain drop-shadow-lg"
             />
-          </ChristmasGarland>
+          </div>
 
           {/* Title - Center */}
           <div className="text-center flex-1 px-3">

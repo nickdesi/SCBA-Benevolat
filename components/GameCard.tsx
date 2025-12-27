@@ -1,10 +1,13 @@
-import React, { memo, useRef, useEffect } from 'react';
+import React, { memo, useRef, useEffect, Suspense, lazy } from 'react';
 import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
-import GameForm from './GameForm';
 import CarpoolingSection from './CarpoolingSection';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon, GoogleCalendarIcon, OutlookCalendarIcon, AppleCalendarIcon } from './Icons';
 import { downloadGameCalendar, getGoogleCalendarUrl, getOutlookCalendarUrl } from '../utils/calendar';
+
+// Lazy-loaded for code-splitting
+const GameForm = lazy(() => import('./GameForm'));
+
 
 interface GameCardProps {
     game: Game;
@@ -53,7 +56,11 @@ const GameCard: React.FC<GameCardProps> = memo(({
     onUpdateRequest
 }) => {
     if (isEditing) {
-        return <GameForm gameToEdit={game} onSave={onUpdateRequest} onCancel={onCancelEdit} />;
+        return (
+            <Suspense fallback={<div className="p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
+                <GameForm gameToEdit={game} onSave={onUpdateRequest} onCancel={onCancelEdit} />
+            </Suspense>
+        );
     }
 
     const isFullyStaffed = isGameFullyStaffed(game);

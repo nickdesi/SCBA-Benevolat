@@ -112,31 +112,51 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 ## 📁 Structure du projet
 
 ```
-├── App.tsx                 # Composant principal (UI + state)
+├── App.tsx                 # Composant principal (UI + state + lazy loading)
 ├── firebase.ts             # Config Firebase (Firestore + Auth)
 │
 ├── components/
-│   ├── GameList.tsx        # [NEW] Liste groupée des matchs
-│   ├── GameCard.tsx        # Carte de match (memoized)
-│   ├── GameForm.tsx        # Formulaire ajout/édition
+│   ├── GameList.tsx        # Liste groupée des matchs
+│   ├── GameCard.tsx        # Carte de match (memoized + lazy GameForm)
+│   ├── GameForm.tsx        # Formulaire ajout/édition (lazy-loaded)
 │   ├── VolunteerSlot.tsx   # Inscriptions bénévoles
 │   ├── CarpoolingSection.tsx # Section covoiturage
-│   ├── AdminAuthModal.tsx  # Login Firebase Email/Password
+│   ├── PhoneDisplay.tsx    # [NEW] Affichage téléphone avec masquage
+│   ├── AdminAuthModal.tsx  # Login Firebase (lazy-loaded)
+│   ├── ImportCSVModal.tsx  # Import CSV (lazy-loaded)
 │   ├── Header.tsx          # En-tête avec filtre équipe
 │   ├── BottomNav.tsx       # Navigation mobile
 │   ├── MatchTicker.tsx     # Bandeau défilant
 │   └── ...
 │
 ├── utils/
-│   ├── useGames.ts         # [NEW] Hook Firebase (CRUD + listeners)
-│   ├── authStore.ts        # [NEW] Auth Firebase (signIn/signOut)
-│   ├── dateUtils.ts        # [NEW] Parsing dates centralisé
+│   ├── useGames.ts         # Hook Firebase (CRUD + query optimisée)
+│   ├── authStore.ts        # Auth Firebase (signIn/signOut)
+│   ├── dateUtils.ts        # Parsing dates centralisé
 │   ├── calendar.ts         # Export calendrier (ICS, Google, Outlook)
 │   └── storage.ts          # Utilitaires localStorage
 │
 ├── types.ts                # Types TypeScript
 ├── constants.ts            # Constantes (rôles, mois)
 └── styles.css              # Design system global
+```
+
+## ⚡ Optimisations
+
+### Code-Splitting (React.lazy)
+
+Les modals et formulaires sont chargés à la demande :
+
+- `AdminAuthModal` (~5 KB)
+- `ImportCSVModal` (~14 KB)
+- `GameForm` (~10 KB)
+
+### Firestore Query
+
+Seuls les matchs futurs sont récupérés (server-side filter) :
+
+```typescript
+query(collection(db, "matches"), where("dateISO", ">=", todayISO))
 ```
 
 ## 🔒 Sécurité

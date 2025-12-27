@@ -1,9 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import Header from './components/Header';
-import GameForm from './components/GameForm';
 import GameList from './components/GameList';
-import AdminAuthModal from './components/AdminAuthModal';
-import ImportCSVModal from './components/ImportCSVModal';
 import MatchTicker from './components/MatchTicker';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
@@ -13,6 +10,11 @@ import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut } from './utils/authStore';
 import { useGames } from './utils/useGames';
+
+// Lazy-loaded components (code-splitting for reduced initial bundle)
+const AdminAuthModal = lazy(() => import('./components/AdminAuthModal'));
+const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
+const GameForm = lazy(() => import('./components/GameForm'));
 
 function App() {
   // UI State
@@ -216,14 +218,16 @@ function App() {
 
         {/* Add Game Form */}
         {isAddingGame && (
-          <div className="mb-8">
-            <GameForm
-              onSave={handleAddGame}
-              onCancel={() => setIsAddingGame(false)}
-              existingLocations={uniqueLocations}
-              existingOpponents={uniqueOpponents}
-            />
-          </div>
+          <Suspense fallback={<div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
+            <div className="mb-8">
+              <GameForm
+                onSave={handleAddGame}
+                onCancel={() => setIsAddingGame(false)}
+                existingLocations={uniqueLocations}
+                existingOpponents={uniqueOpponents}
+              />
+            </div>
+          </Suspense>
         )}
 
         {/* Grouped Games List */}
@@ -262,18 +266,26 @@ function App() {
       </main>
 
       {/* Admin Auth Modal */}
-      <AdminAuthModal
-        isOpen={isAdminModalOpen}
-        onClose={() => setIsAdminModalOpen(false)}
-        onSuccess={() => addToast('Connexion admin réussie !', 'success')}
-      />
+      <Suspense fallback={null}>
+        {isAdminModalOpen && (
+          <AdminAuthModal
+            isOpen={isAdminModalOpen}
+            onClose={() => setIsAdminModalOpen(false)}
+            onSuccess={() => addToast('Connexion admin réussie !', 'success')}
+          />
+        )}
+      </Suspense>
 
       {/* CSV Import Modal */}
-      <ImportCSVModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onImport={handleImportCSV}
-      />
+      <Suspense fallback={null}>
+        {isImportModalOpen && (
+          <ImportCSVModal
+            isOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+            onImport={handleImportCSV}
+          />
+        )}
+      </Suspense>
 
       {/* Empty State for Scheduling */}
       {!loading && currentView === 'planning' && filteredGames.length === 0 && (
