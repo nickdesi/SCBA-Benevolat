@@ -77,6 +77,10 @@ sequenceDiagram
 - Animation de célébration quand un match est complet
 - Notifications toast avec auto-dismiss
 
+## 📋 Prérequis
+
+- **Node.js** : v22.12.0 ou supérieur (nécessaire pour Vite 7)
+
 ## 🚀 Installation
 
 ```bash
@@ -150,6 +154,11 @@ Les modals et formulaires sont chargés à la demande :
 - `AdminAuthModal` (~5 KB)
 - `ImportCSVModal` (~14 KB)
 - `GameForm` (~10 KB)
+
+### Bundle Splitting (Vite 7)
+
+- Séparation automatique des dépendances (`vendor-react`, `vendor-firebase`) via `manualChunks`.
+- Réduction significative du bundle principal (Main Entry < 300kB).
 
 ### Firestore Query
 
