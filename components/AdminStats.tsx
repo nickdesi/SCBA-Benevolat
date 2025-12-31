@@ -14,8 +14,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
         let filledSlots = 0;
 
         const gameStats = homeGames.map(game => {
-            const gameTotal = game.roles.reduce((acc, role) => acc + role.capacity, 0);
-            const gameFilled = game.roles.reduce((acc, role) => acc + role.volunteers.length, 0);
+            // Only count finite capacities for the stats calculations
+            const finiteRoles = game.roles.filter(r => isFinite(r.capacity));
+            const gameTotal = finiteRoles.reduce((acc, role) => acc + role.capacity, 0);
+            const gameFilled = finiteRoles.reduce((acc, role) => acc + role.volunteers.length, 0);
 
             totalSlots += gameTotal;
             filledSlots += gameFilled;
@@ -27,7 +29,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                 date: game.date,
                 percent: gameTotal > 0 ? Math.round((gameFilled / gameTotal) * 100) : 0,
                 filled: gameFilled,
-                total: gameTotal
+                total: gameTotal,
+                hasUnlimited: game.roles.some(r => !isFinite(r.capacity))
             };
         });
 
@@ -36,9 +39,14 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
             totalSlots,
             filledSlots,
             percent: totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0,
-            gameStats: gameStats.sort((a, b) => b.percent - a.percent) // Sort by least filled first or most filled? Let's do least filled first.
+            gameStats: gameStats.sort((a, b) => a.percent - b.percent) // Sort by least filled first
         };
     }, [games]);
+
+    const formatCapacity = (val: number) => {
+        if (!isFinite(val)) return 'Illimité';
+        return val.toString();
+    };
 
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -74,7 +82,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                         </div>
                         <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 text-center">
                             <p className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-1">Postes Pourvus</p>
-                            <p className="text-3xl font-black text-amber-900">{stats.filledSlots}/{stats.totalSlots}</p>
+                            <p className="text-3xl font-black text-amber-900">{stats.filledSlots}/{formatCapacity(stats.totalSlots)}</p>
                         </div>
                     </div>
 
@@ -90,24 +98,29 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                                         <h4 className="font-bold text-slate-800">{game.team} vs {game.opponent}</h4>
                                         <p className="text-xs text-slate-500">{game.date}</p>
                                     </div>
-                                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${game.percent === 100 ? 'bg-emerald-100 text-emerald-700' :
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${game.percent === 100 ? 'bg-emerald-100 text-emerald-700' :
                                             game.percent > 50 ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
-                                        }`}>
-                                        {game.percent}%
-                                    </span>
+                                            }`}>
+                                            {game.percent}%
+                                        </span>
+                                        {game.hasUnlimited && (
+                                            <span className="text-[9px] text-blue-600 font-bold uppercase">Inclut rôles illimités</span>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Progress Bar */}
                                 <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full transition-all duration-1000 ${game.percent === 100 ? 'bg-emerald-500' :
-                                                game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
+                                            game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
                                             }`}
                                         style={{ width: `${game.percent}%` }}
                                     />
                                 </div>
                                 <p className="text-[10px] text-slate-400 mt-1 text-right font-medium">
-                                    {game.filled} / {game.total} postes occupés
+                                    {game.filled} / {formatCapacity(game.total)} postes occupés
                                 </p>
                             </div>
                         ))}
