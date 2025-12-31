@@ -62,39 +62,13 @@ const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
 
-          {/* Admin Button - Right (Desktop Only) */}
+          {/* User Profile (Google Auth) */}
           <div className="flex-shrink-0 flex items-center gap-2">
-            {/* User Profile (Google Auth) */}
             <UserProfile
               registrations={registrations}
               games={games}
               onUnsubscribe={onUnsubscribe}
             />
-
-            {/* Admin Button (Desktop Only) */}
-            <div className="hidden md:block">
-              {isAdmin ? (
-                <button
-                  onClick={onLogout}
-                  className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full 
-                         border border-emerald-400/30 hover:bg-emerald-500/30 
-                         transition-all text-sm font-semibold flex items-center gap-2"
-                >
-                  <span>✓ Admin</span>
-                  <span className="hidden sm:inline text-xs opacity-70">Déconnexion</span>
-                </button>
-              ) : (
-                <button
-                  onClick={onAdminClick}
-                  className="px-4 py-2 bg-white/10 text-white/80 rounded-full 
-                         border border-white/20 hover:bg-white/20 
-                         transition-all text-sm font-medium flex items-center gap-2"
-                >
-                  <span>🔒</span>
-                  <span>Admin</span>
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </div>
