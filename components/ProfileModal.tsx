@@ -1,112 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { User } from 'firebase/auth';
-import { collection, query, where, getDocs, deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import { useGames } from '../utils/useGames'; // Adjust import path as needed
-import { getTodayISO, parseFrenchDate } from '../utils/dateUtils';
+import { UserRegistration, Game } from '../types';
 import { CalendarIcon, ClockIcon, LocationIcon, DeleteIcon } from './Icons';
 
 interface ProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
     user: User;
+    registrations: UserRegistration[];
+    games: Game[];
+    onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
 }
 
-interface UserRegistration {
-    id: string; // gameId_roleId
-    gameId: string;
-    roleId: string;
-    roleName: string;
-    gameDate: string; // ISO or formatted
-    gameTime: string; // approx
-    team: string; // opponent usually or "My Team" context
-    opponent: string;
-    location: string;
-    volunteerName?: string; // The specific name used for this registration
-    gameDateISO?: string;
-    isValid?: boolean; // New flag to track if registration exists in public game
-}
+const ProfileModal: React.FC<ProfileModalProps> = ({
+    isOpen,
+    onClose,
+    user,
+    registrations,
+    games,
+    onUnsubscribe
+}) => {
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) => {
-    const [registrations, setRegistrations] = useState<UserRegistration[]>([]);
-    const [loading, setLoading] = useState(true);
+    const processedRegistrations = useMemo(() => {
+        return registrations.map(reg => {
+            const game = games.find(g => g.id === reg.gameId);
+            let isValid = true;
 
-    console.log("ProfileModal rendered. isOpen:", isOpen);
-
-    // We can fetch user's specific registrations directly from their subcollection
-    // or assume useGames context. fetching directly ensures freshness.
-    useEffect(() => {
-        if (!isOpen || !user) return;
-
-        const fetchRegistrations = async () => {
-            setLoading(true);
-            try {
-                const q = query(collection(db, `users/${user.uid}/registrations`));
-                const snapshot = await getDocs(q);
-
-                const regsPromises = snapshot.docs.map(async d => {
-                    const data = d.data();
-                    const reg: UserRegistration = {
-                        id: d.id,
-                        gameId: data.gameId,
-                        roleId: data.roleId,
-                        roleName: data.roleName,
-                        gameDate: typeof data.gameDate === 'string' ? data.gameDate : (data.gameDate ? String(data.gameDate) : undefined),
-                        gameDateISO: data.gameDateISO,
-                        team: data.team, // actually 'team' field
-                        opponent: data.opponent,
-                        location: data.location || 'Gymnase non spécifié', // Might be missing in snapshot if not saved
-                        gameTime: data.gameTime || '',
-                        volunteerName: data.volunteerName,
-                        isValid: true // Default to true, verify below
-                    };
-
-                    // Verify against public game data
-                    try {
-                        const gameSnap = await getDoc(doc(db, 'matches', reg.gameId));
-                        if (gameSnap.exists()) {
-                            const gameData = gameSnap.data();
-                            const role = gameData.roles?.find((r: any) => r.id === reg.roleId);
-                            if (role) {
-                                // Check if the volunteer name is still in the list
-                                const nameToCheck = reg.volunteerName || user.displayName;
-                                const isStillRegistered = role.volunteers.includes(nameToCheck);
-                                reg.isValid = isStillRegistered;
-                            } else {
-                                reg.isValid = false; // Role deleted?
-                            }
-                        } else {
-                            reg.isValid = false; // Game deleted
-                        }
-                    } catch (e) {
-                        console.warn("Could not verify registration validity", e);
-                        // Keep as true or maybe unknowns? Let's assume true but log warning.
+            if (game) {
+                const role = game.roles.find(r => r.id === reg.roleId);
+                if (role) {
+                    const nameToCheck = reg.volunteerName || user.displayName;
+                    if (nameToCheck && !role.volunteers.includes(nameToCheck)) {
+                        isValid = false;
                     }
-
-                    return reg;
-                });
-
-                const regs = await Promise.all(regsPromises);
-
-                // Sort by date (ascending)
-                regs.sort((a, b) => {
-                    if (a.gameDateISO && b.gameDateISO) {
-                        return a.gameDateISO.localeCompare(b.gameDateISO);
-                    }
-                    return 0;
-                });
-
-                setRegistrations(regs);
-            } catch (err) {
-                console.error("Error fetching registrations", err);
-            } finally {
-                setLoading(false);
+                } else {
+                    isValid = false;
+                }
             }
-        };
 
-        fetchRegistrations();
-    }, [isOpen, user]);
+            return { ...reg, isValid };
+        }).sort((a, b) => {
+            if (a.gameDateISO && b.gameDateISO) {
+                return a.gameDateISO.localeCompare(b.gameDateISO);
+            }
+            return 0;
+        });
+    }, [registrations, games, user.displayName]);
 
     const handleDelete = async (regId: string, gameId: string, roleId: string, volunteerName?: string, isValid: boolean = true) => {
         const confirmMessage = isValid
@@ -116,33 +56,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
         if (!confirm(confirmMessage)) return;
 
         try {
-            // 1. Remove from Public Game Sheet (ONLY if valid)
-            if (isValid) {
-                const gameRef = doc(db, 'matches', gameId);
-                const gameSnap = await getDoc(gameRef);
-
-                if (gameSnap.exists()) {
-                    const gameData = gameSnap.data();
-                    const nameToRemove = volunteerName || user.displayName || "";
-
-                    const updatedRoles = (gameData.roles || []).map((role: any) => {
-                        if (role.id === roleId) {
-                            return {
-                                ...role,
-                                volunteers: role.volunteers.filter((v: string) => v !== nameToRemove)
-                            };
-                        }
-                        return role;
-                    });
-
-                    await updateDoc(gameRef, { roles: updatedRoles });
-                }
-            }
-
-            // 2. Delete from user profile (ALWAYS)
-            await deleteDoc(doc(db, `users/${user.uid}/registrations/${regId}`));
-
-            setRegistrations(prev => prev.filter(r => r.id !== regId));
+            await onUnsubscribe(gameId, roleId, volunteerName || user.displayName || "");
         } catch (err) {
             console.error(err);
             alert("Erreur lors de la suppression");
@@ -153,13 +67,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-
-            {/* Modal */}
             <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
-                {/* Header */}
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
                     <div className="flex items-center gap-6">
                         <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/50 flex items-center justify-center text-3xl font-bold shadow-lg">
@@ -186,17 +96,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
                     </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
                     <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <span>📅</span> Mes Prochaines Missions
                     </h3>
 
-                    {loading ? (
-                        <div className="space-y-3">
-                            {[1, 2, 3].map(i => <div key={i} className="h-24 bg-white rounded-xl shadow-sm animate-pulse" />)}
-                        </div>
-                    ) : registrations.length === 0 ? (
+                    {processedRegistrations.length === 0 ? (
                         <div className="text-center py-12 bg-white rounded-xl border border-slate-100 border-dashed">
                             <p className="text-slate-400">Aucune inscription pour le moment.</p>
                             <button onClick={onClose} className="mt-4 text-indigo-600 font-bold hover:underline">
@@ -205,13 +110,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {registrations.map(reg => {
-                                const isValid = reg.isValid !== false; // Default true if undefined
+                            {processedRegistrations.map(reg => {
+                                const isValid = reg.isValid !== false;
                                 return (
                                     <div key={reg.id} className={`p-4 rounded-2xl shadow-sm border flex flex-col sm:flex-row sm:items-center gap-4 hover:shadow-md transition-shadow group
                                     ${isValid ? 'bg-white border-slate-100' : 'bg-red-50 border-red-100 opacity-90'}
                                 `}>
-                                        {/* Date Box */}
                                         <div className={`flex-shrink-0 w-16 h-16 rounded-xl flex flex-col items-center justify-center
                                         ${isValid ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-200 text-slate-500'}
                                     `}>
@@ -223,7 +127,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
                                             </span>
                                         </div>
 
-                                        {/* Info */}
                                         <div className="flex-grow">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide
@@ -248,7 +151,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
                                             </p>
                                         </div>
 
-                                        {/* Actions */}
                                         <div className="flex-shrink-0 flex sm:flex-col gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleDelete(reg.id, reg.gameId, reg.roleId, reg.volunteerName, isValid)}
@@ -266,7 +168,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user }) =>
                         </div>
                     )}
 
-                    {/* Carpool Section (Placeholder for V2) */}
                     <h3 className="text-lg font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2">
                         <span>🚗</span> Covoiturage
                     </h3>

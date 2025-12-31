@@ -1,6 +1,6 @@
 import React from 'react';
 import UserProfile from './UserProfile';
-
+import { UserRegistration, Game } from '../types';
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -9,6 +9,9 @@ interface HeaderProps {
   teams?: string[];
   selectedTeam?: string | null;
   onSelectTeam?: (team: string | null) => void;
+  registrations?: UserRegistration[];
+  games?: Game[];
+  onUnsubscribe?: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -17,7 +20,10 @@ const Header: React.FC<HeaderProps> = ({
   onLogout,
   teams = [],
   selectedTeam = null,
-  onSelectTeam = (_team) => { }
+  onSelectTeam = (_team) => { },
+  registrations = [],
+  games = [],
+  onUnsubscribe = async () => { }
 }) => {
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50">
@@ -59,7 +65,11 @@ const Header: React.FC<HeaderProps> = ({
           {/* Admin Button - Right (Desktop Only) */}
           <div className="flex-shrink-0 flex items-center gap-2">
             {/* User Profile (Google Auth) */}
-            <UserProfile />
+            <UserProfile
+              registrations={registrations}
+              games={games}
+              onUnsubscribe={onUnsubscribe}
+            />
 
             {/* Admin Button (Desktop Only) */}
             <div className="hidden md:block">

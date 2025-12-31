@@ -4,13 +4,23 @@ import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStor
 import { GoogleIcon, LogoutIcon, UserIcon } from './Icons';
 import UserAuthModal from './UserAuthModal';
 import ProfileModal from './ProfileModal';
+import { UserRegistration, Game } from '../types';
 
 interface UserProfileProps {
     onLogin?: (user: User) => void;
     onLogout?: () => void;
+    registrations: UserRegistration[];
+    games: Game[];
+    onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ onLogin, onLogout }) => {
+const UserProfile: React.FC<UserProfileProps> = ({
+    onLogin,
+    onLogout,
+    registrations = [],
+    games = [],
+    onUnsubscribe = async () => { }
+}) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [showMenu, setShowMenu] = useState(false);
@@ -110,6 +120,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogin, onLogout }) => {
                         <p className="text-xs text-slate-500 truncate">{user.email}</p>
                     </div>
 
+                    {/* Mon Espace Bénévole */}
                     <div className="p-1">
                         <button
                             onClick={() => {
@@ -143,6 +154,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onLogin, onLogout }) => {
                     isOpen={isProfileOpen}
                     onClose={() => setIsProfileOpen(false)}
                     user={user}
+                    registrations={registrations}
+                    games={games}
+                    onUnsubscribe={onUnsubscribe}
                 />
             )}
         </div>

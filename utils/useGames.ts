@@ -11,12 +11,13 @@ import {
     query,
     where,
     orderBy,
-    setDoc
+    setDoc,
+    runTransaction
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { DEFAULT_ROLES } from '../constants';
-import type { Game, GameFormData, CarpoolEntry } from '../types';
-import { getGameDateValue, getTodayISO, parseFrenchDate, toISODateString } from './dateUtils';
+import type { Game, GameFormData, CarpoolEntry, UserRegistration } from '../types';
+import { getGameDateValue, getTodayISO } from './dateUtils';
 import { getStoredName } from './storage';
 
 interface UseGamesReturn {
@@ -39,7 +40,8 @@ interface UseGamesReturn {
     // Carpool operations
     handleAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => Promise<void>;
     handleRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
-    userRegistrations: Map<string, string>;
+    userRegistrations: UserRegistration[];
+    userRegistrationsMap: Map<string, string>;
 }
 
 interface UseGamesOptions {
@@ -51,34 +53,39 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     const { selectedTeam, currentView } = options;
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
-    const [userRegistrationMap, setUserRegistrationMap] = useState<Map<string, string>>(new Map());
+    const [userRegistrations, setUserRegistrations] = useState<UserRegistration[]>([]);
 
     // Listen to User Registrations (for "My Planning" when logged in)
     useEffect(() => {
         let unsubscribe = () => { };
 
         const listenToUserRegistrations = async () => {
-            // We need to wait for auth to be ready. 
-            // Ideally we'd pass 'user' as prop, but we can listen here too.
-            // Or simpler: just use onAuthStateChanged here again or rely on implicit auth.
-
-            // Better: Subscribe to auth state inside this effect
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     const q = query(collection(db, `users/${user.uid}/registrations`));
                     unsubscribe = onSnapshot(q, (snapshot) => {
-                        const map = new Map<string, string>();
+                        const regs: UserRegistration[] = [];
                         snapshot.docs.forEach(d => {
                             const data = d.data();
-                            // d.id is gameId_roleId
-                            // data.volunteerName IS the name used. 
-                            // If missing (legacy), try to fallback? 
-                            map.set(d.id, data.volunteerName || "");
+                            regs.push({
+                                id: d.id,
+                                gameId: data.gameId,
+                                roleId: data.roleId,
+                                roleName: data.roleName,
+                                gameDate: data.gameDate,
+                                gameDateISO: data.gameDateISO,
+                                gameTime: data.gameTime,
+                                location: data.location,
+                                team: data.team,
+                                opponent: data.opponent,
+                                volunteerName: data.volunteerName,
+                                isValid: true
+                            } as UserRegistration);
                         });
-                        setUserRegistrationMap(map);
+                        setUserRegistrations(regs);
                     });
                 } else {
-                    setUserRegistrationMap(new Map());
+                    setUserRegistrations([]);
                 }
             });
         };
@@ -87,16 +94,19 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return () => unsubscribe();
     }, []);
 
-
+    const userRegistrationsMap = useMemo(() => {
+        const map = new Map<string, string>();
+        userRegistrations.forEach(reg => {
+            map.set(`${reg.gameId}_${reg.roleId}`, reg.volunteerName || "");
+        });
+        return map;
+    }, [userRegistrations]);
 
     // ---------------------------------------------------------------------------
     // Firestore Synchronization with Query Optimization
     // ---------------------------------------------------------------------------
     useEffect(() => {
-        // Optimized query: only fetch games from today onwards using Firestore query
         const todayISO = getTodayISO();
-
-        // Use Firestore query to filter server-side
         const matchesQuery = query(
             collection(db, "matches"),
             where("dateISO", ">=", todayISO),
@@ -127,13 +137,13 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return Array.from(uniqueTeams).sort();
     }, [games]);
 
-    // Extract unique locations for suggestions
+    // Extract unique locations
     const uniqueLocations = useMemo(() => {
         const locations = new Set(games.map(g => g.location));
         return Array.from(locations).filter(Boolean).sort();
     }, [games]);
 
-    // Extract unique opponents for suggestions
+    // Extract unique opponents
     const uniqueOpponents = useMemo(() => {
         const opponents = new Set(games.map(g => g.opponent));
         return Array.from(opponents).filter(Boolean).sort();
@@ -143,29 +153,15 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     const filteredGames = useMemo(() => {
         let result = sortedGames;
 
-        // 1. Filter by Team (Dropdown)
         if (selectedTeam) {
             result = result.filter(g => g.team === selectedTeam);
         }
 
-        // 2. Filter by View (Home vs Planning)
         if (currentView === 'planning') {
-            // Priority: Cloud Auth > Local Storage
             if (auth.currentUser) {
-                // Filter using Cloud Registrations
-                result = result.filter(game => {
-                    // Check if any role in this game is in our registration list
-                    // The IDs in userRegistrationIds are "gameId_roleId"
-                    const hasRole = game.roles.some(role =>
-                        userRegistrationMap.has(`${game.id}_${role.id}`)
-                    );
-                    // Also check cloud carpools if we implement that later. For now, just roles.
-                    // Or we can check if the game ID is present in the keys?
-                    // Actually, let's keep it simple: if I have a registration token for this game.
-                    return hasRole;
-                });
+                const myGameIds = new Set(userRegistrations.map(r => r.gameId));
+                result = result.filter(game => myGameIds.has(game.id));
             } else {
-                // Fallback: Local Storage
                 const myName = getStoredName()?.toLowerCase();
                 if (!myName) return [];
 
@@ -182,9 +178,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         }
 
         return result;
-    }, [sortedGames, selectedTeam, currentView]);
-
-
+    }, [sortedGames, selectedTeam, currentView, userRegistrations]);
 
     // ---------------------------------------------------------------------------
     // Automatic Cleanup of Past Matches
@@ -194,25 +188,17 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             try {
                 const todayISO = getTodayISO();
                 const colRef = collection(db, "matches");
-                // Optimized cleanup: only fetch past matches using Query
                 const pastMatchesQuery = query(
                     colRef,
                     where("dateISO", "<", todayISO)
                 );
                 const snapshot = await getDocs(pastMatchesQuery);
-
                 const matchesToDelete: string[] = [];
-
-                // No need for client-side filtering anymore
-                snapshot.docs.forEach(docSnap => {
-                    matchesToDelete.push(docSnap.id);
-                });
+                snapshot.docs.forEach(docSnap => matchesToDelete.push(docSnap.id));
 
                 if (matchesToDelete.length > 0) {
                     const batch = writeBatch(db);
-                    matchesToDelete.forEach(id => {
-                        batch.delete(doc(db, "matches", id));
-                    });
+                    matchesToDelete.forEach(id => batch.delete(doc(db, "matches", id)));
                     await batch.commit();
                     console.log(`🧹 Nettoyage: ${matchesToDelete.length} match(s) passé(s) supprimé(s)`);
                 }
@@ -228,11 +214,15 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     // ---------------------------------------------------------------------------
     // CRUD Operations
     // ---------------------------------------------------------------------------
-
     const addGame = useCallback(async (gameData: GameFormData) => {
+        const isSenior = ['SENIOR M1', 'SENIOR M2'].includes(gameData.team);
+        const applicableRoles = DEFAULT_ROLES.filter(role =>
+            !(role.name === 'Goûter' && isSenior)
+        );
+
         const newGame = {
             ...gameData,
-            roles: DEFAULT_ROLES.map((role, idx) => ({
+            roles: applicableRoles.map((role, idx) => ({
                 id: String(idx + 1),
                 name: role.name,
                 capacity: role.capacity === 0 ? Infinity : role.capacity,
@@ -249,7 +239,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     }, []);
 
     const deleteGame = useCallback(async (gameId: string): Promise<boolean> => {
-        if (window.confirm('Voulez-vous vraiment supprimer ce match ?')) {
+        if (typeof window !== 'undefined' && window.confirm('Voulez-vous vraiment supprimer ce match ?')) {
             await deleteDoc(doc(db, "matches", gameId));
             return true;
         }
@@ -258,11 +248,14 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
 
     const importGames = useCallback(async (matchesData: GameFormData[]) => {
         const batch = writeBatch(db);
-
         for (const gameData of matchesData) {
+            const isSenior = ['SENIOR M1', 'SENIOR M2'].includes(gameData.team);
+            const applicableRoles = DEFAULT_ROLES.filter(role =>
+                !(role.name === 'Goûter' && isSenior)
+            );
             const newGame = {
                 ...gameData,
-                roles: DEFAULT_ROLES.map((role, idx) => ({
+                roles: applicableRoles.map((role, idx) => ({
                     id: String(idx + 1),
                     name: role.name,
                     capacity: role.capacity === 0 ? Infinity : role.capacity,
@@ -272,129 +265,145 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             const docRef = doc(collection(db, "matches"));
             batch.set(docRef, newGame);
         }
-
         await batch.commit();
     }, []);
 
     // ---------------------------------------------------------------------------
-    // Volunteer Operations
+    // Volunteer Operations - TRANSACTIONAL
     // ---------------------------------------------------------------------------
 
     const handleVolunteer = useCallback(async (gameId: string, roleId: string, parentName: string) => {
-        const game = games.find(g => g.id === gameId);
-        if (!game) return;
-
-        const updatedRoles = game.roles.map(role => {
-            if (role.id === roleId) {
-                return { ...role, volunteers: [...role.volunteers, parentName] };
-            }
-            return role;
-        });
-
         const gameRef = doc(db, "matches", gameId);
-        await updateDoc(gameRef, { roles: updatedRoles });
 
-        // Cloud Sync: If user is logged in, save to their profile
-        if (auth.currentUser) {
-            const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, `${gameId}_${roleId}`);
-            await setDoc(userRegRef, {
-                gameId,
-                roleId,
-                roleName: game.roles.find(r => r.id === roleId)?.name || 'Bénévole',
-                gameDate: game.date, // Store formatted date for display
-                gameDateISO: game.dateISO, // Store ISO date for sorting
-                gameTime: game.time,
-                location: game.location,
-                team: game.team,
-                opponent: game.opponent,
-                createdAt: new Date().toISOString(),
-                volunteerName: parentName // IMPORTANT: We perform the registration with this name
+        try {
+            await runTransaction(db, async (transaction) => {
+                const gameDoc = await transaction.get(gameRef);
+                if (!gameDoc.exists()) {
+                    throw new Error("Game does not exist!");
+                }
+                const gameData = gameDoc.data() as Game;
+
+                const updatedRoles = gameData.roles.map(role => {
+                    if (role.id === roleId) {
+                        return { ...role, volunteers: [...role.volunteers, parentName] };
+                    }
+                    return role;
+                });
+
+                transaction.update(gameRef, { roles: updatedRoles });
+
+                if (auth.currentUser) {
+                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, `${gameId}_${roleId}`);
+                    transaction.set(userRegRef, {
+                        gameId,
+                        roleId,
+                        roleName: gameData.roles.find(r => r.id === roleId)?.name || 'Bénévole',
+                        gameDate: gameData.date,
+                        gameDateISO: gameData.dateISO,
+                        gameTime: gameData.time,
+                        location: gameData.location,
+                        team: gameData.team,
+                        opponent: gameData.opponent,
+                        createdAt: new Date().toISOString(),
+                        volunteerName: parentName
+                    });
+                }
             });
+        } catch (e) {
+            console.error("Transaction failed: ", e);
+            throw e;
         }
-    }, [games]);
+    }, []);
 
     const handleRemoveVolunteer = useCallback(async (gameId: string, roleId: string, volunteerName: string) => {
-        const game = games.find(g => g.id === gameId);
-        if (!game) return;
-
-        const updatedRoles = game.roles.map(role => {
-            if (role.id === roleId) {
-                return { ...role, volunteers: role.volunteers.filter(v => v !== volunteerName) };
-            }
-            return role;
-        });
-
         const gameRef = doc(db, "matches", gameId);
-        await updateDoc(gameRef, { roles: updatedRoles });
 
-        // Cloud Sync: Only remove from profile if the name matches the user's registered name
-        if (auth.currentUser) {
-            const regKey = `${gameId}_${roleId}`;
-            const registeredName = userRegistrationMap.get(regKey);
+        try {
+            await runTransaction(db, async (transaction) => {
+                const gameDoc = await transaction.get(gameRef);
 
-            if (registeredName === volunteerName) {
-                const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
-                await deleteDoc(userRegRef);
-            }
+                if (gameDoc.exists()) {
+                    const gameData = gameDoc.data() as Game;
+                    const updatedRoles = gameData.roles.map(role => {
+                        if (role.id === roleId) {
+                            return { ...role, volunteers: role.volunteers.filter(v => v !== volunteerName) };
+                        }
+                        return role;
+                    });
+                    transaction.update(gameRef, { roles: updatedRoles });
+                }
+
+                if (auth.currentUser) {
+                    const regKey = `${gameId}_${roleId}`;
+                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
+                    transaction.delete(userRegRef);
+                }
+            });
+        } catch (e) {
+            console.error("Remove Transaction failed: ", e);
+            throw e;
         }
-    }, [games, userRegistrationMap]);
+    }, []);
 
     const handleUpdateVolunteer = useCallback(async (gameId: string, roleId: string, oldName: string, newName: string) => {
-        const game = games.find(g => g.id === gameId);
-        if (!game) return;
-
-        const updatedRoles = game.roles.map(role => {
-            if (role.id === roleId) {
-                return {
-                    ...role,
-                    volunteers: role.volunteers.map(v => v === oldName ? newName : v)
-                };
-            }
-            return role;
-        });
-
         const gameRef = doc(db, "matches", gameId);
-        await updateDoc(gameRef, { roles: updatedRoles });
 
-        // Cloud Sync: Update profile if the name matches
-        if (auth.currentUser) {
-            const regKey = `${gameId}_${roleId}`;
-            const registeredName = userRegistrationMap.get(regKey);
+        try {
+            await runTransaction(db, async (transaction) => {
+                const gameDoc = await transaction.get(gameRef);
+                if (!gameDoc.exists()) throw "Game missing";
 
-            if (registeredName === oldName) {
-                const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
-                await updateDoc(userRegRef, { volunteerName: newName });
-            }
+                const gameData = gameDoc.data() as Game;
+                const updatedRoles = gameData.roles.map(role => {
+                    if (role.id === roleId) {
+                        return {
+                            ...role,
+                            volunteers: role.volunteers.map(v => v === oldName ? newName : v)
+                        };
+                    }
+                    return role;
+                });
+
+                transaction.update(gameRef, { roles: updatedRoles });
+
+                if (auth.currentUser) {
+                    const regKey = `${gameId}_${roleId}`;
+                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
+                    transaction.update(userRegRef, { volunteerName: newName });
+                }
+            });
+        } catch (e) {
+            console.error("Update Transaction failed", e);
+            throw e;
         }
-    }, [games, userRegistrationMap]);
-
-    // ---------------------------------------------------------------------------
-    // Carpool Operations
-    // ---------------------------------------------------------------------------
+    }, []);
 
     const handleAddCarpool = useCallback(async (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => {
-        const game = games.find(g => g.id === gameId);
-        if (!game) return;
-
-        const newEntry: CarpoolEntry = {
-            ...entry,
-            id: crypto.randomUUID()
-        };
-        const updatedCarpool = [...(game.carpool || []), newEntry];
-
         const gameRef = doc(db, "matches", gameId);
-        await updateDoc(gameRef, { carpool: updatedCarpool });
-    }, [games]);
+        await runTransaction(db, async (transaction) => {
+            const gameDoc = await transaction.get(gameRef);
+            if (!gameDoc.exists()) throw "Game missing";
+            const gameData = gameDoc.data() as Game;
+
+            const newEntry: CarpoolEntry = { ...entry, id: crypto.randomUUID() };
+            const updatedCarpool = [...(gameData.carpool || []), newEntry];
+
+            transaction.update(gameRef, { carpool: updatedCarpool });
+        });
+    }, []);
 
     const handleRemoveCarpool = useCallback(async (gameId: string, entryId: string) => {
-        const game = games.find(g => g.id === gameId);
-        if (!game) return;
-
-        const updatedCarpool = (game.carpool || []).filter(e => e.id !== entryId);
-
         const gameRef = doc(db, "matches", gameId);
-        await updateDoc(gameRef, { carpool: updatedCarpool });
-    }, [games]);
+        await runTransaction(db, async (transaction) => {
+            const gameDoc = await transaction.get(gameRef);
+            if (!gameDoc.exists()) throw "Game missing";
+            const gameData = gameDoc.data() as Game;
+
+            const updatedCarpool = (gameData.carpool || []).filter(e => e.id !== entryId);
+
+            transaction.update(gameRef, { carpool: updatedCarpool });
+        });
+    }, []);
 
     return {
         games,
@@ -413,6 +422,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         handleUpdateVolunteer,
         handleAddCarpool,
         handleRemoveCarpool,
-        userRegistrations: userRegistrationMap,
+        userRegistrations,
+        userRegistrationsMap
     };
 };

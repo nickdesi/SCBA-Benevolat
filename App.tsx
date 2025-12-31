@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { User } from 'firebase/auth';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
 import Footer from './components/Footer';
+import ProfileModal from './components/ProfileModal';
 import { ToastContainer, useToast } from './components/Toast';
 import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
@@ -48,13 +50,17 @@ function App() {
     handleAddCarpool,
     handleRemoveCarpool,
     userRegistrations,
+    userRegistrationsMap
   } = useGames({ selectedTeam, currentView });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Firebase Auth listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((user) => {
+      setCurrentUser(user);
       setIsAuthenticated(!!user);
       // Check if the user is the specific admin account
       if (user && user.email === 'benevole@scba.fr') {
@@ -156,6 +162,9 @@ function App() {
         teams={teams}
         selectedTeam={selectedTeam}
         onSelectTeam={setSelectedTeam}
+        registrations={userRegistrations} // Pass registrations
+        games={games} // Pass ALL games for validity check
+        onUnsubscribe={handleRemoveVolunteer}
       />
 
       {/* Ticker for upcoming matches */}
@@ -242,7 +251,7 @@ function App() {
         {/* Grouped Games List */}
         <GameList
           games={filteredGames}
-          userRegistrations={userRegistrations}
+          userRegistrations={userRegistrationsMap} // Pass Map
           isAdmin={isAdmin}
           isAuthenticated={isAuthenticated}
           editingGameId={editingGameId}
@@ -327,7 +336,21 @@ function App() {
         onViewChange={setCurrentView}
         isAdmin={isAdmin}
         onAdminClick={() => setIsAdminModalOpen(true)}
+        onPlanningClick={() => setIsProfileModalOpen(true)}
+        isAuthenticated={isAuthenticated}
       />
+
+      {/* Profile Modal - Triggered by Planning button on mobile */}
+      {currentUser && (
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          user={currentUser}
+          registrations={userRegistrations}
+          games={games}
+          onUnsubscribe={handleRemoveVolunteer}
+        />
+      )}
     </div>
   );
 }

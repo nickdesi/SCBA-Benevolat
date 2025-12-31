@@ -46,3 +46,18 @@ export interface RoleConfig {
   capacity: number;
   icon: string;
 }
+
+export interface UserRegistration {
+  id: string; // gameId_roleId
+  gameId: string;
+  roleId: string;
+  roleName: string;
+  gameDate: string; // ISO or formatted
+  gameTime: string; // approx
+  team: string; // opponent usually or "My Team" context
+  opponent: string;
+  location: string;
+  volunteerName?: string; // The specific name used for this registration
+  gameDateISO?: string;
+  isValid?: boolean; // New flag to track if registration exists in public game
+}

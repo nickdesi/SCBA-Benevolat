@@ -37,7 +37,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
     }, {} as Record<string, number>);
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -347,7 +347,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
               Nombre de bénévoles par poste
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {DEFAULT_ROLES.map(role => (
+              {DEFAULT_ROLES.filter(role => !(['SENIOR M1', 'SENIOR M2'].includes(formData.team) && role.name === 'Goûter')).map(role => (
                 <div key={role.name} className="bg-slate-50 rounded-xl p-3 border border-slate-200">
                   <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
                     <span>{role.icon}</span>
