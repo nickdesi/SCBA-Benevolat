@@ -30,22 +30,75 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Safe Area Insets for PWA */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
 /* Global Styles */
+html {
+  scroll-behavior: smooth;
+  /* Prevent overscroll bounce on iOS PWA */
+  overscroll-behavior: none;
+}
+
 body {
   font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  /* Disable text selection in PWA for app-like feel */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Disable tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
 }
 
-html {
-  scroll-behavior: smooth;
+/* Allow text selection in content areas */
+.select-text,
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 ::selection {
   background: rgba(239, 68, 68, 0.3);
   color: #1e293b;
+}
+
+/* PWA Safe Area Utilities */
+.pt-safe {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.pl-safe {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.pr-safe {
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* Standalone PWA specific styles */
+@media (display-mode: standalone) {
+  body {
+    /* Extra padding for status bar on iOS */
+    padding-top: var(--safe-area-inset-top);
+  }
+  
+  /* Ensure bottom nav respects home indicator */
+  .pb-safe {
+    padding-bottom: max(var(--safe-area-inset-bottom), 1rem);
+  }
 }
 
 /* ========================================
