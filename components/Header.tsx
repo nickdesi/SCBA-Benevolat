@@ -1,4 +1,5 @@
 import React from 'react';
+import UserProfile from './UserProfile';
 
 
 interface HeaderProps {
@@ -19,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({
   onSelectTeam = (_team) => { }
 }) => {
   return (
-    <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white overflow-hidden">
+    <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50">
       {/* Background decorations */}
       <div className="absolute inset-0">
 
@@ -30,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-4 relative z-10">
+      <div className="container mx-auto px-4 py-4 relative z-30">
         <div className="flex items-center justify-between">
           {/* Logo - Left */}
           <div className="relative flex-shrink-0">
@@ -56,28 +57,34 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Admin Button - Right (Desktop Only) */}
-          <div className="flex-shrink-0 hidden md:block">
-            {isAdmin ? (
-              <button
-                onClick={onLogout}
-                className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full 
+          <div className="flex-shrink-0 flex items-center gap-2">
+            {/* User Profile (Google Auth) */}
+            <UserProfile />
+
+            {/* Admin Button (Desktop Only) */}
+            <div className="hidden md:block">
+              {isAdmin ? (
+                <button
+                  onClick={onLogout}
+                  className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full 
                          border border-emerald-400/30 hover:bg-emerald-500/30 
                          transition-all text-sm font-semibold flex items-center gap-2"
-              >
-                <span>✓ Admin</span>
-                <span className="hidden sm:inline text-xs opacity-70">Déconnexion</span>
-              </button>
-            ) : (
-              <button
-                onClick={onAdminClick}
-                className="px-4 py-2 bg-white/10 text-white/80 rounded-full 
+                >
+                  <span>✓ Admin</span>
+                  <span className="hidden sm:inline text-xs opacity-70">Déconnexion</span>
+                </button>
+              ) : (
+                <button
+                  onClick={onAdminClick}
+                  className="px-4 py-2 bg-white/10 text-white/80 rounded-full 
                          border border-white/20 hover:bg-white/20 
                          transition-all text-sm font-medium flex items-center gap-2"
-              >
-                <span>🔒</span>
-                <span>Admin</span>
-              </button>
-            )}
+                >
+                  <span>🔒</span>
+                  <span>Admin</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

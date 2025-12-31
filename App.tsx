@@ -47,12 +47,21 @@ function App() {
     handleUpdateVolunteer,
     handleAddCarpool,
     handleRemoveCarpool,
+    userRegistrations,
   } = useGames({ selectedTeam, currentView });
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Firebase Auth listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((user) => {
-      setIsAdmin(!!user);
+      setIsAuthenticated(!!user);
+      // Check if the user is the specific admin account
+      if (user && user.email === 'benevole@scba.fr') {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -233,7 +242,9 @@ function App() {
         {/* Grouped Games List */}
         <GameList
           games={filteredGames}
+          userRegistrations={userRegistrations}
           isAdmin={isAdmin}
+          isAuthenticated={isAuthenticated}
           editingGameId={editingGameId}
           onVolunteer={handleVolunteerWithToast}
           onRemoveVolunteer={handleRemoveVolunteer}

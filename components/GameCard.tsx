@@ -23,6 +23,8 @@ interface GameCardProps {
     onCancelEdit: () => void;
     onDeleteRequest: () => void;
     onUpdateRequest: (game: Game) => void;
+    userRegistrations?: Map<string, string>;
+    isAuthenticated?: boolean;
 }
 
 // Check if a role is considered "complete"
@@ -53,12 +55,14 @@ const GameCard: React.FC<GameCardProps> = memo(({
     onEditRequest,
     onCancelEdit,
     onDeleteRequest,
-    onUpdateRequest
+    onUpdateRequest,
+    userRegistrations,
+    isAuthenticated,
 }) => {
     if (isEditing) {
         return (
             <Suspense fallback={<div className="p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
-                <GameForm gameToEdit={game} onSave={onUpdateRequest} onCancel={onCancelEdit} />
+                <GameForm gameToEdit={game} onSave={(data) => onUpdateRequest(data as Game)} onCancel={onCancelEdit} />
             </Suspense>
         );
     }
@@ -370,9 +374,10 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                         role={role}
                                         gameId={game.id}
                                         isAdmin={isAdmin}
+                                        myRegistrationName={userRegistrations?.get(`${game.id}_${role.id}`)}
+                                        isAuthenticated={isAuthenticated}
                                         onVolunteer={(parentName) => {
                                             onVolunteer(game.id, role.id, parentName);
-                                            if (onToast) onToast('Inscription confirmée !', 'success');
                                         }}
                                         onRemoveVolunteer={(volunteerName) => onRemoveVolunteer(game.id, role.id, volunteerName)}
                                         onUpdateVolunteer={(oldName, newName) => onUpdateVolunteer(game.id, role.id, oldName, newName)}

@@ -53,9 +53,15 @@ sequenceDiagram
 
 ## ✨ Fonctionnalités
 
-### 👥 Pour les parents
+### 👥 Pour les parents & Bénévoles
 
-- **Inscription facile** : entrez votre nom et inscrivez-vous à un poste
+- **Inscription facile** :
+  - **Invité** : Inscription immédiate sans compte (stockage local).
+  - **Connecté** : Création de compte (Google ou Email) pour gérer ses inscriptions partout.
+- **👤 Mon Espace Bénévoles** :
+  - Vue centralisée de toutes vos inscriptions.
+  - Gestion et annulation sécurisée de vos missions.
+  - Détection automatique des inscriptions obsolètes ou orphelines.
 - **Interface moderne** : Design épuré avec dégradés, cartes animées
 - **📅 Ajouter au calendrier** : exportez vers Google Agenda, Apple Calendar ou Outlook
 - **🚗 Covoiturage** : proposez des places (conducteur) ou cherchez une place (passager)
@@ -65,7 +71,7 @@ sequenceDiagram
 
 ### 🔧 Pour les administrateurs
 
-- **🔐 Authentification Firebase** : Connexion sécurisée par email/mot de passe
+- **🔐 Authentification Firebase** : Connexion sécurisée
 - **🏠 Matchs Domicile / 🚗 Extérieur** : différenciation des types de matchs
 - **📥 Import en masse** : Copier-coller depuis le calendrier FFBB
 - **Gestion des matchs** : ajouter, modifier, supprimer
@@ -99,11 +105,10 @@ npm run dev
 
 ### Firebase Authentication
 
-L'authentification admin utilise **Firebase Auth (Email/Mot de passe)**.
+Le projet supporte deux niveaux d'accès :
 
-1. Allez dans [Firebase Console](https://console.firebase.google.com/)
-2. Sélectionnez votre projet → **Authentication** → **Users**
-3. Cliquez **"Add user"** et créez un compte admin
+1. **Utilisateurs (Bénévoles)** : Inscription via Google ou Email/Mot de passe pour gérer leur profil.
+2. **Administrateur** : Compte unique (`benevole@scba.fr`) avec droits d'édition globaux.
 
 ### Variables d'environnement (optionnel)
 
@@ -120,13 +125,16 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 ├── firebase.ts             # Config Firebase (Firestore + Auth)
 │
 ├── components/
+│   ├── UserProfile.tsx     # [NEW] Menu utilisateur et avatar
+│   ├── ProfileModal.tsx    # [NEW] Modal "Mon Espace Bénévole"
+│   ├── UserAuthModal.tsx   # [NEW] Modal Connexion/Inscription
 │   ├── GameList.tsx        # Liste groupée des matchs
 │   ├── GameCard.tsx        # Carte de match (memoized + lazy GameForm)
 │   ├── GameForm.tsx        # Formulaire ajout/édition (lazy-loaded)
-│   ├── VolunteerSlot.tsx   # Inscriptions bénévoles
+│   ├── VolunteerSlot.tsx   # Inscriptions bénévoles (logique hybride Guest/Auth)
 │   ├── CarpoolingSection.tsx # Section covoiturage
-│   ├── PhoneDisplay.tsx    # [NEW] Affichage téléphone avec masquage
-│   ├── AdminAuthModal.tsx  # Login Firebase (lazy-loaded)
+│   ├── PhoneDisplay.tsx    # Affichage téléphone avec masquage
+│   ├── AdminAuthModal.tsx  # Login Admin (lazy-loaded)
 │   ├── ImportCSVModal.tsx  # Import CSV (lazy-loaded)
 │   ├── Header.tsx          # En-tête avec filtre équipe
 │   ├── BottomNav.tsx       # Navigation mobile
@@ -134,11 +142,11 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 │   └── ...
 │
 ├── utils/
-│   ├── useGames.ts         # Hook Firebase (CRUD + query optimisée)
-│   ├── authStore.ts        # Auth Firebase (signIn/signOut)
+│   ├── useGames.ts         # Hook Firebase (CRUD + Sync Profil Utilisateur)
+│   ├── authStore.ts        # Auth Firebase (Google, Email)
 │   ├── dateUtils.ts        # Parsing dates centralisé
 │   ├── calendar.ts         # Export calendrier (ICS, Google, Outlook)
-│   └── storage.ts          # Utilitaires localStorage
+│   ├── storage.ts          # Utilitaires localStorage
 │
 ├── types.ts                # Types TypeScript
 ├── constants.ts            # Constantes (rôles, mois)
@@ -168,12 +176,14 @@ Seuls les matchs futurs sont récupérés (server-side filter) :
 query(collection(db, "matches"), where("dateISO", ">=", todayISO))
 ```
 
-## 🔒 Sécurité
+## 🔒 Sécurité & Confidentialité
 
-- **Firebase Auth** : Authentification sécurisée par email/mot de passe
-- **Firebase Firestore** : Synchronisation temps réel des données
-- **TypeScript Strict** : Mode strict activé pour plus de sécurité
-- **Données locales** : L'identité "C'est vous !" reste locale au navigateur
+- **Modèle Hybride d'Identité** :
+  - **Invités** : L'identité est stockée dans le `localStorage` du navigateur.
+  - **Connectés** : L'identité est vérifiée via Firebase Auth et stockée dans Firestore (`users/{uid}/registrations`).
+- **Isolation des données** : Un utilisateur connecté ne peut gérer que ses propres inscriptions.
+- **Firebase Security** : Authentification et règles de sécurité Firestore.
+- **Protection des données** : Validation en temps réel pour empêcher la suppression d'inscriptions d'autres utilisateurs.
 
 ## 📱 Responsive
 

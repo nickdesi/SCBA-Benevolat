@@ -12,6 +12,8 @@ interface VolunteerSlotProps {
     onUpdateVolunteer: (oldName: string, newName: string) => void;
     isAdmin: boolean;
     animationDelay?: number;
+    myRegistrationName?: string;
+    isAuthenticated?: boolean;
 }
 
 // Emoji mapping for roles (outside component to prevent recreation)
@@ -31,7 +33,9 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     onRemoveVolunteer,
     onUpdateVolunteer,
     isAdmin,
-    animationDelay = 0
+    animationDelay = 0,
+    myRegistrationName,
+    isAuthenticated
 }) => {
     const [newName, setNewName] = useState('');
     const [editingVolunteer, setEditingVolunteer] = useState<string | null>(null);
@@ -56,7 +60,10 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     const confirmSignUp = () => {
         const name = confirmModal.name;
         onVolunteer(name);
-        saveMyRegistration(registrationKey, name);
+        // Only save to localStorage if NOT authenticated (guests)
+        if (!isAuthenticated) {
+            saveMyRegistration(registrationKey, name);
+        }
         setNewName('');
         setConfirmModal({ isOpen: false, type: 'add', name: '' });
     };
@@ -68,6 +75,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     const confirmRemove = () => {
         const name = confirmModal.name;
         onRemoveVolunteer(name);
+        // Remove from localStorage regardless, just to be clean
         removeMyRegistration(registrationKey, name);
         setConfirmModal({ isOpen: false, type: 'remove', name: '' });
     };
@@ -96,7 +104,9 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
         if (newName.trim() && editingVolunteer) {
             // Update registration tracking
             removeMyRegistration(registrationKey, editingVolunteer);
-            saveMyRegistration(registrationKey, newName.trim());
+            if (!isAuthenticated) {
+                saveMyRegistration(registrationKey, newName.trim());
+            }
             onUpdateVolunteer(editingVolunteer, newName.trim());
             cancelEditing();
         }
@@ -149,7 +159,12 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                 {/* Volunteers List */}
                 <div className="space-y-2">
                     {role.volunteers.map((volunteer, idx) => {
-                        const isMine = isMyRegistration(registrationKey, volunteer);
+                        // Crucial Logic:
+                        // If Authenticated: Only trust Cloud Identity (myRegistrationName)
+                        // If Guest (Not Authenticated): Trust LocalStorage (isMyRegistration)
+                        const isMine = isAuthenticated
+                            ? (myRegistrationName === volunteer)
+                            : isMyRegistration(registrationKey, volunteer);
 
                         return editingVolunteer === volunteer ? (
                             // Editing mode

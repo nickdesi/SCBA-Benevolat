@@ -16,6 +16,8 @@ interface GameListProps {
     onCancelEdit: () => void;
     onDeleteRequest: (gameId: string) => void;
     onUpdateRequest: (game: Game) => void;
+    userRegistrations?: Map<string, string>;
+    isAuthenticated?: boolean;
 }
 
 interface GameGroup {
@@ -70,6 +72,8 @@ const GameList: React.FC<GameListProps> = memo(({
     onCancelEdit,
     onDeleteRequest,
     onUpdateRequest,
+    userRegistrations,
+    isAuthenticated
 }) => {
     const groups = groupGamesByMonth(games);
 
@@ -122,6 +126,8 @@ const GameList: React.FC<GameListProps> = memo(({
                                     onCancelEdit={onCancelEdit}
                                     onDeleteRequest={() => onDeleteRequest(game.id)}
                                     onUpdateRequest={onUpdateRequest}
+                                    userRegistrations={userRegistrations}
+                                    isAuthenticated={isAuthenticated}
                                 />
                             </div>
                         ))}

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ConfirmModalProps {
     isOpen: boolean;
@@ -46,7 +47,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <>
             {/* Full screen overlay with backdrop */}
             <div
@@ -94,7 +95,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     </div>
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 };
 

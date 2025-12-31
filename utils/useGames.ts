@@ -10,9 +10,10 @@ import {
     getDocs,
     query,
     where,
-    orderBy
+    orderBy,
+    setDoc
 } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { DEFAULT_ROLES } from '../constants';
 import type { Game, GameFormData, CarpoolEntry } from '../types';
 import { getGameDateValue, getTodayISO, parseFrenchDate, toISODateString } from './dateUtils';
@@ -38,6 +39,7 @@ interface UseGamesReturn {
     // Carpool operations
     handleAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => Promise<void>;
     handleRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
+    userRegistrations: Map<string, string>;
 }
 
 interface UseGamesOptions {
@@ -49,6 +51,41 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     const { selectedTeam, currentView } = options;
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userRegistrationMap, setUserRegistrationMap] = useState<Map<string, string>>(new Map());
+
+    // Listen to User Registrations (for "My Planning" when logged in)
+    useEffect(() => {
+        let unsubscribe = () => { };
+
+        const listenToUserRegistrations = async () => {
+            // We need to wait for auth to be ready. 
+            // Ideally we'd pass 'user' as prop, but we can listen here too.
+            // Or simpler: just use onAuthStateChanged here again or rely on implicit auth.
+
+            // Better: Subscribe to auth state inside this effect
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    const q = query(collection(db, `users/${user.uid}/registrations`));
+                    unsubscribe = onSnapshot(q, (snapshot) => {
+                        const map = new Map<string, string>();
+                        snapshot.docs.forEach(d => {
+                            const data = d.data();
+                            // d.id is gameId_roleId
+                            // data.volunteerName IS the name used. 
+                            // If missing (legacy), try to fallback? 
+                            map.set(d.id, data.volunteerName || "");
+                        });
+                        setUserRegistrationMap(map);
+                    });
+                } else {
+                    setUserRegistrationMap(new Map());
+                }
+            });
+        };
+
+        listenToUserRegistrations();
+        return () => unsubscribe();
+    }, []);
 
 
 
@@ -113,18 +150,35 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
 
         // 2. Filter by View (Home vs Planning)
         if (currentView === 'planning') {
-            const myName = getStoredName()?.toLowerCase();
-            if (!myName) return [];
+            // Priority: Cloud Auth > Local Storage
+            if (auth.currentUser) {
+                // Filter using Cloud Registrations
+                result = result.filter(game => {
+                    // Check if any role in this game is in our registration list
+                    // The IDs in userRegistrationIds are "gameId_roleId"
+                    const hasRole = game.roles.some(role =>
+                        userRegistrationMap.has(`${game.id}_${role.id}`)
+                    );
+                    // Also check cloud carpools if we implement that later. For now, just roles.
+                    // Or we can check if the game ID is present in the keys?
+                    // Actually, let's keep it simple: if I have a registration token for this game.
+                    return hasRole;
+                });
+            } else {
+                // Fallback: Local Storage
+                const myName = getStoredName()?.toLowerCase();
+                if (!myName) return [];
 
-            result = result.filter(game => {
-                const isVolunteer = game.roles.some(role =>
-                    role.volunteers.some(v => v.toLowerCase() === myName)
-                );
-                const isCarpool = game.carpool?.some(entry =>
-                    entry.name.toLowerCase() === myName
-                );
-                return isVolunteer || isCarpool;
-            });
+                result = result.filter(game => {
+                    const isVolunteer = game.roles.some(role =>
+                        role.volunteers.some(v => v.toLowerCase() === myName)
+                    );
+                    const isCarpool = game.carpool?.some(entry =>
+                        entry.name.toLowerCase() === myName
+                    );
+                    return isVolunteer || isCarpool;
+                });
+            }
         }
 
         return result;
@@ -239,6 +293,24 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
 
         const gameRef = doc(db, "matches", gameId);
         await updateDoc(gameRef, { roles: updatedRoles });
+
+        // Cloud Sync: If user is logged in, save to their profile
+        if (auth.currentUser) {
+            const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, `${gameId}_${roleId}`);
+            await setDoc(userRegRef, {
+                gameId,
+                roleId,
+                roleName: game.roles.find(r => r.id === roleId)?.name || 'Bénévole',
+                gameDate: game.date, // Store formatted date for display
+                gameDateISO: game.dateISO, // Store ISO date for sorting
+                gameTime: game.time,
+                location: game.location,
+                team: game.team,
+                opponent: game.opponent,
+                createdAt: new Date().toISOString(),
+                volunteerName: parentName // IMPORTANT: We perform the registration with this name
+            });
+        }
     }, [games]);
 
     const handleRemoveVolunteer = useCallback(async (gameId: string, roleId: string, volunteerName: string) => {
@@ -254,7 +326,18 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
 
         const gameRef = doc(db, "matches", gameId);
         await updateDoc(gameRef, { roles: updatedRoles });
-    }, [games]);
+
+        // Cloud Sync: Only remove from profile if the name matches the user's registered name
+        if (auth.currentUser) {
+            const regKey = `${gameId}_${roleId}`;
+            const registeredName = userRegistrationMap.get(regKey);
+
+            if (registeredName === volunteerName) {
+                const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
+                await deleteDoc(userRegRef);
+            }
+        }
+    }, [games, userRegistrationMap]);
 
     const handleUpdateVolunteer = useCallback(async (gameId: string, roleId: string, oldName: string, newName: string) => {
         const game = games.find(g => g.id === gameId);
@@ -272,7 +355,18 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
 
         const gameRef = doc(db, "matches", gameId);
         await updateDoc(gameRef, { roles: updatedRoles });
-    }, [games]);
+
+        // Cloud Sync: Update profile if the name matches
+        if (auth.currentUser) {
+            const regKey = `${gameId}_${roleId}`;
+            const registeredName = userRegistrationMap.get(regKey);
+
+            if (registeredName === oldName) {
+                const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
+                await updateDoc(userRegRef, { volunteerName: newName });
+            }
+        }
+    }, [games, userRegistrationMap]);
 
     // ---------------------------------------------------------------------------
     // Carpool Operations
@@ -319,5 +413,6 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         handleUpdateVolunteer,
         handleAddCarpool,
         handleRemoveCarpool,
+        userRegistrations: userRegistrationMap,
     };
 };
