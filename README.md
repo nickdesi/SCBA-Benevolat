@@ -29,7 +29,7 @@ graph TB
         Firestore[(Firestore DB)]
         subgraph "Collections"
             Matches[matches]
-            UserRegs[users/{uid}/registrations]
+            UserRegs["users/{uid}/registrations"]
         end
     end
     
