@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { User } from 'firebase/auth';
-import { UserRegistration, Game } from '../types';
+import { UserRegistration, Game, CarpoolEntry } from '../types';
 import { CalendarIcon, ClockIcon, LocationIcon, DeleteIcon } from './Icons';
 
 interface ProfileModalProps {
@@ -11,6 +11,7 @@ interface ProfileModalProps {
     registrations: UserRegistration[];
     games: Game[];
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+    onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -19,8 +20,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     user,
     registrations,
     games,
-    onUnsubscribe
+    onUnsubscribe,
+    onRemoveCarpool
 }) => {
+    // State for revealing contact info
+    const [revealedContacts, setRevealedContacts] = useState<Set<string>>(new Set());
 
     const processedRegistrations = useMemo(() => {
         return registrations.map(reg => {
@@ -47,6 +51,60 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             return 0;
         });
     }, [registrations, games, user.displayName]);
+
+    // User's own carpool registrations (where their name appears)
+    const myCarpoolEntries = useMemo(() => {
+        const entries: { game: Game; entry: CarpoolEntry }[] = [];
+        const userName = user.displayName || '';
+
+        games.forEach(game => {
+            if (game.carpool) {
+                game.carpool.forEach(entry => {
+                    if (entry.name.toLowerCase().includes(userName.toLowerCase()) ||
+                        userName.toLowerCase().includes(entry.name.toLowerCase())) {
+                        entries.push({ game, entry });
+                    }
+                });
+            }
+        });
+
+        return entries.sort((a, b) => a.game.dateISO.localeCompare(b.game.dateISO));
+    }, [games, user.displayName]);
+
+    // Carpool opportunities for games where user is registered as volunteer
+    const carpoolOpportunities = useMemo(() => {
+        const opportunities: { game: Game; drivers: CarpoolEntry[] }[] = [];
+        const registeredGameIds = new Set(registrations.map(r => r.gameId));
+        const userName = user.displayName || '';
+
+        games.forEach(game => {
+            if (registeredGameIds.has(game.id) && !game.isHome && game.carpool) {
+                // Filter drivers with available seats, excluding self
+                const drivers = game.carpool.filter(entry =>
+                    entry.type === 'driver' &&
+                    (entry.seats || 0) > 0 &&
+                    !entry.name.toLowerCase().includes(userName.toLowerCase())
+                );
+                if (drivers.length > 0) {
+                    opportunities.push({ game, drivers });
+                }
+            }
+        });
+
+        return opportunities.sort((a, b) => a.game.dateISO.localeCompare(b.game.dateISO));
+    }, [games, registrations, user.displayName]);
+
+    const toggleRevealContact = (entryId: string) => {
+        setRevealedContacts(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(entryId)) {
+                newSet.delete(entryId);
+            } else {
+                newSet.add(entryId);
+            }
+            return newSet;
+        });
+    };
 
     const handleDelete = async (regId: string, gameId: string, roleId: string, volunteerName?: string, isValid: boolean = true) => {
         const confirmMessage = isValid
@@ -199,11 +257,107 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
 
                     <h3 className="text-lg font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2">
-                        <span>🚗</span> Covoiturage
+                        <span>🚗</span> Mes Covoiturages
                     </h3>
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-blue-800 text-sm">
-                        La gestion de vos covoiturages arrive bientôt ici !
-                    </div>
+
+                    {myCarpoolEntries.length === 0 ? (
+                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-slate-500 text-sm text-center">
+                            Vous n'êtes inscrit à aucun covoiturage pour le moment.
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {myCarpoolEntries.map(({ game, entry }) => (
+                                <div key={entry.id} className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase ${entry.type === 'driver'
+                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        : 'bg-blue-100 text-blue-700'
+                                                    }`}>
+                                                    {entry.type === 'driver' ? '🚘 Conducteur' : '👤 Passager'}
+                                                </span>
+                                                {entry.type === 'driver' && entry.seats && (
+                                                    <span className="text-xs text-slate-500">{entry.seats} place(s)</span>
+                                                )}
+                                            </div>
+                                            <h4 className="font-bold text-slate-800">{game.team} vs {game.opponent}</h4>
+                                            <p className="text-xs text-slate-500">{game.date} • {game.time}</p>
+                                            {entry.departureLocation && (
+                                                <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                                                    <LocationIcon className="w-3 h-3" /> Départ: {entry.departureLocation}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                if (confirm('Annuler ce covoiturage ?')) {
+                                                    await onRemoveCarpool(game.id, entry.id);
+                                                }
+                                            }}
+                                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Annuler"
+                                        >
+                                            <DeleteIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Carpool Opportunities */}
+                    {carpoolOpportunities.length > 0 && (
+                        <>
+                            <h3 className="text-lg font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2">
+                                <span>💡</span> Opportunités de Covoiturage
+                            </h3>
+                            <p className="text-xs text-slate-500 mb-4">
+                                Pour les matchs extérieurs où vous êtes inscrit(e), voici les conducteurs proposant des places :
+                            </p>
+                            <div className="space-y-4">
+                                {carpoolOpportunities.map(({ game, drivers }) => (
+                                    <div key={game.id} className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                                        <h4 className="font-bold text-slate-800 mb-1">{game.team} vs {game.opponent}</h4>
+                                        <p className="text-xs text-slate-500 mb-3">{game.date} • {game.time} • {game.location}</p>
+
+                                        <div className="space-y-2">
+                                            {drivers.map(driver => (
+                                                <div key={driver.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-100">
+                                                    <div>
+                                                        <p className="font-medium text-slate-800">{driver.name}</p>
+                                                        <p className="text-xs text-emerald-600 font-bold">
+                                                            🚘 {driver.seats} place(s) disponible(s)
+                                                        </p>
+                                                        {driver.departureLocation && (
+                                                            <p className="text-xs text-slate-400">Départ: {driver.departureLocation}</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        {revealedContacts.has(driver.id) ? (
+                                                            <a
+                                                                href={`tel:${driver.phone}`}
+                                                                className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                                                            >
+                                                                📞 {driver.phone || 'Non renseigné'}
+                                                            </a>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => toggleRevealContact(driver.id)}
+                                                                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors"
+                                                            >
+                                                                Contacter
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
 
                 </div>
             </div>

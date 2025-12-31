@@ -376,6 +376,7 @@ function App() {
           registrations={userRegistrations}
           games={games}
           onUnsubscribe={handleRemoveVolunteer}
+          onRemoveCarpool={handleRemoveCarpool}
         />
       )}
     </div>
