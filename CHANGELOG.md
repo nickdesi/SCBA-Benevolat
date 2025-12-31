@@ -1,6 +1,26 @@
 # Changelog
 
-## [1.4.0] - 2024-12-31
+## [1.5.0] - 2024-12-31
+
+### Ajouté
+
+- **Tableau de Bord Admin** :
+  - Nouvelle vue statistique pour visualiser le taux de remplissage global des matchs à domicile.
+  - Indicateurs visuels (codes couleurs) pour identifier les besoins urgents en bénévoles.
+- **Système de Notifications PWA** :
+  - Support des notifications natives via le navigateur.
+  - Interface d'activation dans "Mon Espace Bénévole".
+  - Rappels programmables pour les missions de bénévolat.
+- **Optimisation SEO Événementielle** :
+  - Génération automatique de données structurées JSON-LD (SportsEvent).
+  - Amélioration du référencement des matchs dans Google Search.
+
+### Modifié
+
+- **Performance** : Utilisation de `React.lazy` pour le Dashboard Admin.
+- **Architecture** : Centralisation de la logique de notification.
+
+---
 
 ### Ajouté
 

@@ -1,11 +1,11 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.4.0';
+const APP_VERSION = 'v1.5.0';
 
 const CHANGELOG = [
-    { version: 'v1.4.0', date: '31/12/2025', changes: ['🔄 Transactions Firestore pour une fiabilité maximale', '📱 Navigation mobile avec bouton Planning direct', '🛡️ Accès Admin restreint visuellement'] },
-    { version: 'v1.3.0', date: '27/12/2025', changes: ['👤 Mon Espace Bénévole (Modale profil)', '🔑 Authentification Email & Google', '📅 Historique des inscriptions'] },
-    { version: 'v1.2.0', date: '19/12/2025', changes: ['🔒 Masquage des numéros de téléphone pour la vie privée'] },
+    { version: 'v1.5.0', date: '31/12/2025', changes: ['📊 Dashboard Admin avec stats de remplissage', '🔔 Système de notifications PWA', '🔍 SEO Événementiel (JSON-LD)'] },
+    { version: 'v1.4.0', date: '31/12/2025', changes: ['🔄 Transactions Firestore pour une fiabilité maximale', '📱 Navigation mobile avec bouton Planning direct'] },
+    { version: 'v1.3.0', date: '27/12/2025', changes: ['👤 Mon Espace Bénévole (Modale profil)', '🔑 Authentification Email & Google'] },
 ];
 
 const Footer: React.FC = memo(() => {

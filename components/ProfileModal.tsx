@@ -169,6 +169,36 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     )}
 
                     <h3 className="text-lg font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2">
+                        <span>🔔</span> Notifications
+                    </h3>
+                    <div className="bg-slate-100 rounded-2xl p-5 border border-slate-200">
+                        <div className="flex items-center justify-between gap-4">
+                            <div>
+                                <p className="text-sm font-bold text-slate-800">Alertes de match</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Recevez un rappel 2h avant le début de votre mission.
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    const { requestNotificationPermission, sendLocalNotification } = await import('../utils/notifications');
+                                    const granted = await requestNotificationPermission();
+                                    if (granted) {
+                                        sendLocalNotification('🔔 Notifications activées !', {
+                                            body: 'Vous recevrez un rappel avant vos prochains matchs.'
+                                        });
+                                    } else {
+                                        alert("Permission refusée. Veuillez activer les notifications dans les réglages de votre navigateur.");
+                                    }
+                                }}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-md"
+                            >
+                                Activer
+                            </button>
+                        </div>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2">
                         <span>🚗</span> Covoiturage
                     </h3>
                     <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-blue-800 text-sm">

@@ -12,6 +12,7 @@ import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut } from './utils/authStore';
 import { useGames } from './utils/useGames';
+import EventSchema from './components/EventSchema';
 
 // Lazy-loaded components (code-splitting for reduced initial bundle)
 const AdminAuthModal = lazy(() => import('./components/AdminAuthModal'));
@@ -25,8 +26,12 @@ function App() {
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isAdminStatsOpen, setIsAdminStatsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'home' | 'planning'>('home');
+
+  // Stats Component (lazy optional, but let's just import for now or lazy)
+  const AdminStats = lazy(() => import('./components/AdminStats'));
 
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();
@@ -167,6 +172,8 @@ function App() {
         onUnsubscribe={handleRemoveVolunteer}
       />
 
+      <EventSchema games={games} />
+
       {/* Ticker for upcoming matches */}
       <MatchTicker games={sortedGames} />
 
@@ -190,6 +197,16 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                   </svg>
                   Importer CSV
+                </button>
+                <button
+                  onClick={() => setIsAdminStatsOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold shadow-md hover:bg-slate-200 transition-all border border-slate-200"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+                  </svg>
+                  Dashboard
                 </button>
                 <button
                   onClick={() => setIsAddingGame(true)}
@@ -303,6 +320,16 @@ function App() {
             isOpen={isImportModalOpen}
             onClose={() => setIsImportModalOpen(false)}
             onImport={handleImportCSV}
+          />
+        )}
+      </Suspense>
+
+      {/* Admin Stats Dashboard */}
+      <Suspense fallback={null}>
+        {isAdminStatsOpen && (
+          <AdminStats
+            games={games}
+            onClose={() => setIsAdminStatsOpen(false)}
           />
         )}
       </Suspense>
