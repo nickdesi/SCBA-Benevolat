@@ -16,17 +16,37 @@ graph TB
         useGames[useGames Hook]
         GameList[GameList]
         GameCard[GameCard]
+        
+        subgraph "User Management"
+            UserProfile[UserProfile]
+            ProfileModal[ProfileModal]
+            UserAuthModal[UserAuthModal]
+        end
     end
     
     subgraph "Firebase"
         Auth[Firebase Auth]
         Firestore[(Firestore DB)]
+        subgraph "Collections"
+            Matches[matches]
+            UserRegs[users/{uid}/registrations]
+        end
     end
     
     App --> useGames
     App --> GameList
     GameList --> GameCard
-    useGames --> Firestore
+    
+    App --> UserProfile
+    UserProfile --> UserAuthModal
+    UserProfile --> ProfileModal
+    
+    useGames --> Matches
+    useGames --> UserRegs
+    ProfileModal --> UserRegs
+    ProfileModal --> Matches
+    
+    UserAuthModal --> Auth
     App --> Auth
 ```
 
@@ -37,18 +57,35 @@ sequenceDiagram
     participant U as User
     participant A as App.tsx
     participant H as useGames Hook
-    participant F as Firebase
+    participant P as ProfileModal
+    participant F as Firestore (Matches)
+    participant R as Firestore (UserRegs)
     
     U->>A: Ouvre l'application
-    A->>H: useGames({ selectedTeam, currentView })
+    A->>H: useGames()
     H->>F: onSnapshot(matches)
-    F-->>H: Real-time data
-    H-->>A: { games, sortedGames, filteredGames, handlers... }
-    A->>GameList: Render games
-    U->>A: S'inscrit comme bénévole
+    H->>R: onSnapshot(userRegs) [Si connecté]
+    F-->>A: Affichage des matchs
+    
+    %% Inscription
+    U->>A: S'inscrit (Buvette)
     A->>H: handleVolunteer()
-    H->>F: updateDoc()
-    F-->>H: Update propagé
+    par Mise à jour publique
+        H->>F: updateDoc(matches/id, {volunteers: [...]})
+    and Mise à jour privée (Si connecté)
+        H->>R: setDoc(users/uid/regs/id, {details...})
+    end
+    
+    %% Gestion Profil
+    U->>P: Ouvre "Mon Espace"
+    P->>R: getDocs(userRegs)
+    R-->>P: Liste inscriptions
+    P->>P: Vérifie validité (vs Matches)
+    
+    %% Suppression
+    U->>P: Supprime inscription
+    P->>F: Retire nom de la liste publique
+    P->>R: Supprime document privé
 ```
 
 ## ✨ Fonctionnalités
