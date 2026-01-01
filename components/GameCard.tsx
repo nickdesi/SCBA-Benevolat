@@ -78,13 +78,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
     // Delete confirmation modal state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    if (isEditing) {
-        return (
-            <Suspense fallback={<div className="p-8 bg-white rounded-2xl shadow-sm animate-pulse"><div className="h-64 bg-slate-100 rounded-xl"></div></div>}>
-                <GameForm gameToEdit={game} onSave={(data) => onUpdateRequest(data as Game)} onCancel={onCancelEdit} />
-            </Suspense>
-        );
-    }
+
 
     const isFullyStaffed = isGameFullyStaffed(game);
     const totalVolunteers = game.roles.reduce((sum, r) => sum + r.volunteers.length, 0);
@@ -170,6 +164,14 @@ const GameCard: React.FC<GameCardProps> = memo(({
             .filter(r => !isRoleComplete(r))
             .map(r => r.name);
     };
+
+    if (isEditing) {
+        return (
+            <Suspense fallback={<div className="p-8 bg-white rounded-2xl shadow-sm animate-pulse"><div className="h-64 bg-slate-100 rounded-xl"></div></div>}>
+                <GameForm gameToEdit={game} onSave={(data) => onUpdateRequest(data as Game)} onCancel={onCancelEdit} />
+            </Suspense>
+        );
+    }
 
     return (
         <div className={`
