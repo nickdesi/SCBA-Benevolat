@@ -170,14 +170,14 @@ const GameCard: React.FC<GameCardProps> = memo(({
     return (
         <div className={`
             relative rounded-2xl shadow-sm hover:shadow-md
-            transition-all duration-300 h-full flex flex-col overflow-hidden
+            transition-all duration-300 flex flex-col overflow-hidden
             ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600' : 'border border-slate-200 dark:border-slate-700'}
             bg-white dark:bg-slate-900
         `}>
             {/* Header with STRONG color distinction */}
             <div className={`relative p-4 overflow-hidden ${isHomeGame
-                    ? 'bg-gradient-to-br from-emerald-100 via-emerald-50 to-green-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-slate-900'
-                    : 'bg-gradient-to-br from-blue-100 via-blue-50 to-sky-50 dark:from-blue-900/50 dark:via-blue-900/30 dark:to-slate-900'
+                ? 'bg-gradient-to-br from-emerald-100 via-emerald-50 to-green-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-slate-900'
+                : 'bg-gradient-to-br from-blue-100 via-blue-50 to-sky-50 dark:from-blue-900/50 dark:via-blue-900/30 dark:to-slate-900'
                 }`}>
                 {/* Watermark Icon */}
                 <div className={`absolute -right-4 -top-4 text-8xl opacity-10 dark:opacity-5 select-none pointer-events-none`}>
