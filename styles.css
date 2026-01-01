@@ -256,6 +256,8 @@ textarea,
   font-size: 0.875rem;
   transition: var(--transition-normal);
   background: white;
+  color: #0f172a;
+  /* Explicit dark text for readability */
 }
 
 .input-modern:focus {

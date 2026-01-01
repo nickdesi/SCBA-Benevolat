@@ -134,7 +134,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-900 placeholder:text-slate-400"
                         placeholder="Ex: Pierre Martin"
                         required
                     />
@@ -147,7 +147,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-900 placeholder:text-slate-400"
                     placeholder="votre@email.com"
                     required
                 />
@@ -159,7 +159,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-900 placeholder:text-slate-400"
                     placeholder="••••••••"
                     required
                     minLength={6}
