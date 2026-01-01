@@ -11,14 +11,14 @@ import {
     query,
     where,
     orderBy,
-    setDoc,
-    runTransaction
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { DEFAULT_ROLES } from '../constants';
 import type { Game, GameFormData, CarpoolEntry, UserRegistration } from '../types';
 import { getGameDateValue, getTodayISO } from './dateUtils';
 import { getStoredName } from './storage';
+import { useVolunteers } from './useVolunteers';
+import { useCarpool } from './useCarpool';
 
 interface UseGamesReturn {
     games: Game[];
@@ -53,54 +53,20 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     const { selectedTeam, currentView } = options;
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
-    const [userRegistrations, setUserRegistrations] = useState<UserRegistration[]>([]);
 
-    // Listen to User Registrations (for "My Planning" when logged in)
-    useEffect(() => {
-        let unsubscribe = () => { };
+    // Use sub-hooks
+    const {
+        userRegistrations,
+        userRegistrationsMap,
+        handleVolunteer,
+        handleRemoveVolunteer,
+        handleUpdateVolunteer
+    } = useVolunteers();
 
-        const listenToUserRegistrations = async () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    const q = query(collection(db, `users/${user.uid}/registrations`));
-                    unsubscribe = onSnapshot(q, (snapshot) => {
-                        const regs: UserRegistration[] = [];
-                        snapshot.docs.forEach(d => {
-                            const data = d.data();
-                            regs.push({
-                                id: d.id,
-                                gameId: data.gameId,
-                                roleId: data.roleId,
-                                roleName: data.roleName,
-                                gameDate: data.gameDate,
-                                gameDateISO: data.gameDateISO,
-                                gameTime: data.gameTime,
-                                location: data.location,
-                                team: data.team,
-                                opponent: data.opponent,
-                                volunteerName: data.volunteerName,
-                                isValid: true
-                            } as UserRegistration);
-                        });
-                        setUserRegistrations(regs);
-                    });
-                } else {
-                    setUserRegistrations([]);
-                }
-            });
-        };
-
-        listenToUserRegistrations();
-        return () => unsubscribe();
-    }, []);
-
-    const userRegistrationsMap = useMemo(() => {
-        const map = new Map<string, string>();
-        userRegistrations.forEach(reg => {
-            map.set(`${reg.gameId}_${reg.roleId}`, reg.volunteerName || "");
-        });
-        return map;
-    }, [userRegistrations]);
+    const {
+        handleAddCarpool,
+        handleRemoveCarpool
+    } = useCarpool();
 
     // ---------------------------------------------------------------------------
     // Firestore Synchronization with Query Optimization
@@ -264,143 +230,6 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             batch.set(docRef, newGame);
         }
         await batch.commit();
-    }, []);
-
-    // ---------------------------------------------------------------------------
-    // Volunteer Operations - TRANSACTIONAL
-    // ---------------------------------------------------------------------------
-
-    const handleVolunteer = useCallback(async (gameId: string, roleId: string, parentName: string) => {
-        const gameRef = doc(db, "matches", gameId);
-
-        try {
-            await runTransaction(db, async (transaction) => {
-                const gameDoc = await transaction.get(gameRef);
-                if (!gameDoc.exists()) {
-                    throw new Error("Game does not exist!");
-                }
-                const gameData = gameDoc.data() as Game;
-
-                const updatedRoles = gameData.roles.map(role => {
-                    if (role.id === roleId) {
-                        return { ...role, volunteers: [...role.volunteers, parentName] };
-                    }
-                    return role;
-                });
-
-                transaction.update(gameRef, { roles: updatedRoles });
-
-                if (auth.currentUser) {
-                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, `${gameId}_${roleId}`);
-                    transaction.set(userRegRef, {
-                        gameId,
-                        roleId,
-                        roleName: gameData.roles.find(r => r.id === roleId)?.name || 'Bénévole',
-                        gameDate: gameData.date,
-                        gameDateISO: gameData.dateISO,
-                        gameTime: gameData.time,
-                        location: gameData.location,
-                        team: gameData.team,
-                        opponent: gameData.opponent,
-                        createdAt: new Date().toISOString(),
-                        volunteerName: parentName
-                    });
-                }
-            });
-        } catch (e) {
-            console.error("Transaction failed: ", e);
-            throw e;
-        }
-    }, []);
-
-    const handleRemoveVolunteer = useCallback(async (gameId: string, roleId: string, volunteerName: string) => {
-        const gameRef = doc(db, "matches", gameId);
-
-        try {
-            await runTransaction(db, async (transaction) => {
-                const gameDoc = await transaction.get(gameRef);
-
-                if (gameDoc.exists()) {
-                    const gameData = gameDoc.data() as Game;
-                    const updatedRoles = gameData.roles.map(role => {
-                        if (role.id === roleId) {
-                            return { ...role, volunteers: role.volunteers.filter(v => v !== volunteerName) };
-                        }
-                        return role;
-                    });
-                    transaction.update(gameRef, { roles: updatedRoles });
-                }
-
-                if (auth.currentUser) {
-                    const regKey = `${gameId}_${roleId}`;
-                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
-                    transaction.delete(userRegRef);
-                }
-            });
-        } catch (e) {
-            console.error("Remove Transaction failed: ", e);
-            throw e;
-        }
-    }, []);
-
-    const handleUpdateVolunteer = useCallback(async (gameId: string, roleId: string, oldName: string, newName: string) => {
-        const gameRef = doc(db, "matches", gameId);
-
-        try {
-            await runTransaction(db, async (transaction) => {
-                const gameDoc = await transaction.get(gameRef);
-                if (!gameDoc.exists()) throw "Game missing";
-
-                const gameData = gameDoc.data() as Game;
-                const updatedRoles = gameData.roles.map(role => {
-                    if (role.id === roleId) {
-                        return {
-                            ...role,
-                            volunteers: role.volunteers.map(v => v === oldName ? newName : v)
-                        };
-                    }
-                    return role;
-                });
-
-                transaction.update(gameRef, { roles: updatedRoles });
-
-                if (auth.currentUser) {
-                    const regKey = `${gameId}_${roleId}`;
-                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
-                    transaction.update(userRegRef, { volunteerName: newName });
-                }
-            });
-        } catch (e) {
-            console.error("Update Transaction failed", e);
-            throw e;
-        }
-    }, []);
-
-    const handleAddCarpool = useCallback(async (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => {
-        const gameRef = doc(db, "matches", gameId);
-        await runTransaction(db, async (transaction) => {
-            const gameDoc = await transaction.get(gameRef);
-            if (!gameDoc.exists()) throw "Game missing";
-            const gameData = gameDoc.data() as Game;
-
-            const newEntry: CarpoolEntry = { ...entry, id: crypto.randomUUID() };
-            const updatedCarpool = [...(gameData.carpool || []), newEntry];
-
-            transaction.update(gameRef, { carpool: updatedCarpool });
-        });
-    }, []);
-
-    const handleRemoveCarpool = useCallback(async (gameId: string, entryId: string) => {
-        const gameRef = doc(db, "matches", gameId);
-        await runTransaction(db, async (transaction) => {
-            const gameDoc = await transaction.get(gameRef);
-            if (!gameDoc.exists()) throw "Game missing";
-            const gameData = gameDoc.data() as Game;
-
-            const updatedCarpool = (gameData.carpool || []).filter(e => e.id !== entryId);
-
-            transaction.update(gameRef, { carpool: updatedCarpool });
-        });
     }, []);
 
     return {

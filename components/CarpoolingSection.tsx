@@ -4,6 +4,8 @@ import { getStoredName, setStoredName } from '../utils/storage';
 import PhoneDisplay from './PhoneDisplay';
 
 
+import ConfirmModal from './ConfirmModal';
+
 interface CarpoolingSectionProps {
     gameId: string;
     entries: CarpoolEntry[];
@@ -24,6 +26,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
     const [phone, setPhone] = useState('');
     const [seats, setSeats] = useState(3);
     const [departureLocation, setDepartureLocation] = useState('');
+
+    const [confirmDelete, setConfirmDelete] = useState<{ id: string, name: string } | null>(null);
 
     const drivers = entries.filter(e => e.type === 'driver');
     const passengers = entries.filter(e => e.type === 'passenger');
@@ -51,11 +55,19 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
     }, [name, phone, seats, departureLocation, formType, onAddEntry]);
 
     const handleRemove = useCallback((entryId: string, entryName: string) => {
-        if (entryName.toLowerCase() === storedName.toLowerCase() ||
-            window.confirm(`Voulez-vous retirer ${entryName} du covoiturage ?`)) {
+        if (entryName.toLowerCase() === storedName.toLowerCase()) {
             onRemoveEntry(entryId);
+        } else {
+            setConfirmDelete({ id: entryId, name: entryName });
         }
     }, [storedName, onRemoveEntry]);
+
+    const executeDelete = () => {
+        if (confirmDelete) {
+            onRemoveEntry(confirmDelete.id);
+            setConfirmDelete(null);
+        }
+    };
 
     const openForm = (type: 'driver' | 'passenger') => {
         setFormType(type);
@@ -282,6 +294,16 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                     </div>
                 </form>
             )}
+
+            <ConfirmModal
+                isOpen={!!confirmDelete}
+                title="Retirer du covoiturage"
+                message={`Voulez-vous vraiment retirer ${confirmDelete?.name} ?`}
+                confirmText="Retirer"
+                confirmStyle="danger"
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmDelete(null)}
+            />
         </div>
     );
 });

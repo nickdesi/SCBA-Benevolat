@@ -220,7 +220,10 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                 onClick={handleClose}
             />
 
-            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden border border-slate-100">
+            <div
+                className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden border border-slate-100"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="relative px-6 py-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white text-center">
                     <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
                         <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(255,255,255,0.3)_0%,transparent_60%)] animate-pulse" />

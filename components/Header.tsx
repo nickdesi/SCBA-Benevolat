@@ -13,6 +13,8 @@ interface HeaderProps {
   registrations?: UserRegistration[];
   games?: Game[];
   onUnsubscribe?: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+  onRemoveCarpool?: (gameId: string, entryId: string) => Promise<void>;
+  onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -24,7 +26,9 @@ const Header: React.FC<HeaderProps> = ({
   onSelectTeam = (_team) => { },
   registrations = [],
   games = [],
-  onUnsubscribe = async () => { }
+  onUnsubscribe = async () => { },
+  onRemoveCarpool = async () => { },
+  onToast = () => { }
 }) => {
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50">
@@ -70,6 +74,8 @@ const Header: React.FC<HeaderProps> = ({
               registrations={registrations}
               games={games}
               onUnsubscribe={onUnsubscribe}
+              onRemoveCarpool={onRemoveCarpool}
+              onToast={onToast}
             />
           </div>
         </div>

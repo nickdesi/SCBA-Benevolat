@@ -12,6 +12,8 @@ interface UserProfileProps {
     registrations: UserRegistration[];
     games: Game[];
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+    onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
+    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
@@ -19,7 +21,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
     onLogout,
     registrations = [],
     games = [],
-    onUnsubscribe = async () => { }
+    onUnsubscribe = async () => { },
+    onRemoveCarpool = async () => { },
+    onToast = () => { }
 }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -41,9 +45,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
         try {
             await signInWithGoogle();
             setIsAuthModalOpen(false); // Close modal on success
+            onToast('✅ Connexion réussie !', 'success');
         } catch (error) {
             console.error("Login failed", error);
-            alert("Erreur de connexion Google");
+            onToast('❌ Erreur de connexion Google', 'error');
         }
     };
 
@@ -62,7 +67,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
         return (
             <>
                 <button
-                    onClick={() => setIsAuthModalOpen(true)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsAuthModalOpen(true);
+                    }}
                     className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 
                                text-white font-medium rounded-full border border-white/20 
                                transition-all shadow-sm hover:shadow-md ml-2 backdrop-blur-sm"
@@ -124,7 +132,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     <div className="p-1">
                         <button
                             onClick={() => {
-                                console.log("Click: element Mon Espace Benevole clicked");
                                 setIsProfileOpen(true); // Open modal FIRST
                                 setShowMenu(false); // Then close menu
                             }}
@@ -157,6 +164,8 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     registrations={registrations}
                     games={games}
                     onUnsubscribe={onUnsubscribe}
+                    onRemoveCarpool={onRemoveCarpool}
+                    onToast={onToast}
                 />
             )}
         </div>

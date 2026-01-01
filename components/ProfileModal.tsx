@@ -12,6 +12,7 @@ interface ProfileModalProps {
     games: Game[];
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
+    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -21,7 +22,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     registrations,
     games,
     onUnsubscribe,
-    onRemoveCarpool
+    onRemoveCarpool,
+    onToast
 }) => {
     // State for revealing contact info
     const [revealedContacts, setRevealedContacts] = useState<Set<string>>(new Set());
@@ -115,9 +117,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
         try {
             await onUnsubscribe(gameId, roleId, volunteerName || user.displayName || "");
+            onToast('✅ Désinscription réussie', 'success');
         } catch (err) {
             console.error(err);
-            alert("Erreur lors de la suppression");
+            onToast('❌ Erreur lors de la désinscription', 'error');
         }
     };
 
@@ -272,8 +275,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase ${entry.type === 'driver'
-                                                        ? 'bg-emerald-100 text-emerald-700'
-                                                        : 'bg-blue-100 text-blue-700'
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-blue-100 text-blue-700'
                                                     }`}>
                                                     {entry.type === 'driver' ? '🚘 Conducteur' : '👤 Passager'}
                                                 </span>
@@ -292,7 +295,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                                         <button
                                             onClick={async () => {
                                                 if (confirm('Annuler ce covoiturage ?')) {
-                                                    await onRemoveCarpool(game.id, entry.id);
+                                                    try {
+                                                        await onRemoveCarpool(game.id, entry.id);
+                                                        onToast('✅ Covoiturage annulé', 'success');
+                                                    } catch (err) {
+                                                        onToast('❌ Erreur lors de l\'annulation', 'error');
+                                                    }
                                                 }
                                             }}
                                             className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

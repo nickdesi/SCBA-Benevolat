@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.6.0] - 2026-01-01
+
+### Ajouté
+
+- **ConfirmModal** : Remplacement des `window.confirm` natifs par une modale de confirmation personnalisée et cohérente avec le design system (notamment pour la suppression de covoiturage).
+- **Badge de Version** : Ajout du badge de version dans le README.
+
+### Modifié
+
+- **Refactoring Majeur** : Découpage du hook `useGames.ts` pour une meilleure maintenabilité :
+  - `useVolunteers.ts` : Logique des bénévoles.
+  - `useCarpool.ts` : Logique du covoiturage.
+- **Expérience Utilisateur** : Suppression du "flicker" (fermeture immédiate) sur les modales de connexion via `stopPropagation`.
+
+### Corrigé
+
+- **Crash Édition** : Fix du crash lors de l'ouverture du formulaire d'édition (Règles des Hooks React).
+- **Prop Drilling** : La suppression de covoiturage fonctionne désormais correctement depuis le profil utilisateur.
+
+---
+
 ## [1.5.1] - 2025-01-01
 
 ### Ajouté

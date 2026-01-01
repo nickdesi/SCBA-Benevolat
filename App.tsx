@@ -170,6 +170,8 @@ function App() {
         registrations={userRegistrations} // Pass registrations
         games={games} // Pass ALL games for validity check
         onUnsubscribe={handleRemoveVolunteer}
+        onRemoveCarpool={handleRemoveCarpool}
+        onToast={addToast}
       />
 
       <EventSchema games={games} />
@@ -377,6 +379,7 @@ function App() {
           games={games}
           onUnsubscribe={handleRemoveVolunteer}
           onRemoveCarpool={handleRemoveCarpool}
+          onToast={addToast}
         />
       )}
     </div>
