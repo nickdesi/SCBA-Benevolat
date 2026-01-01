@@ -1,6 +1,7 @@
 import React from 'react';
 import UserProfile from './UserProfile';
 import { UserRegistration, Game } from '../types';
+import { ThemeToggle } from '../utils/ThemeContext';
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -62,8 +63,9 @@ const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
 
-          {/* User Profile (Google Auth) */}
+          {/* User Profile + Theme Toggle */}
           <div className="flex-shrink-0 flex items-center gap-2">
+            <ThemeToggle />
             <UserProfile
               registrations={registrations}
               games={games}

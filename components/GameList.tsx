@@ -105,11 +105,11 @@ const GameList: React.FC<GameListProps> = memo(({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                         {group.games.map((game, index) => (
                             <div
                                 key={game.id}
-                                className="h-full animate-fade-in-up"
+                                className="animate-fade-in-up"
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >
                                 <GameCard

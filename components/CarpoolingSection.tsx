@@ -34,14 +34,13 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
         e.preventDefault();
         if (!name.trim()) return;
 
-        // Store name for future use
         setStoredName(name);
 
         const entry: Omit<CarpoolEntry, 'id'> = {
             name: name.trim(),
             type: formType,
             ...(phone.trim() && { phone: phone.trim() }),
-            ...({ seats }),  // Both drivers and passengers can specify seats
+            ...({ seats }),
             ...(formType === 'driver' && departureLocation.trim() && { departureLocation: departureLocation.trim() })
         };
 
@@ -64,76 +63,52 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
     };
 
     return (
-        <div className="mt-6 pt-6 border-t border-slate-200">
+        <div>
             {/* Section Header */}
-            <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
-                    <span className="text-xl">🚗</span>
-                </div>
-                <div>
-                    <h4 className="font-bold text-slate-800 text-lg">Covoiturage</h4>
-                    <p className="text-sm text-slate-500">Organisez vos trajets ensemble</p>
-                </div>
-            </div>
+            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                Covoiturage
+            </h4>
 
             {/* Drivers Section */}
             {drivers.length > 0 && (
-                <div className="mb-4">
-                    <h5 className="text-sm font-semibold text-slate-600 mb-2 flex items-center gap-2">
+                <div className="mb-3">
+                    <h5 className="text-[11px] font-medium text-slate-400 uppercase mb-2 flex items-center gap-1.5">
                         <span>🚗</span> Conducteurs ({drivers.length})
                     </h5>
-                    <div className="space-y-2">
+                    <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden divide-y divide-slate-50 dark:divide-slate-700">
                         {drivers.map((driver) => (
                             <div
                                 key={driver.id}
-                                className={`p-3 rounded-xl transition-all ${driver.name.toLowerCase() === storedName.toLowerCase()
-                                    ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200'
-                                    : 'bg-slate-50 border border-slate-100'
+                                className={`px-3 py-2.5 ${driver.name.toLowerCase() === storedName.toLowerCase()
+                                    ? 'bg-blue-50'
+                                    : 'bg-white'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-lg">👤</span>
-                                        <span className="font-semibold text-slate-800">{driver.name}</span>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-sm font-medium text-slate-800 truncate">{driver.name}</span>
+                                        <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-md">
+                                            {driver.seats || 1} pl.
+                                        </span>
                                         {driver.name.toLowerCase() === storedName.toLowerCase() && (
-                                            <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded-full">
-                                                C'est vous !
+                                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded-full">
+                                                Vous
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg">
-                                            {driver.seats || 1} place{(driver.seats || 1) > 1 ? 's' : ''}
-                                        </span>
-                                        {(driver.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
-                                            <button
-                                                onClick={() => handleRemove(driver.id, driver.name)}
-                                                className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                aria-label="Se désinscrire"
-                                            >
-                                                ✕
-                                            </button>
-                                        )}
-                                        {/* Identity recovery button - only shows if user has a stored name that matches */}
-                                        {storedName && driver.name.toLowerCase() !== storedName.toLowerCase() &&
-                                            driver.name.toLowerCase().includes(storedName.toLowerCase().split(' ')[0]) && !isAdmin && (
-                                                <button
-                                                    onClick={() => {
-                                                        setStoredName(driver.name);
-                                                        setName(driver.name);
-                                                    }}
-                                                    className="px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 
-                                                   hover:bg-amber-200 rounded-lg transition-colors"
-                                                    title="Récupérer cette inscription"
-                                                >
-                                                    C'est moi ?
-                                                </button>
-                                            )}
-                                    </div>
+                                    {(driver.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
+                                        <button
+                                            onClick={() => handleRemove(driver.id, driver.name)}
+                                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm"
+                                            aria-label="Se désinscrire"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
                                 </div>
                                 {driver.departureLocation && (
-                                    <p className="mt-1 text-sm text-slate-500 flex items-center gap-1">
-                                        <span>📍</span> Départ: {driver.departureLocation}
+                                    <p className="mt-1 text-xs text-slate-500 flex items-center gap-1">
+                                        📍 {driver.departureLocation}
                                     </p>
                                 )}
                                 {driver.phone && (
@@ -149,56 +124,40 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
 
             {/* Passengers Section */}
             {passengers.length > 0 && (
-                <div className="mb-4">
-                    <h5 className="text-sm font-semibold text-slate-600 mb-2 flex items-center gap-2">
+                <div className="mb-3">
+                    <h5 className="text-[11px] font-medium text-slate-400 uppercase mb-2 flex items-center gap-1.5">
                         <span>🙋</span> Passagers ({passengers.length})
                     </h5>
-                    <div className="space-y-2">
+                    <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-100 rounded-xl overflow-hidden divide-y divide-slate-50">
                         {passengers.map((passenger) => (
                             <div
                                 key={passenger.id}
-                                className={`p-3 rounded-xl transition-all ${passenger.name.toLowerCase() === storedName.toLowerCase()
-                                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200'
-                                    : 'bg-slate-50 border border-slate-100'
+                                className={`px-3 py-2.5 ${passenger.name.toLowerCase() === storedName.toLowerCase()
+                                    ? 'bg-amber-50'
+                                    : 'bg-white'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-lg">👤</span>
-                                        <span className="font-semibold text-slate-800">{passenger.name}</span>
-                                        <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-lg">
-                                            cherche {passenger.seats || 1} place{(passenger.seats || 1) > 1 ? 's' : ''}
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-sm font-medium text-slate-800 truncate">{passenger.name}</span>
+                                        <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-semibold rounded-md">
+                                            {passenger.seats || 1} pl.
                                         </span>
                                         {passenger.name.toLowerCase() === storedName.toLowerCase() && (
-                                            <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded-full">
-                                                C'est vous !
+                                            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-semibold rounded-full">
+                                                Vous
                                             </span>
                                         )}
                                     </div>
                                     {(passenger.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
                                         <button
                                             onClick={() => handleRemove(passenger.id, passenger.name)}
-                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm"
                                             aria-label="Se désinscrire"
                                         >
                                             ✕
                                         </button>
                                     )}
-                                    {/* Identity recovery button - only shows if user has a stored name that matches */}
-                                    {storedName && passenger.name.toLowerCase() !== storedName.toLowerCase() &&
-                                        passenger.name.toLowerCase().includes(storedName.toLowerCase().split(' ')[0]) && !isAdmin && (
-                                            <button
-                                                onClick={() => {
-                                                    setStoredName(passenger.name);
-                                                    setName(passenger.name);
-                                                }}
-                                                className="px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 
-                                               hover:bg-amber-200 rounded-lg transition-colors"
-                                                title="Récupérer cette inscription"
-                                            >
-                                                C'est moi ?
-                                            </button>
-                                        )}
                                 </div>
                                 {passenger.phone && (
                                     <div className="mt-1">
@@ -213,30 +172,28 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
 
             {/* Empty State */}
             {entries.length === 0 && !isFormOpen && (
-                <p className="text-center text-slate-400 py-4 text-sm">
-                    Aucun covoiturage proposé pour le moment
+                <p className="text-center text-slate-400 py-3 text-sm">
+                    Aucun covoiturage proposé
                 </p>
             )}
 
-            {/* Action Buttons */}
+            {/* Compact Action Buttons */}
             {!isFormOpen && (
-                <div className="flex gap-3 mt-4">
+                <div className="flex gap-2 mt-3">
                     <button
                         onClick={() => openForm('driver')}
-                        className="flex-1 py-3 px-4 flex items-center justify-center gap-2
-                            bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600
-                            text-white font-bold rounded-xl shadow-md hover:shadow-lg
-                            transition-all duration-200 hover:-translate-y-0.5"
+                        className="flex-1 py-2.5 px-3 flex items-center justify-center gap-1.5
+                            text-sm font-medium text-blue-600 bg-blue-50 rounded-xl
+                            hover:bg-blue-100 transition-colors"
                     >
                         <span>🚗</span>
                         <span>Je propose</span>
                     </button>
                     <button
                         onClick={() => openForm('passenger')}
-                        className="flex-1 py-3 px-4 flex items-center justify-center gap-2
-                            bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600
-                            text-white font-bold rounded-xl shadow-md hover:shadow-lg
-                            transition-all duration-200 hover:-translate-y-0.5"
+                        className="flex-1 py-2.5 px-3 flex items-center justify-center gap-1.5
+                            text-sm font-medium text-amber-600 bg-amber-50 rounded-xl
+                            hover:bg-amber-100 transition-colors"
                     >
                         <span>🙋</span>
                         <span>Je cherche</span>
@@ -244,100 +201,80 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                 </div>
             )}
 
-            {/* Form */}
+            {/* Compact Form */}
             {isFormOpen && (
-                <form onSubmit={handleSubmit} className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                    <h5 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <form onSubmit={handleSubmit} className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <h5 className="font-medium text-slate-800 mb-3 text-sm flex items-center gap-2">
                         {formType === 'driver' ? (
-                            <><span>🚗</span> Je propose des places</>
+                            <>🚗 Je propose des places</>
                         ) : (
-                            <><span>🙋</span> Je cherche une place</>
+                            <>🙋 Je cherche une place</>
                         )}
                     </h5>
 
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                         {/* Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-1">
-                                Votre nom *
-                            </label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Votre nom *"
+                            required
+                            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg
+                                focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+
+                        {/* Phone */}
+                        <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="Téléphone (optionnel)"
+                            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg
+                                focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+
+                        {/* Seats */}
+                        <select
+                            value={seats}
+                            onChange={(e) => setSeats(Number(e.target.value))}
+                            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg
+                                focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                            {(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => (
+                                <option key={n} value={n}>{n} place{n > 1 ? 's' : ''}</option>
+                            ))}
+                        </select>
+
+                        {/* Driver-specific: Departure Location */}
+                        {formType === 'driver' && (
                             <input
                                 type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Prénom Nom"
-                                required
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
-                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value={departureLocation}
+                                onChange={(e) => setDepartureLocation(e.target.value)}
+                                placeholder="Lieu de départ (optionnel)"
+                                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg
+                                    focus:outline-none focus:ring-2 focus:ring-blue-400"
                             />
-                        </div>
-
-                        {/* Phone (optional) */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-1">
-                                Téléphone <span className="text-slate-400">(optionnel)</span>
-                            </label>
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                placeholder="06 12 34 56 78"
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
-                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        {/* Seats selection - for both driver and passenger */}
-                        <div>
-                            <label className="block text-sm font-medium text-slate-600 mb-1">
-                                {formType === 'driver' ? 'Places disponibles' : 'Places recherchées'}
-                            </label>
-                            <select
-                                value={seats}
-                                onChange={(e) => setSeats(Number(e.target.value))}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
-                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                {(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => (
-                                    <option key={n} value={n}>{n} place{n > 1 ? 's' : ''}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Driver-specific fields */}
-                        {formType === 'driver' && (
-                            <div>
-                                <label className="block text-sm font-medium text-slate-600 mb-1">
-                                    Lieu de départ <span className="text-slate-400">(optionnel)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={departureLocation}
-                                    onChange={(e) => setDepartureLocation(e.target.value)}
-                                    placeholder="Ex: Gerzat, Clermont centre..."
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl 
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
                         )}
                     </div>
 
                     {/* Form Actions */}
-                    <div className="flex gap-3 mt-4">
+                    <div className="flex gap-2 mt-3">
                         <button
                             type="button"
                             onClick={() => setIsFormOpen(false)}
-                            className="flex-1 py-2.5 px-4 bg-slate-200 hover:bg-slate-300 
-                                text-slate-700 font-semibold rounded-xl transition-colors"
+                            className="flex-1 py-2 px-3 text-sm font-medium text-slate-600 bg-slate-200
+                                rounded-lg hover:bg-slate-300 transition-colors"
                         >
                             Annuler
                         </button>
                         <button
                             type="submit"
-                            className={`flex-1 py-2.5 px-4 text-white font-bold rounded-xl 
-                                transition-all hover:shadow-lg ${formType === 'driver'
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-                                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
+                            className={`flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
+                                transition-colors ${formType === 'driver'
+                                    ? 'bg-blue-500 hover:bg-blue-600'
+                                    : 'bg-amber-500 hover:bg-amber-600'
                                 }`}
                         >
                             Confirmer

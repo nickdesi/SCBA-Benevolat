@@ -1,4 +1,4 @@
-import React, { memo, useRef, useEffect, Suspense, lazy } from 'react';
+import React, { memo, useRef, useEffect, Suspense, lazy, useState } from 'react';
 import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import CarpoolingSection from './CarpoolingSection';
@@ -28,7 +28,6 @@ interface GameCardProps {
 }
 
 // Check if a role is considered "complete"
-// For unlimited roles (Infinity or 0), require at least 2 volunteers
 const isRoleComplete = (role: { capacity: number; volunteers: string[] }): boolean => {
     const isUnlimited = role.capacity === Infinity || role.capacity === 0;
     if (isUnlimited) {
@@ -41,6 +40,19 @@ const isRoleComplete = (role: { capacity: number; volunteers: string[] }): boole
 const isGameFullyStaffed = (game: Game): boolean => {
     return game.roles.every(isRoleComplete);
 };
+
+// Chevron Icon for Accordion
+const ChevronIcon: React.FC<{ className?: string; isOpen: boolean }> = ({ className, isOpen }) => (
+    <svg
+        className={`${className} transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+    >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+);
 
 const GameCard: React.FC<GameCardProps> = memo(({
     game,
@@ -59,15 +71,23 @@ const GameCard: React.FC<GameCardProps> = memo(({
     userRegistrations,
     isAuthenticated,
 }) => {
+    // Accordion state
+    const [isExpanded, setIsExpanded] = useState(false);
+
     if (isEditing) {
         return (
-            <Suspense fallback={<div className="p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
+            <Suspense fallback={<div className="p-8 bg-white rounded-2xl shadow-sm animate-pulse"><div className="h-64 bg-slate-100 rounded-xl"></div></div>}>
                 <GameForm gameToEdit={game} onSave={(data) => onUpdateRequest(data as Game)} onCancel={onCancelEdit} />
             </Suspense>
         );
     }
 
     const isFullyStaffed = isGameFullyStaffed(game);
+    const totalVolunteers = game.roles.reduce((sum, r) => sum + r.volunteers.length, 0);
+    const totalCapacity = game.roles.reduce((sum, r) => {
+        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
+        return sum + (isUnlimited ? 2 : r.capacity); // Target 2 for unlimited
+    }, 0);
 
     // Calculate total carpool seats available
     const totalCarpoolSeats = React.useMemo(() => {
@@ -133,215 +153,202 @@ const GameCard: React.FC<GameCardProps> = memo(({
         setShowCalendarPicker(false);
     };
 
+    // Determine left border color
+    const getBorderColor = () => {
+        if (isFullyStaffed) return 'border-l-emerald-500';
+        if (isHomeGame) return 'border-l-green-500';
+        return 'border-l-blue-500';
+    };
+
+    // Summary text for collapsed state
+    const getMissingRoles = () => {
+        return game.roles
+            .filter(r => !isRoleComplete(r))
+            .map(r => r.name);
+    };
+
     return (
         <div className={`
-      relative overflow-hidden rounded-2xl shadow-xl transition-all duration-500 h-full flex flex-col
-      ${isFullyStaffed
-                ? 'ring-4 ring-emerald-400 ring-offset-2 shadow-emerald-200'
-                : 'border border-slate-200 hover:shadow-2xl hover:border-red-200 hover:-translate-y-1'
-            }
-    `}>
-            {/* Celebration Animation Overlay */}
-            {isFullyStaffed && (
-                <>
-                    {/* Shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-200/30 to-transparent 
-                        animate-[shimmer_3s_infinite] pointer-events-none z-10"></div>
-
-                    {/* Confetti decorations */}
-                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400"></div>
-                </>
-            )}
-
-            <div className="bg-white flex-1 flex flex-col">
-                {/* Card Header */}
-                <div className={`
-          relative p-5 sm:p-6 transition-all duration-500
-          ${isFullyStaffed
-                        ? 'bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700'
-                        : 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950'
-                    }
+            relative rounded-2xl shadow-sm hover:shadow-md
+            transition-all duration-300 h-full flex flex-col overflow-hidden
+            ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600' : 'border border-slate-200 dark:border-slate-700'}
+            bg-white dark:bg-slate-900
         `}>
-                    {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-10">
-                        <div className="absolute inset-0" style={{
-                            backgroundImage: isFullyStaffed
-                                ? `radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%)`
-                                : `radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.3) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 20%, rgba(251, 146, 60, 0.3) 0%, transparent 50%)`
-                        }}></div>
-                    </div>
+            {/* Header with STRONG color distinction */}
+            <div className={`relative p-4 overflow-hidden ${isHomeGame
+                    ? 'bg-gradient-to-br from-emerald-100 via-emerald-50 to-green-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-slate-900'
+                    : 'bg-gradient-to-br from-blue-100 via-blue-50 to-sky-50 dark:from-blue-900/50 dark:via-blue-900/30 dark:to-slate-900'
+                }`}>
+                {/* Watermark Icon */}
+                <div className={`absolute -right-4 -top-4 text-8xl opacity-10 dark:opacity-5 select-none pointer-events-none`}>
+                    {isHomeGame ? '🏟️' : '🚌'}
+                </div>
 
-                    <div className="relative z-10">
-                        {/* Team and Badges */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <h3 className="text-lg sm:text-xl font-bold text-white">{game.team}</h3>
-                            <div className="flex flex-wrap gap-2 items-center">
-                                {/* Home/Away Badge */}
-                                <span className={`
-                                    px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
-                                    ${isHomeGame
-                                        ? 'bg-gradient-to-r from-emerald-500 to-green-500 shadow-emerald-500/30'
-                                        : 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-blue-500/30'
-                                    } shadow-lg
-                                `}>
-                                    {isHomeGame ? '🏠 DOMICILE' : '🚗 EXTÉRIEUR'}
-                                </span>
+                {/* Top Row: Team + Badges */}
+                <div className="relative flex items-start justify-between gap-2 mb-1 z-10">
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-tight">{game.team}</h3>
+                    <div className="flex flex-wrap gap-1.5 items-center flex-shrink-0">
+                        {/* Home/Away Pill */}
+                        <span className={`
+                            px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded-full shadow-sm
+                            ${isHomeGame
+                                ? 'bg-emerald-500 text-white dark:bg-emerald-600'
+                                : 'bg-blue-500 text-white dark:bg-blue-600'
+                            }
+                        `}>
+                            {isHomeGame ? '🏠 Domicile' : '🚗 Extérieur'}
+                        </span>
 
-                                {/* Carpool Availability Badge - Magic Pill 💊 */}
-                                {!isHomeGame && totalCarpoolSeats > 0 && (
-                                    <span className="
-                                        px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
-                                        bg-gradient-to-r from-emerald-500 to-green-400 shadow-emerald-500/30 shadow-lg
-                                        flex items-center gap-1 animate-pulse
-                                    ">
-                                        <span>🚗</span>
-                                        <span>{totalCarpoolSeats} place{totalCarpoolSeats > 1 ? 's' : ''}</span>
-                                    </span>
-                                )}
+                        {/* Carpool Availability Badge */}
+                        {!isHomeGame && totalCarpoolSeats > 0 && (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-50 text-emerald-700">
+                                🚗 {totalCarpoolSeats}
+                            </span>
+                        )}
 
-                                {/* Status Badge */}
-                                {/* Status Badge - Only show when full */}
-                                {isFullyStaffed && (
-                                    <span className="
-                                        px-3 py-1 text-white text-xs font-bold uppercase tracking-wider rounded-full
-                                        shadow-lg animate-pulse
-                                        bg-gradient-to-r from-yellow-400 to-amber-500 shadow-yellow-400/30
-                                    ">
-                                        ✅ COMPLET
-                                    </span>
-                                )}
-                                {/* Admin Controls - Inline with badges */}
-                                {isAdmin && (
-                                    <>
-                                        <button
-                                            onClick={onEditRequest}
-                                            className="flex items-center gap-1.5 px-3 py-1 
-                                                     bg-blue-500 hover:bg-blue-600 
-                                                     text-white text-xs font-medium rounded-full
-                                                     transition-all duration-200 hover:scale-105 shadow-lg"
-                                            aria-label="Modifier le match"
-                                        >
-                                            <EditIcon className="w-3.5 h-3.5" />
-                                            <span>Modifier</span>
-                                        </button>
-                                        <button
-                                            onClick={onDeleteRequest}
-                                            className="flex items-center gap-1.5 px-3 py-1 
-                                                     bg-red-500 hover:bg-red-600 
-                                                     text-white text-xs font-medium rounded-full
-                                                     transition-all duration-200 hover:scale-105 shadow-lg"
-                                            aria-label="Supprimer le match"
-                                        >
-                                            <DeleteIcon className="w-3.5 h-3.5" />
-                                            <span>Supprimer</span>
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* VS Opponent */}
-                        <p className="text-2xl sm:text-3xl font-black text-white">
-                            vs <span className={`bg-clip-text text-transparent ${isFullyStaffed
-                                ? 'bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400'
-                                : 'bg-gradient-to-r from-red-400 via-orange-400 to-amber-400'
-                                }`}>{game.opponent}</span>
-                        </p>
+                        {/* Status Badge */}
+                        {isFullyStaffed && (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-800">
+                                ✓ Complet
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                {/* Fully Staffed Banner */}
-                {isFullyStaffed && (
-                    <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-b border-emerald-200 
-                        py-3 px-5 flex items-center justify-center gap-3 animate-pulse">
-                        <span className="text-2xl">🎉</span>
-                        <span className="font-bold text-emerald-700">Équipe complète ! Merci à tous les bénévoles !</span>
-                        <span className="text-2xl">🎉</span>
+                {/* Opponent */}
+                <p className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">
+                    vs <span className="text-red-600 dark:text-red-400">{game.opponent}</span>
+                </p>
+
+                {/* Meta Info: Date • Time • Location on one line */}
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+                    <span className="inline-flex items-center gap-1">
+                        <CalendarIcon className="w-3 h-3" />
+                        {game.date}
+                    </span>
+                    <span className="text-slate-300">•</span>
+                    <span className="inline-flex items-center gap-1">
+                        <ClockIcon className="w-3 h-3" />
+                        {game.time}
+                    </span>
+                    <span className="text-slate-300">•</span>
+                    <span className="inline-flex items-center gap-1 truncate max-w-[150px]" title={game.location}>
+                        <LocationIcon className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{game.location}</span>
+                    </span>
+                </div>
+
+                {/* Admin Controls */}
+                {isAdmin && (
+                    <div className="flex gap-2 mt-3">
+                        <button
+                            onClick={onEditRequest}
+                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium
+                                     text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                            aria-label="Modifier le match"
+                        >
+                            <EditIcon className="w-3 h-3" />
+                            Modifier
+                        </button>
+                        <button
+                            onClick={onDeleteRequest}
+                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium
+                                     text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                            aria-label="Supprimer le match"
+                        >
+                            <DeleteIcon className="w-3 h-3" />
+                            Supprimer
+                        </button>
                     </div>
                 )}
+            </div>
 
-                {/* Card Body */}
-                <div className="p-5 sm:p-6">
-                    {/* Info Grid - Responsive */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
-                            <div className="p-2 bg-red-100 rounded-lg">
-                                <CalendarIcon className="w-5 h-5 text-red-600" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wide">Date</p>
-                                <p className="font-bold text-slate-800 text-sm">{game.date}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
-                            <div className="p-2 bg-orange-100 rounded-lg">
-                                <ClockIcon className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wide">Heure</p>
-                                <p className="font-bold text-slate-800 text-sm">{game.time}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
-                            <div className="p-2 bg-amber-100 rounded-lg">
-                                <LocationIcon className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wide">Lieu</p>
-                                <p className="font-bold text-slate-800 text-sm">{game.location}</p>
-                            </div>
-                        </div>
-                    </div>
+            {/* Accordion Trigger: Summary Bar */}
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`
+                    w-full px-4 py-3 flex items-center justify-between cursor-pointer
+                    bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/50 dark:hover:bg-slate-800
+                    border-t border-slate-100 dark:border-slate-700
+                    transition-colors
+                    ${isExpanded ? '' : 'rounded-b-2xl'}
+                `}
+            >
+                <div className="flex items-center gap-3">
+                    {/* Volunteer Summary */}
+                    {isHomeGame && (
+                        <span className={`text-sm font-medium ${isFullyStaffed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                            {isFullyStaffed ? (
+                                <>🎉 Équipe complète !</>
+                            ) : (
+                                <>
+                                    <span className="font-bold">{totalVolunteers}/{totalCapacity}</span> bénévoles
+                                    {getMissingRoles().length > 0 && (
+                                        <span className="text-slate-500 dark:text-slate-400 ml-1.5">
+                                            • Manque : <span className="text-red-600 dark:text-red-400 font-medium">{getMissingRoles().join(', ')}</span>
+                                        </span>
+                                    )}
+                                </>
+                            )}
+                        </span>
+                    )}
+                    {/* Carpool Summary for Away games */}
+                    {!isHomeGame && (
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            🚗 {(game.carpool?.length || 0)} inscription{(game.carpool?.length || 0) > 1 ? 's' : ''}
+                        </span>
+                    )}
+                </div>
+                <ChevronIcon className="w-5 h-5 text-slate-400 dark:text-slate-500" isOpen={isExpanded} />
+            </button>
 
+            {/* Expandable Content */}
+            <div className={`
+                overflow-hidden transition-all duration-300 ease-in-out
+                ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}
+            `}>
+                <div className="p-4 pt-2 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-b-2xl">
                     {/* Add to Calendar Picker */}
-                    <div ref={calendarPickerRef} className="relative mb-6">
+                    <div ref={calendarPickerRef} className="relative mb-4">
                         <button
                             onClick={() => setShowCalendarPicker(!showCalendarPicker)}
-                            className="group w-full py-3 px-4 flex items-center justify-center gap-2 
-                                bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 
-                                hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600
-                                text-white font-bold rounded-2xl shadow-lg hover:shadow-xl
-                                transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]
-                                border border-white/20"
+                            className="w-full py-2.5 px-4 flex items-center justify-center gap-2
+                                text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl
+                                hover:bg-indigo-100 transition-colors"
                         >
-                            <span className="text-lg">📅</span>
-                            <span>Ajouter à mon calendrier</span>
-                            <span className={`transition-transform duration-200 ${showCalendarPicker ? 'rotate-180' : ''}`}>▼</span>
+                            <span>📅</span>
+                            <span>Ajouter au calendrier</span>
+                            <span className={`transition-transform duration-200 text-xs ${showCalendarPicker ? 'rotate-180' : ''}`}>▼</span>
                         </button>
 
                         {/* Dropdown Menu */}
                         {showCalendarPicker && (
-                            <div className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
+                            <div className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-fade-in">
                                 <button
                                     onClick={handleGoogleCalendar}
                                     className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left"
                                 >
-                                    <GoogleCalendarIcon className="w-8 h-8" />
+                                    <GoogleCalendarIcon className="w-6 h-6" />
                                     <div>
-                                        <p className="font-semibold text-slate-800">Google Calendar</p>
-                                        <p className="text-xs text-slate-500">Ouvre directement dans Google</p>
+                                        <p className="font-medium text-slate-800 text-sm">Google Calendar</p>
                                     </div>
                                 </button>
                                 <button
                                     onClick={handleOutlookCalendar}
-                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-100"
+                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-50"
                                 >
-                                    <OutlookCalendarIcon className="w-8 h-8" />
+                                    <OutlookCalendarIcon className="w-6 h-6" />
                                     <div>
-                                        <p className="font-semibold text-slate-800">Outlook</p>
-                                        <p className="text-xs text-slate-500">Ouvre dans Outlook.com</p>
+                                        <p className="font-medium text-slate-800 text-sm">Outlook</p>
                                     </div>
                                 </button>
                                 <button
                                     onClick={handleAppleCalendar}
-                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-100"
+                                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-t border-slate-50"
                                 >
-                                    <AppleCalendarIcon className="w-8 h-8" />
+                                    <AppleCalendarIcon className="w-6 h-6" />
                                     <div>
-                                        <p className="font-semibold text-slate-800">Apple Calendar / Autre</p>
-                                        <p className="text-xs text-slate-500">Télécharge un fichier .ics</p>
+                                        <p className="font-medium text-slate-800 text-sm">Apple / Autre (.ics)</p>
                                     </div>
                                 </button>
                             </div>
@@ -351,23 +358,10 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     {/* Volunteer Section - Only for HOME games */}
                     {isHomeGame && (
                         <div>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className={`p-2 rounded-xl ${isFullyStaffed
-                                    ? 'bg-gradient-to-br from-emerald-500 to-teal-500'
-                                    : 'bg-gradient-to-br from-red-500 to-orange-500'
-                                    }`}>
-                                    <span className="text-xl">{isFullyStaffed ? '🏆' : '🙋'}</span>
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-slate-800 text-lg">
-                                        {isFullyStaffed ? 'Tous les postes sont pourvus !' : 'Qui peut aider ?'}
-                                    </h4>
-                                    <p className="text-sm text-slate-500">
-                                        {isFullyStaffed ? 'Merci pour votre engagement' : 'Inscrivez-vous pour un poste'}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="space-y-3">
+                            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                                Postes à pourvoir
+                            </h4>
+                            <div className="space-y-2">
                                 {game.roles.map((role, index) => (
                                     <VolunteerSlot
                                         key={role.id}
@@ -381,7 +375,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                         }}
                                         onRemoveVolunteer={(volunteerName) => onRemoveVolunteer(game.id, role.id, volunteerName)}
                                         onUpdateVolunteer={(oldName, newName) => onUpdateVolunteer(game.id, role.id, oldName, newName)}
-                                        animationDelay={index * 0.1}
+                                        animationDelay={index * 0.05}
                                     />
                                 ))}
                             </div>

@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.5.1] - 2025-01-01
+
+### Ajouté
+
+- **Mode Sombre (Dark Mode)** :
+  - Toggle Soleil/Lune dans le Header.
+  - Persiste la préférence utilisateur dans `localStorage`.
+  - Détection automatique de la préférence système.
+  - Adaptation complète de tous les composants (`GameCard`, `VolunteerSlot`, `CarpoolingSection`).
+
+- **Distinction Visuelle Domicile/Extérieur** :
+  - Headers de cartes avec fonds colorés distincts (vert émeraude pour Domicile, bleu pour Extérieur).
+  - Icônes watermark décoratives (🏟️ / 🚌) pour reconnaissance instantanée.
+  - Badges colorés et texte complet ("Domicile" / "Extérieur").
+
+### Corrigé
+
+- **Bug Accordéon Desktop** : Correction du bug où l'expansion d'une carte faisait "s'étirer" visuellement la carte adjacente en mode grille 2 colonnes. Fix: `items-stretch` → `items-start` dans `GameList.tsx`.
+
+---
+
 ## [1.5.0] - 2024-12-31
 
 ### Ajouté
