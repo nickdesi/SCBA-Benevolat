@@ -220,22 +220,23 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     vs <span className="text-red-600 dark:text-red-400">{game.opponent}</span>
                 </p>
 
-                {/* Meta Info: Date • Time • Location on one line */}
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-                    <span className="inline-flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
-                        {game.date}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="inline-flex items-center gap-1">
-                        <ClockIcon className="w-3 h-3" />
-                        {game.time}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="inline-flex items-center gap-1 truncate max-w-[150px]" title={game.location}>
+                {/* Meta Info: Date • Time on first line, Location on second line */}
+                <div className="text-xs text-slate-500 dark:text-slate-400 space-y-0.5">
+                    <div className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1">
+                            <CalendarIcon className="w-3 h-3" />
+                            {game.date}
+                        </span>
+                        <span className="text-slate-300">•</span>
+                        <span className="inline-flex items-center gap-1">
+                            <ClockIcon className="w-3 h-3" />
+                            {game.time}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-1">
                         <LocationIcon className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">{game.location}</span>
-                    </span>
+                        <span>{game.location}</span>
+                    </div>
                 </div>
 
                 {/* Admin Controls */}

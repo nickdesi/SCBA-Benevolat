@@ -226,6 +226,21 @@ textarea,
   animation: bounce-subtle 2s ease-in-out infinite;
 }
 
+/* Ticker animation for long text (location) */
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(calc(-100% + 180px));
+  }
+}
+
+.animate-ticker {
+  animation: ticker 4s linear infinite alternate;
+}
+
 /* Staggered animations */
 .stagger-1 {
   animation-delay: 0.1s;
