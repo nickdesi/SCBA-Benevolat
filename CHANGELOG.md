@@ -17,7 +17,7 @@
 
 ### Corrigé
 
-- **Bug Accordéon Desktop** : Correction du bug où l'expansion d'une carte faisait "s'étirer" visuellement la carte adjacente en mode grille 2 colonnes. Fix: `items-stretch` → `items-start` dans `GameList.tsx`.
+- **Bug Accordéon Desktop** : Correction du bug où l'expansion d'une carte créait un espace vide sur les cartes adjacentes. Passage de CSS Grid à CSS Columns (layout masonry) pour des cartes visuellement indépendantes.
 
 ---
 
