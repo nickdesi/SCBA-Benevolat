@@ -235,7 +235,19 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     </div>
                     <div className="flex items-center gap-1">
                         <LocationIcon className="w-3 h-3 flex-shrink-0" />
-                        <span>{game.location}</span>
+                        {!game.isHome ? (
+                            <a
+                                href={`https://waze.com/ul?q=${encodeURIComponent(game.location)}&navigate=yes`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 dark:text-blue-400 hover:underline"
+                                title="Ouvrir dans Waze"
+                            >
+                                {game.location}
+                            </a>
+                        ) : (
+                            <span>{game.location}</span>
+                        )}
                     </div>
                 </div>
 
