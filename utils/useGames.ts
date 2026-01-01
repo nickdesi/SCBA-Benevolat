@@ -239,11 +239,9 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     }, []);
 
     const deleteGame = useCallback(async (gameId: string): Promise<boolean> => {
-        if (typeof window !== 'undefined' && window.confirm('Voulez-vous vraiment supprimer ce match ?')) {
-            await deleteDoc(doc(db, "matches", gameId));
-            return true;
-        }
-        return false;
+        // Confirmation is now handled by ConfirmModal in GameCard
+        await deleteDoc(doc(db, "matches", gameId));
+        return true;
     }, []);
 
     const importGames = useCallback(async (matchesData: GameFormData[]) => {

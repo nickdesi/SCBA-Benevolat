@@ -2,6 +2,7 @@ import React, { memo, useRef, useEffect, Suspense, lazy, useState } from 'react'
 import type { Game, CarpoolEntry } from '../types';
 import VolunteerSlot from './VolunteerSlot';
 import CarpoolingSection from './CarpoolingSection';
+import ConfirmModal from './ConfirmModal';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon, GoogleCalendarIcon, OutlookCalendarIcon, AppleCalendarIcon } from './Icons';
 import { downloadGameCalendar, getGoogleCalendarUrl, getOutlookCalendarUrl } from '../utils/calendar';
 
@@ -73,6 +74,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
 }) => {
     // Accordion state
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Delete confirmation modal state
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     if (isEditing) {
         return (
@@ -253,26 +257,46 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
                 {/* Admin Controls */}
                 {isAdmin && (
-                    <div className="flex gap-2 mt-3">
-                        <button
-                            onClick={onEditRequest}
-                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium
-                                     text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                            aria-label="Modifier le match"
-                        >
-                            <EditIcon className="w-3 h-3" />
-                            Modifier
-                        </button>
-                        <button
-                            onClick={onDeleteRequest}
-                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium
-                                     text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                            aria-label="Supprimer le match"
-                        >
-                            <DeleteIcon className="w-3 h-3" />
-                            Supprimer
-                        </button>
-                    </div>
+                    <>
+                        <div className="flex gap-2 mt-3">
+                            <button
+                                onClick={onEditRequest}
+                                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium
+                                         text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                                aria-label="Modifier le match"
+                            >
+                                <EditIcon className="w-3 h-3" />
+                                Modifier
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteConfirm(true);
+                                }}
+                                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium
+                                         text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                                aria-label="Supprimer le match"
+                            >
+                                <DeleteIcon className="w-3 h-3" />
+                                Supprimer
+                            </button>
+                        </div>
+
+                        {/* Delete Confirmation Modal */}
+                        <ConfirmModal
+                            isOpen={showDeleteConfirm}
+                            title="Supprimer ce match ?"
+                            message={`Voulez-vous vraiment supprimer le match ${game.team} vs ${game.opponent} ?`}
+                            confirmText="Supprimer"
+                            cancelText="Annuler"
+                            confirmStyle="danger"
+                            onConfirm={() => {
+                                setShowDeleteConfirm(false);
+                                onDeleteRequest();
+                            }}
+                            onCancel={() => setShowDeleteConfirm(false)}
+                        />
+                    </>
                 )}
             </div>
 
