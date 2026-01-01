@@ -98,6 +98,18 @@ textarea,
   user-select: text;
 }
 
+/* Force dark text in all form inputs for readability */
+input,
+textarea,
+select {
+  color: #0f172a !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
 ::selection {
   background: rgba(239, 68, 68, 0.3);
   color: #1e293b;

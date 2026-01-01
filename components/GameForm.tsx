@@ -275,7 +275,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  placeholder="Ex: Gymnase Ceyrat"
+                  placeholder="Ex: Gymnase Chirac, Rue des Anémones, 34170 Castelnau"
                   list="locations-list"
                   required
                   className="w-full px-4 py-3 text-base border-2 border-slate-200 rounded-xl 
@@ -287,6 +287,10 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                     <option key={loc} value={loc} />
                   ))}
                 </datalist>
+                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                  <span>🗺️</span>
+                  Adresse complète recommandée (nom + rue + ville) pour la navigation Waze
+                </p>
               </>
             )}
           </div>
