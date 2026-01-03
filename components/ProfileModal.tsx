@@ -137,10 +137,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             onConfirm: async () => {
                 try {
                     await onUnsubscribe(gameId, roleId, volunteerName || user.displayName || "");
-                    onToast('✅ Désinscription réussie', 'success');
+                    onToast('Désinscription réussie', 'success');
                 } catch (err) {
                     console.error(err);
-                    onToast('❌ Erreur lors de la désinscription', 'error');
+                    onToast('Erreur lors de la désinscription', 'error');
                 }
                 setConfirmConfig(prev => ({ ...prev, isOpen: false }));
             }
@@ -157,9 +157,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             onConfirm: async () => {
                 try {
                     await onRemoveCarpool(gameId, entryId);
-                    onToast('✅ Covoiturage annulé', 'success');
+                    onToast('Covoiturage annulé', 'success');
                 } catch (err) {
-                    onToast('❌ Erreur lors de l\'annulation', 'error');
+                    onToast('Erreur lors de l\'annulation', 'error');
                 }
                 setConfirmConfig(prev => ({ ...prev, isOpen: false }));
             }
