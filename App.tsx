@@ -290,8 +290,8 @@ function App() {
         {isAdmin && !isAddingGame && games.length > 0 && (
           <button
             onClick={() => setIsAddingGame(true)}
-            className="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full 
-                     shadow-2xl hover:scale-110 transition-transform z-50 group"
+            className="fixed bottom-24 right-4 md:bottom-8 md:right-8 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full 
+                     shadow-2xl hover:scale-110 transition-transform z-40 group"
             aria-label="Ajouter un match"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">

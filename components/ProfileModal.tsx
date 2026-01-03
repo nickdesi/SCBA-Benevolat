@@ -132,8 +132,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
 
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
-                    <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/50 flex items-center justify-center text-3xl font-bold shadow-lg">
+                    <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/50 flex items-center justify-center text-2xl sm:text-3xl font-bold shadow-lg">
                             {user.photoURL ? (
                                 <img src={user.photoURL} className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
                             ) : (
