@@ -1,6 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
-import { parseCSV, toGameFormData, type ParsedMatch } from '../utils/csvImport';
-import { scrapeFFBBUrl, isDuplicateMatch } from '../utils/ffbbImport';
+import { parseCSV, toGameFormData, isDuplicateMatch, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 
 interface ImportCSVModalProps {
@@ -11,23 +10,13 @@ interface ImportCSVModalProps {
 }
 
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, onImport, existingGames = [] }) => {
-    const [mode, setMode] = useState<'text' | 'url'>('text');
     const [csvContent, setCsvContent] = useState('');
-    const [urlInput, setUrlInput] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<string>('SENIOR M1');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [duplicatesCount, setDuplicatesCount] = useState(0);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
-    const [step, setStep] = useState<'selection' | 'input' | 'preview'>('selection');
+    const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
-    const [isLoadingUrl, setIsLoadingUrl] = useState(false);
-
-    // Initial Selection Handlers
-    const handleSelectMode = (selectedMode: 'text' | 'url') => {
-        setMode(selectedMode);
-        setStep('input');
-        setErrors([]);
-    };
 
     // Parse from CSV/paste with Deduplication
     const handleParseText = useCallback(() => {
@@ -53,25 +42,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
         }
     }, [csvContent, selectedTeam, existingGames]);
 
-    // Scrape from URL
-    const handleParseUrl = useCallback(async () => {
-        setIsLoadingUrl(true);
-        setErrors([]);
-        try {
-            const { matches, duplicates } = await scrapeFFBBUrl(urlInput, selectedTeam, existingGames);
-            setParsedMatches(matches);
-            setDuplicatesCount(duplicates);
-            if (matches.length > 0 || duplicates > 0) {
-                setStep('preview');
-            } else {
-                setErrors([{ line: 0, content: urlInput, error: "Aucun match trouvé ou format non reconnu." }]);
-            }
-        } catch (err: any) {
-            setErrors([{ line: 0, content: urlInput, error: err.message || "Erreur lors de l'import URL." }]);
-        } finally {
-            setIsLoadingUrl(false);
-        }
-    }, [urlInput, selectedTeam, existingGames]);
+
 
     // Enrich locations with Nominatim + Data ES
     const handleEnrichLocations = useCallback(async () => {
@@ -214,12 +185,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
     }, [parsedMatches, onImport]);
 
     const handleClose = useCallback(() => {
-        setCsvContent('');
-        setUrlInput('');
-        setParsedMatches([]);
-        setErrors([]);
-        setDuplicatesCount(0);
-        setStep('selection'); // Reset to selection
+        setStep('input'); // Reset to input
         setIsEnriching(false);
         onClose();
     }, [onClose]);
@@ -244,44 +210,13 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         📥 Importer des matchs
                     </h2>
                     <p className="text-blue-100 text-sm mt-1">
-                        {step === 'selection' ? 'Choisissez une méthode d\'import' :
-                            step === 'input' ? 'Saisissez les données' : 'Vérifiez les matchs détectés'}
+                        {step === 'input' ? 'Saisissez les données' : 'Vérifiez les matchs détectés'}
                     </p>
                 </div>
 
                 {/* Content */}
                 <div className="p-6 overflow-y-auto flex-1">
-                    {step === 'selection' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                            <button
-                                onClick={() => handleSelectMode('text')}
-                                className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-slate-200 rounded-2xl 
-                                         hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg transition-all group"
-                            >
-                                <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <span className="text-3xl">📋</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-2">Copier-Coller</h3>
-                                <p className="text-sm text-slate-500 text-center">
-                                    Copiez le tableau depuis le site FFBB et collez-le ici.
-                                </p>
-                            </button>
 
-                            <button
-                                onClick={() => handleSelectMode('url')}
-                                className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-slate-200 rounded-2xl 
-                                         hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg transition-all group"
-                            >
-                                <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <span className="text-3xl">🔗</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-2">Lien URL</h3>
-                                <p className="text-sm text-slate-500 text-center">
-                                    Collez simplement l'URL du calendrier de l'équipe.
-                                </p>
-                            </button>
-                        </div>
-                    )}
 
                     {step === 'input' && (
                         <>
@@ -302,44 +237,22 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                             </div>
 
                             {/* Input Area */}
-                            {mode === 'url' ? (
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                                        <label className="block text-sm font-medium text-blue-800 mb-1">
-                                            Lien du calendrier FFBB
-                                        </label>
-                                        <input
-                                            type="url"
-                                            value={urlInput}
-                                            onChange={(e) => setUrlInput(e.target.value)}
-                                            placeholder="https://competitions.ffbb.com/..."
-                                            className="w-full p-3 border border-blue-200 rounded-xl text-sm focus:border-blue-500 outline-none bg-white"
-                                        />
-                                        <p className="text-xs text-blue-600 mt-2">
-                                            ℹ️ Copiez l'URL de la page "Rencontres" ou "Calendrier" de l'équipe sur le site competitions.ffbb.com
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                        <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
-                                        <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
-                                            <li>Allez sur la page FFBB de l'équipe</li>
-                                            <li>Sélectionnez le tableau des matchs</li>
-                                            <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
-                                        </ul>
-                                    </div>
-                                    <textarea
-                                        value={csvContent}
-                                        onChange={(e) => setCsvContent(e.target.value)}
-                                        placeholder="Collez le tableau FFBB ici..."
-                                        className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
-                                             focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                                             resize-none"
-                                    />
-                                </>
-                            )}
+                            <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
+                                <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
+                                    <li>Allez sur la page FFBB de l'équipe</li>
+                                    <li>Sélectionnez le tableau des matchs</li>
+                                    <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
+                                </ul>
+                            </div>
+                            <textarea
+                                value={csvContent}
+                                onChange={(e) => setCsvContent(e.target.value)}
+                                placeholder="Collez le tableau FFBB ici..."
+                                className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
+                                     focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
+                                     resize-none"
+                            />
 
                             {/* Errors */}
                             {errors.length > 0 && (
@@ -458,15 +371,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
                 {/* Footer */}
                 <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 flex-shrink-0">
-                    {(step === 'input' || step === 'preview') && (
-                        <button
-                            onClick={() => setStep('selection')}
-                            className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
-                        >
-                            ← Accueil Import
-                        </button>
-                    )}
-                    {step !== 'selection' && step === 'preview' && (
+                    {step === 'preview' && (
                         <button
                             onClick={() => setStep('input')}
                             className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
@@ -482,21 +387,14 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                     </button>
                     {step === 'input' && (
                         <button
-                            onClick={mode === 'text' ? handleParseText : handleParseUrl}
-                            disabled={mode === 'text' ? !csvContent.trim() : !urlInput.trim() || isLoadingUrl}
+                            onClick={handleParseText}
+                            disabled={!csvContent.trim()}
                             className="px-6 py-2 text-sm font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all
                                       disabled:opacity-50 disabled:cursor-not-allowed
                                       bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600
                                       flex items-center gap-2"
                         >
-                            {isLoadingUrl ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Chargement...
-                                </>
-                            ) : (
-                                <>Analyser →</>
-                            )}
+                            <>Analyser →</>
                         </button>
                     )}
                     {step === 'preview' && (

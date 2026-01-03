@@ -14,7 +14,41 @@
  * Adversaire
  */
 
-import type { GameFormData } from '../types';
+import type { GameFormData, Game } from '../types';
+
+/**
+ * Normalise une chaîne pour la comparaison (minuscule, sans accents, trim)
+ */
+const normalize = (str: string) => {
+    return str.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+/**
+ * Vérifie si un match existe déjà dans la base
+ */
+export const isDuplicateMatch = (newMatch: ParsedMatch, existingGames: Game[]): boolean => {
+    return existingGames.some(existing => {
+        // 1. Comparaison Date et Heure (critère strict)
+        const sameDate = existing.dateISO === newMatch.dateISO;
+        const sameTime = existing.time === newMatch.time; // Format HH:MM ou HHhmm attendu identique via parseTime
+
+        if (!sameDate || !sameTime) return false;
+
+        // 2. Comparaison Equipe (SCBA)
+        const sameTeam = normalize(existing.team) === normalize(newMatch.team);
+
+        // 3. Comparaison Adversaire (plus souple car l'orthographe peut varier)
+        // On check si l'un est inclus dans l'autre
+        const normExistingOpp = normalize(existing.opponent);
+        const normNewOpp = normalize(newMatch.opponent);
+        const sameOpponent = normExistingOpp.includes(normNewOpp) || normNewOpp.includes(normExistingOpp);
+
+        return sameTeam && sameOpponent;
+    });
+};
 
 export interface ParsedMatch {
     date: string;           // Display format: "Samedi 14 Décembre 2024"
@@ -124,7 +158,7 @@ const inferCityFromTeam = (opponent: string): string => {
  * - DD/MM/YYYY
  * - DD MMM (e.g. "13 sept.") -> infers year based on current season (Sep-Dec = current year, Jan-Jul = next year)
  */
-const parseDate = (dateStr: string): { display: string; iso: string } | null => {
+export const parseDate = (dateStr: string): { display: string; iso: string } | null => {
     // Try DD/MM/YYYY
     const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (slashMatch) {
@@ -178,7 +212,7 @@ const parseDate = (dateStr: string): { display: string; iso: string } | null => 
  * Parse time string to display format
  * "15:00" -> "15H00"
  */
-const parseTime = (timeStr: string): string => {
+export const parseTime = (timeStr: string): string => {
     return timeStr.replace(':', 'H');
 };
 
@@ -405,14 +439,4 @@ export const toGameFormData = (match: ParsedMatch): GameFormData => ({
     isHome: match.isHome
 });
 
-/**
- * Generate a sample CSV for testing
- */
-export const getSampleCSV = (): string => {
-    return `Date;Heure;Domicile;Visiteur;Salle
-14/12/2024;15:00;SCBA U11 M1;ROYAT BC;Maison des Sports
-14/12/2024;17:00;SCBA U13 M1;ASM BASKET;Gymnase Thévenet
-21/12/2024;10:30;PONT DU CHATEAU;SCBA U11 M2;Gymnase PDC
-21/12/2024;14:00;SCBA SENIOR M2;LEMPDES;Maison des Sports
-21/12/2024;20:30;VEAUCHE;SCBA SENIOR M1;Gymnase Veauche`;
-};
+

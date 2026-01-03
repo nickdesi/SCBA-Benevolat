@@ -463,7 +463,7 @@ textarea::placeholder {
 
 .animate-marquee {
   display: inline-flex;
-  animation: marquee 30s linear infinite;
+  animation: marquee 60s linear infinite;
   min-width: 200%;
 }
 
