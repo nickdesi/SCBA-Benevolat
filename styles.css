@@ -436,9 +436,10 @@ textarea::placeholder {
 /* Reduced motion - respects user preference while keeping essential animations */
 @media (prefers-reduced-motion: reduce) {
 
-  *,
-  *::before,
-  *::after {
+  /* Exclude marquee from forced stop */
+  *:not(.rfm-marquee),
+  *:not(.rfm-marquee)::before,
+  *:not(.rfm-marquee)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
