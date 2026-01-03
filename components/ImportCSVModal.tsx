@@ -1,30 +1,70 @@
 import React, { useState, useCallback, memo } from 'react';
 import { parseCSV, toGameFormData, type ParsedMatch } from '../utils/csvImport';
-import type { GameFormData } from '../types';
+import { scrapeFFBBUrl, isDuplicateMatch } from '../utils/ffbbImport';
+import type { GameFormData, Game } from '../types';
 
 interface ImportCSVModalProps {
     isOpen: boolean;
     onClose: () => void;
     onImport: (matches: GameFormData[]) => void;
+    existingGames: Game[];
 }
 
-const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, onImport }) => {
+const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, onImport, existingGames = [] }) => {
+    const [mode, setMode] = useState<'text' | 'url'>('text');
     const [csvContent, setCsvContent] = useState('');
+    const [urlInput, setUrlInput] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<string>('SENIOR M1');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
+    const [duplicatesCount, setDuplicatesCount] = useState(0);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
     const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
+    const [isLoadingUrl, setIsLoadingUrl] = useState(false);
 
-    // Parse from CSV/paste
-    const handleParse = useCallback(() => {
+    // Parse from CSV/paste with Deduplication
+    const handleParseText = useCallback(() => {
         const result = parseCSV(csvContent, selectedTeam);
-        setParsedMatches(result.success);
+
+        const newMatches: ParsedMatch[] = [];
+        let dupCount = 0;
+
+        result.success.forEach(match => {
+            if (isDuplicateMatch(match, existingGames)) {
+                dupCount++;
+            } else {
+                newMatches.push(match);
+            }
+        });
+
+        setParsedMatches(newMatches);
+        setDuplicatesCount(dupCount);
         setErrors(result.errors);
-        if (result.success.length > 0) {
+
+        if (newMatches.length > 0 || dupCount > 0) {
             setStep('preview');
         }
-    }, [csvContent, selectedTeam]);
+    }, [csvContent, selectedTeam, existingGames]);
+
+    // Scrape from URL
+    const handleParseUrl = useCallback(async () => {
+        setIsLoadingUrl(true);
+        setErrors([]);
+        try {
+            const { matches, duplicates } = await scrapeFFBBUrl(urlInput, selectedTeam, existingGames);
+            setParsedMatches(matches);
+            setDuplicatesCount(duplicates);
+            if (matches.length > 0 || duplicates > 0) {
+                setStep('preview');
+            } else {
+                setErrors([{ line: 0, content: urlInput, error: "Aucun match trouvé ou format non reconnu." }]);
+            }
+        } catch (err: any) {
+            setErrors([{ line: 0, content: urlInput, error: err.message || "Erreur lors de l'import URL." }]);
+        } finally {
+            setIsLoadingUrl(false);
+        }
+    }, [urlInput, selectedTeam, existingGames]);
 
     // Enrich locations with Nominatim + Data ES
     const handleEnrichLocations = useCallback(async () => {
@@ -168,8 +208,10 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
     const handleClose = useCallback(() => {
         setCsvContent('');
+        setUrlInput('');
         setParsedMatches([]);
         setErrors([]);
+        setDuplicatesCount(0);
         setStep('input');
         setIsEnriching(false);
         onClose();
@@ -188,21 +230,40 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up flex flex-col">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white">
+                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white flex-shrink-0">
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         📥 Importer des matchs
                     </h2>
-                    <p className="text-blue-100 text-sm mt-1">
-                        Copier-coller depuis le calendrier équipe FFBB
-                    </p>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="p-6 overflow-y-auto flex-1">
                     {step === 'input' ? (
                         <>
+                            {/* Mode Selector */}
+                            <div className="flex gap-4 mb-6 border-b border-slate-200">
+                                <button
+                                    onClick={() => setMode('text')}
+                                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${mode === 'text'
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    📋 Copier-Coller Tableau
+                                </button>
+                                <button
+                                    onClick={() => setMode('url')}
+                                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${mode === 'url'
+                                        ? 'border-blue-500 text-blue-600'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    🔗 Lien URL FFBB
+                                </button>
+                            </div>
+
                             {/* Team Selector */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -219,25 +280,45 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 </select>
                             </div>
 
-                            {/* Instructions */}
-                            <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
-                                <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
-                                    <li>Allez sur la page FFBB de l'équipe</li>
-                                    <li>Sélectionnez le tableau des matchs (calendrier équipe)</li>
-                                    <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
-                                </ul>
-                            </div>
-
-                            {/* Textarea */}
-                            <textarea
-                                value={csvContent}
-                                onChange={(e) => setCsvContent(e.target.value)}
-                                placeholder="Collez le tableau FFBB ici..."
-                                className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
-                                         focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                                         resize-none"
-                            />
+                            {/* Input Area */}
+                            {mode === 'url' ? (
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                        <label className="block text-sm font-medium text-blue-800 mb-1">
+                                            Lien du calendrier FFBB
+                                        </label>
+                                        <input
+                                            type="url"
+                                            value={urlInput}
+                                            onChange={(e) => setUrlInput(e.target.value)}
+                                            placeholder="https://competitions.ffbb.com/..."
+                                            className="w-full p-3 border border-blue-200 rounded-xl text-sm focus:border-blue-500 outline-none bg-white"
+                                        />
+                                        <p className="text-xs text-blue-600 mt-2">
+                                            ℹ️ Copiez l'URL de la page "Rencontres" ou "Calendrier" de l'équipe sur le site competitions.ffbb.com
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
+                                        <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
+                                            <li>Allez sur la page FFBB de l'équipe</li>
+                                            <li>Sélectionnez le tableau des matchs</li>
+                                            <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
+                                        </ul>
+                                    </div>
+                                    <textarea
+                                        value={csvContent}
+                                        onChange={(e) => setCsvContent(e.target.value)}
+                                        placeholder="Collez le tableau FFBB ici..."
+                                        className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
+                                             focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
+                                             resize-none"
+                                    />
+                                </>
+                            )}
 
                             {/* Errors */}
                             {errors.length > 0 && (
@@ -255,10 +336,15 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         <>
                             {/* Preview */}
                             <div className="mb-4">
-                                <div className="flex justify-between items-center mb-3">
-                                    <p className="text-sm font-semibold text-slate-700">
-                                        ✅ {parsedMatches.length} match(s) détecté(s)
-                                    </p>
+                                <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+                                    <div className="text-sm font-semibold text-slate-700">
+                                        <span className="text-emerald-600">✅ {parsedMatches.length} nouveau(x)</span>
+                                        {duplicatesCount > 0 && (
+                                            <span className="text-amber-500 ml-2">
+                                                (⚠️ {duplicatesCount} doublon{duplicatesCount > 1 ? 's' : ''} ignoré{duplicatesCount > 1 ? 's' : ''})
+                                            </span>
+                                        )}
+                                    </div>
 
                                     <button
                                         onClick={handleEnrichLocations}
@@ -271,6 +357,11 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 </div>
 
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
+                                    {parsedMatches.length === 0 && (
+                                        <div className="text-center py-8 text-slate-400 italic">
+                                            Aucun nouveau match à importer.
+                                        </div>
+                                    )}
                                     {parsedMatches.map((match, i) => (
                                         <div
                                             key={i}
@@ -343,7 +434,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 flex-shrink-0">
                     {step === 'preview' && (
                         <button
                             onClick={() => setStep('input')}
@@ -360,21 +451,31 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                     </button>
                     {step === 'input' ? (
                         <button
-                            onClick={handleParse}
-                            disabled={!csvContent.trim()}
+                            onClick={mode === 'text' ? handleParseText : handleParseUrl}
+                            disabled={mode === 'text' ? !csvContent.trim() : !urlInput.trim() || isLoadingUrl}
                             className="px-6 py-2 text-sm font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all
                                       disabled:opacity-50 disabled:cursor-not-allowed
-                                      bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                                      bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600
+                                      flex items-center gap-2"
                         >
-                            Analyser →
+                            {isLoadingUrl ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Chargement...
+                                </>
+                            ) : (
+                                <>Analyser →</>
+                            )}
                         </button>
                     ) : (
                         <button
                             onClick={handleImport}
+                            disabled={parsedMatches.length === 0}
                             className="px-6 py-2 text-sm font-bold text-white 
                                      bg-gradient-to-r from-green-500 to-emerald-500 
                                      hover:from-green-600 hover:to-emerald-600
-                                     rounded-xl shadow-md hover:shadow-lg transition-all"
+                                     rounded-xl shadow-md hover:shadow-lg transition-all
+                                     disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             ✓ Importer {parsedMatches.length} match(s)
                         </button>
