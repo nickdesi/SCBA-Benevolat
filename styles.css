@@ -445,28 +445,5 @@ textarea::placeholder {
   }
 
   /* Exception: Ticker marquee is informational, not decorative - keep it running */
-  .animate-marquee {
-    animation-duration: 30s !important;
-    animation-iteration-count: infinite !important;
-  }
-}
-
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  display: inline-flex;
-  animation: marquee 60s linear infinite;
-  min-width: 200%;
-}
-
-.hover\:pause:hover {
-  animation-play-state: paused;
+  .animate-marquee {}
 }
