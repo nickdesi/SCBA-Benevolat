@@ -4,8 +4,6 @@ import { UserRegistration, Game } from '../types';
 import { ThemeToggle } from '../utils/ThemeContext';
 
 interface HeaderProps {
-  isAdmin: boolean;
-  onAdminClick: () => void;
   onLogout: () => void;
   teams?: string[];
   selectedTeam?: string | null;
@@ -15,11 +13,11 @@ interface HeaderProps {
   onUnsubscribe?: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
   onRemoveCarpool?: (gameId: string, entryId: string) => Promise<void>;
   onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
+  isAdmin: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
   isAdmin,
-  onAdminClick,
   onLogout,
   teams = [],
   selectedTeam = null,

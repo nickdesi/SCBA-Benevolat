@@ -15,14 +15,13 @@ import { useGames } from './utils/useGames';
 import EventSchema from './components/EventSchema';
 
 // Lazy-loaded components (code-splitting for reduced initial bundle)
-const AdminAuthModal = lazy(() => import('./components/AdminAuthModal'));
+// AdminAuthModal removed as per request
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
 const GameForm = lazy(() => import('./components/GameForm'));
 
 function App() {
   // UI State
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -162,7 +161,6 @@ function App() {
     <div className="min-h-screen bg-slate-50 font-outfit pb-12 transition-colors duration-500">
       <Header
         isAdmin={isAdmin}
-        onAdminClick={() => setIsAdminModalOpen(true)}
         onLogout={handleLogout}
         teams={teams}
         selectedTeam={selectedTeam}
@@ -304,16 +302,7 @@ function App() {
         )}
       </main>
 
-      {/* Admin Auth Modal */}
-      <Suspense fallback={null}>
-        {isAdminModalOpen && (
-          <AdminAuthModal
-            isOpen={isAdminModalOpen}
-            onClose={() => setIsAdminModalOpen(false)}
-            onSuccess={() => addToast('Connexion admin réussie !', 'success')}
-          />
-        )}
-      </Suspense>
+
 
       {/* CSV Import Modal */}
       <Suspense fallback={null}>
@@ -363,8 +352,6 @@ function App() {
       <BottomNav
         currentView={currentView}
         onViewChange={setCurrentView}
-        isAdmin={isAdmin}
-        onAdminClick={() => setIsAdminModalOpen(true)}
         onPlanningClick={() => setIsProfileModalOpen(true)}
         isAuthenticated={isAuthenticated}
       />

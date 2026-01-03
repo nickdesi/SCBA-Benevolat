@@ -3,8 +3,6 @@ import React, { memo } from 'react';
 interface BottomNavProps {
     currentView: 'home' | 'planning';
     onViewChange: (view: 'home' | 'planning') => void;
-    isAdmin: boolean;
-    onAdminClick: () => void;
     onPlanningClick: () => void; // Opens ProfileModal
     isAuthenticated: boolean;
 }
@@ -12,8 +10,6 @@ interface BottomNavProps {
 const BottomNav: React.FC<BottomNavProps> = memo(({
     currentView,
     onViewChange,
-    isAdmin,
-    onAdminClick,
     onPlanningClick,
     isAuthenticated
 }) => {
@@ -48,18 +44,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                     </button>
                 )}
 
-                {/* Admin Button - Only visible when NOT admin (to login) */}
-                {!isAdmin && (
-                    <button
-                        onClick={onAdminClick}
-                        className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-6 h-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                        </svg>
-                        <span className="text-[10px] font-bold">Admin</span>
-                    </button>
-                )}
+
             </div>
         </div>
     );
