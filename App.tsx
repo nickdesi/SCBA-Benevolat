@@ -311,6 +311,7 @@ function App() {
             isOpen={isImportModalOpen}
             onClose={() => setIsImportModalOpen(false)}
             onImport={handleImportCSV}
+            existingGames={sortedGames}
           />
         )}
       </Suspense>
