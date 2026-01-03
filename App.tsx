@@ -18,6 +18,7 @@ import EventSchema from './components/EventSchema';
 // AdminAuthModal removed as per request
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
 const GameForm = lazy(() => import('./components/GameForm'));
+import AdminToolbar from './components/AdminToolbar';
 
 function App() {
   // UI State
@@ -188,36 +189,11 @@ function App() {
         {!loading && (
           <div className="flex justify-end mb-6 gap-4">
             {isAdmin && (
-              <>
-                <button
-                  onClick={() => setIsImportModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl text-sm font-bold shadow-lg hover:from-blue-600 hover:to-cyan-600 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                  </svg>
-                  Importer Matchs
-                </button>
-                <button
-                  onClick={() => setIsAdminStatsOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold shadow-md hover:bg-slate-200 transition-all border border-slate-200"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
-                  </svg>
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => setIsAddingGame(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold shadow-lg hover:bg-slate-700 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Ajouter un match
-                </button>
-              </>
+              <AdminToolbar
+                onImport={() => setIsImportModalOpen(true)}
+                onDashboard={() => setIsAdminStatsOpen(true)}
+                onAddGame={() => setIsAddingGame(true)}
+              />
             )}
           </div>
         )}
