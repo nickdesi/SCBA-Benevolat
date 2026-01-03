@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { User } from 'firebase/auth';
 import { UserRegistration, Game, CarpoolEntry } from '../types';
 import { CalendarIcon, ClockIcon, LocationIcon, DeleteIcon } from './Icons';
+import ConfirmModal from './ConfirmModal';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -108,20 +109,61 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         });
     };
 
-    const handleDelete = async (regId: string, gameId: string, roleId: string, volunteerName?: string, isValid: boolean = true) => {
-        const confirmMessage = isValid
-            ? "Voulez-vous vraiment annuler cette inscription ?"
-            : "Voulez-vous supprimer cette inscription obsolète de votre profil ?";
+    // Confirm Modal State
+    const [confirmConfig, setConfirmConfig] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText?: string;
+        cancelText?: string;
+        confirmStyle?: 'danger' | 'primary';
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { }
+    });
 
-        if (!confirm(confirmMessage)) return;
+    const handleDelete = (regId: string, gameId: string, roleId: string, volunteerName?: string, isValid: boolean = true) => {
+        setConfirmConfig({
+            isOpen: true,
+            title: isValid ? "Annuler l'inscription ?" : "Supprimer l'inscription ?",
+            message: isValid
+                ? "Voulez-vous vraiment annuler cette inscription ?"
+                : "Voulez-vous supprimer cette inscription obsolète de votre profil ?",
+            confirmText: isValid ? "Annuler l'inscription" : "Supprimer",
+            confirmStyle: 'danger',
+            onConfirm: async () => {
+                try {
+                    await onUnsubscribe(gameId, roleId, volunteerName || user.displayName || "");
+                    onToast('✅ Désinscription réussie', 'success');
+                } catch (err) {
+                    console.error(err);
+                    onToast('❌ Erreur lors de la désinscription', 'error');
+                }
+                setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+            }
+        });
+    };
 
-        try {
-            await onUnsubscribe(gameId, roleId, volunteerName || user.displayName || "");
-            onToast('✅ Désinscription réussie', 'success');
-        } catch (err) {
-            console.error(err);
-            onToast('❌ Erreur lors de la désinscription', 'error');
-        }
+    const handleCarpoolDelete = (gameId: string, entryId: string) => {
+        setConfirmConfig({
+            isOpen: true,
+            title: "Annuler le covoiturage ?",
+            message: "Voulez-vous vraiment annuler ce covoiturage ?",
+            confirmText: "Annuler covoiturage",
+            confirmStyle: 'danger',
+            onConfirm: async () => {
+                try {
+                    await onRemoveCarpool(gameId, entryId);
+                    onToast('✅ Covoiturage annulé', 'success');
+                } catch (err) {
+                    onToast('❌ Erreur lors de l\'annulation', 'error');
+                }
+                setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+            }
+        });
     };
 
     if (!isOpen) return null;
@@ -130,6 +172,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-premium transition-opacity" onClick={onClose} />
             <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
+
 
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
                     <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap">
@@ -293,16 +336,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                                             )}
                                         </div>
                                         <button
-                                            onClick={async () => {
-                                                if (confirm('Annuler ce covoiturage ?')) {
-                                                    try {
-                                                        await onRemoveCarpool(game.id, entry.id);
-                                                        onToast('✅ Covoiturage annulé', 'success');
-                                                    } catch (err) {
-                                                        onToast('❌ Erreur lors de l\'annulation', 'error');
-                                                    }
-                                                }
-                                            }}
+                                            onClick={() => handleCarpoolDelete(game.id, entry.id)}
                                             className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Annuler"
                                         >
@@ -369,6 +403,18 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmModal
+                isOpen={confirmConfig.isOpen}
+                title={confirmConfig.title}
+                message={confirmConfig.message}
+                confirmText={confirmConfig.confirmText || "Confirmer"}
+                cancelText={confirmConfig.cancelText || "Annuler"}
+                confirmStyle={confirmConfig.confirmStyle || "primary"}
+                onConfirm={confirmConfig.onConfirm}
+                onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>,
         document.body
     );
