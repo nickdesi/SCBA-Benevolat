@@ -83,7 +83,13 @@ const Header: React.FC<HeaderProps> = ({
       {teams.length > 0 && (
         <div className="relative z-20 pb-4 pt-3">
           <div className="container mx-auto px-4">
-            <div className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap pb-1">
+            <div
+              className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap pb-1"
+              style={{
+                maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
+              }}
+            >
               <button
                 onClick={() => onSelectTeam(null)}
                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === null
