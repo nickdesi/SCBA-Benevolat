@@ -175,7 +175,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     return (
         <div className={`
-            relative rounded-2xl shadow-sm hover:shadow-md
+            relative rounded-2xl shadow-sm hover:shadow-lg hover:scale-[1.01]
             transition-all duration-300 flex flex-col overflow-hidden
             ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600' : 'border border-slate-200 dark:border-slate-700'}
             bg-white dark:bg-slate-900

@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.7.0] - 2026-01-03
+
+### Ajouté
+
+- **Animations Premium CSS** :
+  - `animate-scale-in` pour les modales (effet popup élastique).
+  - `animate-slide-up` pour les toasts et bottom sheets.
+  - `backdrop-blur-premium` combinant blur, saturate et brightness.
+  - Utilitaires `shadow-glow-*` pour effets de lueur colorés.
+  - Classe `bg-noise` pour texture grain premium sur les fonds.
+  - Classe `card-interactive` pour hover unifié.
+
+- **Support Dark Mode Amélioré** :
+  - `BottomNav` : glassmorphism adapté au dark mode.
+  - `ProfileModal` : couleurs dark mode cohérentes.
+
+### Modifié
+
+- **Refactoring Hooks (Best Practices React 19)** :
+  - `useVolunteers.ts` : ajout interface `UseVolunteersReturn`, gestion d'erreurs structurée.
+  - `useCarpool.ts` : ajout interface `UseCarpoolReturn`, utilisation d'`Error` au lieu de `string`, logging structuré.
+
+- **Composants Modernisés** :
+  - `Header.tsx` : texture noise, animation hover logo (scale 105%).
+  - `GameCard.tsx` : effet hover `scale[1.01]` + ombre prononcée.
+  - `BottomNav.tsx` : glassmorphism premium avec `backdrop-blur-premium`.
+  - `ProfileModal.tsx` : animation `animate-scale-in`, backdrop premium.
+
+---
+
 ## [1.6.0] - 2026-01-01
 
 ### Ajouté

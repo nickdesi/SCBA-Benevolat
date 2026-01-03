@@ -128,8 +128,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-            <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-premium transition-opacity" onClick={onClose} />
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
 
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
                     <div className="flex items-center gap-6">
@@ -157,7 +157,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-800">
                     <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <span>📅</span> Mes Prochaines Missions
                     </h3>

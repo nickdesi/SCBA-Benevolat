@@ -6,32 +6,52 @@ import {
 import { db } from '../firebase';
 import type { Game, CarpoolEntry } from '../types';
 
-export const useCarpool = () => {
-    const handleAddCarpool = useCallback(async (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => {
+/** Hook return type for better TypeScript inference */
+interface UseCarpoolReturn {
+    handleAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => Promise<void>;
+    handleRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
+}
+
+export const useCarpool = (): UseCarpoolReturn => {
+    const handleAddCarpool = useCallback(async (gameId: string, entry: Omit<CarpoolEntry, 'id'>): Promise<void> => {
         const gameRef = doc(db, "matches", gameId);
-        await runTransaction(db, async (transaction) => {
-            const gameDoc = await transaction.get(gameRef);
-            if (!gameDoc.exists()) throw "Game missing";
-            const gameData = gameDoc.data() as Game;
+        try {
+            await runTransaction(db, async (transaction) => {
+                const gameDoc = await transaction.get(gameRef);
+                if (!gameDoc.exists()) {
+                    throw new Error(`Game with ID ${gameId} not found`);
+                }
+                const gameData = gameDoc.data() as Game;
 
-            const newEntry: CarpoolEntry = { ...entry, id: crypto.randomUUID() };
-            const updatedCarpool = [...(gameData.carpool || []), newEntry];
+                const newEntry: CarpoolEntry = { ...entry, id: crypto.randomUUID() };
+                const updatedCarpool = [...(gameData.carpool || []), newEntry];
 
-            transaction.update(gameRef, { carpool: updatedCarpool });
-        });
+                transaction.update(gameRef, { carpool: updatedCarpool });
+            });
+        } catch (error) {
+            console.error('[useCarpool] Failed to add carpool entry:', error);
+            throw error;
+        }
     }, []);
 
-    const handleRemoveCarpool = useCallback(async (gameId: string, entryId: string) => {
+    const handleRemoveCarpool = useCallback(async (gameId: string, entryId: string): Promise<void> => {
         const gameRef = doc(db, "matches", gameId);
-        await runTransaction(db, async (transaction) => {
-            const gameDoc = await transaction.get(gameRef);
-            if (!gameDoc.exists()) throw "Game missing";
-            const gameData = gameDoc.data() as Game;
+        try {
+            await runTransaction(db, async (transaction) => {
+                const gameDoc = await transaction.get(gameRef);
+                if (!gameDoc.exists()) {
+                    throw new Error(`Game with ID ${gameId} not found`);
+                }
+                const gameData = gameDoc.data() as Game;
 
-            const updatedCarpool = (gameData.carpool || []).filter(e => e.id !== entryId);
+                const updatedCarpool = (gameData.carpool || []).filter(e => e.id !== entryId);
 
-            transaction.update(gameRef, { carpool: updatedCarpool });
-        });
+                transaction.update(gameRef, { carpool: updatedCarpool });
+            });
+        } catch (error) {
+            console.error('[useCarpool] Failed to remove carpool entry:', error);
+            throw error;
+        }
     }, []);
 
     return {

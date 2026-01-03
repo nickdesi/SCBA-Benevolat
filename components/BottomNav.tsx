@@ -18,7 +18,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
     isAuthenticated
 }) => {
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 pb-safe z-50 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-premium border-t border-slate-200/50 dark:border-slate-700/50 pb-safe z-50 md:hidden shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.1)] bg-noise">
             <div className="flex justify-around items-center p-2">
                 {/* Home Button */}
                 <button

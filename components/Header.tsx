@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({
   onToast = () => { }
 }) => {
   return (
-    <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50">
+    <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50 bg-noise">
       {/* Background decorations */}
       <div className="absolute inset-0">
 
@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({
             <img
               src="/logo-scba.png"
               alt="Logo Stade Clermontois Basket Auvergne"
-              className="relative w-14 h-16 sm:w-16 sm:h-20 object-contain drop-shadow-lg"
+              className="relative w-14 h-16 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
             />
           </div>
 

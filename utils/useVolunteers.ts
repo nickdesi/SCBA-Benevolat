@@ -9,7 +9,16 @@ import {
 import { db, auth } from '../firebase';
 import type { Game, UserRegistration } from '../types';
 
-export const useVolunteers = () => {
+/** Hook return type for better TypeScript inference */
+interface UseVolunteersReturn {
+    userRegistrations: UserRegistration[];
+    userRegistrationsMap: Map<string, string>;
+    handleVolunteer: (gameId: string, roleId: string, parentName: string) => Promise<void>;
+    handleRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+    handleUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => Promise<void>;
+}
+
+export const useVolunteers = (): UseVolunteersReturn => {
     const [userRegistrations, setUserRegistrations] = useState<UserRegistration[]>([]);
 
     // Listen to User Registrations (for "My Planning" when logged in)
