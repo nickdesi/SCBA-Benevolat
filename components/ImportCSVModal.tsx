@@ -18,9 +18,16 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [duplicatesCount, setDuplicatesCount] = useState(0);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
-    const [step, setStep] = useState<'input' | 'preview'>('input');
+    const [step, setStep] = useState<'selection' | 'input' | 'preview'>('selection');
     const [isEnriching, setIsEnriching] = useState(false);
     const [isLoadingUrl, setIsLoadingUrl] = useState(false);
+
+    // Initial Selection Handlers
+    const handleSelectMode = (selectedMode: 'text' | 'url') => {
+        setMode(selectedMode);
+        setStep('input');
+        setErrors([]);
+    };
 
     // Parse from CSV/paste with Deduplication
     const handleParseText = useCallback(() => {
@@ -212,7 +219,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
         setParsedMatches([]);
         setErrors([]);
         setDuplicatesCount(0);
-        setStep('input');
+        setStep('selection'); // Reset to selection
         setIsEnriching(false);
         onClose();
     }, [onClose]);
@@ -236,34 +243,48 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         📥 Importer des matchs
                     </h2>
+                    <p className="text-blue-100 text-sm mt-1">
+                        {step === 'selection' ? 'Choisissez une méthode d\'import' :
+                            step === 'input' ? 'Saisissez les données' : 'Vérifiez les matchs détectés'}
+                    </p>
                 </div>
 
                 {/* Content */}
                 <div className="p-6 overflow-y-auto flex-1">
-                    {step === 'input' ? (
-                        <>
-                            {/* Mode Selector */}
-                            <div className="flex gap-4 mb-6 border-b border-slate-200">
-                                <button
-                                    onClick={() => setMode('text')}
-                                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${mode === 'text'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                                        }`}
-                                >
-                                    📋 Copier-Coller Tableau
-                                </button>
-                                <button
-                                    onClick={() => setMode('url')}
-                                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${mode === 'url'
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                                        }`}
-                                >
-                                    🔗 Lien URL FFBB
-                                </button>
-                            </div>
+                    {step === 'selection' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+                            <button
+                                onClick={() => handleSelectMode('text')}
+                                className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-slate-200 rounded-2xl 
+                                         hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg transition-all group"
+                            >
+                                <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <span className="text-3xl">📋</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 mb-2">Copier-Coller</h3>
+                                <p className="text-sm text-slate-500 text-center">
+                                    Copiez le tableau depuis le site FFBB et collez-le ici.
+                                </p>
+                            </button>
 
+                            <button
+                                onClick={() => handleSelectMode('url')}
+                                className="flex flex-col items-center justify-center p-8 bg-slate-50 border-2 border-slate-200 rounded-2xl 
+                                         hover:border-blue-500 hover:bg-blue-50 hover:shadow-lg transition-all group"
+                            >
+                                <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <span className="text-3xl">🔗</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 mb-2">Lien URL</h3>
+                                <p className="text-sm text-slate-500 text-center">
+                                    Collez simplement l'URL du calendrier de l'équipe.
+                                </p>
+                            </button>
+                        </div>
+                    )}
+
+                    {step === 'input' && (
+                        <>
                             {/* Team Selector */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -332,7 +353,9 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 </div>
                             )}
                         </>
-                    ) : (
+                    )}
+
+                    {step === 'preview' && (
                         <>
                             {/* Preview */}
                             <div className="mb-4">
@@ -435,12 +458,20 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
                 {/* Footer */}
                 <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 flex-shrink-0">
-                    {step === 'preview' && (
+                    {(step === 'input' || step === 'preview') && (
+                        <button
+                            onClick={() => setStep('selection')}
+                            className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                        >
+                            ← Accueil Import
+                        </button>
+                    )}
+                    {step !== 'selection' && step === 'preview' && (
                         <button
                             onClick={() => setStep('input')}
                             className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
                         >
-                            ← Retour
+                            ← Modifier
                         </button>
                     )}
                     <button
@@ -449,7 +480,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                     >
                         Annuler
                     </button>
-                    {step === 'input' ? (
+                    {step === 'input' && (
                         <button
                             onClick={mode === 'text' ? handleParseText : handleParseUrl}
                             disabled={mode === 'text' ? !csvContent.trim() : !urlInput.trim() || isLoadingUrl}
@@ -467,7 +498,8 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 <>Analyser →</>
                             )}
                         </button>
-                    ) : (
+                    )}
+                    {step === 'preview' && (
                         <button
                             onClick={handleImport}
                             disabled={parsedMatches.length === 0}
