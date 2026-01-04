@@ -15,6 +15,7 @@
  */
 
 import type { GameFormData, Game } from '../types';
+import { toISODateString } from './dateUtils';
 
 /**
  * Normalise une chaîne pour la comparaison (minuscule, sans accents, trim)
@@ -158,7 +159,7 @@ const inferCityFromTeam = (opponent: string): string => {
  * - DD/MM/YYYY
  * - DD MMM (e.g. "13 sept.") -> infers year based on current season (Sep-Dec = current year, Jan-Jul = next year)
  */
-export const parseDate = (dateStr: string): { display: string; iso: string } | null => {
+const parseDate = (dateStr: string): { display: string; iso: string } | null => {
     // Try DD/MM/YYYY
     const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (slashMatch) {
@@ -172,7 +173,7 @@ export const parseDate = (dateStr: string): { display: string; iso: string } | n
 
         return {
             display: `${weekday} ${day} ${monthName} ${year}`,
-            iso: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            iso: toISODateString(date)
         };
     }
 
@@ -201,7 +202,7 @@ export const parseDate = (dateStr: string): { display: string; iso: string } | n
 
         return {
             display: `${weekday} ${day} ${monthName} ${targetYear}`,
-            iso: `${targetYear}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            iso: toISODateString(date)
         };
     }
 
@@ -212,7 +213,7 @@ export const parseDate = (dateStr: string): { display: string; iso: string } | n
  * Parse time string to display format
  * "15:00" -> "15H00"
  */
-export const parseTime = (timeStr: string): string => {
+const parseTime = (timeStr: string): string => {
     return timeStr.replace(':', 'H');
 };
 

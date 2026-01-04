@@ -166,7 +166,8 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
                     const batch = writeBatch(db);
                     matchesToDelete.forEach(id => batch.delete(doc(db, "matches", id)));
                     await batch.commit();
-                    console.log(`🧹 Nettoyage: ${matchesToDelete.length} match(s) passé(s) supprimé(s)`);
+                    // Log suppressed for production
+                    // console.log(`🧹 Nettoyage: ...`);
                 }
             } catch (err) {
                 console.error("Error cleaning up past matches:", err);
