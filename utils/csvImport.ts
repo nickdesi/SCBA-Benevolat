@@ -16,6 +16,7 @@
 
 import type { GameFormData, Game } from '../types';
 import { toISODateString } from './dateUtils';
+import { GYM_REGISTRY } from './gyms';
 
 /**
  * Normalise une chaîne pour la comparaison (minuscule, sans accents, trim)
@@ -28,10 +29,10 @@ const normalize = (str: string) => {
 };
 
 /**
- * Vérifie si un match existe déjà dans la base
+ * Trouve un match correspondant dans la base existante
  */
-export const isDuplicateMatch = (newMatch: ParsedMatch, existingGames: Game[]): boolean => {
-    return existingGames.some(existing => {
+export const findMatchingGame = (newMatch: ParsedMatch, existingGames: Game[]): Game | undefined => {
+    return existingGames.find(existing => {
         // 1. Comparaison Date et Heure (critère strict)
         const sameDate = existing.dateISO === newMatch.dateISO;
         const sameTime = existing.time === newMatch.time; // Format HH:MM ou HHhmm attendu identique via parseTime
@@ -51,6 +52,10 @@ export const isDuplicateMatch = (newMatch: ParsedMatch, existingGames: Game[]): 
     });
 };
 
+export const isDuplicateMatch = (newMatch: ParsedMatch, existingGames: Game[]): boolean => {
+    return !!findMatchingGame(newMatch, existingGames);
+};
+
 export interface ParsedMatch {
     date: string;           // Display format: "Samedi 14 Décembre 2024"
     dateISO: string;        // ISO format: "2024-12-14"
@@ -60,6 +65,7 @@ export interface ParsedMatch {
     location: string;       // "Maison des Sports" or "Extérieur (Ville)"
     isHome: boolean;        // true if SCBA is home team
     candidates?: string[];  // List of potential addresses found
+    id?: string;            // ID of existing match if found (for update)
 }
 
 interface ImportResult {
@@ -232,6 +238,40 @@ const isSCBATeam = (team: string): boolean => {
  * - Tab-separated (Web copy paste)
  * - Multi-line Block Format (FFBB "A Venir" table copy)
  */
+/**
+ * Helper to find address in registry or fall back to city inference
+ */
+const findAddressForOpponent = (opponent: string): string => {
+    // 1. Check Registry (Exact or Partial Match)
+    const upperOpponent = opponent.toUpperCase();
+
+    // Strategy A: Direct Lookup (Fast) using normalized keys
+    if (GYM_REGISTRY[upperOpponent]) {
+        return GYM_REGISTRY[upperOpponent];
+    }
+
+    // Strategy B: Partial Match (Iterate registry keys)
+    // Priority to LONGEST keys to ensure specific matches (e.g. "CTC ... NOHANENT") are found before generic ones (e.g. "BÉDAT")
+    const registryKeys = Object.keys(GYM_REGISTRY).sort((a, b) => b.length - a.length);
+
+    for (const key of registryKeys) {
+        if (upperOpponent.includes(key)) {
+            return GYM_REGISTRY[key];
+        }
+    }
+
+    // 2. Fallback to City inference
+    const city = inferCityFromTeam(opponent);
+    return city.length > 2 ? `Extérieur (${city})` : 'Extérieur';
+};
+
+/**
+ * Parse CSV content to match data
+ * Supports:
+ * - Standard CSV (semicolon/comma separated)
+ * - Tab-separated (Web copy paste)
+ * - Multi-line Block Format (FFBB "A Venir" table copy)
+ */
 export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'): ImportResult => {
     const lines = csvContent.trim().split('\n').map(l => l.trim()).filter(l => l);
     const result: ImportResult = { success: [], errors: [] };
@@ -278,7 +318,7 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
             } else if (line.toLowerCase() === 'extérieur' || line.toLowerCase() === 'exterieur') {
                 currentMatch.isHome = false;
                 currentMatch.team = normalizeTeamName(defaultTeam);
-                currentMatch.location = 'Extérieur';
+                currentMatch.location = 'Extérieur'; // Will be refined when opponent is found
                 continue;
             } else if (line.match(/(gymnase|salle|complexe|stade|palais|centre sportif)/i) || line.match(/\d{5}/)) {
                 // Explicit address detection (Gym type + zipcode usually)
@@ -296,12 +336,9 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
                 if (!line.match(/^\d+$/) && !line.match(/^Lieu$/i)) {
                     currentMatch.opponent = line;
 
-                    // Enhancement: Infer location city from opponent name if location is generic "Extérieur"
-                    if (!currentMatch.isHome && currentMatch.location === 'Extérieur') {
-                        const city = inferCityFromTeam(line);
-                        if (city.length > 2) { // Avoid garbage
-                            currentMatch.location = `Extérieur (${city})`;
-                        }
+                    // Refine location with Registry lookup if it's currently generic "Extérieur"
+                    if (!currentMatch.isHome && (currentMatch.location === 'Extérieur' || !currentMatch.location)) {
+                        currentMatch.location = findAddressForOpponent(line);
                     }
 
                     // Match is complete!
@@ -398,10 +435,9 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
                     finalLocation = normalizedTeam === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
                 }
             } else {
-                // If location is missing or generic "Extérieur", try to infer from Opponent
+                // If location is missing or generic "Extérieur", try to retrieve from Registry or infer from Opponent
                 if (!finalLocation || finalLocation.toLowerCase() === 'extérieur' || finalLocation.toLowerCase() === 'exterieur') {
-                    const city = inferCityFromTeam(finalOpponent);
-                    finalLocation = city.length > 2 ? `Extérieur (${city})` : 'Extérieur';
+                    finalLocation = findAddressForOpponent(finalOpponent);
                 }
             }
 
@@ -430,14 +466,15 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
 /**
  * Convert parsed matches to GameFormData for saving
  */
-export const toGameFormData = (match: ParsedMatch): GameFormData => ({
+export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string } => ({
     team: match.team,
     opponent: match.opponent,
     date: match.date,
     dateISO: match.dateISO,
     time: match.time,
     location: match.location,
-    isHome: match.isHome
+    isHome: match.isHome,
+    id: match.id
 });
 
 

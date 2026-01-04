@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
-import { parseCSV, toGameFormData, isDuplicateMatch, type ParsedMatch } from '../utils/csvImport';
+import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 
 interface ImportCSVModalProps {
@@ -18,26 +18,29 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
     const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
 
-    // Parse from CSV/paste with Deduplication
+    // Parse from CSV/paste with Deduplication/Update detection
     const handleParseText = useCallback(() => {
         const result = parseCSV(csvContent, selectedTeam);
 
         const newMatches: ParsedMatch[] = [];
-        let dupCount = 0;
+        let updateCount = 0;
 
         result.success.forEach(match => {
-            if (isDuplicateMatch(match, existingGames)) {
-                dupCount++;
+            const existing = findMatchingGame(match, existingGames);
+            if (existing) {
+                // It's an update!
+                newMatches.push({ ...match, id: existing.id });
+                updateCount++;
             } else {
                 newMatches.push(match);
             }
         });
 
         setParsedMatches(newMatches);
-        setDuplicatesCount(dupCount);
+        setDuplicatesCount(updateCount); // Reused state for "Updates" count
         setErrors(result.errors);
 
-        if (newMatches.length > 0 || dupCount > 0) {
+        if (newMatches.length > 0) {
             setStep('preview');
         }
     }, [csvContent, selectedTeam, existingGames]);
@@ -274,10 +277,10 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                             <div className="mb-4">
                                 <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
                                     <div className="text-sm font-semibold text-slate-700">
-                                        <span className="text-emerald-600">✅ {parsedMatches.length} nouveau(x)</span>
+                                        <span className="text-emerald-600">✅ {parsedMatches.length - duplicatesCount} nouveau(x)</span>
                                         {duplicatesCount > 0 && (
-                                            <span className="text-amber-500 ml-2">
-                                                (⚠️ {duplicatesCount} doublon{duplicatesCount > 1 ? 's' : ''} ignoré{duplicatesCount > 1 ? 's' : ''})
+                                            <span className="text-blue-500 ml-2">
+                                                (🔄 {duplicatesCount} mise(s) à jour)
                                             </span>
                                         )}
                                     </div>
@@ -407,7 +410,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                      rounded-xl shadow-md hover:shadow-lg transition-all
                                      disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            ✓ Importer {parsedMatches.length} match(s)
+                            ✓ Importer / Mettre à jour {parsedMatches.length} match(s)
                         </button>
                     )}
                 </div>

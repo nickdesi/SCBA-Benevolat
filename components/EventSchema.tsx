@@ -33,7 +33,7 @@ const EventSchema: React.FC<EventSchemaProps> = ({ games }) => {
                     "addressCountry": "FR"
                 }
             },
-            "image": "https://scba.desimone.fr/logo-benevoles.jpg",
+            "image": "https://scba.desimone.fr/logo-scba.png",
             "organizer": {
                 "@type": "Organization",
                 "name": "Stade Clermontois Basket Auvergne",

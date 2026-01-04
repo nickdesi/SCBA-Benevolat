@@ -32,7 +32,7 @@ interface UseGamesReturn {
     addGame: (gameData: GameFormData) => Promise<void>;
     updateGame: (updatedGame: Game) => Promise<void>;
     deleteGame: (gameId: string) => Promise<boolean>;
-    importGames: (matchesData: GameFormData[]) => Promise<void>;
+    importGames: (matchesData: (GameFormData & { id?: string })[]) => Promise<void>;
     // Volunteer operations
     handleVolunteer: (gameId: string, roleId: string, parentName: string) => Promise<void>;
     handleRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
@@ -211,26 +211,46 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return true;
     }, []);
 
-    const importGames = useCallback(async (matchesData: GameFormData[]) => {
-        const batch = writeBatch(db);
-        for (const gameData of matchesData) {
-            const isSenior = ['SENIOR M1', 'SENIOR M2'].includes(gameData.team);
-            const applicableRoles = DEFAULT_ROLES.filter(role =>
-                !(role.name === 'Goûter' && isSenior)
-            );
-            const newGame = {
-                ...gameData,
-                roles: applicableRoles.map((role, idx) => ({
-                    id: String(idx + 1),
-                    name: role.name,
-                    capacity: role.capacity === 0 ? Infinity : role.capacity,
-                    volunteers: []
-                }))
-            };
-            const docRef = doc(collection(db, "matches"));
-            batch.set(docRef, newGame);
+    const importGames = useCallback(async (matchesData: (GameFormData & { id?: string })[]) => {
+        try {
+            const batch = writeBatch(db);
+
+            for (const gameData of matchesData) {
+                // Sanitize data: remove undefined fields
+                const cleanData = Object.fromEntries(
+                    Object.entries(gameData).filter(([_, v]) => v !== undefined)
+                ) as any;
+
+                if (cleanData.id) {
+                    // Update existing game (Upsert safe: creates if missing, updates if exists)
+                    const { id, ...data } = cleanData;
+                    const docRef = doc(db, "matches", id);
+                    batch.set(docRef, data, { merge: true });
+                } else {
+                    // Create new game
+                    // Use cleanData to ensure no undefined fields (like id: undefined)
+                    const isSenior = ['SENIOR M1', 'SENIOR M2'].includes((cleanData.team as string) || '');
+                    const applicableRoles = DEFAULT_ROLES.filter(role =>
+                        !(role.name === 'Goûter' && isSenior)
+                    );
+                    const newGame = {
+                        ...cleanData,
+                        roles: applicableRoles.map((role, idx) => ({
+                            id: String(idx + 1),
+                            name: role.name,
+                            capacity: role.capacity === 0 ? Infinity : role.capacity,
+                            volunteers: []
+                        }))
+                    };
+                    const docRef = doc(collection(db, "matches"));
+                    batch.set(docRef, newGame);
+                }
+            }
+            await batch.commit();
+        } catch (error) {
+            console.error("Detailed Import Error:", error);
+            throw error; // Re-throw to be caught by UI
         }
-        await batch.commit();
     }, []);
 
     return {
