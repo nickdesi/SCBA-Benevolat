@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.8.0] - 2026-01-04
+
+### Ajouté
+
+- **Workflows Automatisés (.agent)** :
+  - `release-manager` : Automatisation des versions, build et changelog.
+  - `performance-audit` : Vérification de la taille du bundle et des métriques web.
+  - `debugging-workflow`, `setup-check`, `parallel-orchestrator` : Nouveaux outils pour l'agent.
+- **Mobile UX** :
+  - **Indicateur de Scroll** : Effet de masque dégradé sur la droite de la barre de filtres Team pour indiquer qu'elle est défilable.
+  - **Admin Toolbar** : Nouvelle barre d'outils unifiée et glassmorphic pour les administrateurs (au lieu de boutons épars).
+- **MatchTicker Optimisé** :
+  - Intégration de `react-fast-marquee`.
+  - Vitesse constante (40px/s) quel que soit nombre de matchs.
+  - Support amélioré pour le mode "Reduced Motion" (Brave/iOS) tout en garantissant l'affichage des infos.
+
+### Modifié
+
+- **Nettoyage Codebase** :
+  - Suppression de la feature "Import par URL" (obsolète/instable).
+  - Suppression des fichiers morts (`ffbbImport.ts`).
+  - Refactoring de `csvImport.ts` pour utiliser `dateUtils.ts` (DRY).
+  - Organisation propre du dossier `.agent/workflows`.
+
+---
+
 ## [1.7.0] - 2026-01-03
 
 ### Ajouté
