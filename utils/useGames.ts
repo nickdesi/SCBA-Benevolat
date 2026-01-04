@@ -92,9 +92,26 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return () => unsubscribe();
     }, []);
 
-    // Sort games by date
+    // Sort games by date AND time
     const sortedGames = useMemo(() => {
-        return [...games].sort((a, b) => getGameDateValue(a).localeCompare(getGameDateValue(b)));
+        return [...games].sort((a, b) => {
+            const dateDiff = getGameDateValue(a).localeCompare(getGameDateValue(b));
+            if (dateDiff !== 0) return dateDiff;
+
+            // If dates are equal, sort by time (HHhMM format, e.g. "14h00", "09h30")
+            // We pad single digit hours ("9h00" -> "09h00") for correct string comparison if needed
+            // But relying on simple string compare "14h00" > "09h00" works correctly
+            // "20h00" > "14h00" -> 1 (Correct)
+            // "9h00" vs "14h00": "9" > "1" -> 1 (WRONG if 9h comes after 14h)
+            // So we MUST normalize time to ensure HHhMM (2 digits for hour)
+
+            const normalizeTime = (t: string) => {
+                const [h, m] = t.split(/[h:]/i);
+                return `${h.padStart(2, '0')}${m}`;
+            };
+
+            return normalizeTime(a.time).localeCompare(normalizeTime(b.time));
+        });
     }, [games]);
 
     // Extract unique teams for filter
