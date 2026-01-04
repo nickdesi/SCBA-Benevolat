@@ -159,7 +159,7 @@ function App() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-slate-50 font-outfit pb-12 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 font-outfit pb-12">
       <Header
         isAdmin={isAdmin}
         onLogout={handleLogout}
