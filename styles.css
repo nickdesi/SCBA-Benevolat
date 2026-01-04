@@ -335,15 +335,18 @@ textarea::placeholder {
   transform: translateY(-2px);
 }
 
-/* Noise texture overlay (for premium backgrounds) */
+/* Noise texture overlay (optimized for performance) */
 .bg-noise::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.03;
+  /* Simple static noise pattern base64 (tiny 64x64 transparent noise) */
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVnbGceHh4fHx9qamrk5OT39/d8fHz///9lZWU8PDz////p6end3d2FhYV/f3+Hh4ePj49vb29xcXGTk5N0dHRugNsFAAAAF3RSTlMFBQYJCg0PEBcaGSIjKClVVVd5fpqkpK8y2+gAAAF2SURBVEjH7dZZDoMwDAPQdC7tvW/p/a9ow0Cggmr58wOex44dZ5S11s45X/f7/dbz5/19H/fH/bE/7o/9cX/sj/tjf9wP+3E/7Mf9sB/3w37cD/txP+zH/bAf98N+3A/7cT/sx/2wH/fDfvwf9uN+2I/7YT/uh/24H/bjftiP+2E/7of9uB/2437Yj/thP+6H/bgf9uN+2I/7YT/u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7/f4B8E5d0W1f6qsAAAAASUVORK5CYII=");
+  opacity: 0.05;
   pointer-events: none;
   mix-blend-mode: overlay;
+  /* Prevent re-rasterization */
+  transform: translateZ(0);
 }
 
 /* ========================================

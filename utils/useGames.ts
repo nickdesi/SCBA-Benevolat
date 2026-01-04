@@ -164,8 +164,11 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     }, [sortedGames, selectedTeam, currentView, userRegistrations]);
 
     // ---------------------------------------------------------------------------
-    // Automatic Cleanup of Past Matches
+    // Automatic Cleanup of Past Matches (DISABLED FOR PERFORMANCE)
     // ---------------------------------------------------------------------------
+    /* 
+    // Optimization: This should be a manual Admin action or Cloud Function, not run on client load.
+    // Disabling to save read/write quotas and improve startup time.
     useEffect(() => {
         const cleanupPastMatches = async () => {
             try {
@@ -183,8 +186,6 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
                     const batch = writeBatch(db);
                     matchesToDelete.forEach(id => batch.delete(doc(db, "matches", id)));
                     await batch.commit();
-                    // Log suppressed for production
-                    // console.log(`🧹 Nettoyage: ...`);
                 }
             } catch (err) {
                 console.error("Error cleaning up past matches:", err);
@@ -194,6 +195,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         const timer = setTimeout(() => cleanupPastMatches(), 2000);
         return () => clearTimeout(timer);
     }, []);
+    */
 
     // ---------------------------------------------------------------------------
     // CRUD Operations

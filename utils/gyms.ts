@@ -32,9 +32,6 @@ export const GYM_REGISTRY: Record<string, string> = {
     // Sorgues
     "SORGUES": "Plaine Sportive, Chemin de Lucette, 84700 Sorgues",
 
-    // Autres équipes
-    "ANDREZIEUX": "Palais des Sports, 23 rue des Bullieux, 42160 Andrézieux-Bouthéon",
-
     // Nouveaux ajouts (NM3/PNM Poule A)
     "FRONTIGNAN": "Salle Roger Arnaud, 4 avenue Jean Mermoz, 34110 Frontignan",
     "AGDE": "Palais des Sports, Boulevard des Héllènes, 34300 Agde",
