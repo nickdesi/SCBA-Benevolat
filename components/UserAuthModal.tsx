@@ -7,11 +7,12 @@ interface UserAuthModalProps {
     isOpen: boolean;
     onClose: () => void;
     onGoogleLogin: () => void;
+    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 type AuthView = 'menu' | 'login' | 'signup';
 
-const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogleLogin }) => {
+const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogleLogin, onToast }) => {
     const [view, setView] = useState<AuthView>('menu');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,6 +48,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                 if (!name.trim()) throw new Error("Le nom est obligatoire");
                 await signUp(email, password, name);
             }
+            onToast('Connexion réussie !', 'success');
             handleClose(); // Close on success
         } catch (err: any) {
             setError(err.message);

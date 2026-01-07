@@ -86,6 +86,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     isOpen={isAuthModalOpen}
                     onClose={() => setIsAuthModalOpen(false)}
                     onGoogleLogin={handleGoogleLogin}
+                    onToast={onToast}
                 />
             </>
         );
