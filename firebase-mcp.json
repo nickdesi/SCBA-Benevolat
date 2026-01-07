@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "firebase": {
+            "command": "firebase",
+            "args": [
+                "mcp"
+            ],
+            "env": {
+                "cwd": "/Volumes/HomeExt/Users/Nicolas/Documents/Repo GIT/SCBA-Benevolat"
+            }
+        }
+    }
+}

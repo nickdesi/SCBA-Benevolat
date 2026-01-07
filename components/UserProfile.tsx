@@ -45,10 +45,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
         try {
             await signInWithGoogle();
             setIsAuthModalOpen(false); // Close modal on success
-            onToast('✅ Connexion réussie !', 'success');
+            onToast('Connexion réussie !', 'success');
         } catch (error) {
             console.error("Login failed", error);
-            onToast('❌ Erreur de connexion Google', 'error');
+            onToast('Erreur de connexion Google', 'error');
         }
     };
 
