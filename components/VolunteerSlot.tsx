@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import type { Role } from '../types';
-import { RemoveUserIcon, EditPencilIcon, CheckIcon, UserIcon } from './Icons';
+import { DeleteIcon, EditPencilIcon, CheckIcon, UserIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
 import { saveMyRegistration, removeMyRegistration, isMyRegistration, claimRegistration, mightBeMyRegistration } from '../utils/storage';
 
@@ -231,7 +231,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                             className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             aria-label={`Supprimer ${volunteer}`}
                                         >
-                                            <RemoveUserIcon className="w-4 h-4" />
+                                            <DeleteIcon className="w-4 h-4" />
                                         </button>
                                     )}
                                     {/* User can only remove their own registration */}
@@ -241,7 +241,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                             className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             aria-label="Se désinscrire"
                                         >
-                                            <RemoveUserIcon className="w-4 h-4" />
+                                            <DeleteIcon className="w-4 h-4" />
                                         </button>
                                     )}
                                     {/* User can edit their own registration */}

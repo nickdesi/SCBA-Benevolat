@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User } from 'firebase/auth';
 import { UserRegistration, Game, CarpoolEntry } from '../types';
 import { CalendarIcon, ClockIcon, LocationIcon, DeleteIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
+import { getNotificationPermission, requestNotificationPermission, sendLocalNotification, getNotificationPreference, setNotificationPreference } from '../utils/notifications';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -28,6 +29,16 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 }) => {
     // State for revealing contact info
     const [revealedContacts, setRevealedContacts] = useState<Set<string>>(new Set());
+
+    // State for notification permission
+    const [notificationStatus, setNotificationStatus] = useState<NotificationPermission | 'unsupported'>('default');
+    const [notifEnabled, setNotifEnabled] = useState(false);
+
+    // Check notification permission and preference on mount
+    useEffect(() => {
+        setNotificationStatus(getNotificationPermission());
+        setNotifEnabled(getNotificationPreference());
+    }, [isOpen]);
 
     const processedRegistrations = useMemo(() => {
         return registrations.map(reg => {
@@ -171,29 +182,29 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-premium transition-opacity" onClick={onClose} />
-            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
+            <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
 
 
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
-                    <div className="flex items-center gap-4 sm:gap-6 flex-wrap sm:flex-nowrap">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/50 flex items-center justify-center text-2xl sm:text-3xl font-bold shadow-lg">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 text-white">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/50 flex items-center justify-center text-xl sm:text-2xl font-bold shadow-lg flex-shrink-0">
                             {user.photoURL ? (
                                 <img src={user.photoURL} className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
                             ) : (
                                 user.displayName?.charAt(0).toUpperCase()
                             )}
                         </div>
-                        <div>
-                            <h2 className="text-2xl font-bold">{user.displayName}</h2>
-                            <p className="text-indigo-100">{user.email}</p>
-                            <div className="flex gap-3 mt-4">
-                                <div className="px-3 py-1 bg-white/10 rounded-lg text-xs font-medium backdrop-blur-sm border border-white/10">
+                        <div className="flex-grow min-w-0">
+                            <h2 className="text-xl font-bold truncate">{user.displayName}</h2>
+                            <p className="text-indigo-100 text-sm truncate">{user.email}</p>
+                            <div className="flex gap-2 mt-2">
+                                <div className="px-2 py-0.5 bg-white/10 rounded-lg text-xs font-medium backdrop-blur-sm border border-white/10">
                                     {registrations.length} Inscriptions
                                 </div>
                             </div>
                         </div>
-                        <button onClick={onClose} className="ml-auto p-2 hover:bg-white/10 rounded-full transition-colors self-start -mt-2 -mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors self-start flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
@@ -272,33 +283,58 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                         </div>
                     )}
 
-                    <h3 className="text-lg font-bold text-slate-800 mt-8 mb-4 flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mt-6 mb-3 flex items-center gap-2">
                         <span>🔔</span> Notifications
                     </h3>
-                    <div className="bg-slate-100 rounded-2xl p-5 border border-slate-200">
-                        <div className="flex items-center justify-between gap-4">
-                            <div>
-                                <p className="text-sm font-bold text-slate-800">Alertes de match</p>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Recevez un rappel 2h avant le début de votre mission.
+                    <div className="bg-slate-100 dark:bg-slate-700 rounded-xl p-3 border border-slate-200 dark:border-slate-600">
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Alertes de match</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    {notificationStatus === 'denied'
+                                        ? 'Bloquées par le navigateur.'
+                                        : notifEnabled ? 'Rappel 2h avant.' : 'Désactivées.'}
                                 </p>
                             </div>
-                            <button
-                                onClick={async () => {
-                                    const { requestNotificationPermission, sendLocalNotification } = await import('../utils/notifications');
-                                    const granted = await requestNotificationPermission();
-                                    if (granted) {
+                            {notificationStatus === 'denied' ? (
+                                <span className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-bold flex-shrink-0">
+                                    ✗ Bloquées
+                                </span>
+                            ) : notificationStatus === 'unsupported' ? (
+                                <span className="px-2 py-1 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold flex-shrink-0">
+                                    Non supporté
+                                </span>
+                            ) : notificationStatus === 'granted' && notifEnabled ? (
+                                <button
+                                    onClick={() => {
+                                        setNotificationPreference(false);
+                                        setNotifEnabled(false);
+                                        onToast('Notifications désactivées', 'info');
+                                    }}
+                                    className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold flex-shrink-0 hover:bg-emerald-200 transition-colors cursor-pointer"
+                                >
+                                    ✓ Activées
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={async () => {
+                                        if (notificationStatus !== 'granted') {
+                                            const granted = await requestNotificationPermission();
+                                            setNotificationStatus(getNotificationPermission());
+                                            if (!granted) return;
+                                        }
+                                        setNotificationPreference(true);
+                                        setNotifEnabled(true);
                                         sendLocalNotification('🔔 Notifications activées !', {
-                                            body: 'Vous recevrez un rappel avant vos prochains matchs.'
+                                            body: 'Vous recevrez un rappel avant vos matchs.'
                                         });
-                                    } else {
-                                        alert("Permission refusée. Veuillez activer les notifications dans les réglages de votre navigateur.");
-                                    }
-                                }}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-md"
-                            >
-                                Activer
-                            </button>
+                                        onToast('Notifications activées', 'success');
+                                    }}
+                                    className="px-2 py-1 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors shadow-sm flex-shrink-0"
+                                >
+                                    Activer
+                                </button>
+                            )}
                         </div>
                     </div>
 

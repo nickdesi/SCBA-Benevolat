@@ -23,3 +23,19 @@ export const sendLocalNotification = (title: string, options?: NotificationOptio
         });
     }
 };
+
+export const getNotificationPermission = (): NotificationPermission | 'unsupported' => {
+    if (!('Notification' in window)) return 'unsupported';
+    return Notification.permission;
+};
+
+// User preference for notifications (stored in localStorage)
+const NOTIF_PREF_KEY = 'scba_notifications_enabled';
+
+export const getNotificationPreference = (): boolean => {
+    return localStorage.getItem(NOTIF_PREF_KEY) === 'true';
+};
+
+export const setNotificationPreference = (enabled: boolean): void => {
+    localStorage.setItem(NOTIF_PREF_KEY, String(enabled));
+};
