@@ -12,6 +12,7 @@ import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut } from './utils/authStore';
 import { useGames } from './utils/useGames';
+import { useUserProfile } from './utils/useUserProfile';
 import EventSchema from './components/EventSchema';
 
 // Lazy-loaded components (code-splitting for reduced initial bundle)
@@ -37,6 +38,9 @@ function App() {
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();
 
+  // User Profile persistence
+  const { favoriteTeams, toggleFavoriteTeam } = useUserProfile();
+
   // Games data and operations from custom hook
   const {
     games,
@@ -56,8 +60,9 @@ function App() {
     handleAddCarpool,
     handleRemoveCarpool,
     userRegistrations,
-    userRegistrationsMap
-  } = useGames({ selectedTeam, currentView });
+    userRegistrationsMap,
+    allTeams // Use allTeams from useGames for the most up-to-date list
+  } = useGames({ selectedTeam, currentView, favoriteTeams });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -169,6 +174,9 @@ function App() {
         onSelectTeam={setSelectedTeam}
         registrations={userRegistrations} // Pass registrations
         games={games} // Pass ALL games for validity check
+        allTeams={allTeams}
+        favoriteTeams={favoriteTeams}
+        onToggleFavorite={toggleFavoriteTeam}
         onUnsubscribe={handleRemoveVolunteer}
         onRemoveCarpool={handleRemoveCarpool}
         onToast={addToast}
@@ -378,6 +386,9 @@ function App() {
             onUnsubscribe={handleRemoveVolunteer}
             onRemoveCarpool={handleRemoveCarpool}
             onToast={addToast}
+            allTeams={allTeams}
+            favoriteTeams={favoriteTeams}
+            onToggleFavorite={toggleFavoriteTeam}
           />
         )
       }

@@ -16,6 +16,9 @@ interface ProfileModalProps {
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
+    allTeams: string[];
+    favoriteTeams: string[];
+    onToggleFavorite: (team: string) => Promise<void>;
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -26,7 +29,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     games,
     onUnsubscribe,
     onRemoveCarpool,
-    onToast
+    onToast,
+    allTeams,
+    favoriteTeams,
+    onToggleFavorite
 }) => {
     useScrollLock(isOpen);
 
@@ -215,6 +221,32 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-800">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span>🏆</span> Mes Équipes
+                    </h3>
+                    <p className="text-xs text-slate-500 mb-4">
+                        Choisissez les catégories que vous souhaitez voir sur le site. Si rien n'est coché, toutes les équipes s'affichent.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-8">
+                        {allTeams.length === 0 ? (
+                            <p className="text-slate-400 text-xs text-center w-full py-2 italic">Aucune équipe disponible</p>
+                        ) : (
+                            allTeams.map(team => (
+                                <button
+                                    key={team}
+                                    onClick={() => onToggleFavorite(team)}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${favoriteTeams.includes(team)
+                                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    {favoriteTeams.includes(team) && <span className="mr-1">✓</span>}
+                                    {team}
+                                </button>
+                            ))
+                        )}
+                    </div>
+
                     <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <span>📅</span> Mes Prochaines Missions
                     </h3>

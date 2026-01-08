@@ -14,6 +14,9 @@ interface HeaderProps {
   onRemoveCarpool?: (gameId: string, entryId: string) => Promise<void>;
   onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
   isAdmin: boolean;
+  allTeams?: string[];
+  favoriteTeams?: string[];
+  onToggleFavorite?: (team: string) => Promise<void>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -26,7 +29,10 @@ const Header: React.FC<HeaderProps> = ({
   games = [],
   onUnsubscribe = async () => { },
   onRemoveCarpool = async () => { },
-  onToast = () => { }
+  onToast = () => { },
+  allTeams = [],
+  favoriteTeams = [],
+  onToggleFavorite = async () => { }
 }) => {
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50 bg-noise">
@@ -74,6 +80,9 @@ const Header: React.FC<HeaderProps> = ({
               onUnsubscribe={onUnsubscribe}
               onRemoveCarpool={onRemoveCarpool}
               onToast={onToast}
+              allTeams={allTeams}
+              favoriteTeams={favoriteTeams}
+              onToggleFavorite={onToggleFavorite}
             />
           </div>
         </div>

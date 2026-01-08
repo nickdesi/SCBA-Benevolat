@@ -28,6 +28,7 @@ interface UseGamesReturn {
     teams: string[];
     uniqueLocations: string[];
     uniqueOpponents: string[];
+    allTeams: string[]; // Add allTeams to return all possible teams for ProfileModal
     // CRUD operations
     addGame: (gameData: GameFormData) => Promise<void>;
     updateGame: (updatedGame: Game) => Promise<void>;
@@ -47,10 +48,11 @@ interface UseGamesReturn {
 interface UseGamesOptions {
     selectedTeam: string | null;
     currentView: 'home' | 'planning' | 'calendar';
+    favoriteTeams: string[];
 }
 
 export const useGames = (options: UseGamesOptions): UseGamesReturn => {
-    const { selectedTeam, currentView } = options;
+    const { selectedTeam, currentView, favoriteTeams } = options;
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -114,10 +116,25 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         });
     }, [games]);
 
-    // Extract unique teams for filter
+    // Apply primary filter: Favorite Teams
+    const favoritedGames = useMemo(() => {
+        if (!favoriteTeams || favoriteTeams.length === 0) return sortedGames;
+        return sortedGames.filter(g => favoriteTeams.includes(g.team));
+    }, [sortedGames, favoriteTeams]);
+
+    // Extract unique teams for filter (restricted to favorites if set)
     const teams = useMemo(() => {
+        if (favoriteTeams && favoriteTeams.length > 0) {
+            return [...favoriteTeams].sort();
+        }
         const uniqueTeams = new Set(games.map(g => g.team));
         return Array.from(uniqueTeams).sort();
+    }, [games, favoriteTeams]);
+
+    // Full list of teams regardless of favorites (for ProfileModal selection)
+    const allTeams = useMemo(() => {
+        const uniqueAll = new Set(games.map(g => g.team));
+        return Array.from(uniqueAll).sort();
     }, [games]);
 
     // Extract unique locations
@@ -132,9 +149,9 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return Array.from(opponents).filter(Boolean).sort();
     }, [games]);
 
-    // Filtered games logic
+    // Filtered games logic (Team Filter + Dashboard Views)
     const filteredGames = useMemo(() => {
-        let result = sortedGames;
+        let result = sortedGames; // Start with ALL games as per user request
 
         if (selectedTeam) {
             result = result.filter(g => g.team === selectedTeam);
@@ -161,7 +178,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         }
 
         return result;
-    }, [sortedGames, selectedTeam, currentView, userRegistrations]);
+    }, [sortedGames, favoritedGames, selectedTeam, currentView, userRegistrations]);
 
     // ---------------------------------------------------------------------------
     // Automatic Cleanup of Past Matches (DISABLED FOR PERFORMANCE)
@@ -280,6 +297,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         teams,
         uniqueLocations,
         uniqueOpponents,
+        allTeams,
         addGame,
         updateGame,
         deleteGame,

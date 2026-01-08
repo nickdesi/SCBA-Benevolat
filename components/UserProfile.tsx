@@ -14,6 +14,9 @@ interface UserProfileProps {
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
+    allTeams?: string[];
+    favoriteTeams?: string[];
+    onToggleFavorite?: (team: string) => Promise<void>;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
@@ -23,7 +26,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
     games = [],
     onUnsubscribe = async () => { },
     onRemoveCarpool = async () => { },
-    onToast = () => { }
+    onToast = () => { },
+    allTeams = [],
+    favoriteTeams = [],
+    onToggleFavorite = async () => { }
 }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -167,6 +173,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     onUnsubscribe={onUnsubscribe}
                     onRemoveCarpool={onRemoveCarpool}
                     onToast={onToast}
+                    allTeams={allTeams}
+                    favoriteTeams={favoriteTeams}
+                    onToggleFavorite={onToggleFavorite}
                 />
             )}
         </div>
