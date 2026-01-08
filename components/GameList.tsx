@@ -109,6 +109,7 @@ const GameList: React.FC<GameListProps> = memo(({
                         {group.games.map((game, index) => (
                             <div
                                 key={game.id}
+                                id={`game-${game.id}`}
                                 className="animate-fade-in-up break-inside-avoid"
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >

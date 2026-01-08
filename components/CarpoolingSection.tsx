@@ -2,7 +2,7 @@ import React, { useState, useCallback, memo } from 'react';
 import type { CarpoolEntry } from '../types';
 import { getStoredName, setStoredName } from '../utils/storage';
 import PhoneDisplay from './PhoneDisplay';
-
+import { DeleteIcon } from './Icons';
 
 import ConfirmModal from './ConfirmModal';
 
@@ -111,10 +111,10 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                     {(driver.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
                                         <button
                                             onClick={() => handleRemove(driver.id, driver.name)}
-                                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm"
+                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             aria-label="Se désinscrire"
                                         >
-                                            ✕
+                                            <DeleteIcon className="w-4 h-4" />
                                         </button>
                                     )}
                                 </div>
@@ -164,10 +164,10 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                     {(passenger.name.toLowerCase() === storedName.toLowerCase() || isAdmin) && (
                                         <button
                                             onClick={() => handleRemove(passenger.id, passenger.name)}
-                                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm"
+                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             aria-label="Se désinscrire"
                                         >
-                                            ✕
+                                            <DeleteIcon className="w-4 h-4" />
                                         </button>
                                     )}
                                 </div>

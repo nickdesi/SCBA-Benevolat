@@ -331,10 +331,17 @@ const GameCard: React.FC<GameCardProps> = memo(({
                             )}
                         </span>
                     )}
-                    {/* Carpool Summary for Away games */}
+                    {/* Carpool Summary for Away games - differentiate drivers/passengers */}
                     {!isHomeGame && (
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            🚗 {(game.carpool?.length || 0)} inscription{(game.carpool?.length || 0) > 1 ? 's' : ''}
+                            {(() => {
+                                const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
+                                const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
+                                const parts = [];
+                                if (drivers > 0) parts.push(`🚗 ${drivers} conducteur${drivers > 1 ? 's' : ''}`);
+                                if (passengers > 0) parts.push(`🙋 ${passengers} passager${passengers > 1 ? 's' : ''}`);
+                                return parts.length > 0 ? parts.join(' • ') : '🚗 0 inscription';
+                            })()}
                         </span>
                     )}
                 </div>
@@ -429,7 +436,6 @@ const GameCard: React.FC<GameCardProps> = memo(({
                             isAdmin={isAdmin}
                             onAddEntry={(entry) => {
                                 onAddCarpool(game.id, entry);
-                                if (onToast) onToast('🚗 Inscription covoiturage confirmée !', 'success');
                             }}
                             onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
                         />

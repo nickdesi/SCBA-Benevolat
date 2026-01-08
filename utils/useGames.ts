@@ -46,7 +46,7 @@ interface UseGamesReturn {
 
 interface UseGamesOptions {
     selectedTeam: string | null;
-    currentView: 'home' | 'planning';
+    currentView: 'home' | 'planning' | 'calendar';
 }
 
 export const useGames = (options: UseGamesOptions): UseGamesReturn => {

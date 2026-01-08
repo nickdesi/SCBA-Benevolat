@@ -18,6 +18,7 @@ import EventSchema from './components/EventSchema';
 // AdminAuthModal removed as per request
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
 const GameForm = lazy(() => import('./components/GameForm'));
+const PlanningView = lazy(() => import('./components/planning/PlanningView'));
 import AdminToolbar from './components/AdminToolbar';
 
 function App() {
@@ -28,7 +29,7 @@ function App() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAdminStatsOpen, setIsAdminStatsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'planning'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('home');
 
   // Stats Component (lazy optional, but let's just import for now or lazy)
   const AdminStats = lazy(() => import('./components/AdminStats'));
@@ -186,6 +187,26 @@ function App() {
         {/* Loading State */}
         {loading && <SkeletonLoader />}
 
+        {/* Desktop View Toggle */}
+        {!loading && (
+          <div className="flex justify-center mb-8 hidden md:flex">
+            <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
+              <button
+                onClick={() => setCurrentView('home')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${currentView === 'home' ? 'bg-slate-100 text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Liste
+              </button>
+              <button
+                onClick={() => setCurrentView('calendar')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${currentView === 'calendar' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Calendrier
+              </button>
+            </div>
+          </div>
+        )}
+
         {!loading && (
           <div className="flex justify-end mb-6 gap-4">
             {isAdmin && (
@@ -241,40 +262,50 @@ function App() {
           </Suspense>
         )}
 
-        {/* Grouped Games List */}
-        <GameList
-          games={filteredGames}
-          userRegistrations={userRegistrationsMap} // Pass Map
-          isAdmin={isAdmin}
-          isAuthenticated={isAuthenticated}
-          editingGameId={editingGameId}
-          onVolunteer={handleVolunteerWithToast}
-          onRemoveVolunteer={handleRemoveVolunteer}
-          onUpdateVolunteer={handleUpdateVolunteer}
-          onAddCarpool={handleAddCarpoolWithToast}
-          onRemoveCarpool={handleRemoveCarpool}
-          onToast={addToast}
-          onEditRequest={setEditingGameId}
-          onCancelEdit={() => setEditingGameId(null)}
-          onDeleteRequest={handleDeleteGame}
-          onUpdateRequest={handleUpdateGame}
-        />
 
-        {/* Floating Action Button (Add Game) */}
-        {isAdmin && !isAddingGame && games.length > 0 && (
-          <button
-            onClick={() => setIsAddingGame(true)}
-            className="fixed bottom-24 right-4 md:bottom-8 md:right-8 p-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full 
-                     shadow-2xl hover:scale-110 transition-transform z-40 group"
-            aria-label="Ajouter un match"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-slate-800 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              Ajouter un match
-            </span>
-          </button>
+
+        {/* Planning View */}
+        {currentView === 'calendar' && (
+          <Suspense fallback={<SkeletonLoader />}>
+            <PlanningView
+              games={filteredGames}
+              userRegistrations={userRegistrationsMap}
+              isAdmin={isAdmin}
+              isAuthenticated={isAuthenticated}
+              editingGameId={editingGameId}
+              onVolunteer={handleVolunteerWithToast}
+              onRemoveVolunteer={handleRemoveVolunteer}
+              onUpdateVolunteer={handleUpdateVolunteer}
+              onAddCarpool={handleAddCarpoolWithToast}
+              onRemoveCarpool={handleRemoveCarpool}
+              onToast={addToast}
+              onEditRequest={setEditingGameId}
+              onCancelEdit={() => setEditingGameId(null)}
+              onDeleteRequest={handleDeleteGame}
+              onUpdateRequest={handleUpdateGame}
+            />
+          </Suspense>
+        )}
+
+        {/* Grouped Games List (Hidden when in calendar view for better perf, or conditionally rendered) */}
+        {currentView === 'home' && (
+          <GameList
+            games={filteredGames}
+            userRegistrations={userRegistrationsMap} // Pass Map
+            isAdmin={isAdmin}
+            isAuthenticated={isAuthenticated}
+            editingGameId={editingGameId}
+            onVolunteer={handleVolunteerWithToast}
+            onRemoveVolunteer={handleRemoveVolunteer}
+            onUpdateVolunteer={handleUpdateVolunteer}
+            onAddCarpool={handleAddCarpoolWithToast}
+            onRemoveCarpool={handleRemoveCarpool}
+            onToast={addToast}
+            onEditRequest={setEditingGameId}
+            onCancelEdit={() => setEditingGameId(null)}
+            onDeleteRequest={handleDeleteGame}
+            onUpdateRequest={handleUpdateGame}
+          />
         )}
       </main>
 
@@ -303,24 +334,26 @@ function App() {
       </Suspense>
 
       {/* Empty State for Scheduling */}
-      {!loading && currentView === 'planning' && filteredGames.length === 0 && (
-        <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md mx-auto border border-slate-100 mt-8 mb-20 animate-fade-in-up">
-          <div className="text-6xl mb-4">📅</div>
-          <h3 className="text-2xl font-bold text-slate-800 mb-2">
-            Planning vide
-          </h3>
-          <p className="text-slate-500 mb-6">
-            Vous n'êtes inscrit à aucun match pour le moment.
-            Retournez à l'accueil pour vous inscrire !
-          </p>
-          <button
-            onClick={() => setCurrentView('home')}
-            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
-          >
-            Voir tous les matchs
-          </button>
-        </div>
-      )}
+      {
+        !loading && currentView === 'planning' && filteredGames.length === 0 && (
+          <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md mx-auto border border-slate-100 mt-8 mb-20 animate-fade-in-up">
+            <div className="text-6xl mb-4">📅</div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">
+              Planning vide
+            </h3>
+            <p className="text-slate-500 mb-6">
+              Vous n'êtes inscrit à aucun match pour le moment.
+              Retournez à l'accueil pour vous inscrire !
+            </p>
+            <button
+              onClick={() => setCurrentView('home')}
+              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
+            >
+              Voir tous les matchs
+            </button>
+          </div>
+        )
+      }
 
       <ReloadPrompt />
       <Footer />
@@ -334,19 +367,21 @@ function App() {
       />
 
       {/* Profile Modal - Triggered by Planning button on mobile */}
-      {currentUser && (
-        <ProfileModal
-          isOpen={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
-          user={currentUser}
-          registrations={userRegistrations}
-          games={games}
-          onUnsubscribe={handleRemoveVolunteer}
-          onRemoveCarpool={handleRemoveCarpool}
-          onToast={addToast}
-        />
-      )}
-    </div>
+      {
+        currentUser && (
+          <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+            user={currentUser}
+            registrations={userRegistrations}
+            games={games}
+            onUnsubscribe={handleRemoveVolunteer}
+            onRemoveCarpool={handleRemoveCarpool}
+            onToast={addToast}
+          />
+        )
+      }
+    </div >
   );
 }
 
