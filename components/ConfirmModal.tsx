@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
+import useScrollLock from '../utils/useScrollLock';
 
 interface ConfirmModalProps {
     isOpen: boolean;
@@ -35,15 +36,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     onConfirm,
     onCancel,
 }) => {
-    // Prevent background scroll
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            return () => {
-                document.body.style.overflow = '';
-            };
-        }
-    }, [isOpen]);
+    useScrollLock(isOpen);
 
     if (!isOpen) return null;
 

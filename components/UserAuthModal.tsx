@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GoogleIcon, AppleIcon } from './Icons';
 import { signIn, signUp } from '../utils/authStore';
+import useScrollLock from '../utils/useScrollLock';
 
 interface UserAuthModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface UserAuthModalProps {
 type AuthView = 'menu' | 'login' | 'signup';
 
 const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogleLogin, onToast }) => {
+    useScrollLock(isOpen);
     const [view, setView] = useState<AuthView>('menu');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

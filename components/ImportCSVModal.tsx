@@ -1,6 +1,7 @@
 import React, { useState, useCallback, memo } from 'react';
 import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
+import useScrollLock from '../utils/useScrollLock';
 
 interface ImportCSVModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface ImportCSVModalProps {
 }
 
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, onImport, existingGames = [] }) => {
+    useScrollLock(isOpen);
     const [csvContent, setCsvContent] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<string>('SENIOR M1');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);

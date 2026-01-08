@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Game } from '../types';
+import useScrollLock from '../utils/useScrollLock';
 
 interface AdminStatsProps {
     games: Game[];
@@ -7,6 +8,7 @@ interface AdminStatsProps {
 }
 
 const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
+    useScrollLock(true); // Always locked when this is rendered since it's a fixed overlay
     const stats = useMemo(() => {
         const homeGames = games.filter(g => g.isHome);
 

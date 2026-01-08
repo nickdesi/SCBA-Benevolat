@@ -5,6 +5,7 @@ import { UserRegistration, Game, CarpoolEntry } from '../types';
 import { CalendarIcon, ClockIcon, LocationIcon, DeleteIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
 import { getNotificationPermission, requestNotificationPermission, sendLocalNotification, getNotificationPreference, setNotificationPreference } from '../utils/notifications';
+import useScrollLock from '../utils/useScrollLock';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -27,6 +28,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     onRemoveCarpool,
     onToast
 }) => {
+    useScrollLock(isOpen);
+
     // State for revealing contact info
     const [revealedContacts, setRevealedContacts] = useState<Set<string>>(new Set());
 
