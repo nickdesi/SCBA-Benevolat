@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 rounded-full scale-150"></div>
             <img
-              src="/logo-scba.png"
+              src="/logo-scba.webp"
               alt="Logo Stade Clermontois Basket Auvergne"
               className="relative w-14 h-16 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
             />

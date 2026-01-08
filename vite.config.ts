@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo-scba.png', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],
+      includeAssets: ['logo-scba.webp', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.webp'],
       devOptions: {
         enabled: false
       },
@@ -28,6 +28,23 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
+            src: 'pwa-192x192.webp',
+            sizes: '192x192',
+            type: 'image/webp'
+          },
+          {
+            src: 'pwa-512x512.webp',
+            sizes: '512x512',
+            type: 'image/webp'
+          },
+          {
+            src: 'pwa-512x512.webp',
+            sizes: '512x512',
+            type: 'image/webp',
+            purpose: 'maskable'
+          },
+          // PNG fallbacks for older browsers
+          {
             src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png'
@@ -36,12 +53,6 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
           }
         ]
       },
@@ -82,7 +93,7 @@ export default defineConfig({
           },
           {
             // Images/fonts - can be cached longer
-            urlPattern: /\.(png|jpg|jpeg|svg|gif|ico|woff2?)$/,
+            urlPattern: /\.(png|jpg|jpeg|svg|gif|ico|woff2?|webp)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'static-cache',
