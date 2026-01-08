@@ -1,11 +1,11 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.6.0';
+const APP_VERSION = 'v1.8.0';
 
 const CHANGELOG = [
+    { version: 'v1.8.0', date: '08/01/2026', changes: ['📅 Vue Planning interactive complète (Inscriptions, Covoiturage, Calendrier)', '🚗 Badge covoiturage détaillé (Conducteurs/Passagers)', '🗑️ Icônes de suppression uniformisées', '✨ Correctifs de notifications en doublon'] },
+    { version: 'v1.7.0', date: '08/01/2026', changes: ['🎨 Refonte visuelle de la vue Planning (Dark Mode premium)', '📍 Intégration liens Waze pour les matchs à l\'extérieur', '⏱️ Affichage des horaires et lieux complets dans le calendrier'] },
     { version: 'v1.6.0', date: '01/01/2025', changes: ['🚗 Gestion complète du covoiturage dans "Mon Espace Bénévole"', '💡 Affichage des opportunités de covoiturage', '📞 Bouton "Contacter" le conducteur'] },
-    { version: 'v1.5.0', date: '31/12/2025', changes: ['📊 Dashboard Admin avec stats de remplissage', '🔔 Système de notifications PWA', '🔍 SEO Événementiel (JSON-LD)'] },
-    { version: 'v1.4.0', date: '31/12/2025', changes: ['🔄 Transactions Firestore pour une fiabilité maximale', '📱 Navigation mobile avec bouton Planning direct'] },
 ];
 
 const Footer: React.FC = memo(() => {
