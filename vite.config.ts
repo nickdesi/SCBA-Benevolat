@@ -130,7 +130,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
-          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
+          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
         }
       }
     }
