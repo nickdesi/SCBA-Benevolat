@@ -29,17 +29,6 @@ export interface Game {
   carpool?: CarpoolEntry[]; // Optional carpooling entries
 }
 
-// Type for form data when creating/editing games
-export interface GameFormData {
-  team: string;
-  opponent: string;
-  date: string;                 // Display format
-  dateISO: string;              // ISO format for sorting
-  time: string;
-  location: string;
-  isHome: boolean;
-}
-
 // Type for role configuration (used in constants)
 export interface RoleConfig {
   name: string;

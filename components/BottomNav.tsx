@@ -1,4 +1,6 @@
 import React, { memo } from 'react';
+import { motion } from 'framer-motion';
+import { AnimatedBallIcon } from './Icons';
 
 interface BottomNavProps {
     currentView: 'home' | 'planning' | 'calendar';
@@ -17,11 +19,12 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
         <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-premium border-t border-slate-200/50 dark:border-slate-700/50 pb-safe z-50 md:hidden shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.1)] bg-noise">
             <div className="flex justify-around items-center p-2">
                 {/* Home Button */}
-                <button
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => onViewChange('home')}
                     className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20
                         ${currentView === 'home'
-                            ? 'text-blue-600 bg-blue-50'
+                            ? 'text-blue-600 bg-blue-50/80'
                             : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
@@ -29,14 +32,15 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                     </svg>
                     <span className="text-[10px] font-bold">Accueil</span>
-                </button>
+                </motion.button>
 
                 {/* Calendar Button */}
-                <button
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => onViewChange('calendar')}
                     className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20
                         ${currentView === 'calendar'
-                            ? 'text-blue-600 bg-blue-50'
+                            ? 'text-blue-600 bg-blue-50/80'
                             : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
@@ -44,19 +48,18 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                     </svg>
                     <span className="text-[10px] font-bold">Calendrier</span>
-                </button>
+                </motion.button>
 
                 {/* Planning Button - Opens ProfileModal for authenticated users */}
                 {isAuthenticated && (
-                    <button
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
                         onClick={onPlanningClick}
                         className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20 text-amber-600 hover:bg-amber-50"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-6 h-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                        </svg>
+                        <AnimatedBallIcon className="w-6 h-6" />
                         <span className="text-[10px] font-bold">Mes Matchs</span>
-                    </button>
+                    </motion.button>
                 )}
 
 

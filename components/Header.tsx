@@ -60,13 +60,13 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* Title - Center */}
           <div className="text-center flex-1 px-3">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight leading-tight">
-              <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
-                Stade Clermontois
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight font-sport">
+              <span className="bg-gradient-to-r from-blue-400 via-blue-200 to-blue-400 bg-clip-text text-transparent">
+                STADE CLERMONTOIS
               </span>
-              <span className="text-white"> Basket Auvergne</span>
+              <span className="text-white block sm:inline sm:ml-2 text-lg sm:text-2xl font-normal tracking-widest opacity-90">BASKET AUVERGNE</span>
             </h1>
-            <p className="text-blue-400/80 text-sm font-medium tracking-wide mt-0.5">
+            <p className="text-blue-400/80 text-xs sm:text-sm font-medium tracking-[0.2em] mt-1 uppercase">
               🏀 Espace Bénévoles
             </p>
           </div>

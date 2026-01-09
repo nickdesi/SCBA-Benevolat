@@ -19,7 +19,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
     dateISO: gameToEdit?.dateISO || '',  // ISO format for reliable sorting
     time: gameToEdit?.time || '',
     location: gameToEdit?.location || 'Maison des Sports',
-    isHome: gameToEdit?.isHome ?? true,  // Default to home game
+    isHome: gameToEdit?.isHome ?? true,
   });
 
   // Initialize role capacities from existing game or defaults
@@ -297,6 +297,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
 
         </div>
 
+
         {/* Home/Away Toggle - Modern Segmented Control */}
         <div className="pt-4">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3">
@@ -344,42 +345,44 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
         </div>
 
         {/* Role Capacities Section - Only for editing existing HOME games */}
-        {gameToEdit && formData.isHome && (
-          <div className="pt-4 border-t border-slate-200">
-            <h4 className="flex items-center gap-2 text-base font-bold text-slate-800 mb-4">
-              <span className="text-xl">👥</span>
-              Nombre de bénévoles par poste
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {DEFAULT_ROLES.filter(role => !(['SENIOR M1', 'SENIOR M2'].includes(formData.team) && role.name === 'Goûter')).map(role => (
-                <div key={role.name} className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <span>{role.icon}</span>
-                    {role.name}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="99"
-                      value={roleCapacities[role.name] || 0}
-                      onChange={(e) => handleCapacityChange(role.name, e.target.value)}
-                      className="w-full px-3 py-2 text-center text-base font-bold border-2 border-slate-200 rounded-lg
+        {
+          gameToEdit && formData.isHome && (
+            <div className="pt-4 border-t border-slate-200">
+              <h4 className="flex items-center gap-2 text-base font-bold text-slate-800 mb-4">
+                <span className="text-xl">👥</span>
+                Nombre de bénévoles par poste
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {DEFAULT_ROLES.filter(role => !(['SENIOR M1', 'SENIOR M2'].includes(formData.team) && role.name === 'Goûter')).map(role => (
+                  <div key={role.name} className="bg-slate-50 rounded-xl p-3 border border-slate-200">
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+                      <span>{role.icon}</span>
+                      {role.name}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        max="99"
+                        value={roleCapacities[role.name] || 0}
+                        onChange={(e) => handleCapacityChange(role.name, e.target.value)}
+                        className="w-full px-3 py-2 text-center text-base font-bold border-2 border-slate-200 rounded-lg
                                focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1 text-center">
+                      {roleCapacities[role.name] === 0 ? '∞ illimité' : `max ${roleCapacities[role.name]}`}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 text-center">
-                    {roleCapacities[role.name] === 0 ? '∞ illimité' : `max ${roleCapacities[role.name]}`}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                <span>💡</span>
+                Mettez 0 pour un nombre illimité de bénévoles
+              </p>
             </div>
-            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
-              <span>💡</span>
-              Mettez 0 pour un nombre illimité de bénévoles
-            </p>
-          </div>
-        )}
+          )
+        }
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-slate-200">
@@ -403,8 +406,8 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
             Enregistrer
           </button>
         </div>
-      </form>
-    </div>
+      </form >
+    </div >
   );
 };
 
