@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://scba.desimone.fr/sitemap.xml

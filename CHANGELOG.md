@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.3] - 2026-01-09
+
+### Ajouté
+
+- **SEO** : Intégration de Google Analytics et génération du sitemap.xml.
+
+---
+
 ## [1.9.2] - 2026-01-09
 
 ### Corrigé

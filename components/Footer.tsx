@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.2';
+const APP_VERSION = 'v1.9.3';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.3', date: '09/01/2026', changes: ['🔍 SEO : Google Analytics & Sitemap'] },
     { version: 'v1.9.2', date: '09/01/2026', changes: ['📅 Correctif : Affichage date calendrier mobile'] },
     { version: 'v1.9.1', date: '09/01/2026', changes: ['🦟 Correctif : Fond blanc en mode sombre fixé'] },
     { version: 'v1.9.0', date: '09/01/2026', changes: ['🎨 UI/UX Premium (Refonte GameCard)', '🖱️ Drag-to-Scroll Desktop', '🏎️ Tri Intelligent & Indicateur Urgence'] },
