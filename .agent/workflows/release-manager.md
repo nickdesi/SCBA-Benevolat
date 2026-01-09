@@ -1,5 +1,5 @@
 ---
-description: Automate the release process: build, version bump (package, readme, footer, changelog), and git tag.
+description: Automate the release process (build, version bump, changelog, git tag).
 ---
 
 # Release Manager Workflow
