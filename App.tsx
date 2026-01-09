@@ -192,17 +192,12 @@ function App() {
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
-      <main className="container mx-auto px-4 relative z-20">
+      <main className="container mx-auto px-4 relative z-20 pt-4">
         <PullToRefresh onRefresh={async () => {
-          // Simulate refresh or re-fetch data
-          // Since useGames is a hook, we might need a method exposed by it to force refresh.
-          // For now, simple timeout or page reload if needed, but optimally calling a refetch function.
-          // Assuming useGames auto-updates with Firestore in real-time, this might just be a placebo or checking for SW updates?
-          // Or we can reload window location if user wants hard refresh.
+          // Simulate refresh
           await new Promise(resolve => setTimeout(resolve, 1500));
           window.location.reload();
         }}>
-
           {/* Loading State */}
           {loading && <SkeletonLoader />}
 

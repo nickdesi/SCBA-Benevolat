@@ -50,3 +50,14 @@ export interface UserRegistration {
   gameDateISO?: string;
   isValid?: boolean; // New flag to track if registration exists in public game
 }
+
+export interface GameFormData {
+  id?: string;
+  team: string; // Ex: 'Senior M1'
+  opponent: string;
+  date: string; // Format YYYY-MM-DD
+  time: string; // Format HH:mm
+  location: string;
+  isHome: boolean;
+  roleConfig?: RoleConfig[]; // Optional configuration for roles
+}

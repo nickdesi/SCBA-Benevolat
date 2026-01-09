@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-4 relative z-30">
+      <div className="container mx-auto px-4 py-2 sm:py-4 relative z-30">
         <div className="flex items-center justify-between">
           {/* Logo - Left */}
           <div className="relative flex-shrink-0">
@@ -54,19 +54,19 @@ const Header: React.FC<HeaderProps> = ({
             <img
               src="/logo-scba.webp"
               alt="Logo Stade Clermontois Basket Auvergne"
-              className="relative w-14 h-16 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
+              className="relative w-10 h-12 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
             />
           </div>
 
           {/* Title - Center */}
-          <div className="text-center flex-1 px-3">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight font-sport">
+          <div className="text-center flex-1 px-2 sm:px-3">
+            <h1 className="text-sm sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight font-sport flex flex-col sm:block">
               <span className="bg-gradient-to-r from-blue-400 via-blue-200 to-blue-400 bg-clip-text text-transparent">
                 STADE CLERMONTOIS
               </span>
-              <span className="text-white block sm:inline sm:ml-2 text-lg sm:text-2xl font-normal tracking-widest opacity-90">BASKET AUVERGNE</span>
+              <span className="text-white block sm:inline sm:ml-2 font-normal tracking-widest opacity-90">BASKET AUVERGNE</span>
             </h1>
-            <p className="text-blue-400/80 text-xs sm:text-sm font-medium tracking-[0.2em] mt-1 uppercase">
+            <p className="text-blue-400/80 text-[10px] sm:text-sm font-medium tracking-[0.2em] mt-1 uppercase">
               🏀 Espace Bénévoles
             </p>
           </div>

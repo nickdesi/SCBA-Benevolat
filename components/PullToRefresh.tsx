@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, useAnimation, PanInfo } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 
 interface PullToRefreshProps {
     onRefresh: () => Promise<void>;
@@ -8,48 +8,77 @@ interface PullToRefreshProps {
 
 const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children }) => {
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const controls = useAnimation();
+    const [pullY, setPullY] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
+    const startY = useRef(0);
+    const isDragging = useRef(false);
     const THRESHOLD = 80;
 
-    const handleDragEnd = async (_: any, info: PanInfo) => {
-        if (info.offset.y >= THRESHOLD && !isRefreshing) {
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (window.scrollY <= 0) {
+            startY.current = e.touches[0].clientY;
+            isDragging.current = true;
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isDragging.current) return;
+
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY.current;
+
+        if (window.scrollY === 0 && diff > 0) {
+            // Apply resistance
+            setPullY(Math.min(diff * 0.5, THRESHOLD * 1.5));
+            // Prevent native pull to refresh if possible, though not always cancellable
+        } else {
+            setPullY(0);
+            isDragging.current = false;
+        }
+    };
+
+    const handleTouchEnd = async () => {
+        isDragging.current = false;
+        if (pullY >= THRESHOLD && !isRefreshing) {
             setIsRefreshing(true);
-            await controls.start({ y: THRESHOLD }); // Stay open
             try {
                 await onRefresh();
             } finally {
                 setIsRefreshing(false);
-                controls.start({ y: 0 }); // Close
+                setPullY(0);
             }
         } else {
-            controls.start({ y: 0 });
+            setPullY(0);
         }
     };
 
     return (
-        <div ref={containerRef} className="relative overflow-hidden">
+        <div
+            ref={containerRef}
+            className="relative"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
             {/* Loading Indicator */}
             <motion.div
                 initial={{ y: -50, opacity: 0 }}
                 animate={{
-                    y: isRefreshing ? 20 : Math.min(0, -50),
-                    opacity: isRefreshing ? 1 : 0
+                    y: isRefreshing ? 20 : (pullY > 0 ? pullY * 0.5 : -50),
+                    opacity: isRefreshing || pullY > 0 ? 1 : 0,
+                    rotate: isRefreshing ? 360 : pullY * 2
                 }}
+                transition={{ duration: isRefreshing ? 1 : 0.2, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
                 className="absolute top-0 left-0 right-0 flex justify-center items-center z-10 pointer-events-none"
             >
-                <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin bg-white p-1 shadow-md"></div>
+                <div className={`w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent ${isRefreshing ? '' : ''} bg-white p-1 shadow-md`} />
             </motion.div>
 
-            {/* Draggable Content */}
+            {/* Content */}
             <motion.div
-                drag="y"
-                dragConstraints={{ top: 0, bottom: THRESHOLD * 2 }}
-                dragElastic={0.2}
-                onDragEnd={handleDragEnd}
-                animate={controls}
-                className="relative z-20 touch-pan-y"
-                style={{ y: 0 }} // Default
+                animate={{ y: isRefreshing ? THRESHOLD : pullY }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="relative z-20"
             >
                 {children}
             </motion.div>
