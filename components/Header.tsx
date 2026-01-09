@@ -2,6 +2,7 @@ import React from 'react';
 import UserProfile from './UserProfile';
 import { UserRegistration, Game } from '../types';
 import { ThemeToggle } from '../utils/ThemeContext';
+import { useDraggableScroll } from '../hooks/useDraggableScroll';
 
 interface HeaderProps {
   onLogout: () => void;
@@ -34,6 +35,8 @@ const Header: React.FC<HeaderProps> = ({
   favoriteTeams = [],
   onToggleFavorite = async () => { }
 }) => {
+  const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
+
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50 bg-noise">
       {/* Background decorations */}
@@ -93,8 +96,11 @@ const Header: React.FC<HeaderProps> = ({
         <div className="relative z-20 pb-4 pt-3">
           <div className="container mx-auto px-4">
             <div
-              className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap pb-1"
+              ref={scrollRef}
+              {...scrollEvents}
+              className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap p-2 active:cursor-grabbing cursor-grab"
               style={{
+                ...scrollStyle,
                 maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
                 WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
               }}

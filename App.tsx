@@ -23,6 +23,7 @@ const PlanningView = lazy(() => import('./components/planning/PlanningView'));
 
 import AdminToolbar from './components/AdminToolbar';
 import PullToRefresh from './components/PullToRefresh';
+import { AppLayout } from './components/Layout/AppLayout';
 
 function App() {
   // UI State
@@ -167,31 +168,90 @@ function App() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-slate-50 font-outfit pb-12">
-      <Header
-        isAdmin={isAdmin}
-        onLogout={handleLogout}
-        teams={teams}
-        selectedTeam={selectedTeam}
-        onSelectTeam={setSelectedTeam}
-        registrations={userRegistrations} // Pass registrations
-        games={games} // Pass ALL games for validity check
-        allTeams={allTeams}
-        favoriteTeams={favoriteTeams}
-        onToggleFavorite={toggleFavoriteTeam}
-        onUnsubscribe={handleRemoveVolunteer}
-        onRemoveCarpool={handleRemoveCarpool}
-        onToast={addToast}
-      />
+    <AppLayout
+      header={
+        <Header
+          isAdmin={isAdmin}
+          onLogout={handleLogout}
+          teams={teams}
+          selectedTeam={selectedTeam}
+          onSelectTeam={setSelectedTeam}
+          registrations={userRegistrations} // Pass registrations
+          games={games} // Pass ALL games for validity check
+          allTeams={allTeams}
+          favoriteTeams={favoriteTeams}
+          onToggleFavorite={toggleFavoriteTeam}
+          onUnsubscribe={handleRemoveVolunteer}
+          onRemoveCarpool={handleRemoveCarpool}
+          onToast={addToast}
+        />
+      }
+      topElements={
+        <>
+          <EventSchema games={games} />
+          {/* Ticker for upcoming matches */}
+          <MatchTicker games={sortedGames} />
+        </>
+      }
+      toasts={
+        <ToastContainer toasts={toasts} removeToast={removeToast} />
+      }
+      footer={
+        <>
+          <ReloadPrompt />
+          <Footer />
+          {/* Bottom Navigation for Mobile */}
+          <BottomNav
+            currentView={currentView}
+            onViewChange={setCurrentView}
+            onPlanningClick={() => setIsProfileModalOpen(true)}
+            isAuthenticated={isAuthenticated}
+          />
+        </>
+      }
+      modals={
+        <>
+          {/* CSV Import Modal */}
+          <Suspense fallback={null}>
+            {isImportModalOpen && (
+              <ImportCSVModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onImport={handleImportCSV}
+                existingGames={sortedGames}
+              />
+            )}
+          </Suspense>
 
-      <EventSchema games={games} />
+          {/* Admin Stats Dashboard */}
+          <Suspense fallback={null}>
+            {isAdminStatsOpen && (
+              <AdminStats
+                games={games}
+                onClose={() => setIsAdminStatsOpen(false)}
+              />
+            )}
+          </Suspense>
 
-      {/* Ticker for upcoming matches */}
-      <MatchTicker games={sortedGames} />
-
-      {/* Toast Notifications */}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
-
+          {/* Profile Modal - Triggered by Planning button on mobile */}
+          {currentUser && (
+            <ProfileModal
+              isOpen={isProfileModalOpen}
+              onClose={() => setIsProfileModalOpen(false)}
+              user={currentUser}
+              registrations={userRegistrations}
+              games={games}
+              onUnsubscribe={handleRemoveVolunteer}
+              onRemoveCarpool={handleRemoveCarpool}
+              onToast={addToast}
+              allTeams={allTeams}
+              favoriteTeams={favoriteTeams}
+              onToggleFavorite={toggleFavoriteTeam}
+            />
+          )}
+        </>
+      }
+    >
       <main className="container mx-auto px-4 relative z-20 pt-4">
         <PullToRefresh onRefresh={async () => {
           // Simulate refresh
@@ -276,8 +336,6 @@ function App() {
             </Suspense>
           )}
 
-
-
           {/* Planning View */}
           {currentView === 'calendar' && (
             <Suspense fallback={<SkeletonLoader />}>
@@ -321,85 +379,40 @@ function App() {
               onUpdateRequest={handleUpdateGame}
             />
           )}
+
+          {/* Empty State for Planning View specifically (was previously separate, merged into AppLayout children logic implicitly by placement order logic in App.tsx?) 
+             Wait, in original App.tsx, this empty state block was AFTER </main> but BEFORE <ReloadPrompt>.
+             It seemed to be floating? 
+             Ah, lines 352-371 in original App.tsx. 
+             It was outside <main>!
+             I should include it in 'children' inside <main> if I want correct layout, or keep it outside. 
+             If it's content, it should probably be in main.
+             But the original code had it outside.
+             Let's put it at the end of `children`.
+          */}
+          {
+            !loading && currentView === 'planning' && filteredGames.length === 0 && (
+              <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md mx-auto border border-slate-100 mt-8 mb-20 animate-fade-in-up">
+                <div className="text-6xl mb-4">📅</div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">
+                  Planning vide
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  Vous n'êtes inscrit à aucun match pour le moment.
+                  Retournez à l'accueil pour vous inscrire !
+                </p>
+                <button
+                  onClick={() => setCurrentView('home')}
+                  className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
+                >
+                  Voir tous les matchs
+                </button>
+              </div>
+            )
+          }
         </PullToRefresh>
       </main>
-
-
-
-      {/* CSV Import Modal */}
-      <Suspense fallback={null}>
-        {isImportModalOpen && (
-          <ImportCSVModal
-            isOpen={isImportModalOpen}
-            onClose={() => setIsImportModalOpen(false)}
-            onImport={handleImportCSV}
-            existingGames={sortedGames}
-          />
-        )}
-      </Suspense>
-
-      {/* Admin Stats Dashboard */}
-      <Suspense fallback={null}>
-        {isAdminStatsOpen && (
-          <AdminStats
-            games={games}
-            onClose={() => setIsAdminStatsOpen(false)}
-          />
-        )}
-      </Suspense>
-
-      {/* Empty State for Scheduling */}
-      {
-        !loading && currentView === 'planning' && filteredGames.length === 0 && (
-          <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md mx-auto border border-slate-100 mt-8 mb-20 animate-fade-in-up">
-            <div className="text-6xl mb-4">📅</div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-2">
-              Planning vide
-            </h3>
-            <p className="text-slate-500 mb-6">
-              Vous n'êtes inscrit à aucun match pour le moment.
-              Retournez à l'accueil pour vous inscrire !
-            </p>
-            <button
-              onClick={() => setCurrentView('home')}
-              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
-            >
-              Voir tous les matchs
-            </button>
-          </div>
-        )
-      }
-
-      <ReloadPrompt />
-      <Footer />
-
-      {/* Bottom Navigation for Mobile */}
-      <BottomNav
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        onPlanningClick={() => setIsProfileModalOpen(true)}
-        isAuthenticated={isAuthenticated}
-      />
-
-      {/* Profile Modal - Triggered by Planning button on mobile */}
-      {
-        currentUser && (
-          <ProfileModal
-            isOpen={isProfileModalOpen}
-            onClose={() => setIsProfileModalOpen(false)}
-            user={currentUser}
-            registrations={userRegistrations}
-            games={games}
-            onUnsubscribe={handleRemoveVolunteer}
-            onRemoveCarpool={handleRemoveCarpool}
-            onToast={addToast}
-            allTeams={allTeams}
-            favoriteTeams={favoriteTeams}
-            onToggleFavorite={toggleFavoriteTeam}
-          />
-        )
-      }
-    </div >
+    </AppLayout>
   );
 }
 

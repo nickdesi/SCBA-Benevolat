@@ -1,10 +1,10 @@
 import React, { useState, useCallback, memo } from 'react';
-import type { CarpoolEntry } from '../types';
-import { getStoredName, setStoredName } from '../utils/storage';
-import PhoneDisplay from './PhoneDisplay';
-import { DeleteIcon } from './Icons';
+import type { CarpoolEntry } from '../../types';
+import { getStoredName, setStoredName } from '../../utils/storage';
+import PhoneDisplay from '../PhoneDisplay';
+import { DeleteIcon } from '../Icons';
 
-import ConfirmModal from './ConfirmModal';
+import ConfirmModal from '../ConfirmModal';
 
 interface CarpoolingSectionProps {
     gameId: string;

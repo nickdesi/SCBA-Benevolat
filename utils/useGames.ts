@@ -7,18 +7,18 @@ import {
     deleteDoc,
     doc,
     writeBatch,
-    getDocs,
     query,
     where,
     orderBy,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { DEFAULT_ROLES } from '../constants';
 import type { Game, GameFormData, CarpoolEntry, UserRegistration } from '../types';
-import { getGameDateValue, getTodayISO } from './dateUtils';
-import { getStoredName } from './storage';
+import { getTodayISO } from './dateUtils';
 import { useVolunteers } from './useVolunteers';
 import { useCarpool } from './useCarpool';
+import { sortGames } from './gameUtils';
+import { useGameFilters } from '../hooks/useGameFilters';
 
 interface UseGamesReturn {
     games: Game[];
@@ -28,7 +28,7 @@ interface UseGamesReturn {
     teams: string[];
     uniqueLocations: string[];
     uniqueOpponents: string[];
-    allTeams: string[]; // Add allTeams to return all possible teams for ProfileModal
+    allTeams: string[];
     // CRUD operations
     addGame: (gameData: GameFormData) => Promise<void>;
     updateGame: (updatedGame: Game) => Promise<void>;
@@ -71,7 +71,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     } = useCarpool();
 
     // ---------------------------------------------------------------------------
-    // Firestore Synchronization with Query Optimization
+    // Firestore Synchronization
     // ---------------------------------------------------------------------------
     useEffect(() => {
         const todayISO = getTodayISO();
@@ -94,125 +94,27 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         return () => unsubscribe();
     }, []);
 
-    // Sort games by date AND time
-    const sortedGames = useMemo(() => {
-        return [...games].sort((a, b) => {
-            const dateDiff = getGameDateValue(a).localeCompare(getGameDateValue(b));
-            if (dateDiff !== 0) return dateDiff;
-
-            // If dates are equal, sort by time (HHhMM format, e.g. "14h00", "09h30")
-            // We pad single digit hours ("9h00" -> "09h00") for correct string comparison if needed
-            // But relying on simple string compare "14h00" > "09h00" works correctly
-            // "20h00" > "14h00" -> 1 (Correct)
-            // "9h00" vs "14h00": "9" > "1" -> 1 (WRONG if 9h comes after 14h)
-            // So we MUST normalize time to ensure HHhMM (2 digits for hour)
-
-            const normalizeTime = (t: string) => {
-                const [h, m] = t.split(/[h:]/i);
-                return `${h.padStart(2, '0')}${m}`;
-            };
-
-            return normalizeTime(a.time).localeCompare(normalizeTime(b.time));
-        });
-    }, [games]);
-
-    // Apply primary filter: Favorite Teams
-    const favoritedGames = useMemo(() => {
-        if (!favoriteTeams || favoriteTeams.length === 0) return sortedGames;
-        return sortedGames.filter(g => favoriteTeams.includes(g.team));
-    }, [sortedGames, favoriteTeams]);
-
-    // Extract unique teams for filter (restricted to favorites if set)
-    const teams = useMemo(() => {
-        if (favoriteTeams && favoriteTeams.length > 0) {
-            return [...favoriteTeams].sort();
-        }
-        const uniqueTeams = new Set(games.map(g => g.team));
-        return Array.from(uniqueTeams).sort();
-    }, [games, favoriteTeams]);
-
-    // Full list of teams regardless of favorites (for ProfileModal selection)
-    const allTeams = useMemo(() => {
-        const uniqueAll = new Set(games.map(g => g.team));
-        return Array.from(uniqueAll).sort();
-    }, [games]);
-
-    // Extract unique locations
-    const uniqueLocations = useMemo(() => {
-        const locations = new Set(games.map(g => g.location));
-        return Array.from(locations).filter(Boolean).sort();
-    }, [games]);
-
-    // Extract unique opponents
-    const uniqueOpponents = useMemo(() => {
-        const opponents = new Set(games.map(g => g.opponent));
-        return Array.from(opponents).filter(Boolean).sort();
-    }, [games]);
-
-    // Filtered games logic (Team Filter + Dashboard Views)
-    const filteredGames = useMemo(() => {
-        let result = sortedGames; // Start with ALL games as per user request
-
-        if (selectedTeam) {
-            result = result.filter(g => g.team === selectedTeam);
-        }
-
-        if (currentView === 'planning') {
-            if (auth.currentUser) {
-                const myGameIds = new Set(userRegistrations.map(r => r.gameId));
-                result = result.filter(game => myGameIds.has(game.id));
-            } else {
-                const myName = getStoredName()?.toLowerCase();
-                if (!myName) return [];
-
-                result = result.filter(game => {
-                    const isVolunteer = game.roles.some(role =>
-                        role.volunteers.some(v => v.toLowerCase() === myName)
-                    );
-                    const isCarpool = game.carpool?.some(entry =>
-                        entry.name.toLowerCase() === myName
-                    );
-                    return isVolunteer || isCarpool;
-                });
-            }
-        }
-
-        return result;
-    }, [sortedGames, favoritedGames, selectedTeam, currentView, userRegistrations]);
-
     // ---------------------------------------------------------------------------
-    // Automatic Cleanup of Past Matches (DISABLED FOR PERFORMANCE)
+    // Sorting & Filtering (Refactored)
     // ---------------------------------------------------------------------------
-    /* 
-    // Optimization: This should be a manual Admin action or Cloud Function, not run on client load.
-    // Disabling to save read/write quotas and improve startup time.
-    useEffect(() => {
-        const cleanupPastMatches = async () => {
-            try {
-                const todayISO = getTodayISO();
-                const colRef = collection(db, "matches");
-                const pastMatchesQuery = query(
-                    colRef,
-                    where("dateISO", "<", todayISO)
-                );
-                const snapshot = await getDocs(pastMatchesQuery);
-                const matchesToDelete: string[] = [];
-                snapshot.docs.forEach(docSnap => matchesToDelete.push(docSnap.id));
 
-                if (matchesToDelete.length > 0) {
-                    const batch = writeBatch(db);
-                    matchesToDelete.forEach(id => batch.delete(doc(db, "matches", id)));
-                    await batch.commit();
-                }
-            } catch (err) {
-                console.error("Error cleaning up past matches:", err);
-            }
-        };
+    // Sort games using pure function
+    const sortedGames = useMemo(() => sortGames(games), [games]);
 
-        const timer = setTimeout(() => cleanupPastMatches(), 2000);
-        return () => clearTimeout(timer);
-    }, []);
-    */
+    // Apply filters using custom hook
+    const {
+        teams,
+        allTeams,
+        uniqueLocations,
+        uniqueOpponents,
+        filteredGames
+    } = useGameFilters({
+        games: sortedGames,
+        selectedTeam,
+        currentView,
+        favoriteTeams,
+        userRegistrations
+    });
 
     // ---------------------------------------------------------------------------
     // CRUD Operations
@@ -242,7 +144,6 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     }, []);
 
     const deleteGame = useCallback(async (gameId: string): Promise<boolean> => {
-        // Confirmation is now handled by ConfirmModal in GameCard
         await deleteDoc(doc(db, "matches", gameId));
         return true;
     }, []);
@@ -252,19 +153,15 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             const batch = writeBatch(db);
 
             for (const gameData of matchesData) {
-                // Sanitize data: remove undefined fields
                 const cleanData = Object.fromEntries(
                     Object.entries(gameData).filter(([_, v]) => v !== undefined)
                 ) as any;
 
                 if (cleanData.id) {
-                    // Update existing game (Upsert safe: creates if missing, updates if exists)
                     const { id, ...data } = cleanData;
                     const docRef = doc(db, "matches", id);
                     batch.set(docRef, data, { merge: true });
                 } else {
-                    // Create new game
-                    // Use cleanData to ensure no undefined fields (like id: undefined)
                     const isSenior = ['SENIOR M1', 'SENIOR M2'].includes((cleanData.team as string) || '');
                     const applicableRoles = DEFAULT_ROLES.filter(role =>
                         !(role.name === 'Goûter' && isSenior)
@@ -285,7 +182,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             await batch.commit();
         } catch (error) {
             console.error("Detailed Import Error:", error);
-            throw error; // Re-throw to be caught by UI
+            throw error;
         }
     }, []);
 
