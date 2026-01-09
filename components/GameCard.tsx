@@ -165,8 +165,8 @@ const GameCard: React.FC<GameCardProps> = memo(({
             className={`
             relative rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all duration-300
             bg-white dark:bg-slate-900
-            ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600' : 'border border-slate-200 dark:border-slate-700'}
-            ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 border-red-400' : ''}
+            ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600 ring-inset' : 'border border-slate-200 dark:border-slate-700'}
+            ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 border-red-400 ring-inset' : ''}
         `}>
             {/* Header */}
             <div className={`relative p-4 overflow-hidden ${isHomeGame
@@ -209,7 +209,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                             <motion.span
                                 animate={{ scale: [1, 1.1, 1] }}
                                 transition={{ repeat: Infinity, duration: 1.5 }}
-                                className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-red-100 text-red-600 border border-red-200"
+                                className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-red-100 text-red-600 border border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800"
                             >
                                 🔥 Urgence
                             </motion.span>
@@ -222,7 +222,6 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     vs <span className="text-red-600 dark:text-red-400">{game.opponent}</span>
                 </p>
 
-                {/* Meta Info */}
                 <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
                     <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-white/50 dark:bg-black/20 rounded-md backdrop-blur-sm">

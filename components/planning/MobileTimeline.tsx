@@ -80,21 +80,24 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({
                     const isToday = toISODate(day) === toISODate(new Date());
 
                     return (
-                        <div key={day.toISOString()} className="relative pl-6 animate-fade-in-up" style={{ animationDelay: `${dayIdx * 100}ms` }}>
+                        <div key={day.toISOString()} className="relative animate-fade-in-up" style={{ animationDelay: `${dayIdx * 100}ms` }}>
 
-                            {/* Timeline Line (Modernized) */}
-                            <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-slate-700 via-slate-800 to-transparent">
-                                <div className={`absolute top-2 -left-[5px] w-3 h-3 rounded-full border-2 transition-all duration-500 ${isToday ? 'bg-blue-500 border-blue-900 shadow-[0_0_15px_rgba(59,130,246,0.6)] scale-110' : 'bg-slate-900 border-slate-600'}`} />
-                            </div>
-
-                            {/* Date Header */}
-                            <div className="mb-4 flex items-baseline gap-3">
-                                <span className={`text-lg font-black uppercase tracking-tight ${isToday ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400' : 'text-slate-200'}`}>
-                                    {day.toLocaleDateString('fr-FR', { weekday: 'long' })}
-                                </span>
-                                <span className="text-sm font-medium text-slate-500">
-                                    {day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
-                                </span>
+                            {/* Date Header - Pill Style with Stats */}
+                            <div className="mb-4">
+                                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-700 rounded-full shadow-lg shadow-slate-900/20 z-10 relative">
+                                    <span className="text-2xl">📅</span>
+                                    <div className="flex flex-col items-start leading-tight">
+                                        <span className="text-lg font-black text-white tracking-wide capitalize">
+                                            {day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                        </span>
+                                        <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">
+                                            {dayGames.filter(g => (g.isHome ?? true)).length} Dom • {dayGames.filter(g => !(g.isHome ?? true)).length} Ext
+                                        </span>
+                                    </div>
+                                    <span className="text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full ml-2">
+                                        {dayGames.length} matchs
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Games using FULL GameCard */}
