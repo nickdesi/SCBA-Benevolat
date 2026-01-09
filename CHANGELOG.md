@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1] - 2026-01-09
+
+### Corrigé
+
+- **Mode Sombre** : Correction du bug affichant un fond blanc en mode sombre via `AppLayout`.
+
+---
+
 ## [1.9.0] - 2026-01-09
 
 ### Ajouté
