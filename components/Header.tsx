@@ -58,6 +58,10 @@ const Header: React.FC<HeaderProps> = ({
               src="/logo-scba.webp"
               alt="Logo Stade Clermontois Basket Auvergne"
               className="relative w-10 h-12 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
+              width="64"
+              height="80"
+              // @ts-ignore - fetchPriority is standard but missing in React 18 types
+              fetchPriority="high"
             />
           </div>
 

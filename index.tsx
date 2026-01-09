@@ -18,3 +18,7 @@ root.render(
     </ThemeProvider>
   </React.StrictMode>
 );
+
+// Performance Monitoring
+import reportWebVitals from './src/reportWebVitals';
+reportWebVitals();
