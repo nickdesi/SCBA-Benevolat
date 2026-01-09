@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.8.0';
-
+const APP_VERSION = 'v1.9.0';
+// Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.0', date: '09/01/2026', changes: ['🎨 UI/UX Premium (Refonte GameCard)', '🖱️ Drag-to-Scroll Desktop', '🏎️ Tri Intelligent & Indicateur Urgence'] },
     { version: 'v1.8.0', date: '08/01/2026', changes: ['📅 Vue Planning interactive complète (Inscriptions, Covoiturage, Calendrier)', '🚗 Badge covoiturage détaillé (Conducteurs/Passagers)', '🗑️ Icônes de suppression uniformisées', '✨ Correctifs de notifications en doublon'] },
     { version: 'v1.7.0', date: '08/01/2026', changes: ['🎨 Refonte visuelle de la vue Planning (Dark Mode premium)', '📍 Intégration liens Waze pour les matchs à l\'extérieur', '⏱️ Affichage des horaires et lieux complets dans le calendrier'] },
     { version: 'v1.6.0', date: '01/01/2025', changes: ['🚗 Gestion complète du covoiturage dans "Mon Espace Bénévole"', '💡 Affichage des opportunités de covoiturage', '📞 Bouton "Contacter" le conducteur'] },
