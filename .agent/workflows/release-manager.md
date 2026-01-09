@@ -1,10 +1,10 @@
 ---
-description: Automate the release process: build, version bump, changelog, and git tag.
+description: Automate the release process: build, version bump (package, readme, footer, changelog), and git tag.
 ---
 
 # Release Manager Workflow
 
-Use this workflow to ship a new version of the application cleanly and consistentl.
+Use this workflow to ship a new version of the application cleanly and ensuring consistency across all files.
 
 ## 1. Pre-Flight Checks
 
@@ -14,7 +14,7 @@ Use this workflow to ship a new version of the application cleanly and consisten
     git status
     ```
 
-2. **Branch**: ensure you are on `main`.
+2. **Branch**: ensure you are on `main` (or the correct release branch).
 
     ```bash
     git branch --show-current
@@ -30,23 +30,47 @@ npm run build
 
 * If this fails -> **STOP**. Fix the build first.
 
-## 3. Version Bump
+## 3. Version Bump Strategy
 
-1. Decide validity: **Patch** (bug fixes), **Minor** (features), or **Major** (breaking changes).
-2. Update `version` in `package.json`.
-3. Update `package-lock.json` (running `npm install` usually syncs it).
+Determine the new version number (e.g., from `1.8.0` to `1.9.0`).
+
+### 3.1. Update Version in Files
+
+You MUST update the version string in **ALL** of the following locations:
+
+1. **`package.json`**: Update the `"version"` field.
+   * Run `npm install` afterwards to sync `package-lock.json`.
+2. **`README.md`**: Update the Badge URL (e.g., `v1.8.0-GitHub` -> `v1.9.0-GitHub`).
+3. **`components/Footer.tsx`**:
+   * Update `APP_VERSION` constant.
+   * Add new entry to `CHANGELOG` array array if applicable (although rarely displayed, keep it synced).
+4. **`CHANGELOG.md`**: Add the new version header and date.
+
+### 3.2. Verification
+
+Run this command to ensure no "old version" strings remain (replace `1.8.0` with old version):
+
+```bash
+# Verify no leftover old version strings in tracked files
+grep -r "1.8.0" . --exclude-dir=node_modules --exclude-dir=.git --exclude=package-lock.json
+```
 
 ## 4. Changelog Update
 
 1. Open `CHANGELOG.md`.
-2. Add a new header with the new version and today's date.
-3. Move "Unreleased" changes under this new header.
+2. Add a new header: `## [X.Y.Z] - YYYY-MM-DD`.
+3. Ensure all changes are categorized correctly (Added, Modified, Fixed).
 
 ## 5. Git Release
 
 ```bash
-git add package.json package-lock.json CHANGELOG.md
+# Stage all version files
+git add package.json package-lock.json README.md components/Footer.tsx CHANGELOG.md
+
+# Commit
 git commit -m "chore(release): v<NEW_VERSION>"
+
+# Tag
 git tag -a v<NEW_VERSION> -m "Release v<NEW_VERSION>"
 ```
 
@@ -56,4 +80,4 @@ git tag -a v<NEW_VERSION> -m "Release v<NEW_VERSION>"
 git push origin main --follow-tags
 ```
 
-> **Note**: If you have a CI/CD pipeline (like GitHub Actions), this push will likely trigger the production deployment.
+> **Note**: This triggers the deployment pipeline.
