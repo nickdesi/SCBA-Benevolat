@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.2] - 2026-01-09
+
+### Corrigé
+
+- **Calendrier Mobile** : Correction de l'affichage de la date qui s'affichait sur plusieurs lignes.
+
+---
+
 ## [1.9.1] - 2026-01-09
 
 ### Corrigé

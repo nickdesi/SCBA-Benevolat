@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.1';
+const APP_VERSION = 'v1.9.2';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.2', date: '09/01/2026', changes: ['📅 Correctif : Affichage date calendrier mobile'] },
     { version: 'v1.9.1', date: '09/01/2026', changes: ['🦟 Correctif : Fond blanc en mode sombre fixé'] },
     { version: 'v1.9.0', date: '09/01/2026', changes: ['🎨 UI/UX Premium (Refonte GameCard)', '🖱️ Drag-to-Scroll Desktop', '🏎️ Tri Intelligent & Indicateur Urgence'] },
     { version: 'v1.8.0', date: '08/01/2026', changes: ['📅 Vue Planning interactive complète (Inscriptions, Covoiturage, Calendrier)', '🚗 Badge covoiturage détaillé (Conducteurs/Passagers)', '🗑️ Icônes de suppression uniformisées', '✨ Correctifs de notifications en doublon'] },

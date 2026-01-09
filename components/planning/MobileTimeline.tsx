@@ -87,7 +87,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({
                                 <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-700 rounded-full shadow-lg shadow-slate-900/20 z-10 relative">
                                     <span className="text-2xl">📅</span>
                                     <div className="flex flex-col items-start leading-tight">
-                                        <span className="text-lg font-black text-white tracking-wide capitalize">
+                                        <span className="text-lg font-black text-white tracking-wide capitalize whitespace-nowrap">
                                             {day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                         </span>
                                         <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">
