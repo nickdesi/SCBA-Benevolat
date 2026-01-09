@@ -79,6 +79,14 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     const isFullyStaffed = isGameFullyStaffed(game);
     const totalVolunteers = game.roles.reduce((sum, r) => sum + r.volunteers.length, 0);
+
+    // Calculate "effective" filled slots (clamped to capacity) to avoid "7/6" situations
+    const filledSlots = game.roles.reduce((sum, r) => {
+        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
+        const capacity = isUnlimited ? 2 : r.capacity;
+        return sum + Math.min(r.volunteers.length, capacity);
+    }, 0);
+
     const totalCapacity = game.roles.reduce((sum, r) => {
         const isUnlimited = r.capacity === Infinity || r.capacity === 0;
         return sum + (isUnlimited ? 2 : r.capacity); // Target 2 for unlimited
@@ -157,7 +165,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                 {/* Progress Bar Background */}
                 {!isFullyStaffed && isHomeGame && (
                     <div className="absolute left-0 top-0 bottom-0 bg-emerald-500/5 z-0 transition-all duration-500"
-                        style={{ width: `${(totalVolunteers / totalCapacity) * 100}%` }}
+                        style={{ width: `${(filledSlots / totalCapacity) * 100}%` }}
                     ></div>
                 )}
 
@@ -168,7 +176,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 <>🎉 Équipe complète !</>
                             ) : (
                                 <>
-                                    <span className="font-bold">{totalVolunteers}/{totalCapacity}</span> bénévoles
+                                    <span className="font-bold">{filledSlots}/{totalCapacity}</span> bénévoles
                                     {getMissingRoles().length > 0 && (
                                         <span className="text-slate-500 dark:text-slate-400 ml-1.5 hidden sm:inline">
                                             • Manque : <span className="text-red-600 dark:text-red-400 font-medium">{getMissingRoles().join(', ')}</span>

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.4] - 2026-01-09
+
+### Amélioré
+
+- **UI** : Le compteur de bénévoles affiche désormais les postes pourvus réels (limités à la capacité) pour mieux mettre en évidence les manques (ex: "7/6" devient "4/6" si un poste est vide mais les autres sont en surplus).
+
+---
+
 ## [1.9.3] - 2026-01-09
 
 ### Ajouté

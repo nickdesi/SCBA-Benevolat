@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.3';
+const APP_VERSION = 'v1.9.4';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.4', date: '09/01/2026', changes: ['🧮 Amélioration : Compteur bénévoles "utile" (Postes pourvus)'] },
     { version: 'v1.9.3', date: '09/01/2026', changes: ['🔍 SEO : Google Analytics & Sitemap'] },
     { version: 'v1.9.2', date: '09/01/2026', changes: ['📅 Correctif : Affichage date calendrier mobile'] },
     { version: 'v1.9.1', date: '09/01/2026', changes: ['🦟 Correctif : Fond blanc en mode sombre fixé'] },
