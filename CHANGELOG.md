@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.9.0] - 2026-01-09
+
+### Ajouté
+
+- **UI/UX Premium** :
+  - **Drag-to-Scroll Desktop** : Navigation fluide à la souris sur les filtres d'équipes (curseur grab/grabbing).
+  - **Indicateur Urgence** : Badge rouge pulsant pour les matchs à < 24h avec rôles incomplets.
+  - **Tri Intelligent** : Ordre des équipes par catégorie (U9 -> Senior) par défaut.
+  - **Interface** : Correction du cropping sur le bouton "Tous les matchs" et padding ajusté.
+
+### Modifié
+
+- **Architecture (Refactoring)** :
+  - `GameCard` scindé en sous-composants (`GameHeader`, `VolunteerSection`, `ActionButtons`).
+  - `AppLayout` extrait pour alléger `App.tsx`.
+  - Logique de filtrage extraite dans le hook personnalisé `useGameFilters`.
+  - Suppression de la redondance du bouton "Trajet" (fusionné avec le lien lieu).
+
+---
+
 ## [1.8.0] - 2026-01-04
 
 ### Ajouté
