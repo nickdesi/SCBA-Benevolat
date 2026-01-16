@@ -59,9 +59,18 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                     )}
 
                     {isFullyStaffed && (
-                        <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-800">
-                            ✓ Complet
-                        </span>
+                        <motion.span
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="relative px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 overflow-hidden"
+                        >
+                            <motion.span
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                animate={{ x: ['-100%', '100%'] }}
+                                transition={{ repeat: Infinity, duration: 2, ease: 'linear', repeatDelay: 1 }}
+                            />
+                            <span className="relative">✅ Complet</span>
+                        </motion.span>
                     )}
 
                     {isUrgent && !isFullyStaffed && (

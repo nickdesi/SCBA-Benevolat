@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.6] - 2026-01-16
+
+### Amélioré
+
+- **UI** : Badge "Complet" style célébration avec gradient vert vif, texte blanc, et animation "shine" pour les matchs entièrement pourvus.
+
+---
+
 ## [1.9.5] - 2026-01-16
 
 ### Amélioré

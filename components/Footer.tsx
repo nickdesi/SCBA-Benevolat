@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.5';
+const APP_VERSION = 'v1.9.6';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.6', date: '16/01/2026', changes: ['✨ Badge "Complet" célébration : gradient vert, animation shine'] },
     { version: 'v1.9.5', date: '16/01/2026', changes: ['📊 Dashboard Admin : Section urgences, filtres, détail des rôles manquants'] },
     { version: 'v1.9.4', date: '09/01/2026', changes: ['🧮 Amélioration : Compteur bénévoles "utile" (Postes pourvus)'] },
     { version: 'v1.9.3', date: '09/01/2026', changes: ['🔍 SEO : Google Analytics & Sitemap'] },
