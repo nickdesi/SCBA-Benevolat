@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.5] - 2026-01-16
+
+### Amélioré
+
+- **Dashboard Admin** : Refonte complète avec :
+  - Section "Urgences" pour les matchs < 48h non complets (badge countdown "Dans Xh").
+  - Filtres rapides : "Tous", "🚨 Urgents", "⚠️ Incomplets".
+  - Détail des rôles manquants par match ("Manque: Buvette, Chrono").
+  - Tri intelligent : urgents en premier, puis par taux de remplissage.
+
+---
+
 ## [1.9.4] - 2026-01-09
 
 ### Amélioré
