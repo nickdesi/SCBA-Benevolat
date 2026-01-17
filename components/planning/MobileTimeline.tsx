@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 
@@ -21,7 +21,7 @@ interface MobileTimelineProps {
     isAuthenticated?: boolean;
 }
 
-const MobileTimeline: React.FC<MobileTimelineProps> = ({
+const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     games,
     currentDate,
     isAdmin,
@@ -83,8 +83,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({
                     const isToday = toISODate(day) === toISODate(new Date());
 
                     return (
-                        <div key={day.toISOString()} className="relative animate-fade-in-up" style={{ animationDelay: `${dayIdx * 100}ms` }}>
-
+                        <div key={day.toISOString()} className="relative">
                             {/* Date Header - Pill Style with Stats */}
                             <div className="mb-4">
                                 <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-700 rounded-full shadow-lg shadow-slate-900/20 z-10 relative">
@@ -138,6 +137,8 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({
             )}
         </div>
     );
-};
+});
+
+MobileTimeline.displayName = 'MobileTimeline';
 
 export default MobileTimeline;

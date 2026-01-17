@@ -40,10 +40,10 @@
   --border-color: #e2e8f0;
   --border-color-light: #f1f5f9;
 
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transitions - SNAPPY optimized */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Safe Area Insets for PWA */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
@@ -93,9 +93,11 @@
   0% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
@@ -256,15 +258,15 @@ textarea::placeholder {
 
 /* Animation utility classes */
 .animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
+  animation: fadeInUp 0.2s ease-out forwards;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.15s ease-out forwards;
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 0.4s ease-out forwards;
+  animation: slideInRight 0.2s ease-out forwards;
 }
 
 .animate-pulse-glow {
@@ -325,7 +327,7 @@ textarea::placeholder {
 }
 
 .animate-scale-in {
-  animation: scale-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: scale-in 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* Slide-up animation for toasts and bottom sheets */
@@ -342,7 +344,7 @@ textarea::placeholder {
 }
 
 .animate-slide-up {
-  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Enhanced backdrop blur for modals */
@@ -366,7 +368,7 @@ textarea::placeholder {
 
 /* Interactive card hover effect */
 .card-interactive {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .card-interactive:hover {

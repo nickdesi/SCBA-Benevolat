@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 
@@ -21,7 +21,7 @@ interface DesktopGridProps {
     isAuthenticated?: boolean;
 }
 
-const DesktopGrid: React.FC<DesktopGridProps> = ({
+const DesktopGrid: React.FC<DesktopGridProps> = memo(({
     games,
     currentDate,
     isAdmin,
@@ -86,7 +86,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = ({
                         return (
                             <div
                                 key={day.toISOString()}
-                                className="flex flex-col gap-4 flex-1 min-w-[380px] max-w-[500px] animate-fade-in-up"
+                                className="flex flex-col gap-4 flex-1 min-w-[380px] max-w-[500px]"
                             >
 
                                 {/* Column Header - Matching GameCard dark style */}
@@ -111,8 +111,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = ({
                                     {dayGames.map((game, idx) => (
                                         <div
                                             key={game.id}
-                                            className="animate-fade-in-up"
-                                            style={{ animationDelay: `${idx * 50}ms` }}
+                                            className=""
                                         >
                                             <GameCard
                                                 game={game}
@@ -151,6 +150,8 @@ const DesktopGrid: React.FC<DesktopGridProps> = ({
             )}
         </div>
     );
-};
+});
+
+DesktopGrid.displayName = 'DesktopGrid';
 
 export default DesktopGrid;

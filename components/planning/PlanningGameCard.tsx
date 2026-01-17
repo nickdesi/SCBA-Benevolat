@@ -47,7 +47,7 @@ const PlanningGameCard: React.FC<PlanningGameCardProps> = ({ game, onClick }) =>
     <div
       onClick={onClick}
       className={`
-        relative group cursor-pointer overflow-hidden rounded-2xl transition-all duration-300
+        relative group cursor-pointer overflow-hidden rounded-2xl transition-all duration-150
         border shadow-sm hover:shadow-lg hover:scale-[1.01]
         bg-slate-900 dark:bg-slate-900
         ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600' : 'border-slate-700 dark:border-slate-700'}

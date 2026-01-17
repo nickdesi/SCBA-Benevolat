@@ -224,7 +224,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                                     {/* Progress Bar */}
                                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full transition-all duration-500 ${game.percent === 100 ? 'bg-emerald-500' :
+                                            className={`h-full transition-all duration-200 ${game.percent === 100 ? 'bg-emerald-500' :
                                                     game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
                                                 }`}
                                             style={{ width: `${game.percent}%` }}

@@ -65,7 +65,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                 onClick={onGoogleLogin}
                 className="w-full group relative flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-slate-200 
                              hover:border-blue-500 hover:bg-blue-50 text-slate-700 hover:text-blue-700 
-                             rounded-xl transition-all duration-300 shadow-sm hover:shadow-md"
+                             rounded-xl transition-all duration-150 shadow-sm hover:shadow-md"
             >
                 <div className="w-6 h-6 group-hover:scale-110 transition-transform">
                     <GoogleIcon />
@@ -82,7 +82,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                     onClick={() => setView('login')}
                     className="flex flex-col items-center justify-center gap-2 p-4 bg-white border-2 border-slate-200 
                                  hover:border-indigo-500 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 
-                                 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md"
+                                 rounded-xl transition-all duration-150 shadow-sm hover:shadow-md"
                 >
                     <div className="p-2 bg-indigo-100 rounded-full text-indigo-600">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -96,7 +96,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                     onClick={() => setView('signup')}
                     className="flex flex-col items-center justify-center gap-2 p-4 bg-white border-2 border-slate-200 
                                  hover:border-purple-500 hover:bg-purple-50 text-slate-700 hover:text-purple-700 
-                                 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md"
+                                 rounded-xl transition-all duration-150 shadow-sm hover:shadow-md"
                 >
                     <div className="p-2 bg-purple-100 rounded-full text-purple-600">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">

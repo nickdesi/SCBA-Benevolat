@@ -57,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
             <img
               src="/logo-scba.webp"
               alt="Logo Stade Clermontois Basket Auvergne"
-              className="relative w-10 h-12 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-300"
+              className="relative w-10 h-12 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-150"
               width="64"
               height="80"
               // @ts-ignore - fetchPriority is standard but missing in React 18 types
@@ -111,7 +111,7 @@ const Header: React.FC<HeaderProps> = ({
             >
               <button
                 onClick={() => onSelectTeam(null)}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === null
+                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-150 backdrop-blur-md border ${selectedTeam === null
                   ? 'bg-white text-slate-900 border-white shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105'
                   : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-slate-500/50'
                   }`}
@@ -122,7 +122,7 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   key={team}
                   onClick={() => onSelectTeam(team)}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === team
+                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-150 backdrop-blur-md border ${selectedTeam === team
                     ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.4)] scale-105'
                     : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-slate-500/50'
                     }`}

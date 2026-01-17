@@ -336,8 +336,8 @@ function App() {
             </Suspense>
           )}
 
-          {/* Planning View */}
-          {currentView === 'calendar' && (
+          {/* Planning View - Always mounted, hidden when not active */}
+          <div className={currentView === 'calendar' ? '' : 'hidden'}>
             <Suspense fallback={<SkeletonLoader />}>
               <PlanningView
                 games={filteredGames}
@@ -357,13 +357,13 @@ function App() {
                 onUpdateRequest={handleUpdateGame}
               />
             </Suspense>
-          )}
+          </div>
 
-          {/* Grouped Games List (Hidden when in calendar view for better perf, or conditionally rendered) */}
-          {currentView === 'home' && (
+          {/* Grouped Games List - Always mounted, hidden when not active */}
+          <div className={currentView === 'home' ? '' : 'hidden'}>
             <GameList
               games={filteredGames}
-              userRegistrations={userRegistrationsMap} // Pass Map
+              userRegistrations={userRegistrationsMap}
               isAdmin={isAdmin}
               isAuthenticated={isAuthenticated}
               editingGameId={editingGameId}
@@ -378,7 +378,7 @@ function App() {
               onDeleteRequest={handleDeleteGame}
               onUpdateRequest={handleUpdateGame}
             />
-          )}
+          </div>
 
           {/* Empty State for Planning View specifically (was previously separate, merged into AppLayout children logic implicitly by placement order logic in App.tsx?) 
              Wait, in original App.tsx, this empty state block was AFTER </main> but BEFORE <ReloadPrompt>.

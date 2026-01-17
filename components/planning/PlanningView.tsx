@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import PlanningHeader from './PlanningHeader';
 import DesktopGrid from './DesktopGrid';
@@ -22,7 +22,7 @@ interface PlanningViewProps {
     isAuthenticated?: boolean;
 }
 
-const PlanningView: React.FC<PlanningViewProps> = ({
+const PlanningView: React.FC<PlanningViewProps> = memo(({
     games,
     isAdmin,
     editingGameId,
@@ -76,7 +76,7 @@ const PlanningView: React.FC<PlanningViewProps> = ({
     };
 
     return (
-        <div className="animate-fade-in">
+        <div>
             <PlanningHeader
                 currentDate={currentDate}
                 onNextWeek={handleNextWeek}
@@ -97,6 +97,8 @@ const PlanningView: React.FC<PlanningViewProps> = ({
             />
         </div>
     );
-};
+});
+
+PlanningView.displayName = 'PlanningView';
 
 export default PlanningView;

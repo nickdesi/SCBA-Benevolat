@@ -312,7 +312,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 isHome: true,
                 location: 'Maison des Sports'
               }))}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${formData.isHome
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${formData.isHome
                 ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30'
                 : 'text-slate-600 hover:bg-white/50'
                 }`}
@@ -327,7 +327,7 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
                 isHome: false,
                 location: '' // Always clear when switching to Away to prompt manual entry
               }))}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${!formData.isHome
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${!formData.isHome
                 ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30'
                 : 'text-slate-600 hover:bg-white/50'
                 }`}

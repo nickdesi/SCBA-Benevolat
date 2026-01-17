@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.9.8] - 2026-01-17
+
+### Amélioré
+
+- **Performance "Snappy"** :
+  - Animations CSS réduites (300-500ms → 100-200ms).
+  - Transitions Tailwind optimisées (`duration-150`).
+  - Composants memoizés (PlanningView, MobileTimeline, DesktopGrid).
+  - Vues toujours montées avec CSS `hidden` au lieu de remount.
+  - Suppression des animations staggered au changement de vue.
+
+---
+
 ## [1.9.7] - 2026-01-17
 
 ### Amélioré

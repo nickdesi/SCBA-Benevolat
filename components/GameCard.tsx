@@ -135,7 +135,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
             className={`
-            relative rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all duration-300
+            relative rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all duration-150
             bg-white dark:bg-slate-900
             ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600 ring-inset' : 'border border-slate-200 dark:border-slate-700'}
             ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 border-red-400 ring-inset' : ''}
@@ -164,7 +164,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
             >
                 {/* Progress Bar Background */}
                 {!isFullyStaffed && isHomeGame && (
-                    <div className="absolute left-0 top-0 bottom-0 bg-emerald-500/5 z-0 transition-all duration-500"
+                    <div className="absolute left-0 top-0 bottom-0 bg-emerald-500/5 z-0 transition-all duration-200"
                         style={{ width: `${(filledSlots / totalCapacity) * 100}%` }}
                     ></div>
                 )}

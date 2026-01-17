@@ -110,8 +110,7 @@ const GameList: React.FC<GameListProps> = memo(({
                             <div
                                 key={game.id}
                                 id={`game-${game.id}`}
-                                className="animate-fade-in-up break-inside-avoid"
-                                style={{ animationDelay: `${index * 50}ms` }}
+                                className="break-inside-avoid"
                             >
                                 <GameCard
                                     game={game}
