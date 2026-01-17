@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.9.7] - 2026-01-17
+
+### Amélioré
+
+- **Navigation Mobile** :
+  - Vue calendrier/semaine par défaut (au lieu de la liste).
+  - Bouton navigation renommé "📋 Liste" / "📅 Semaine" (plus clair que "Planning").
+  - Matchs passés (heure dépassée) masqués automatiquement.
+
+### Corrigé
+
+- **Bug fuseau horaire** : Correction du bouton "Aujourd'hui" qui affichait parfois le mauvais jour (UTC vs heure locale).
+
+---
+
 ## [1.9.6] - 2026-01-16
 
 ### Amélioré

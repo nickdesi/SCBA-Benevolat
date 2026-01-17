@@ -33,7 +33,7 @@ function App() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAdminStatsOpen, setIsAdminStatsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('calendar');
 
   // Stats Component (lazy optional, but let's just import for now or lazy)
   const AdminStats = lazy(() => import('./components/AdminStats'));

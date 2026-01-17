@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.6';
+const APP_VERSION = 'v1.9.7';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.7', date: '17/01/2026', changes: ['📅 Vue semaine par défaut', '🔘 Bouton Liste/Semaine clair', '🕒 Matchs passés masqués'] },
     { version: 'v1.9.6', date: '16/01/2026', changes: ['✨ Badge "Complet" célébration : gradient vert, animation shine'] },
     { version: 'v1.9.5', date: '16/01/2026', changes: ['📊 Dashboard Admin : Section urgences, filtres, détail des rôles manquants'] },
     { version: 'v1.9.4', date: '09/01/2026', changes: ['🧮 Amélioration : Compteur bénévoles "utile" (Postes pourvus)'] },

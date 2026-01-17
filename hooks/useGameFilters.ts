@@ -88,7 +88,24 @@ export const useGameFilters = ({
 
     // 5. Filtered games logic (Team Filter + Dashboard Views)
     const filteredGames = useMemo(() => {
-        let result = games; // Start with ALL sorted games
+        const now = new Date();
+
+        // First: Filter out past matches (matches that have already started)
+        let result = games.filter(game => {
+            try {
+                // Combine dateISO (YYYY-MM-DD) with time (HHhMM or HH:MM) to get exact match start
+                const timeParts = game.time.replace('h', ':').split(':');
+                const hours = parseInt(timeParts[0], 10) || 0;
+                const minutes = parseInt(timeParts[1], 10) || 0;
+
+                const gameDateTime = new Date(game.dateISO);
+                gameDateTime.setHours(hours, minutes, 0, 0);
+
+                return gameDateTime > now; // Only show games that haven't started yet
+            } catch {
+                return true; // Keep games with invalid dates (fallback)
+            }
+        });
 
         // Apply Team Filter
         if (selectedTeam) {

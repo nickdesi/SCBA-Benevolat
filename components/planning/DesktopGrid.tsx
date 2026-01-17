@@ -57,9 +57,12 @@ const DesktopGrid: React.FC<DesktopGridProps> = ({
 
     const days = getDaysOfWeek(currentDate);
 
-    // Helper to format ISO date YYYY-MM-DD for comparison
+    // Helper to format local date YYYY-MM-DD for comparison (avoiding UTC conversion issues)
     const toISODate = (date: Date) => {
-        return date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     const getGamesForDay = (date: Date) => {
