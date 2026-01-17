@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.10.2] - 2026-01-17
+
+### Performance
+
+- **Polices** : Réduction du nombre de variantes chargées (16 -> 8). Poids réduit de 50%.
+  - *Inter* : 400, 500, 600, 700
+  - *Outfit* : 700, 900
+  - *Oswald* : 500, 700
+
+---
+
 ## [1.10.1] - 2026-01-17
 
 ### Visuel & Finitions
