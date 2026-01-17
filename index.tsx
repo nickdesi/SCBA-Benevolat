@@ -22,3 +22,17 @@ root.render(
 // Performance Monitoring
 import reportWebVitals from './src/reportWebVitals';
 reportWebVitals();
+
+// PWA Service Worker Registration
+import { registerSW } from 'virtual:pwa-register';
+
+if (import.meta.env.PROD) {
+  registerSW({
+    onNeedRefresh() {
+      // Prompt user to update or just auto-reload depending on strategy
+    },
+    onOfflineReady() {
+      console.log('App ready to work offline');
+    },
+  });
+}
