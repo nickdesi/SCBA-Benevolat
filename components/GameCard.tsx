@@ -99,6 +99,11 @@ const GameCard: React.FC<GameCardProps> = memo(({
             .reduce((sum, driver) => sum + (driver.seats || 0), 0);
     }, [game.carpool]);
 
+    const totalPassengerRequests = useMemo(() => {
+        if (!game.carpool) return 0;
+        return game.carpool.filter(e => e.type === 'passenger').length;
+    }, [game.carpool]);
+
     const isHomeGame = game.isHome ?? true;
 
     const isUrgent = useMemo(() => {
@@ -153,6 +158,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                 isHomeGame={isHomeGame}
                 isFullyStaffed={isFullyStaffed}
                 totalCarpoolSeats={totalCarpoolSeats}
+                totalPassengerRequests={totalPassengerRequests}
                 isUrgent={isUrgent}
                 isAdmin={isAdmin}
                 onEditRequest={onEditRequest}
@@ -197,7 +203,15 @@ const GameCard: React.FC<GameCardProps> = memo(({
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                             {(() => {
                                 const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
-                                return drivers > 0 ? `🚗 ${drivers} conducteur${drivers > 1 ? 's' : ''}` : '🚗 0 inscription';
+                                const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
+
+                                if (drivers === 0 && passengers === 0) return '🚗 0 inscription';
+
+                                const parts = [];
+                                if (drivers > 0) parts.push(`${drivers} cond.`);
+                                if (passengers > 0) parts.push(`${passengers} pass.`);
+
+                                return `🚗 ${parts.join(' • ')}`;
                             })()}
                         </span>
                     )}

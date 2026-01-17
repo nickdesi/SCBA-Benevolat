@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.3] - 2026-01-17
+
+### Fonctionnalité
+
+- **Covoiturage Intelligent** :
+  - Nouveau système de badges de statut dans le header.
+  - Affiche **"⚠️ X cherchent place"** (Orange) si manque de conducteurs.
+  - Affiche **"🚗 Y places dispo"** (Vert) si places libres.
+  - Affiche **"✅ Complet"** (Gris) si équilibré.
+
+---
+
 ## [1.10.2] - 2026-01-17
 
 ### Performance

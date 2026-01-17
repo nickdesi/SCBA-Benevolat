@@ -9,6 +9,7 @@ interface GameHeaderProps {
     isHomeGame: boolean;
     isFullyStaffed: boolean;
     totalCarpoolSeats: number;
+    totalPassengerRequests: number;
     isUrgent: boolean;
     isAdmin: boolean;
     onEditRequest: () => void;
@@ -20,6 +21,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
     isHomeGame,
     isFullyStaffed,
     totalCarpoolSeats,
+    totalPassengerRequests,
     isUrgent,
     isAdmin,
     onEditRequest,
@@ -52,10 +54,40 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                         {isHomeGame ? '🏠 Domicile' : '🚗 Extérieur'}
                     </span>
 
-                    {!isHomeGame && totalCarpoolSeats > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded-full bg-emerald-50 text-emerald-700">
-                            🚗 {totalCarpoolSeats}
-                        </span>
+                    {/* SMART CARPOOL BADGE */}
+                    {!isHomeGame && (
+                        (() => {
+                            const remainingSeats = totalCarpoolSeats - totalPassengerRequests;
+                            const hasActivity = totalCarpoolSeats > 0 || totalPassengerRequests > 0;
+
+                            if (!hasActivity) return null;
+
+                            // Cas 1 : URGENCE (Plus de demandes que de places)
+                            if (remainingSeats < 0) {
+                                const deficit = Math.abs(remainingSeats);
+                                return (
+                                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 border border-amber-200 dark:border-amber-700 animate-pulse">
+                                        ⚠️ {deficit} cherch. place
+                                    </span>
+                                );
+                            }
+
+                            // Cas 2 : DISPONIBLE (Places restantes)
+                            if (remainingSeats > 0) {
+                                return (
+                                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                        🚗 {remainingSeats} place{remainingSeats > 1 ? 's' : ''} dispo
+                                    </span>
+                                );
+                            }
+
+                            // Cas 3 : COMPLET (Juste assez)
+                            return (
+                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                    ✅ Covoit. complet
+                                </span>
+                            );
+                        })()
                     )}
 
                     {isFullyStaffed && (
