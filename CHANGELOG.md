@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.4] - 2026-01-17
+
+### Design
+
+- **Navigation Compacte** :
+  - Suppression du bloc sombre massif dans le planning.
+  - Titre et navigation intégrés directement sur le fond.
+  - Bouton "Aujourd'hui" rapproché et aligné avec la navigation (gauche).
+  - Gain de ~50px de hauteur pour le contenu.
+
+---
+
 ## [1.10.3] - 2026-01-17
 
 ### Fonctionnalité
