@@ -35,7 +35,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 
             {/* Watermark Icon */}
             <div className={`absolute -right-4 -top-4 text-8xl opacity-10 dark:opacity-5 select-none pointer-events-none`}>
-                {isHomeGame ? '🏟️' : '🚌'}
+                {isHomeGame ? '🏠' : '✈️'}
             </div>
 
             {/* Top Row */}

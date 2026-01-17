@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.9';
+const APP_VERSION = 'v1.10.0';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.10.0', date: '17/01/2026', changes: ['🎨 Dark mode amélioré', '🏠 Filigranes maison/avion', '🔲 Badge matchs centré'] },
     { version: 'v1.9.9', date: '17/01/2026', changes: ['⚡ React 18 startTransition : changement de vue non-bloquant'] },
     { version: 'v1.9.8', date: '17/01/2026', changes: ['⚡ Interface snappy : animations réduites, transitions instantanées'] },
     { version: 'v1.9.7', date: '17/01/2026', changes: ['📅 Vue semaine par défaut', '🔘 Bouton Liste/Semaine clair', '🕒 Matchs passés masqués'] },
@@ -73,7 +74,7 @@ const Footer: React.FC = memo(() => {
 
                 {/* Changelog Dropdown */}
                 {isChangelogOpen && (
-                    <div className="mt-6 p-4 bg-white rounded-2xl border border-slate-200 shadow-lg animate-fade-in-up max-w-xl mx-auto">
+                    <div className="mt-6 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up max-w-xl mx-auto">
                         <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
                             <span>📋</span> Changelog
                         </h4>

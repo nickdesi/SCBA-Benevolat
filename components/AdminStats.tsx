@@ -116,7 +116,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-6 text-white flex justify-between items-center">
                     <div>
@@ -213,8 +213,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                                         </div>
                                         <div className="flex flex-col items-end gap-1">
                                             <span className={`text-xs font-bold px-2 py-1 rounded-full ${game.percent === 100 ? 'bg-emerald-100 text-emerald-700' :
-                                                    game.percent > 50 ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-red-100 text-red-700'
+                                                game.percent > 50 ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-red-100 text-red-700'
                                                 }`}>
                                                 {game.percent}%
                                             </span>
@@ -225,7 +225,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                                         <div
                                             className={`h-full transition-all duration-200 ${game.percent === 100 ? 'bg-emerald-500' :
-                                                    game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
+                                                game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
                                                 }`}
                                             style={{ width: `${game.percent}%` }}
                                         />

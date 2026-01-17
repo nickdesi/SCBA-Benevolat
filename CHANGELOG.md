@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.10.0] - 2026-01-17
+
+### Amélioré
+
+- **Dark mode** : Correction des couleurs dans ConfirmModal, Footer, AdminStats
+- **Filigranes cartes** : 🏠 (domicile) et ✈️ (extérieur) remplacent les anciens
+- **Badge matchs** : Centrage vertical corrigé dans MobileTimeline
+
+### Supprimé
+
+- **PlanningGameCard.tsx** : Composant inutilisé (code mort)
+
+---
+
 ## [1.9.9] - 2026-01-17
 
 ### Amélioré

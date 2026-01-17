@@ -96,7 +96,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                             {dayGames.filter(g => (g.isHome ?? true)).length} Dom • {dayGames.filter(g => !(g.isHome ?? true)).length} Ext
                                         </span>
                                     </div>
-                                    <span className="text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full ml-2">
+                                    <span className="self-center text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full ml-2">
                                         {dayGames.length} matchs
                                     </span>
                                 </div>
