@@ -52,22 +52,22 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
                     </span>
                 </div>
 
-                {/* Navigation Arrows (Mini) */}
-                <div className="flex items-center bg-slate-800/50 rounded-lg p-0.5 border border-slate-700/50 ml-1">
+                {/* Navigation Arrows (Mobile Optimized) */}
+                <div className="flex items-center bg-slate-800/50 rounded-lg p-1 border border-slate-700/50 ml-1">
                     <button
                         onClick={onPrevWeek}
-                        className="p-1.5 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-colors"
+                        className="p-2 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-colors active:bg-slate-700"
                         aria-label="Semaine précédente"
                     >
-                        <ChevronLeft size={18} />
+                        <ChevronLeft size={20} />
                     </button>
-                    <div className="w-[1px] h-4 bg-slate-700/50 mx-0.5"></div>
+                    <div className="w-[1px] h-5 bg-slate-700/50 mx-1"></div>
                     <button
                         onClick={onNextWeek}
-                        className="p-1.5 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-colors"
+                        className="p-2 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-colors active:bg-slate-700"
                         aria-label="Semaine suivante"
                     >
-                        <ChevronRight size={18} />
+                        <ChevronRight size={20} />
                     </button>
                 </div>
             </div>
@@ -75,10 +75,10 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
             {/* Right: Actions */}
             <button
                 onClick={onToday}
-                className="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold rounded-lg border border-slate-700 transition-all active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-lg border border-slate-700 transition-all active:scale-95"
             >
                 <Calendar size={16} className="text-blue-400" />
-                <span className="hidden sm:inline">Aujourd'hui</span>
+                <span>Aujourd'hui</span>
             </button>
 
         </div>

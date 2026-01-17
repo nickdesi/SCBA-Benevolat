@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.10.5] - 2026-01-17
+
+### Mobile & UX
+
+- **Navigation Agrandie** : Flèches plus larges (padding augmenté) pour faciliter le tactile.
+- **Bouton Aujourd'hui** : Texte forcé en visible sur mobile (ne se cache plus).
+
+---
+
 ## [1.10.4] - 2026-01-17
 
 ### Design

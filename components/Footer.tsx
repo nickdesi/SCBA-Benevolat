@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.10.4';
+const APP_VERSION = 'v1.10.5';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.10.5', date: '17/01/2026', changes: ['📱 Mobile UX : Flèches de navigation agrandies', '📝 Lisibilité : Bouton "Aujourd\'hui" toujours visible'] },
     { version: 'v1.10.4', date: '17/01/2026', changes: ['📉 UI : Navigation compacte (Gain espace vertical)', '✨ Design minimaliste'] },
     { version: 'v1.10.3', date: '17/01/2026', changes: ['🚗 Covoiturage Intelligent : Badges de statut (Urgence/Dispo)', '👀 Visibilité immédiate des demandes'] },
     { version: 'v1.10.2', date: '17/01/2026', changes: ['🚀 Perf : Optimisation chargement polices (-50% poids)', '📱 Meilleure réactivité réseau'] },
