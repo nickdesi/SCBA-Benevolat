@@ -1,8 +1,18 @@
 # Changelog
 
+## [1.11.0] - 2026-01-17
+
+### Design & UX (v1.11.0)
+
+- **Restauration Header** : Retour au design "Pilule" centré, très apprécié des utilisateurs.
+- **Bouton Bugün** : Le bouton "Aujourd'hui" est maintenant large, bleu et centré sur mobile, offrant une meilleure ergonomie.
+- **Micro-interactions** : Ajout d'effets de scale et de transitions fluides sur la navigation.
+
+---
+
 ## [1.10.5] - 2026-01-17
 
-### Mobile & UX
+### Mobile & UX (v1.10.5)
 
 - **Navigation Agrandie** : Flèches plus larges (padding augmenté) pour faciliter le tactile.
 - **Bouton Aujourd'hui** : Texte forcé en visible sur mobile (ne se cache plus).
@@ -11,7 +21,7 @@
 
 ## [1.10.4] - 2026-01-17
 
-### Design
+### Design (v1.10.4)
 
 - **Navigation Compacte** :
   - Suppression du bloc sombre massif dans le planning.
@@ -23,7 +33,7 @@
 
 ## [1.10.3] - 2026-01-17
 
-### Fonctionnalité
+### Fonctionnalité (v1.10.3)
 
 - **Covoiturage Intelligent** :
   - Nouveau système de badges de statut dans le header.
@@ -35,7 +45,7 @@
 
 ## [1.10.2] - 2026-01-17
 
-### Performance
+### Performance (v1.10.2)
 
 - **Polices** : Réduction du nombre de variantes chargées (16 -> 8). Poids réduit de 50%.
   - *Inter* : 400, 500, 600, 700
@@ -46,7 +56,7 @@
 
 ## [1.10.1] - 2026-01-17
 
-### Visuel & Finitions
+### Visuel & Finitions (v1.10.1)
 
 - **Badge COMPLET** : Style "Néon" flashy (Teal/Emerald) pour meilleure distinction
 - **Filigranes** : Visibilité améliorée en Dark Mode (opacité/contraste)
@@ -56,13 +66,13 @@
 
 ## [1.10.0] - 2026-01-17
 
-### Amélioré
+### Amélioré (v1.10.0)
 
 - **Dark mode** : Correction des couleurs dans ConfirmModal, Footer, AdminStats
 - **Filigranes cartes** : 🏠 (domicile) et ✈️ (extérieur) remplacent les anciens
 - **Badge matchs** : Centrage vertical corrigé dans MobileTimeline
 
-### Supprimé
+### Supprimé (v1.10.0)
 
 - **PlanningGameCard.tsx** : Composant inutilisé (code mort)
 
@@ -70,7 +80,7 @@
 
 ## [1.9.9] - 2026-01-17
 
-### Amélioré
+### Amélioré (v1.9.9)
 
 - **React 18 Concurrent** : Utilisation de `startTransition` pour les changements de vue non-bloquants.
 
@@ -78,7 +88,7 @@
 
 ## [1.9.8] - 2026-01-17
 
-### Amélioré
+### Amélioré (v1.9.8)
 
 - **Performance "Snappy"** :
   - Animations CSS réduites (300-500ms → 100-200ms).
@@ -91,14 +101,14 @@
 
 ## [1.9.7] - 2026-01-17
 
-### Amélioré
+### Amélioré (v1.9.7)
 
 - **Navigation Mobile** :
   - Vue calendrier/semaine par défaut (au lieu de la liste).
   - Bouton navigation renommé "📋 Liste" / "📅 Semaine" (plus clair que "Planning").
   - Matchs passés (heure dépassée) masqués automatiquement.
 
-### Corrigé
+### Corrigé (v1.9.7)
 
 - **Bug fuseau horaire** : Correction du bouton "Aujourd'hui" qui affichait parfois le mauvais jour (UTC vs heure locale).
 
@@ -106,7 +116,7 @@
 
 ## [1.9.6] - 2026-01-16
 
-### Amélioré
+### Amélioré (v1.9.6)
 
 - **UI** : Badge "Complet" style célébration avec gradient vert vif, texte blanc, et animation "shine" pour les matchs entièrement pourvus.
 
@@ -114,7 +124,7 @@
 
 ## [1.9.5] - 2026-01-16
 
-### Amélioré
+### Amélioré (v1.9.5)
 
 - **Dashboard Admin** : Refonte complète avec :
   - Section "Urgences" pour les matchs < 48h non complets (badge countdown "Dans Xh").
@@ -126,7 +136,7 @@
 
 ## [1.9.4] - 2026-01-09
 
-### Amélioré
+### Amélioré (v1.9.4)
 
 - **UI** : Le compteur de bénévoles affiche désormais les postes pourvus réels (limités à la capacité) pour mieux mettre en évidence les manques (ex: "7/6" devient "4/6" si un poste est vide mais les autres sont en surplus).
 
@@ -134,7 +144,7 @@
 
 ## [1.9.3] - 2026-01-09
 
-### Ajouté
+### Ajouté (v1.9.3)
 
 - **SEO** : Intégration de Google Analytics et génération du sitemap.xml.
 
@@ -142,7 +152,7 @@
 
 ## [1.9.2] - 2026-01-09
 
-### Corrigé
+### Corrigé (v1.9.2)
 
 - **Calendrier Mobile** : Correction de l'affichage de la date qui s'affichait sur plusieurs lignes.
 
@@ -150,7 +160,7 @@
 
 ## [1.9.1] - 2026-01-09
 
-### Corrigé
+### Corrigé (v1.9.1)
 
 - **Mode Sombre** : Correction du bug affichant un fond blanc en mode sombre via `AppLayout`.
 
@@ -158,7 +168,7 @@
 
 ## [1.9.0] - 2026-01-09
 
-### Ajouté
+### Ajouté (v1.9.0)
 
 - **UI/UX Premium** :
   - **Drag-to-Scroll Desktop** : Navigation fluide à la souris sur les filtres d'équipes (curseur grab/grabbing).
@@ -166,7 +176,7 @@
   - **Tri Intelligent** : Ordre des équipes par catégorie (U9 -> Senior) par défaut.
   - **Interface** : Correction du cropping sur le bouton "Tous les matchs" et padding ajusté.
 
-### Modifié
+### Modifié (v1.9.0)
 
 - **Architecture (Refactoring)** :
   - `GameCard` scindé en sous-composants (`GameHeader`, `VolunteerSection`, `ActionButtons`).
@@ -178,7 +188,7 @@
 
 ## [1.8.0] - 2026-01-04
 
-### Ajouté
+### Ajouté (v1.8.0)
 
 - **Workflows Automatisés (.agent)** :
   - `release-manager` : Automatisation des versions, build et changelog.
@@ -192,7 +202,7 @@
   - Vitesse constante (40px/s) quel que soit nombre de matchs.
   - Support amélioré pour le mode "Reduced Motion" (Brave/iOS) tout en garantissant l'affichage des infos.
 
-### Modifié
+### Modifié (v1.8.0)
 
 - **Nettoyage Codebase** :
   - Suppression de la feature "Import par URL" (obsolète/instable).
@@ -204,7 +214,7 @@
 
 ## [1.7.0] - 2026-01-03
 
-### Ajouté
+### Ajouté (v1.7.0)
 
 - **Animations Premium CSS** :
   - `animate-scale-in` pour les modales (effet popup élastique).
@@ -218,7 +228,7 @@
   - `BottomNav` : glassmorphism adapté au dark mode.
   - `ProfileModal` : couleurs dark mode cohérentes.
 
-### Modifié
+### Modifié (v1.7.0)
 
 - **Refactoring Hooks (Best Practices React 19)** :
   - `useVolunteers.ts` : ajout interface `UseVolunteersReturn`, gestion d'erreurs structurée.
@@ -234,19 +244,19 @@
 
 ## [1.6.0] - 2026-01-01
 
-### Ajouté
+### Ajouté (v1.6.0)
 
 - **ConfirmModal** : Remplacement des `window.confirm` natifs par une modale de confirmation personnalisée et cohérente avec le design system (notamment pour la suppression de covoiturage).
 - **Badge de Version** : Ajout du badge de version dans le README.
 
-### Modifié
+### Modifié (v1.6.0)
 
 - **Refactoring Majeur** : Découpage du hook `useGames.ts` pour une meilleure maintenabilité :
   - `useVolunteers.ts` : Logique des bénévoles.
   - `useCarpool.ts` : Logique du covoiturage.
 - **Expérience Utilisateur** : Suppression du "flicker" (fermeture immédiate) sur les modales de connexion via `stopPropagation`.
 
-### Corrigé
+### Corrigé (v1.6.0)
 
 - **Crash Édition** : Fix du crash lors de l'ouverture du formulaire d'édition (Règles des Hooks React).
 - **Prop Drilling** : La suppression de covoiturage fonctionne désormais correctement depuis le profil utilisateur.
@@ -255,7 +265,7 @@
 
 ## [1.5.1] - 2025-01-01
 
-### Ajouté
+### Ajouté (v1.5.1)
 
 - **Mode Sombre (Dark Mode)** :
   - Toggle Soleil/Lune dans le Header.
@@ -268,7 +278,7 @@
   - Icônes watermark décoratives (🏟️ / 🚌) pour reconnaissance instantanée.
   - Badges colorés et texte complet ("Domicile" / "Extérieur").
 
-### Corrigé
+### Corrigé (v1.5.1)
 
 - **Bug Accordéon Desktop** : Correction du bug où l'expansion d'une carte créait un espace vide sur les cartes adjacentes. Passage de CSS Grid à CSS Columns (layout masonry) pour des cartes visuellement indépendantes.
 
@@ -276,7 +286,7 @@
 
 ## [1.5.0] - 2024-12-31
 
-### Ajouté
+### Ajouté (v1.5.0)
 
 - **Tableau de Bord Admin** :
   - Nouvelle vue statistique pour visualiser le taux de remplissage global des matchs à domicile.
@@ -289,14 +299,14 @@
   - Génération automatique de données structurées JSON-LD (SportsEvent).
   - Amélioration du référencement des matchs dans Google Search.
 
-### Modifié
+### Modifié (v1.5.0)
 
 - **Performance** : Utilisation de `React.lazy` pour le Dashboard Admin.
 - **Architecture** : Centralisation de la logique de notification.
 
 ---
 
-### Ajouté
+### Ajouté (v1.4.0) — Transactions & Mobile Nav
 
 - **Transactions Firestore Atomiques** :
   - `handleVolunteer`, `handleRemoveVolunteer`, `handleUpdateVolunteer` utilisent maintenant `runTransaction`.
@@ -309,7 +319,7 @@
   - Le bouton Admin dans `BottomNav` n'apparaît que si l'utilisateur est administrateur.
   - UX simplifiée pour les utilisateurs normaux.
 
-### Modifié
+### Modifié (v1.4.0)
 
 - **useGames Hook** :
   - Retourne `userRegistrations` (array) ET `userRegistrationsMap` (Map pour lookups O(1)).
@@ -324,7 +334,7 @@
 - **Architecture** :
   - `App.tsx` gère maintenant `currentUser` et `isProfileModalOpen` pour la navigation mobile.
 
-### Corrigé
+### Corrigé (v1.4.0)
 
 - Suppression de la redondance "Planning" / "Mon Espace Bénévole" sur mobile.
 - Le bouton Admin n'apparaît plus inutilement pour les utilisateurs non-admin.
@@ -333,7 +343,7 @@
 
 ## [1.3.0] - 2024-12-27
 
-### Ajouté
+### Ajouté (v1.3.0) — Profil & Auth
 
 - **Gestion de Profil Bénévole** :
   - Nouvelle modale "Mon Espace Bénévole" accessible via l'avatar utilisateur.
@@ -351,7 +361,7 @@
   - Les **Utilisateurs Connectés** utilisent leur profil Cloud Firestore.
   - Séparation stricte pour éviter qu'un utilisateur connecté ne modifie les inscriptions d'un autre.
 
-### Modifié
+### Modifié (v1.3.0)
 
 - **Interface Utilisateur** :
   - Refonte du Header pour inclure le menu utilisateur.
@@ -360,7 +370,7 @@
 - **Architecture** :
   - `ProfileModal` vérifie désormais en temps réel la validité des inscriptions par rapport à la feuille de match publique.
 
-### Corrigé
+### Corrigé (v1.3.0)
 
 - Bug où le menu utilisateur était masqué par la barre de filtres (fix z-index layout).
 - Faille logique où un utilisateur connecté pouvait supprimer une inscription faite en tant qu'invité (ou par un autre compte) si le nom correspondait.

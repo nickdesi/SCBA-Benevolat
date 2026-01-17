@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.10.5';
+const APP_VERSION = 'v1.11.0';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.11.0', date: '17/01/2026', changes: ['✨ UI : Restauration du design "Pilule" centré', '📱 UX : Bouton "Aujourd\'hui" large et accessible', '💎 Design : Effets de flou et ombres optimisés'] },
     { version: 'v1.10.5', date: '17/01/2026', changes: ['📱 Mobile UX : Flèches de navigation agrandies', '📝 Lisibilité : Bouton "Aujourd\'hui" toujours visible'] },
     { version: 'v1.10.4', date: '17/01/2026', changes: ['📉 UI : Navigation compacte (Gain espace vertical)', '✨ Design minimaliste'] },
     { version: 'v1.10.3', date: '17/01/2026', changes: ['🚗 Covoiturage Intelligent : Badges de statut (Urgence/Dispo)', '👀 Visibilité immédiate des demandes'] },

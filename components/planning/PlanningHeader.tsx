@@ -38,47 +38,43 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
     };
 
     return (
-        <div className="flex flex-row items-center justify-start gap-4 sm:gap-6 px-1 mb-4 select-none">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-5 mb-8 select-none">
 
-            {/* Left: Title & Nav */}
-            <div className="flex items-center gap-3 sm:gap-4">
-                {/* Text Info */}
-                <div className="flex flex-col">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white leading-none tracking-tight">
+            {/* Navigation Pill (Center on Desktop, Top on Mobile) */}
+            <div className="flex items-center gap-4 bg-slate-950/80 p-2 rounded-full border border-slate-800 shadow-xl w-full md:w-auto justify-between md:justify-center backdrop-blur-md">
+                <button
+                    onClick={onPrevWeek}
+                    className="p-3 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-all active:scale-90"
+                    aria-label="Semaine précédente"
+                >
+                    <ChevronLeft size={24} />
+                </button>
+
+                <div className="flex flex-col items-center min-w-[150px] px-2">
+                    <h2 className="text-white font-bold text-lg md:text-xl leading-none mb-1 tracking-tight">
                         {formattedMonth}
                     </h2>
-                    <span className="text-xs text-slate-400 font-medium mt-0.5">
+                    <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
                         {getWeekRange(currentDate)}
                     </span>
                 </div>
 
-                {/* Navigation Arrows (Mobile Optimized) */}
-                <div className="flex items-center bg-slate-800/50 rounded-lg p-1 border border-slate-700/50 ml-1">
-                    <button
-                        onClick={onPrevWeek}
-                        className="p-2 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-colors active:bg-slate-700"
-                        aria-label="Semaine précédente"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <div className="w-[1px] h-5 bg-slate-700/50 mx-1"></div>
-                    <button
-                        onClick={onNextWeek}
-                        className="p-2 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-colors active:bg-slate-700"
-                        aria-label="Semaine suivante"
-                    >
-                        <ChevronRight size={20} />
-                    </button>
-                </div>
+                <button
+                    onClick={onNextWeek}
+                    className="p-3 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-all active:scale-90"
+                    aria-label="Semaine suivante"
+                >
+                    <ChevronRight size={24} />
+                </button>
             </div>
 
-            {/* Right: Actions */}
+            {/* Actions (Bottom on mobile, Right on desktop) */}
             <button
                 onClick={onToday}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold rounded-lg border border-slate-700 transition-all active:scale-95"
+                className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 active:scale-95"
             >
-                <Calendar size={16} className="text-blue-400" />
-                <span>Aujourd'hui</span>
+                <Calendar size={20} />
+                <span className="text-base">Aujourd'hui</span>
             </button>
 
         </div>
