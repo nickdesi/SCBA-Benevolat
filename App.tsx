@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
 import Header from './components/Header';
 import GameList from './components/GameList';
@@ -34,6 +34,13 @@ function App() {
   const [isAdminStatsOpen, setIsAdminStatsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('calendar');
+
+  // Wrap view changes in startTransition for non-blocking UI updates
+  const handleViewChange = useCallback((view: 'home' | 'planning' | 'calendar') => {
+    startTransition(() => {
+      setCurrentView(view);
+    });
+  }, []);
 
   // Stats Component (lazy optional, but let's just import for now or lazy)
   const AdminStats = lazy(() => import('./components/AdminStats'));
@@ -203,7 +210,7 @@ function App() {
           {/* Bottom Navigation for Mobile */}
           <BottomNav
             currentView={currentView}
-            onViewChange={setCurrentView}
+            onViewChange={handleViewChange}
             onPlanningClick={() => setIsProfileModalOpen(true)}
             isAuthenticated={isAuthenticated}
           />
@@ -266,13 +273,13 @@ function App() {
             <div className="flex justify-center mb-8 hidden md:flex">
               <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
                 <button
-                  onClick={() => setCurrentView('home')}
+                  onClick={() => handleViewChange('home')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${currentView === 'home' ? 'bg-slate-100 text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Liste
                 </button>
                 <button
-                  onClick={() => setCurrentView('calendar')}
+                  onClick={() => handleViewChange('calendar')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${currentView === 'calendar' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   Calendrier
@@ -402,7 +409,7 @@ function App() {
                   Retournez à l'accueil pour vous inscrire !
                 </p>
                 <button
-                  onClick={() => setCurrentView('home')}
+                  onClick={() => handleViewChange('home')}
                   className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
                 >
                   Voir tous les matchs

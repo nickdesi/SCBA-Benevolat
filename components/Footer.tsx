@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.9.8';
+const APP_VERSION = 'v1.9.9';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.9.9', date: '17/01/2026', changes: ['⚡ React 18 startTransition : changement de vue non-bloquant'] },
     { version: 'v1.9.8', date: '17/01/2026', changes: ['⚡ Interface snappy : animations réduites, transitions instantanées'] },
     { version: 'v1.9.7', date: '17/01/2026', changes: ['📅 Vue semaine par défaut', '🔘 Bouton Liste/Semaine clair', '🕒 Matchs passés masqués'] },
     { version: 'v1.9.6', date: '16/01/2026', changes: ['✨ Badge "Complet" célébration : gradient vert, animation shine'] },

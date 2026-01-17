@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.9] - 2026-01-17
+
+### Amélioré
+
+- **React 18 Concurrent** : Utilisation de `startTransition` pour les changements de vue non-bloquants.
+
+---
+
 ## [1.9.8] - 2026-01-17
 
 ### Amélioré
