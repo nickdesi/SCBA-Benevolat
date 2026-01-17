@@ -78,7 +78,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
     return (
         <div className="hidden lg:block relative min-h-[600px] border-t border-slate-800/50 pt-6">
             {activeDays.length > 0 ? (
-                <div className="flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
+                <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
                     {activeDays.map((day) => {
                         const dayGames = getGamesForDay(day);
                         const isToday = toISODate(day) === toISODate(new Date());

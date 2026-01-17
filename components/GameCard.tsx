@@ -137,9 +137,16 @@ const GameCard: React.FC<GameCardProps> = memo(({
             className={`
             relative rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all duration-150
             bg-white dark:bg-slate-900
-            ${isFullyStaffed ? 'ring-2 ring-emerald-400 dark:ring-emerald-600 ring-inset' : 'border border-slate-200 dark:border-slate-700'}
-            ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 border-red-400 ring-inset' : ''}
         `}>
+            {/* Border/Ring Overlay - Always on top */}
+            <div className={`
+                absolute inset-0 pointer-events-none z-50 rounded-2xl
+                ${isFullyStaffed
+                    ? 'ring-2 ring-emerald-400 dark:ring-emerald-600 ring-inset'
+                    : 'ring-1 ring-slate-200 dark:ring-slate-700 ring-inset'
+                }
+                ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 dark:ring-red-400' : ''}
+            `} />
             {/* 1. Header Section */}
             <GameHeader
                 game={game}

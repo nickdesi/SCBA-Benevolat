@@ -1,8 +1,9 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v1.10.0';
+const APP_VERSION = 'v1.10.1';
 // Changelog data
 const CHANGELOG = [
+    { version: 'v1.10.1', date: '17/01/2026', changes: ['✨ Badge COMPLET flashy', '🎨 Overlay bordures robuste', '🌔 Filigranes visibles Dark Mode'] },
     { version: 'v1.10.0', date: '17/01/2026', changes: ['🎨 Dark mode amélioré', '🏠 Filigranes maison/avion', '🔲 Badge matchs centré'] },
     { version: 'v1.9.9', date: '17/01/2026', changes: ['⚡ React 18 startTransition : changement de vue non-bloquant'] },
     { version: 'v1.9.8', date: '17/01/2026', changes: ['⚡ Interface snappy : animations réduites, transitions instantanées'] },

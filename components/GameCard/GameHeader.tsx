@@ -34,7 +34,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             }`}>
 
             {/* Watermark Icon */}
-            <div className={`absolute -right-4 -top-4 text-8xl opacity-10 dark:opacity-5 select-none pointer-events-none`}>
+            <div className={`absolute -right-4 -top-4 text-8xl opacity-10 dark:opacity-[0.12] dark:text-slate-400 select-none pointer-events-none transition-opacity`}>
                 {isHomeGame ? '🏠' : '✈️'}
             </div>
 
@@ -62,12 +62,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                         <motion.span
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="relative px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 overflow-hidden"
+                            className="relative px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-gradient-to-r from-teal-400 via-emerald-400 to-green-400 text-white shadow-[0_0_10px_rgba(52,211,153,0.6)] border border-white/30 overflow-hidden"
                         >
                             <motion.span
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                                animate={{ x: ['-100%', '100%'] }}
-                                transition={{ repeat: Infinity, duration: 2, ease: 'linear', repeatDelay: 1 }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                                animate={{ x: ['-100%', '200%'] }}
+                                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeOut', repeatDelay: 0.5 }}
                             />
                             <span className="relative">✅ Complet</span>
                         </motion.span>

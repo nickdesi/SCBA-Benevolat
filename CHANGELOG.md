@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.10.1] - 2026-01-17
+
+### Visuel & Finitions
+
+- **Badge COMPLET** : Style "Néon" flashy (Teal/Emerald) pour meilleure distinction
+- **Filigranes** : Visibilité améliorée en Dark Mode (opacité/contraste)
+- **Layout** : Centrage grille Desktop & Correction overlay bordures (z-index)
+
+---
+
 ## [1.10.0] - 2026-01-17
 
 ### Amélioré
