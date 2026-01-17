@@ -1,7 +1,7 @@
 # SCBA Bénévoles 🏀
 
 [![demo online](https://img.shields.io/badge/demo-online-brightgreen)](https://scba.desimone.fr)
-[![version](https://img.shields.io/badge/v1.9.4-GitHub-181717?style=flat&logo=github)](https://github.com/nickdesi/SCBA-Benevolat)
+[![version](https://img.shields.io/badge/v1.11.0-GitHub-181717?style=flat&logo=github)](https://github.com/nickdesi/SCBA-Benevolat)
 [![Deploy with Coolify](https://img.shields.io/badge/🚀_Deploy_with-Coolify-blueviolet)](https://coolify.io)
 
 Application de gestion du bénévolat pour le **Stade Clermontois Basket Auvergne**.
@@ -120,6 +120,10 @@ flowchart LR
 
 ### 👥 Pour les parents & Bénévoles
 
+- **📱 Application PWA Native** :
+  - **Installable** : Ajoutez l'app sur l'écran d'accueil (iOS/Android).
+  - **Offline Ready** : Fonctionne même avec une connexion instable.
+  - **Notifications** : Soyez alerté des besoins urgents et de vos missions.
 - **Inscription facile** :
   - **Invité** : Inscription immédiate sans compte (stockage local).
   - **Connecté** : Création de compte (Google ou Email) pour gérer ses inscriptions partout.
@@ -128,7 +132,7 @@ flowchart LR
   - Vue centralisée de toutes vos inscriptions.
   - Gestion et annulation sécurisée de vos missions.
   - Détection automatique des inscriptions obsolètes ou orphelines.
-- **Interface moderne** : Design épuré avec dégradés, cartes animées
+- **Interface moderne** : Design épuré avec dégradés, cartes animées, **Dark Mode** automatique.
 - **📅 Ajouter au calendrier** : exportez vers Google Agenda, Apple Calendar ou Outlook
 - **🚗 Covoiturage** : proposez des places (conducteur) ou cherchez une place (passager)
 - **🔄 Mise à jour automatique** : synchronisation temps réel via Firebase
@@ -136,6 +140,10 @@ flowchart LR
 
 ### 🔧 Pour les administrateurs
 
+- **📊 Tableau de Bord (Dashboard)** :
+  - **Vue d'ensemble** : Statistiques de remplissage en temps réel.
+  - **Gestion des Urgences** : Identifiez en un coup d'œil les matchs critiques (< 48h).
+  - **Filtres Intelligents** : Triez par urgence, catégorie ou taux de remplissage.
 - **🔐 Authentification Firebase** : Connexion sécurisée
 - **🏠 Matchs Domicile / 🚗 Extérieur** : différenciation des types de matchs
 - **📥 Import en masse** : Copier-coller depuis le calendrier FFBB
