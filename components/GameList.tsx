@@ -88,8 +88,8 @@ const GameList: React.FC<GameListProps> = memo(({
                     {/* Month Header - Modern pill style */}
                     <div className="flex items-center justify-center my-10">
                         <div className="inline-flex items-center gap-3 px-6 py-3 
-                          bg-gradient-to-r from-slate-800 to-slate-700 
-                          rounded-full shadow-lg shadow-slate-900/20">
+                          bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-900 dark:to-purple-900
+                          rounded-full shadow-lg shadow-indigo-500/30 border border-white/10">
                             <span className="text-2xl">📅</span>
                             <div className="flex flex-col items-start leading-tight">
                                 <span className="text-lg font-black text-white tracking-wide">
@@ -105,12 +105,12 @@ const GameList: React.FC<GameListProps> = memo(({
                         </div>
                     </div>
 
-                    <div className="columns-1 lg:columns-2 gap-8 space-y-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                         {group.games.map((game, index) => (
                             <div
                                 key={game.id}
                                 id={`game-${game.id}`}
-                                className="break-inside-avoid"
+                                className="h-full"
                             >
                                 <GameCard
                                     game={game}
@@ -128,6 +128,7 @@ const GameList: React.FC<GameListProps> = memo(({
                                     onUpdateRequest={onUpdateRequest}
                                     userRegistrations={userRegistrations}
                                     isAuthenticated={isAuthenticated}
+                                    index={index}
                                 />
                             </div>
                         ))}
