@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.0.0] - 2026-01-18
+
+### 🚀 Major Release (v2.0.0)
+
+Cette version marque une étape majeure dans l'évolution de l'application avec une refonte complète de l'expérience utilisateur ("UI/UX Pro Max") et l'introduction de fonctionnalités sociales clés.
+
+#### ✨ Nouveautés
+
+- **Système de Broadcast (Admin)** :
+  - **Bannières d'urgence** : Diffusez des messages prioritaires (Info, Warning, Urgent) visibles par tous.
+  - **Gestion Admin** : Interface dédiée pour créer, programmer et désactiver les annonces.
+  - **Auto-dismiss** : Les utilisateurs peuvent masquer les annonces pour leur session.
+
+- **Mon Espace Bénévole (Redesign)** :
+  - **Dashboard Complet** : Vue unifiée avec statistiques personnelles, prochains matchs et historique.
+  - **Cartes Intelligentes** : Affichage prioritaire de la "Prochaine Mission".
+  - **Filtres Avancés** : Navigation par onglets (Missions, Historique, Messages).
+
+- **Global App Polish (Round 1 & 2)** :
+  - **Navigation Mobile** : Nouvelle barre de navigation glassmorphic avec animations fluides.
+  - **Cartes Matchs** : Animations étagées ("staggered") à l'apparition pour un effet premium.
+  - **Smart Navigation** : Bouton "Itinéraire" riche dans les cartes de matchs avec lien Waze/Maps direct.
+  - **Layout Grid** : Passage d'un layout Masonry à une Grille CSS stricte pour un alignement parfait.
+  - **Typographie** : Refonte de la hiérarchie visuelle (Titres "Sport", Badges "Néon").
+
+#### ⚡ Performance & Technique
+
+- **Scrollbar Liquid** : Nouvelle barre de défilement custom (fine et flottante) pour un look natif.
+- **Optimisation Mobile** : Bundle size maintenu sous les 150kB malgré les nouvelles features.
+- **Sécurité** : Règles Firestore strictes pour la collection `announcements` (Lecture publique, Écriture admin).
+
+---
+
 ## [1.11.0] - 2026-01-17
 
 ### Design & UX (v1.11.0)

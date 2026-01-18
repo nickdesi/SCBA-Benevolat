@@ -27,6 +27,7 @@ interface GameCardProps {
     onUpdateRequest: (game: Game) => void;
     userRegistrations?: Map<string, string>;
     isAuthenticated?: boolean;
+    index?: number;
 }
 
 // Check if a role is considered "complete"
@@ -73,6 +74,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
     onUpdateRequest,
     userRegistrations,
     isAuthenticated,
+    index = 0,
 }) => {
     // Accordion state - Default expanded if urgent logic removed or kept? kept locally but simplified
     const [isExpanded, setIsExpanded] = useState(false);
@@ -138,9 +140,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
             className={`
-            relative rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all duration-150
+            relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 flex flex-col overflow-hidden transition-all duration-300 h-full
             bg-white dark:bg-slate-900
         `}>
             {/* Border/Ring Overlay - Always on top */}
@@ -153,17 +155,19 @@ const GameCard: React.FC<GameCardProps> = memo(({
                 ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 dark:ring-red-400' : ''}
             `} />
             {/* 1. Header Section */}
-            <GameHeader
-                game={game}
-                isHomeGame={isHomeGame}
-                isFullyStaffed={isFullyStaffed}
-                totalCarpoolSeats={totalCarpoolSeats}
-                totalPassengerRequests={totalPassengerRequests}
-                isUrgent={isUrgent}
-                isAdmin={isAdmin}
-                onEditRequest={onEditRequest}
-                onDeleteRequest={onDeleteRequest}
-            />
+            <div className="flex-1">
+                <GameHeader
+                    game={game}
+                    isHomeGame={isHomeGame}
+                    isFullyStaffed={isFullyStaffed}
+                    totalCarpoolSeats={totalCarpoolSeats}
+                    totalPassengerRequests={totalPassengerRequests}
+                    isUrgent={isUrgent}
+                    isAdmin={isAdmin}
+                    onEditRequest={onEditRequest}
+                    onDeleteRequest={onDeleteRequest}
+                />
+            </div>
 
             {/* 2. Accordion Trigger */}
             <motion.button

@@ -273,19 +273,29 @@ function App() {
 
           {/* Desktop View Toggle */}
           {!loading && (
-            <div className="flex justify-center mb-8 hidden md:flex">
-              <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
+            <div className="flex justify-center mb-8 hidden md:flex animate-fade-in-up">
+              <div className="bg-white/70 dark:bg-slate-900/60 p-1.5 rounded-2xl shadow-lg border border-white/50 dark:border-slate-700 backdrop-blur-xl inline-flex relative">
+                {/* Active Indicator Background */}
+                <div
+                  className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 shadow-md transition-all duration-300 ease-out`}
+                  style={{
+                    left: currentView === 'home' ? '6px' : '50%',
+                    width: 'calc(50% - 6px)',
+                    transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)' // subtle adjustment
+                  }}
+                />
+
                 <button
                   onClick={() => handleViewChange('home')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${currentView === 'home' ? 'bg-slate-100 text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                 >
-                  Liste
+                  📋 Liste
                 </button>
                 <button
                   onClick={() => handleViewChange('calendar')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${currentView === 'calendar' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                 >
-                  Calendrier
+                  📅 Calendrier
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
 import { Calendar, Trash2 } from 'lucide-react';
@@ -45,53 +46,66 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                 </label>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-600">
                 {filtered.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 text-sm italic">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center py-8 text-slate-400 text-sm italic"
+                    >
                         Aucune autre mission trouvée.
-                    </div>
+                    </motion.div>
                 ) : (
-                    filtered.map(reg => (
-                        <div key={reg.id} className="group flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600">
-                            <div className="flex-shrink-0 w-12 h-12 bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 rounded-lg flex flex-col items-center justify-center font-bold text-xs uppercase shadow-sm">
-                                <span>{reg.gameDate?.split(' ')[0].substring(0, 3)}</span>
-                                <span className="text-lg leading-none">{reg.gameDate?.match(/\d+/)?.[0]}</span>
-                            </div>
-
-                            <div className="flex-grow min-w-0">
-                                <h4 className="font-bold text-slate-800 dark:text-slate-200 truncate">
-                                    {reg.team} vs {reg.opponent}
-                                </h4>
-                                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                    <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-600 font-semibold text-slate-600 dark:text-slate-300">
-                                        {reg.roleName}
-                                    </span>
-                                    <span>• {reg.gameTime}</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => setDeleteId(reg.id)}
-                                className="p-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                title="Se désister"
+                    <AnimatePresence mode='popLayout'>
+                        {filtered.map((reg, index) => (
+                            <motion.div
+                                key={reg.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ delay: index * 0.1, duration: 0.3 }}
+                                className="group flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-600"
                             >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
+                                <div className="flex-shrink-0 w-12 h-12 bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 rounded-lg flex flex-col items-center justify-center font-bold text-xs uppercase shadow-sm">
+                                    <span>{reg.gameDate?.split(' ')[0].substring(0, 3)}</span>
+                                    <span className="text-lg leading-none">{reg.gameDate?.match(/\d+/)?.[0]}</span>
+                                </div>
 
-                            {/* Delete Confirmation for THIS item */}
-                            {deleteId === reg.id && (
-                                <ConfirmModal
-                                    isOpen={true}
-                                    title="Confirmer le désistement"
-                                    message={`Voulez-vous annuler votre participation pour le match contre ${reg.opponent} ?`}
-                                    confirmText="Se désister"
-                                    confirmStyle="danger"
-                                    onConfirm={() => handleDelete(reg)}
-                                    onCancel={() => setDeleteId(null)}
-                                />
-                            )}
-                        </div>
-                    ))
+                                <div className="flex-grow min-w-0">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                                        {reg.team} vs {reg.opponent}
+                                    </h4>
+                                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-600 font-semibold text-slate-600 dark:text-slate-300">
+                                            {reg.roleName}
+                                        </span>
+                                        <span>• {reg.gameTime}</span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setDeleteId(reg.id)}
+                                    className="p-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                    title="Se désister"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+
+                                {/* Delete Confirmation for THIS item */}
+                                {deleteId === reg.id && (
+                                    <ConfirmModal
+                                        isOpen={true}
+                                        title="Confirmer le désistement"
+                                        message={`Voulez-vous annuler votre participation pour le match contre ${reg.opponent} ?`}
+                                        confirmText="Se désister"
+                                        confirmStyle="danger"
+                                        onConfirm={() => handleDelete(reg)}
+                                        onCancel={() => setDeleteId(null)}
+                                    />
+                                )}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 )}
             </div>
         </div>

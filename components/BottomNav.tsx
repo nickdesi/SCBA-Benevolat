@@ -45,10 +45,11 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={onPlanningClick}
-                        className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20 text-amber-600 hover:bg-amber-50"
+                        className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 relative overflow-hidden"
                     >
-                        <AnimatedBallIcon className="w-6 h-6" />
-                        <span className="text-[10px] font-bold">Mes Matchs</span>
+                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 opacity-0 hover:opacity-100 transition-opacity" />
+                        <AnimatedBallIcon className="w-6 h-6 relative z-10" />
+                        <span className="text-[10px] font-bold relative z-10">Mes Matchs</span>
                     </motion.button>
                 )}
 
