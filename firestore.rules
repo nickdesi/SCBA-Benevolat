@@ -2,8 +2,14 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Règles spécifiques pour les annonces
+    match /announcements/{announcement} {
+      allow read: if true; // Public: tout le monde voit les alertes
+      allow write: if request.auth != null && request.auth.token.admin == true; // Admin only (à sécuriser avec Custom Claims ou liste d'admins)
+    }
+
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if true; // Existing wildcard (to be tightened later)
     }
   }
 }

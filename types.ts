@@ -61,3 +61,14 @@ export interface GameFormData {
   isHome: boolean;
   roleConfig?: RoleConfig[]; // Optional configuration for roles
 }
+
+export interface Announcement {
+  id: string;
+  type: 'info' | 'warning' | 'urgent'; // Détermine la couleur/style
+  message: string; // Le contenu, support Markdown basique si besoin
+  active: boolean; // Soft delete / switch on-off rapide
+  expiresAt: any; // Timestamp Firestore
+  createdAt: any; // Timestamp Firestore
+  createdBy: string; // User ID de l'admin
+  target?: 'all' | 'volunteers' | 'admins'; // (Optionnel pour le futur, default 'all')
+}

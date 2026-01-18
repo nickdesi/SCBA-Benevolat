@@ -24,6 +24,7 @@ const PlanningView = lazy(() => import('./components/planning/PlanningView'));
 import AdminToolbar from './components/AdminToolbar';
 import PullToRefresh from './components/PullToRefresh';
 import { AppLayout } from './components/Layout/AppLayout';
+import { AnnouncementBanner } from './components/Layout/AnnouncementBanner';
 
 function App() {
   // UI State
@@ -195,6 +196,7 @@ function App() {
       }
       topElements={
         <>
+          <AnnouncementBanner />
           <EventSchema games={games} />
           {/* Ticker for upcoming matches */}
           <MatchTicker games={sortedGames} />

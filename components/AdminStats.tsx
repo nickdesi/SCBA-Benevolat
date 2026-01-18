@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { Game, Role } from '../types';
 import useScrollLock from '../utils/useScrollLock';
+import { AdminBroadcastPanel } from './admin/AdminBroadcastPanel';
 
 interface AdminStatsProps {
     games: Game[];
@@ -8,6 +9,7 @@ interface AdminStatsProps {
 }
 
 type FilterType = 'all' | 'urgent' | 'incomplete';
+type TabType = 'stats' | 'broadcast';
 
 // Helper to check if a role is complete
 const isRoleComplete = (role: Role): boolean => {
@@ -25,6 +27,7 @@ const getMissingRoles = (game: Game): string[] => {
 
 const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
     useScrollLock(true);
+    const [activeTab, setActiveTab] = useState<TabType>('stats');
     const [filter, setFilter] = useState<FilterType>('all');
 
     const stats = useMemo(() => {
@@ -116,14 +119,30 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-6 text-white flex justify-between items-center">
+                <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-6 text-white flex justify-between items-start shrink-0">
                     <div>
                         <h2 className="text-2xl font-black flex items-center gap-2">
-                            <span>📊</span> Tableau de Bord Admin
+                            <span>{activeTab === 'broadcast' ? '📢' : '📊'}</span> Admin Dashboard
                         </h2>
-                        <p className="text-slate-400 text-sm">Vue d'ensemble des besoins en bénévoles</p>
+                        <p className="text-slate-400 text-sm">Administration centralisée</p>
+
+                        {/* Tabs */}
+                        <div className="flex gap-2 mt-4">
+                            <button
+                                onClick={() => setActiveTab('stats')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'stats' ? 'bg-white text-slate-900 shadow-lg' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'}`}
+                            >
+                                Statistiques
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('broadcast')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'broadcast' ? 'bg-white text-slate-900 shadow-lg' : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'}`}
+                            >
+                                Communication
+                            </button>
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
@@ -135,112 +154,118 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
                     </button>
                 </div>
 
-                <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                        <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center">
-                            <p className="text-blue-600 text-[10px] font-bold uppercase tracking-wider mb-0.5">Matchs</p>
-                            <p className="text-2xl font-black text-blue-900">{stats.totalGames}</p>
-                        </div>
-                        <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center">
-                            <p className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider mb-0.5">Taux</p>
-                            <p className="text-2xl font-black text-emerald-900">{stats.percent}%</p>
-                        </div>
-                        <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 text-center">
-                            <p className="text-amber-600 text-[10px] font-bold uppercase tracking-wider mb-0.5">Postes</p>
-                            <p className="text-2xl font-black text-amber-900">{stats.filledSlots}/{stats.totalSlots}</p>
-                        </div>
-                        <div className={`p-3 rounded-xl border text-center ${stats.urgentCount > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
-                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${stats.urgentCount > 0 ? 'text-red-600' : 'text-slate-500'}`}>Urgents</p>
-                            <p className={`text-2xl font-black ${stats.urgentCount > 0 ? 'text-red-700' : 'text-slate-400'}`}>{stats.urgentCount}</p>
-                        </div>
-                    </div>
-
-                    {/* Filter Tabs */}
-                    <div className="flex gap-2 mb-4">
-                        <button
-                            onClick={() => setFilter('all')}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${filter === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                        >
-                            Tous ({stats.totalGames})
-                        </button>
-                        <button
-                            onClick={() => setFilter('urgent')}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${filter === 'urgent' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
-                        >
-                            🚨 Urgents ({stats.urgentCount})
-                        </button>
-                        <button
-                            onClick={() => setFilter('incomplete')}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${filter === 'incomplete' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
-                        >
-                            ⚠️ Incomplets ({stats.incompleteCount})
-                        </button>
-                    </div>
-
-                    {/* Games List */}
-                    <div className="space-y-3">
-                        {filteredGames.length === 0 ? (
-                            <div className="text-center py-8 text-slate-400">
-                                <span className="text-4xl mb-2 block">🎉</span>
-                                <p className="font-medium">Aucun match dans cette catégorie</p>
-                            </div>
-                        ) : (
-                            filteredGames.map(game => (
-                                <div
-                                    key={game.id}
-                                    className={`p-4 rounded-xl border ${game.isUrgent ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <h4 className="font-bold text-slate-800">{game.team} vs {game.opponent}</h4>
-                                                {game.isUrgent && (
-                                                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-red-600 text-white rounded-full animate-pulse">
-                                                        🚨 Dans {formatHoursUntil(game.hoursUntil)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-slate-500">{game.date}</p>
-
-                                            {/* Missing Roles */}
-                                            {game.missingRoles.length > 0 && (
-                                                <p className="text-xs mt-1">
-                                                    <span className="text-red-600 font-semibold">Manque :</span>{' '}
-                                                    <span className="text-red-500">{game.missingRoles.join(', ')}</span>
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col items-end gap-1">
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${game.percent === 100 ? 'bg-emerald-100 text-emerald-700' :
-                                                game.percent > 50 ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-red-100 text-red-700'
-                                                }`}>
-                                                {game.percent}%
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Progress Bar */}
-                                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full transition-all duration-200 ${game.percent === 100 ? 'bg-emerald-500' :
-                                                game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
-                                                }`}
-                                            style={{ width: `${game.percent}%` }}
-                                        />
-                                    </div>
-                                    <p className="text-[10px] text-slate-400 mt-1 text-right font-medium">
-                                        {game.filled} / {formatCapacity(game.total)} postes
-                                    </p>
+                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                    {activeTab === 'broadcast' ? (
+                        <AdminBroadcastPanel />
+                    ) : (
+                        <>
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                                <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center">
+                                    <p className="text-blue-600 text-[10px] font-bold uppercase tracking-wider mb-0.5">Matchs</p>
+                                    <p className="text-2xl font-black text-blue-900">{stats.totalGames}</p>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                                <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center">
+                                    <p className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider mb-0.5">Taux</p>
+                                    <p className="text-2xl font-black text-emerald-900">{stats.percent}%</p>
+                                </div>
+                                <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 text-center">
+                                    <p className="text-amber-600 text-[10px] font-bold uppercase tracking-wider mb-0.5">Postes</p>
+                                    <p className="text-2xl font-black text-amber-900">{stats.filledSlots}/{stats.totalSlots}</p>
+                                </div>
+                                <div className={`p-3 rounded-xl border text-center ${stats.urgentCount > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
+                                    <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${stats.urgentCount > 0 ? 'text-red-600' : 'text-slate-500'}`}>Urgents</p>
+                                    <p className={`text-2xl font-black ${stats.urgentCount > 0 ? 'text-red-700' : 'text-slate-400'}`}>{stats.urgentCount}</p>
+                                </div>
+                            </div>
+
+                            {/* Filter Tabs */}
+                            <div className="flex gap-2 mb-4">
+                                <button
+                                    onClick={() => setFilter('all')}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${filter === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                >
+                                    Tous ({stats.totalGames})
+                                </button>
+                                <button
+                                    onClick={() => setFilter('urgent')}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${filter === 'urgent' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+                                >
+                                    🚨 Urgents ({stats.urgentCount})
+                                </button>
+                                <button
+                                    onClick={() => setFilter('incomplete')}
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${filter === 'incomplete' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
+                                >
+                                    ⚠️ Incomplets ({stats.incompleteCount})
+                                </button>
+                            </div>
+
+                            {/* Games List */}
+                            <div className="space-y-3">
+                                {filteredGames.length === 0 ? (
+                                    <div className="text-center py-8 text-slate-400">
+                                        <span className="text-4xl mb-2 block">🎉</span>
+                                        <p className="font-medium">Aucun match dans cette catégorie</p>
+                                    </div>
+                                ) : (
+                                    filteredGames.map(game => (
+                                        <div
+                                            key={game.id}
+                                            className={`p-4 rounded-xl border ${game.isUrgent ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <h4 className="font-bold text-slate-800">{game.team} vs {game.opponent}</h4>
+                                                        {game.isUrgent && (
+                                                            <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-red-600 text-white rounded-full animate-pulse">
+                                                                🚨 Dans {formatHoursUntil(game.hoursUntil)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-slate-500">{game.date}</p>
+
+                                                    {/* Missing Roles */}
+                                                    {game.missingRoles.length > 0 && (
+                                                        <p className="text-xs mt-1">
+                                                            <span className="text-red-600 font-semibold">Manque :</span>{' '}
+                                                            <span className="text-red-500">{game.missingRoles.join(', ')}</span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${game.percent === 100 ? 'bg-emerald-100 text-emerald-700' :
+                                                        game.percent > 50 ? 'bg-blue-100 text-blue-700' :
+                                                            'bg-red-100 text-red-700'
+                                                        }`}>
+                                                        {game.percent}%
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Progress Bar */}
+                                            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full transition-all duration-200 ${game.percent === 100 ? 'bg-emerald-500' :
+                                                        game.percent > 50 ? 'bg-blue-500' : 'bg-red-500'
+                                                        }`}
+                                                    style={{ width: `${game.percent}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 mt-1 text-right font-medium">
+                                                {game.filled} / {formatCapacity(game.total)} postes
+                                            </p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
                     <button
                         onClick={onClose}
                         className="px-6 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors"
