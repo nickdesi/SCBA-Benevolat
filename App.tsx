@@ -192,6 +192,7 @@ function App() {
           onUnsubscribe={handleRemoveVolunteer}
           onRemoveCarpool={handleRemoveCarpool}
           onToast={addToast}
+          onOpenAdminStats={() => setIsAdminStatsOpen(true)}
         />
       }
       topElements={
@@ -295,7 +296,6 @@ function App() {
               {isAdmin && (
                 <AdminToolbar
                   onImport={() => setIsImportModalOpen(true)}
-                  onDashboard={() => setIsAdminStatsOpen(true)}
                   onAddGame={() => setIsAddingGame(true)}
                 />
               )}

@@ -17,6 +17,8 @@ interface UserProfileProps {
     allTeams?: string[];
     favoriteTeams?: string[];
     onToggleFavorite?: (team: string) => Promise<void>;
+    isAdmin?: boolean;
+    onOpenAdminStats?: () => void;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
@@ -29,7 +31,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
     onToast = () => { },
     allTeams = [],
     favoriteTeams = [],
-    onToggleFavorite = async () => { }
+    onToggleFavorite = async () => { },
+    isAdmin = false,
+    onOpenAdminStats = () => { }
 }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -148,6 +152,24 @@ const UserProfile: React.FC<UserProfileProps> = ({
                             <UserIcon className="w-4 h-4" />
                             Mon Espace Bénévole
                         </button>
+
+                        {/* Admin Stats Link */}
+                        {isAdmin && (
+                            <button
+                                onClick={() => {
+                                    onOpenAdminStats();
+                                    setShowMenu(false);
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 font-bold 
+                                           hover:bg-slate-100 rounded-lg transition-colors text-left mt-1"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+                                </svg>
+                                Administration
+                            </button>
+                        )}
                     </div>
 
                     <div className="p-1 border-t border-slate-100">

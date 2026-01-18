@@ -69,7 +69,7 @@ export const AnnouncementBanner: React.FC = () => {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className={`${getStyles()} relative z-50 shadow-md overflow-hidden`}
+                    className={`${getStyles()} relative z-40 shadow-md overflow-hidden`}
                     role="alert"
                 >
                     <div className="max-w-7xl mx-auto px-4 py-3 flex items-start justify-between gap-3">
