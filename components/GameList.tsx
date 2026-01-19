@@ -110,7 +110,7 @@ const GameList: React.FC<GameListProps> = memo(({
                             <div
                                 key={game.id}
                                 id={`game-${game.id}`}
-                                className="h-full"
+                                className="h-full cv-auto"
                             >
                                 <GameCard
                                     game={game}

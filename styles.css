@@ -529,3 +529,13 @@ textarea::placeholder {
   /* Exception: Ticker marquee is informational, not decorative - keep it running */
   .animate-marquee {}
 }
+
+/* ========================================
+   Performance Utilities (React Best Practices)
+   ======================================== */
+
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 350px;
+  /* Estimated height of a GameCard to prevent scroll jumping */
+}
