@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
-import { Clock, MapPin, AlertCircle } from 'lucide-react';
+import { Clock, MapPin, AlertCircle, Trash2 } from 'lucide-react';
 import ConfirmModal from '../ConfirmModal';
 
 interface NextMissionCardProps {
@@ -53,9 +53,10 @@ export const NextMissionCard: React.FC<NextMissionCardProps> = ({ registration, 
                     </div>
                     <button
                         onClick={handleUnsubscribe}
-                        className="text-xs text-red-400 hover:text-red-300 underline mt-2"
+                        className="flex items-center gap-1.5 px-3 py-1.5 mt-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 transition-all text-xs font-bold"
                     >
-                        Se désister
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Annuler
                     </button>
                 </div>
             </div>
@@ -67,9 +68,9 @@ export const NextMissionCard: React.FC<NextMissionCardProps> = ({ registration, 
                     onUnsubscribe(registration.gameId, registration.roleId, registration.volunteerName || user.displayName || "");
                     setConfirmOpen(false);
                 }}
-                title="Annuler cette mission ?"
-                message="Êtes-vous sûr de vouloir vous désister pour ce match ? Cela libérera la place pour un autre bénévole."
-                confirmText="Confirmer le désistement"
+                title="Annuler ma venue ?"
+                message="Êtes-vous sûr de vouloir annuler votre participation à ce match ?"
+                confirmText="Confirmer l'annulation"
                 confirmStyle="danger"
             />
         </div>

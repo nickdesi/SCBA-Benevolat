@@ -87,7 +87,7 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                                 <button
                                     onClick={() => setDeleteId(reg.id)}
                                     className="p-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                    title="Se désister"
+                                    title="Annuler ma venue"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -96,9 +96,9 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                                 {deleteId === reg.id && (
                                     <ConfirmModal
                                         isOpen={true}
-                                        title="Confirmer le désistement"
+                                        title="Annuler ma venue ?"
                                         message={`Voulez-vous annuler votre participation pour le match contre ${reg.opponent} ?`}
-                                        confirmText="Se désister"
+                                        confirmText="Confirmer l'annulation"
                                         confirmStyle="danger"
                                         onConfirm={() => handleDelete(reg)}
                                         onCancel={() => setDeleteId(null)}
