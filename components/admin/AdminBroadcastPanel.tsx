@@ -5,7 +5,11 @@ import { Announcement } from '../../types';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
 import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, X } from 'lucide-react';
 
-export const AdminBroadcastPanel: React.FC = () => {
+interface AdminBroadcastPanelProps {
+    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
+}
+
+export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToast }) => {
     // We can reuse the same hook to list existing announcements
     const { announcements } = useAnnouncements();
     const [message, setMessage] = useState('');
@@ -40,10 +44,10 @@ export const AdminBroadcastPanel: React.FC = () => {
 
             setMessage('');
             setType('info'); // Reset to default
-            // Optional: Show success toast
+            onToast("Annonce publiée avec succès", 'success');
         } catch (error) {
             console.error("Error creating announcement", error);
-            alert("Erreur lors de la création");
+            onToast("Erreur lors de la création", 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -55,8 +59,10 @@ export const AdminBroadcastPanel: React.FC = () => {
             await updateDoc(doc(db, 'announcements', id), {
                 active: false
             });
+            onToast("Annonce supprimée", 'success');
         } catch (error) {
             console.error("Error deleting", error);
+            onToast("Erreur lors de la suppression", 'error');
         }
     };
 

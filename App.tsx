@@ -23,6 +23,7 @@ const PlanningView = lazy(() => import('./components/planning/PlanningView'));
 
 import AdminToolbar from './components/AdminToolbar';
 import PullToRefresh from './components/PullToRefresh';
+import { EmptyState } from './components/EmptyState';
 import { AppLayout } from './components/Layout/AppLayout';
 import { AnnouncementBanner } from './components/Layout/AnnouncementBanner';
 
@@ -113,9 +114,9 @@ function App() {
       setIsAddingGame(false);
     } catch (err) {
       console.error("Error adding game:", err);
-      alert("Erreur lors de l'ajout du match");
+      addToast("Erreur lors de l'ajout du match", 'error');
     }
-  }, [addGame]);
+  }, [addGame, addToast]);
 
   const handleUpdateGame = useCallback(async (updatedGame: Game) => {
     try {
@@ -123,9 +124,9 @@ function App() {
       setEditingGameId(null);
     } catch (err) {
       console.error("Error updating game:", err);
-      alert("Erreur lors de la modification du match");
+      addToast("Erreur lors de la modification du match", 'error');
     }
-  }, [updateGame]);
+  }, [updateGame, addToast]);
 
   const handleDeleteGame = useCallback(async (gameId: string) => {
     try {
@@ -135,9 +136,9 @@ function App() {
       }
     } catch (err) {
       console.error("Error deleting game:", err);
-      alert("Erreur lors de la suppression du match");
+      addToast("Erreur lors de la suppression du match", 'error');
     }
-  }, [deleteGame, editingGameId]);
+  }, [deleteGame, editingGameId, addToast]);
 
   const handleImportCSV = useCallback(async (matchesData: GameFormData[]) => {
     try {
@@ -146,7 +147,7 @@ function App() {
       setIsImportModalOpen(false);
     } catch (err) {
       console.error("Error importing games:", err);
-      alert("Erreur lors de l'import des matchs");
+      addToast("Erreur lors de l'import des matchs", 'error');
     }
   }, [importGames, addToast]);
 
@@ -157,7 +158,7 @@ function App() {
       addToast('Inscription confirmée !', 'success');
     } catch (err) {
       console.error("Error adding volunteer:", err);
-      alert("Erreur lors de l'inscription");
+      addToast("Erreur lors de l'inscription", 'error');
     }
   }, [handleVolunteer, addToast]);
 
@@ -167,7 +168,7 @@ function App() {
       addToast('🚗 Inscription covoiturage confirmée !', 'success');
     } catch (err) {
       console.error("Error adding carpool:", err);
-      alert("Erreur lors de l'inscription covoiturage");
+      addToast("Erreur lors de l'inscription covoiturage", 'error');
     }
   }, [handleAddCarpool, addToast]);
 
@@ -239,6 +240,7 @@ function App() {
               <AdminStats
                 games={games}
                 onClose={() => setIsAdminStatsOpen(false)}
+                onToast={addToast}
               />
             )}
           </Suspense>
@@ -314,30 +316,20 @@ function App() {
 
           {/* Empty State */}
           {!loading && games.length === 0 && !isAddingGame && (
-            <div className="bg-white rounded-3xl shadow-2xl p-16 text-center max-w-2xl mx-auto border border-slate-100 animate-fade-in-up">
-              <div className="relative mb-8 inline-block">
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 blur-3xl opacity-20 scale-150"></div>
-                <div className="relative bg-gradient-to-br from-red-50 to-orange-50 w-32 h-32 rounded-3xl flex items-center justify-center shadow-lg">
-                  <span className="text-6xl">🏀</span>
-                </div>
-              </div>
-              <h3 className="text-3xl font-black text-slate-800 mb-3 bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Aucun match prévu
-              </h3>
-              <p className="text-lg text-slate-500 mb-10 max-w-md mx-auto">
-                Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !
-              </p>
-              {isAdmin && (
-                <button
-                  onClick={() => setIsAddingGame(true)}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-red-200 transition-all transform hover:-translate-y-1 hover:scale-105"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+            <div className="animate-fade-in-up">
+              <EmptyState
+                icon="🏀"
+                title="Aucun match prévu"
+                description="Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !"
+                variant="fun"
+                action={isAdmin ? {
+                  label: "Ajouter un match",
+                  onClick: () => setIsAddingGame(true),
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
-                  Ajouter un match
-                </button>
-              )}
+                } : undefined}
+              />
             </div>
           )}
 
@@ -379,24 +371,42 @@ function App() {
           </div>
 
           {/* Grouped Games List - Always mounted, hidden when not active */}
+          {/* Grouped Games List - Always mounted, hidden when not active */}
           <div className={currentView === 'home' ? '' : 'hidden'}>
-            <GameList
-              games={filteredGames}
-              userRegistrations={userRegistrationsMap}
-              isAdmin={isAdmin}
-              isAuthenticated={isAuthenticated}
-              editingGameId={editingGameId}
-              onVolunteer={handleVolunteerWithToast}
-              onRemoveVolunteer={handleRemoveVolunteer}
-              onUpdateVolunteer={handleUpdateVolunteer}
-              onAddCarpool={handleAddCarpoolWithToast}
-              onRemoveCarpool={handleRemoveCarpool}
-              onToast={addToast}
-              onEditRequest={setEditingGameId}
-              onCancelEdit={() => setEditingGameId(null)}
-              onDeleteRequest={handleDeleteGame}
-              onUpdateRequest={handleUpdateGame}
-            />
+            {filteredGames.length > 0 ? (
+              <GameList
+                games={filteredGames}
+                userRegistrations={userRegistrationsMap}
+                isAdmin={isAdmin}
+                isAuthenticated={isAuthenticated}
+                editingGameId={editingGameId}
+                onVolunteer={handleVolunteerWithToast}
+                onRemoveVolunteer={handleRemoveVolunteer}
+                onUpdateVolunteer={handleUpdateVolunteer}
+                onAddCarpool={handleAddCarpoolWithToast}
+                onRemoveCarpool={handleRemoveCarpool}
+                onToast={addToast}
+                onEditRequest={setEditingGameId}
+                onCancelEdit={() => setEditingGameId(null)}
+                onDeleteRequest={handleDeleteGame}
+                onUpdateRequest={handleUpdateGame}
+              />
+            ) : (
+              !loading && games.length > 0 && (
+                <EmptyState
+                  icon="🔍"
+                  title="Aucun résultat"
+                  description="Aucun match ne correspond à vos filtres actuels."
+                  variant="simple"
+                  className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                  action={{
+                    label: "Effacer les filtres",
+                    onClick: () => setSelectedTeam(null), // Assuming resetting filter helps
+                    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  }}
+                />
+              )
+            )}
           </div>
 
           {/* Empty State for Planning View specifically (was previously separate, merged into AppLayout children logic implicitly by placement order logic in App.tsx?) 
@@ -411,22 +421,17 @@ function App() {
           */}
           {
             !loading && currentView === 'planning' && filteredGames.length === 0 && (
-              <div className="bg-white rounded-3xl shadow-lg p-8 text-center max-w-md mx-auto border border-slate-100 mt-8 mb-20 animate-fade-in-up">
-                <div className="text-6xl mb-4">📅</div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">
-                  Planning vide
-                </h3>
-                <p className="text-slate-500 mb-6">
-                  Vous n'êtes inscrit à aucun match pour le moment.
-                  Retournez à l'accueil pour vous inscrire !
-                </p>
-                <button
-                  onClick={() => handleViewChange('home')}
-                  className="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors"
-                >
-                  Voir tous les matchs
-                </button>
-              </div>
+              <EmptyState
+                icon="📅"
+                title="Planning vide"
+                description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
+                variant="simple"
+                className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                action={{
+                  label: "Voir tous les matchs",
+                  onClick: () => handleViewChange('home')
+                }}
+              />
             )
           }
         </PullToRefresh>

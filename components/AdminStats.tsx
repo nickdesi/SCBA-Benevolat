@@ -6,6 +6,7 @@ import { AdminBroadcastPanel } from './admin/AdminBroadcastPanel';
 interface AdminStatsProps {
     games: Game[];
     onClose: () => void;
+    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 type FilterType = 'all' | 'urgent' | 'incomplete';
@@ -25,7 +26,7 @@ const getMissingRoles = (game: Game): string[] => {
         .map(r => r.name);
 };
 
-const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
+const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
     useScrollLock(true);
     const [activeTab, setActiveTab] = useState<TabType>('stats');
     const [filter, setFilter] = useState<FilterType>('all');
@@ -156,7 +157,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose }) => {
 
                 <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                     {activeTab === 'broadcast' ? (
-                        <AdminBroadcastPanel />
+                        <AdminBroadcastPanel onToast={onToast} />
                     ) : (
                         <>
                             {/* Summary Cards */}
