@@ -1,6 +1,8 @@
 import React, { useState, memo } from 'react';
 import type { Role } from '../types';
 import { DeleteIcon, EditPencilIcon, CheckIcon, UserIcon } from './Icons';
+import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
+import { Hand, CheckCircle, Sparkles } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import { saveMyRegistration, removeMyRegistration, isMyRegistration, claimRegistration, mightBeMyRegistration } from '../utils/storage';
 
@@ -16,15 +18,7 @@ interface VolunteerSlotProps {
     isAuthenticated?: boolean;
 }
 
-// Emoji mapping for roles
-const ROLE_EMOJIS: Record<string, string> = {
-    'Buvette': '🍺',
-    'Chrono': '⏱️',
-    'Table de marque': '📋',
-    'Goûter': '🍪',
-};
-
-const getRoleEmoji = (roleName: string): string => ROLE_EMOJIS[roleName] || '👋';
+// Icons now handled by RoleIcon component from lib/iconMap.tsx
 
 const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     role,
@@ -120,6 +114,9 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
             ? `${role.volunteers.length}`
             : `${role.volunteers.length}/${role.capacity}`;
 
+    // Get role-specific color configuration for modern styling
+    const roleConfig = getRoleConfig(role.name);
+
     return (
         <>
             {/* Confirmation Modal */}
@@ -142,18 +139,20 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                 className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden"
                 style={{ animationDelay: `${animationDelay}s` }}
             >
-                {/* Role Header Row */}
+                {/* Role Header - Modern gradient with colored accent */}
                 <div className={`
-                    flex items-center justify-between px-3 py-2.5
-                    ${isFull ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-slate-50 dark:bg-slate-800'}
-                    border-b border-slate-100 dark:border-slate-700
+                    flex items-center justify-between px-3 py-3
+                    bg-gradient-to-r ${roleConfig.gradientFrom} ${roleConfig.gradientTo}
+                    dark:from-slate-800/80 dark:to-slate-900/50
+                    border-l-4 ${roleConfig.borderColor}
+                    ${isFull ? 'border-l-emerald-500' : ''}
                 `}>
-                    <div className="flex items-center gap-2">
-                        <span className="text-base">{getRoleEmoji(role.name)}</span>
-                        <span className="font-medium text-slate-800 dark:text-slate-200 text-sm">{role.name}</span>
+                    <div className="flex items-center gap-3">
+                        <StyledRoleIcon role={role.name} size="md" />
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{role.name}</span>
                     </div>
                     <span className={`
-                        px-2 py-0.5 rounded-full text-xs font-semibold
+                        px-2.5 py-1 rounded-full text-xs font-bold
                         ${isFull
                             ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400'
                             : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
@@ -196,29 +195,33 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                 </button>
                             </div>
                         ) : (
-                            // Display mode - Compact Row
                             <div
                                 key={volunteer}
                                 className={`
                                     flex items-center justify-between gap-2 px-3 py-2
-                                    ${isMine ? 'bg-blue-50' : 'bg-white'}
+                                    ${isMine ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-slate-800'}
                                 `}
                             >
                                 <div className="flex items-center gap-2 min-w-0">
                                     <div className={`
                                         w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0
                                         ${isMine
-                                            ? 'bg-blue-500'
-                                            : 'bg-emerald-500'
+                                            ? 'bg-gradient-to-br from-blue-500 to-indigo-500'
+                                            : 'bg-gradient-to-br from-emerald-400 to-teal-500'
                                         }
+                                        shadow-sm
                                     `}>
-                                        <UserIcon className="w-3 h-3 text-white" />
+                                        {isMine ? (
+                                            <UserIcon className="w-3 h-3 text-white" />
+                                        ) : (
+                                            <CheckCircle className="w-3.5 h-3.5 text-white" />
+                                        )}
                                     </div>
-                                    <span className={`text-sm font-medium truncate ${isMine ? 'text-blue-800' : 'text-slate-700'}`}>
+                                    <span className={`text-sm font-medium truncate ${isMine ? 'text-blue-800 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>
                                         {volunteer}
                                     </span>
                                     {isMine && (
-                                        <span className="text-[10px] font-semibold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">
+                                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
                                             Vous
                                         </span>
                                     )}
@@ -310,7 +313,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                                hover:from-red-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg
                                                flex items-center justify-center gap-2"
                                 >
-                                    <span className="text-lg">✋</span>
+                                    <Hand className="w-5 h-5" />
                                     <span>Je m'inscris</span>
                                 </button>
                             )}
@@ -319,12 +322,14 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
 
                     {/* Full Message */}
                     {isFull && role.volunteers.length > 0 && (
-                        <div className="px-3 py-2 text-center">
-                            <span className="text-xs text-emerald-600 font-medium">✨ Merci à tous !</span>
+                        <div className="px-3 py-2.5 text-center bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20">
+                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center justify-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5" /> Merci à tous les bénévoles !
+                            </span>
                         </div>
                     )}
                 </div>
-            </div>
+            </div >
         </>
     );
 });

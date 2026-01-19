@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Calendar } from 'lucide-react';
 import { GoogleCalendarIcon, OutlookCalendarIcon, AppleCalendarIcon } from '../Icons';
 import type { Game } from '../../types';
 import { downloadGameCalendar, getGoogleCalendarUrl, getOutlookCalendarUrl } from '../../utils/calendar';
@@ -54,7 +55,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ game, isHomeGame }) => {
                     hover:bg-indigo-100 transition-colors"
                 aria-label="Ajouter au calendrier"
             >
-                <span>📅</span>
+                <Calendar className="w-4 h-4" />
                 <span>Calendrier</span>
             </motion.button>
 

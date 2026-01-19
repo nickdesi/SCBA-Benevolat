@@ -1,9 +1,9 @@
 import React, { useState, useCallback, memo } from 'react';
+import { Car, UserRoundPlus, MapPin } from 'lucide-react';
 import type { CarpoolEntry } from '../../types';
 import { getStoredName, setStoredName } from '../../utils/storage';
 import PhoneDisplay from '../PhoneDisplay';
 import { DeleteIcon } from '../Icons';
-
 import ConfirmModal from '../ConfirmModal';
 
 interface CarpoolingSectionProps {
@@ -85,7 +85,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
             {drivers.length > 0 && (
                 <div className="mb-3">
                     <h5 className="text-[11px] font-medium text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                        <span>🚗</span> Conducteurs ({drivers.length})
+                        <Car className="w-4 h-4" /> Conducteurs ({drivers.length})
                     </h5>
                     <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden divide-y divide-slate-50 dark:divide-slate-700">
                         {drivers.map((driver) => (
@@ -120,7 +120,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                 </div>
                                 {driver.departureLocation && (
                                     <p className="mt-1 text-xs text-slate-500 flex items-center gap-1">
-                                        📍 {driver.departureLocation}
+                                        <MapPin className="w-3 h-3" /> {driver.departureLocation}
                                     </p>
                                 )}
                                 {driver.phone && (
@@ -138,7 +138,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
             {passengers.length > 0 && (
                 <div className="mb-3">
                     <h5 className="text-[11px] font-medium text-slate-400 uppercase mb-2 flex items-center gap-1.5">
-                        <span>🙋</span> Passagers ({passengers.length})
+                        <UserRoundPlus className="w-4 h-4" /> Passagers ({passengers.length})
                     </h5>
                     <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-100 rounded-xl overflow-hidden divide-y divide-slate-50">
                         {passengers.map((passenger) => (
@@ -198,7 +198,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                             text-sm font-medium text-blue-600 bg-blue-50 rounded-xl
                             hover:bg-blue-100 transition-colors"
                     >
-                        <span>🚗</span>
+                        <Car className="w-4 h-4" />
                         <span>Je propose</span>
                     </button>
                     <button
@@ -207,7 +207,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                             text-sm font-medium text-amber-600 bg-amber-50 rounded-xl
                             hover:bg-amber-100 transition-colors"
                     >
-                        <span>🙋</span>
+                        <UserRoundPlus className="w-4 h-4" />
                         <span>Je cherche</span>
                     </button>
                 </div>
@@ -218,9 +218,9 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                 <form onSubmit={handleSubmit} className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
                     <h5 className="font-medium text-slate-800 mb-3 text-sm flex items-center gap-2">
                         {formType === 'driver' ? (
-                            <>🚗 Je propose des places</>
+                            <><Car className="w-4 h-4" /> Je propose des places</>
                         ) : (
-                            <>🙋 Je cherche une place</>
+                            <><UserRoundPlus className="w-4 h-4" /> Je cherche une place</>
                         )}
                     </h5>
 
@@ -284,9 +284,9 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                         <button
                             type="submit"
                             className={`flex-1 py-2 px-3 text-sm font-semibold text-white rounded-lg
-                                transition-colors ${formType === 'driver'
-                                    ? 'bg-blue-500 hover:bg-blue-600'
-                                    : 'bg-amber-500 hover:bg-amber-600'
+                                transition-all shadow-lg ${formType === 'driver'
+                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 shadow-blue-500/25'
+                                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-500/25'
                                 }`}
                         >
                             Confirmer

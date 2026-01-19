@@ -1,4 +1,5 @@
 import React, { memo, useState, Suspense, lazy, useMemo } from 'react';
+import { Car } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -209,13 +210,11 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
                                 const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
 
-                                if (drivers === 0 && passengers === 0) return '🚗 0 inscription';
+                                const content = drivers === 0 && passengers === 0
+                                    ? '0 inscription'
+                                    : [drivers > 0 && `${drivers} cond.`, passengers > 0 && `${passengers} pass.`].filter(Boolean).join(' • ');
 
-                                const parts = [];
-                                if (drivers > 0) parts.push(`${drivers} cond.`);
-                                if (passengers > 0) parts.push(`${passengers} pass.`);
-
-                                return `🚗 ${parts.join(' • ')}`;
+                                return <><Car className="w-4 h-4 inline mr-1" />{content}</>;
                             })()}
                         </span>
                     )}

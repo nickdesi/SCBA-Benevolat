@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
+import { List, Calendar } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
@@ -289,15 +290,15 @@ function App() {
 
                 <button
                   onClick={() => handleViewChange('home')}
-                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                 >
-                  📋 Liste
+                  <List className="w-4 h-4" /> Liste
                 </button>
                 <button
                   onClick={() => handleViewChange('calendar')}
-                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                 >
-                  📅 Calendrier
+                  <Calendar className="w-4 h-4" /> Calendrier
                 </button>
               </div>
             </div>

@@ -51,7 +51,7 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
                 </button>
 
                 <div className="flex flex-col items-center min-w-[140px] px-2">
-                    <h2 className="text-slate-800 dark:text-white font-bold text-lg md:text-xl leading-none mb-1 tracking-tight capitalize font-sport">
+                    <h2 className="text-slate-600 dark:text-slate-300 font-semibold text-base md:text-lg leading-none mb-1 tracking-tight capitalize">
                         {formattedMonth}
                     </h2>
                     <span className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-500/20">

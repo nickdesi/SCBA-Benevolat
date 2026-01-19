@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { Calendar } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import GameCard from './GameCard';
 
@@ -90,7 +91,7 @@ const GameList: React.FC<GameListProps> = memo(({
                         <div className="inline-flex items-center gap-3 px-6 py-3 
                           bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-900 dark:to-purple-900
                           rounded-full shadow-lg shadow-indigo-500/30 border border-white/10">
-                            <span className="text-2xl">📅</span>
+                            <Calendar className="w-6 h-6 text-white" />
                             <div className="flex flex-col items-start leading-tight">
                                 <span className="text-lg font-black text-white tracking-wide">
                                     {group.label}
