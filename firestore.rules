@@ -2,14 +2,38 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Règles spécifiques pour les annonces
-    match /announcements/{announcement} {
-      allow read: if true; // Public: tout le monde voit les alertes
-      allow write: if request.auth != null && request.auth.token.admin == true; // Admin only (à sécuriser avec Custom Claims ou liste d'admins)
+    
+    // Fonction helper pour vérifier si l'utilisateur est admin
+    // Note: Idéalement utiliser des Custom Claims, mais check email est ok pour petit projet
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'benevole@scba.fr';
     }
 
-    match /{document=**} {
-      allow read, write: if true; // Existing wildcard (to be tightened later)
+    // Fonction pour vérifier si l'utilisateur est connecté
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Annonces : Lecture publique, Écriture Admin seulement
+    match /announcements/{announcement} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Matchs : 
+    // - Lecture publique (tout le monde doit voir les matchs)
+    // - Création/Suppression : Admin seulement
+    // - Mise à jour : Admin ou Utilisateur connecté (pour s'inscrire/désinscrire)
+    match /matches/{matchId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAuth(); 
+    }
+
+    // Données Utilisateurs (Inscriptions, Profil...)
+    // - Accès strict au propriétaire du compte OU Admin
+    match /users/{userId}/{document=**} {
+      allow read, write: if isAuth() && (request.auth.uid == userId || isAdmin());
     }
   }
 }
