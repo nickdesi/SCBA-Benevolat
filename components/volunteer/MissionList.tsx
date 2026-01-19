@@ -4,6 +4,7 @@ import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
 import { Calendar, Trash2 } from 'lucide-react';
 import ConfirmModal from '../ConfirmModal';
+import { EmptyState } from '../EmptyState';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';
 
 interface MissionListProps {
@@ -48,13 +49,13 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
 
             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-600">
                 {filtered.length === 0 ? (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center py-8 text-slate-400 text-sm italic"
-                    >
-                        Aucune autre mission trouvée.
-                    </motion.div>
+                    <EmptyState
+                        icon="📅"
+                        title="Aucune mission"
+                        description="Aucune autre mission trouvée."
+                        variant="simple"
+                        className="py-8"
+                    />
                 ) : (
                     <AnimatePresence mode='popLayout'>
                         {filtered.map((reg, index) => (

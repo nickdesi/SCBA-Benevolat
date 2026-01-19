@@ -5,6 +5,7 @@ import { Briefcase, Calendar, Star, Clock, MapPin, Award } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { NextMissionCard } from './NextMissionCard';
 import { MissionList } from './MissionList';
+import { EmptyState } from '../EmptyState';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';
 
 interface DashboardHomeProps {
@@ -54,7 +55,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-3">
                     <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-400 mb-1">
-                        Bonjour, {user.displayName?.split(' ')[0]} 👋
+                        Bonjour {user.displayName?.split(' ')[0]} 👋
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm">
                         Prêt pour votre prochain match ? Voici votre activité.
@@ -85,15 +86,13 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
             {nextMission ? (
                 <NextMissionCard registration={nextMission} onUnsubscribe={onUnsubscribe} user={user} />
             ) : (
-                <div className="p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center shadow-sm">
-                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Calendar className="w-8 h-8 text-slate-400" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Aucune mission prévue</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto mt-2">
-                        Consultez le planning général pour vous inscrire à un match et aider le club !
-                    </p>
-                </div>
+                <EmptyState
+                    icon="📅"
+                    title="Aucune mission prévue"
+                    description="Consultez le planning général pour vous inscrire à un match et aider le club !"
+                    variant="simple"
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl"
+                />
             )}
 
             {/* Main Content Split: Missions & Preferences */}
