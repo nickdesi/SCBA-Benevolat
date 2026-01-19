@@ -24,12 +24,23 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     useEffect(() => {
         localStorage.setItem(THEME_KEY, theme);
-        // Apply to document
+
+        // Disable transitions temporarily for instant theme switch
+        document.documentElement.classList.add('disable-transitions');
+
+        // Apply theme
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // Re-enable transitions after a frame
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                document.documentElement.classList.remove('disable-transitions');
+            });
+        });
     }, [theme]);
 
     const toggleTheme = () => {

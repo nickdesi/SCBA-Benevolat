@@ -172,11 +172,12 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
             {/* 2. Accordion Trigger */}
             <motion.button
-                whileTap={{ backgroundColor: "rgba(241, 245, 249, 1)" }}
+                whileTap={{ scale: 0.995 }}
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
                     w-full px-4 py-3 flex items-center justify-between cursor-pointer
-                    bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700
+                    bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700
+                    hover:bg-slate-100 dark:hover:bg-slate-700/50 active:bg-slate-100 dark:active:bg-slate-700
                     transition-colors relative overflow-hidden
                 `}
             >
