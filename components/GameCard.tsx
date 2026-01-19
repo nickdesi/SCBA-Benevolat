@@ -142,7 +142,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
             className={`
-            relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 flex flex-col overflow-hidden transition-all duration-300 h-full
+            relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col overflow-hidden transition-all duration-300 h-full
             bg-white dark:bg-slate-900
         `}>
             {/* Border/Ring Overlay - Always on top */}
