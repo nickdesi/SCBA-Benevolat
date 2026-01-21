@@ -61,8 +61,8 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigationPreload: false, // Disabled to prevent preload warnings - NetworkFirst is sufficient
-        // Don't precache - always fetch fresh
-        globPatterns: [],
+        // Precache essential files for offline support
+        globPatterns: ['**/*.{html,js,css,woff2}'],
         // Use NetworkFirst for everything - always try network first
         runtimeCaching: [
           {
