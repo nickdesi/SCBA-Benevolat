@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.1] - 2026-01-21
+
+### 💎 UX & Accessibilité (v2.0.1)
+
+- **Pull-to-Refresh Premium** : Remplacement du rechargement brut de la page par une simulation de synchronisation fluide (feedback toast + vibration haptique simulée).
+- **Accessibilité (A11y)** : Ajout exhaustif de labels ARIA pour la navigation, les actions de calendrier et les filtres, rendant l'application plus inclusive.
+- **Loading States** : Remplacement des écrans blancs par des spinners de chargement explicites lors de l'accès aux modales lourdes (Stats, Import).
+- **Documentation** : Ajout des guides complets pour Bénévoles et Admin dans le dossier `/docs`.
+
+---
+
 ## [2.0.0] - 2026-01-18
 
 ### 🚀 Major Release (v2.0.0)
