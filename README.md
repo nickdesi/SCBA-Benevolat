@@ -1,7 +1,7 @@
 # SCBA Bénévoles 🏀
 
 [![coolify](https://img.shields.io/badge/Coolify-Self%20Hosted-blueviolet?style=for-the-badge&logo=server)](https://coolify.io)
-[![version](https://img.shields.io/badge/v2.0.0-Released-ed4e50?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
+[![version](https://img.shields.io/badge/v2.0.1-Released-ed4e50?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
 [![pwa](https://img.shields.io/badge/PWA-Ready-5A67D8?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 [![firebase](https://img.shields.io/badge/Firebase-Powered-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
 
@@ -29,6 +29,7 @@ Cette application a été conçue avec une philosophie **"Mobile First"** et un 
 | **🚗 Covoiturage** | Système intelligent "Conducteur/Passager" avec calcul automatique des places restantes. |
 | **📢 Broadcast** | Système d'annonces admin pour diffuser des messages urgents à tous les utilisateurs. |
 | **📊 Dashboard** | Espace personnel pour suivre ses missions, son historique et ses stats. |
+| **📚 Documentation** | Guides complets disponibles : [👤 Guide Bénévole](docs/GUIDE_BENEVOLE.md) et [🛡️ Guide Admin](docs/GUIDE_ADMIN.md). |
 
 ## 🏗️ Architecture Technique
 
@@ -98,4 +99,4 @@ L'application utilise un modèle de sécurité hybride robuste :
 
 ---
 
-**Version 2.0.0** — *Fait avec ❤️ à Clermont-Ferrand.*
+**Version 2.0.1** — *Fait avec ❤️ à Clermont-Ferrand.*
