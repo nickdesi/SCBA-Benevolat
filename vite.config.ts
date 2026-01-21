@@ -60,7 +60,7 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        navigationPreload: true,
+        navigationPreload: false, // Disabled to prevent preload warnings - NetworkFirst is sufficient
         // Don't precache - always fetch fresh
         globPatterns: [],
         // Use NetworkFirst for everything - always try network first
