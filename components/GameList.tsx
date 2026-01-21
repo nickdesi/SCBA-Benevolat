@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Calendar } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import GameCard from './GameCard';
@@ -76,7 +76,7 @@ const GameList: React.FC<GameListProps> = memo(({
     userRegistrations,
     isAuthenticated
 }) => {
-    const groups = groupGamesByMonth(games);
+    const groups = useMemo(() => groupGamesByMonth(games), [games]);
 
     if (games.length === 0) {
         return null;
