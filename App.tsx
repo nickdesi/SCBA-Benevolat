@@ -224,7 +224,7 @@ function App() {
       modals={
         <>
           {/* CSV Import Modal */}
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
             {isImportModalOpen && (
               <ImportCSVModal
                 isOpen={isImportModalOpen}
@@ -236,7 +236,7 @@ function App() {
           </Suspense>
 
           {/* Admin Stats Dashboard */}
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
             {isAdminStatsOpen && (
               <AdminStats
                 games={games}
@@ -267,9 +267,9 @@ function App() {
     >
       <main className="container mx-auto px-4 relative z-20 pt-4">
         <PullToRefresh onRefresh={async () => {
-          // Simulate refresh
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          window.location.reload();
+          // Simulate network check (Firestore is real-time, but this gives feedback)
+          await new Promise(resolve => setTimeout(resolve, 800));
+          addToast('Données synchronisées', 'success');
         }}>
           {/* Loading State */}
           {loading && <SkeletonLoader />}

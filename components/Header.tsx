@@ -115,6 +115,7 @@ const Header: React.FC<HeaderProps> = ({
             >
               <button
                 onClick={() => onSelectTeam(null)}
+                aria-label="Afficher tous les matchs"
                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-150 backdrop-blur-md border ${selectedTeam === null
                   ? 'bg-white text-slate-900 border-white shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105'
                   : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-indigo-500/50 hover:shadow-[0_0_10px_rgba(99,102,241,0.2)]'
@@ -126,6 +127,7 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   key={team}
                   onClick={() => onSelectTeam(team)}
+                  aria-label={`Filtrer par équipe : ${team}`}
                   className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === team
                     ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-transparent shadow-[0_0_15px_rgba(99,102,241,0.5)] scale-105 ring-1 ring-white/20'
                     : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-indigo-500/50 hover:shadow-[0_0_10px_rgba(99,102,241,0.2)]'

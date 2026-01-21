@@ -23,6 +23,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => onViewChange(currentView === 'calendar' ? 'home' : 'calendar')}
+                    aria-label={currentView === 'calendar' ? "Passer à la vue liste" : "Passer à la vue calendrier"}
                     className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20
                         ${(currentView === 'home' || currentView === 'calendar')
                             ? 'text-blue-600 bg-blue-50/80'
@@ -30,9 +31,9 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                         }`}
                 >
                     {currentView === 'calendar' ? (
-                        <List className="w-6 h-6" />
+                        <List className="w-6 h-6" aria-hidden="true" />
                     ) : (
-                        <Calendar className="w-6 h-6" />
+                        <Calendar className="w-6 h-6" aria-hidden="true" />
                     )}
                     <span className="text-[10px] font-bold flex items-center gap-1">
                         {currentView === 'calendar' ? <><List className="w-3 h-3" /> Liste</> : <><Calendar className="w-3 h-3" /> Semaine</>}
@@ -44,6 +45,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={onPlanningClick}
+                        aria-label="Ouvrir mon profil et mes matchs"
                         className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-20 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 relative overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 opacity-0 hover:opacity-100 transition-opacity" />

@@ -55,7 +55,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ game, isHomeGame }) => {
                     hover:bg-indigo-100 transition-colors"
                 aria-label="Ajouter au calendrier"
             >
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4" aria-hidden="true" />
                 <span>Calendrier</span>
             </motion.button>
 
@@ -66,14 +66,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ game, isHomeGame }) => {
                     animate={{ opacity: 1, y: 0 }}
                     className="absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden"
                 >
-                    <button onClick={handleGoogleCalendar} className="w-full px-4 py-3 flex gap-3 hover:bg-slate-50 text-sm font-medium text-slate-700 items-center">
-                        <GoogleCalendarIcon className="w-5 h-5" /> Google
+                    <button onClick={handleGoogleCalendar} aria-label="Ajouter à Google Agenda" className="w-full px-4 py-3 flex gap-3 hover:bg-slate-50 text-sm font-medium text-slate-700 items-center">
+                        <GoogleCalendarIcon className="w-5 h-5" aria-hidden="true" /> Google
                     </button>
-                    <button onClick={handleOutlookCalendar} className="w-full px-4 py-3 flex gap-3 hover:bg-slate-50 text-sm font-medium text-slate-700 border-t border-slate-50 items-center">
-                        <OutlookCalendarIcon className="w-5 h-5" /> Outlook
+                    <button onClick={handleOutlookCalendar} aria-label="Ajouter à Outlook" className="w-full px-4 py-3 flex gap-3 hover:bg-slate-50 text-sm font-medium text-slate-700 border-t border-slate-50 items-center">
+                        <OutlookCalendarIcon className="w-5 h-5" aria-hidden="true" /> Outlook
                     </button>
-                    <button onClick={handleAppleCalendar} className="w-full px-4 py-3 flex gap-3 hover:bg-slate-50 text-sm font-medium text-slate-700 border-t border-slate-50 items-center">
-                        <AppleCalendarIcon className="w-5 h-5" /> Apple (.ics)
+                    <button onClick={handleAppleCalendar} aria-label="Télécharger le fichier ICS" className="w-full px-4 py-3 flex gap-3 hover:bg-slate-50 text-sm font-medium text-slate-700 border-t border-slate-50 items-center">
+                        <AppleCalendarIcon className="w-5 h-5" aria-hidden="true" /> Apple (.ics)
                     </button>
                 </motion.div>
             )}
