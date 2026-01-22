@@ -3,6 +3,7 @@ import UserProfile from './UserProfile';
 import { UserRegistration, Game } from '../types';
 import { ThemeToggle } from '../utils/ThemeContext';
 import { useDraggableScroll } from '../hooks/useDraggableScroll';
+import { BasketballIcon } from './Icons';
 
 interface HeaderProps {
   onLogout: () => void;
@@ -75,8 +76,8 @@ const Header: React.FC<HeaderProps> = ({
               </span>
               <span className="text-white block sm:inline sm:ml-2 font-normal tracking-widest opacity-90">BASKET AUVERGNE</span>
             </h1>
-            <p className="text-blue-400/80 text-[10px] sm:text-sm font-medium tracking-[0.2em] mt-1 uppercase">
-              🏀 Espace Bénévoles
+            <p className="text-blue-400/80 text-[10px] sm:text-sm font-medium tracking-[0.2em] mt-1 uppercase flex items-center justify-center gap-1.5">
+              <BasketballIcon className="w-3 h-3 sm:w-4 sm:h-4" /> Espace Bénévoles
             </p>
           </div>
 
