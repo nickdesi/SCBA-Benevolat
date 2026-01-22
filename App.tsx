@@ -11,7 +11,8 @@ import ProfileModal from './components/ProfileModal';
 import { ToastContainer, useToast } from './components/Toast';
 import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
-import { onAuthStateChanged, signOut } from './utils/authStore';
+import { onAuthStateChanged, signOut, signInWithGoogle } from './utils/authStore';
+import UserAuthModal from './components/UserAuthModal';
 import { useGames } from './utils/useGames';
 import { useUserProfile } from './utils/useUserProfile';
 import EventSchema from './components/EventSchema';
@@ -80,6 +81,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Firebase Auth listener
   useEffect(() => {
@@ -106,6 +108,18 @@ function App() {
       addToast('Déconnexion réussie', 'success');
     } catch {
       addToast('Erreur lors de la déconnexion', 'error');
+    }
+  }, [addToast]);
+
+  // Handler pour la connexion Google depuis le modal
+  const handleGoogleLogin = useCallback(async () => {
+    try {
+      await signInWithGoogle();
+      setIsAuthModalOpen(false);
+      addToast('Connexion réussie !', 'success');
+    } catch (error) {
+      console.error("Google login failed:", error);
+      addToast('Erreur de connexion Google', 'error');
     }
   }, [addToast]);
 
@@ -154,6 +168,13 @@ function App() {
 
   // Wrapped handlers with toast feedback
   const handleVolunteerWithToast = useCallback(async (gameId: string, roleId: string, parentName: string) => {
+    // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
+    if (!isAuthenticated) {
+      addToast('Connectez-vous pour vous inscrire', 'info');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     try {
       await handleVolunteer(gameId, roleId, parentName);
       addToast('Inscription confirmée !', 'success');
@@ -161,9 +182,16 @@ function App() {
       console.error("Error adding volunteer:", err);
       addToast("Erreur lors de l'inscription", 'error');
     }
-  }, [handleVolunteer, addToast]);
+  }, [handleVolunteer, addToast, isAuthenticated]);
 
   const handleAddCarpoolWithToast = useCallback(async (gameId: string, entry: Omit<import('./types').CarpoolEntry, 'id'>) => {
+    // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
+    if (!isAuthenticated) {
+      addToast('Connectez-vous pour proposer un covoiturage', 'info');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     try {
       await handleAddCarpool(gameId, entry);
       addToast('🚗 Inscription covoiturage confirmée !', 'success');
@@ -171,7 +199,7 @@ function App() {
       console.error("Error adding carpool:", err);
       addToast("Erreur lors de l'inscription covoiturage", 'error');
     }
-  }, [handleAddCarpool, addToast]);
+  }, [handleAddCarpool, addToast, isAuthenticated]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -262,6 +290,14 @@ function App() {
               onToggleFavorite={toggleFavoriteTeam}
             />
           )}
+
+          {/* Auth Modal - Triggered when guest tries to volunteer */}
+          <UserAuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            onGoogleLogin={handleGoogleLogin}
+            onToast={addToast}
+          />
         </>
       }
     >
