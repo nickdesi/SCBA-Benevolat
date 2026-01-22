@@ -44,7 +44,8 @@ export const NextMissionCard: React.FC<NextMissionCardProps> = ({ registration, 
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:items-end gap-3">
+                {/* Role + Cancel on same row */}
+                <div className="flex items-center gap-4">
                     <div className="text-right">
                         <p className="text-xs uppercase text-slate-400 font-bold mb-1">Votre Rôle</p>
                         <div className="inline-block px-4 py-2 bg-indigo-600 rounded-xl font-bold shadow-lg shadow-indigo-900/50 transform rotate-1">
@@ -53,10 +54,15 @@ export const NextMissionCard: React.FC<NextMissionCardProps> = ({ registration, 
                     </div>
                     <button
                         onClick={handleUnsubscribe}
-                        className="flex items-center gap-1.5 px-3 py-1.5 mt-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 transition-all text-xs font-bold"
+                        className="flex-shrink-0 p-2 rounded-xl 
+                                   bg-red-500/10 hover:bg-red-500/20 
+                                   border border-red-500/30 hover:border-red-500/50
+                                   text-red-400 hover:text-red-300 
+                                   transition-all duration-150 
+                                   cursor-pointer"
+                        title="Annuler ma participation"
                     >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Annuler
+                        <Trash2 className="w-5 h-5" />
                     </button>
                 </div>
             </div>
