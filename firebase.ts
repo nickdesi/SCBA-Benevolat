@@ -3,18 +3,26 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 // Firebase configuration from environment variables
-// IMPORTANT: Set these in your .env.local file
+// REQUIRED: Set these in your .env.local file (copy from .env.example)
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCkef-S1g3mmR5bSkxnvsM6zs2spQFxnbs",
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "scba-benevole.firebaseapp.com",
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "scba-benevole",
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "scba-benevole.firebasestorage.app",
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "472642810664",
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:472642810664:web:b2b402825f8f2f4c38161d"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
+
+// Validate required environment variables
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    throw new Error(
+        "Missing Firebase configuration. " +
+        "Please create .env.local file with your Firebase credentials. " +
+        "See .env.example for required variables."
+    );
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-

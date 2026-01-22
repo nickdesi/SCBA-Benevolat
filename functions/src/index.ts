@@ -57,5 +57,32 @@ export const cleanupExpiredAnnouncements = onSchedule(
             logger.error("Error during cleanup", { error });
             throw error; // Re-throw to trigger retry
         }
+        // ... existing code ...
     }
 );
+
+/**
+ * Authentication Trigger: Set Admin Role
+ * 
+ * Automatically assigns the 'admin' custom claim to specific users upon creation.
+ * This replaces client-side email checks for better security.
+ */
+import * as functions from "firebase-functions/v1";
+
+export const setAdminRole = functions
+    .region("europe-west1")
+    .auth.user()
+    .onCreate(async (user) => {
+        // Check if the user is the designated admin
+        // In production, this could check against a list of allowed admin emails or a domain
+        if (user.email === "benevole@scba.fr") {
+            try {
+                await admin.auth().setCustomUserClaims(user.uid, {
+                    admin: true,
+                });
+                logger.info(`Admin claim set for user: ${user.email}`);
+            } catch (error) {
+                logger.error("Error setting admin claim", error);
+            }
+        }
+    });

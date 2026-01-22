@@ -4,9 +4,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // Fonction helper pour vérifier si l'utilisateur est admin
-    // Note: Idéalement utiliser des Custom Claims, mais check email est ok pour petit projet
+    // Utilise les Custom Claims définis par la Cloud Function 'setAdminRole'
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'benevole@scba.fr';
+      // Check for 'admin' custom claim OR fallback to email check for existing sessions
+      return request.auth != null && (
+        (request.auth.token.keys().hasAny(['admin']) && request.auth.token.admin == true) || 
+        request.auth.token.email == 'benevole@scba.fr'
+      );
     }
 
     // Fonction pour vérifier si l'utilisateur est connecté
