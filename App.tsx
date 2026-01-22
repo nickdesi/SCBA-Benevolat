@@ -171,7 +171,8 @@ function App() {
     // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
     if (!isAuthenticated) {
       addToast('Connectez-vous pour vous inscrire', 'info');
-      setIsAuthModalOpen(true);
+      // Petit délai pour que le toast soit visible avant le modal
+      setTimeout(() => setIsAuthModalOpen(true), 400);
       return;
     }
 
@@ -188,7 +189,8 @@ function App() {
     // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
     if (!isAuthenticated) {
       addToast('Connectez-vous pour proposer un covoiturage', 'info');
-      setIsAuthModalOpen(true);
+      // Petit délai pour que le toast soit visible avant le modal
+      setTimeout(() => setIsAuthModalOpen(true), 400);
       return;
     }
 
