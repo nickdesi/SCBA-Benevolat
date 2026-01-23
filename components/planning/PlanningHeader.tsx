@@ -38,7 +38,7 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
     };
 
     return (
-        <div className="flex flex-col md:flex-row items-center justify-between gap-5 mb-8 select-none">
+        <div className="flex flex-col md:flex-row items-center md:justify-center gap-3 sm:gap-5 mb-8 select-none">
 
             {/* Navigation Pill (Center on Desktop, Top on Mobile) */}
             <div className="flex items-center gap-2 sm:gap-4 bg-white/70 dark:bg-slate-900/60 p-1.5 sm:p-2 rounded-full border border-white/50 dark:border-slate-700 shadow-xl shadow-indigo-500/10 w-full md:w-auto justify-between md:justify-center backdrop-blur-xl transition-all hover:shadow-indigo-500/20 hover:border-indigo-500/30">
