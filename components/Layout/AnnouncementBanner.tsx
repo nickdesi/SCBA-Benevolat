@@ -76,7 +76,7 @@ export const AnnouncementBanner: React.FC = () => {
                         <div className="flex items-center gap-3 flex-1">
                             {getIcon()}
                             <p className="text-sm font-medium leading-tight">
-                                <span className="sr-only">{activeAnnouncement.type}:</span>
+                                <span className="sr-only">{activeAnnouncement.type === 'warning' ? 'Important' : activeAnnouncement.type}:</span>
                                 {activeAnnouncement.message}
                             </p>
                         </div>
