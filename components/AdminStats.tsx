@@ -18,34 +18,33 @@ interface AdminStatsProps {
 type FilterType = 'all' | 'urgent' | 'incomplete';
 type TabType = 'stats' | 'broadcast';
 
-// Animation variants
+// Animation variants - optimized for snappy feel
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.08,
-            delayChildren: 0.1,
+            staggerChildren: 0.02,
+            delayChildren: 0,
         }
     }
 };
 
 const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    hidden: { opacity: 0, y: 8 },
     show: {
         opacity: 1,
         y: 0,
-        scale: 1,
-        transition: { type: "spring", stiffness: 300, damping: 24 }
+        transition: { type: "tween", duration: 0.15, ease: "easeOut" }
     }
 };
 
 const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 10 },
     show: {
         opacity: 1,
         y: 0,
-        transition: { type: "spring", stiffness: 200, damping: 20 }
+        transition: { type: "tween", duration: 0.15, ease: "easeOut" }
     }
 };
 
