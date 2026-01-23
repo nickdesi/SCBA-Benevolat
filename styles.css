@@ -543,8 +543,71 @@ textarea::placeholder {
    Performance Utilities (React Best Practices)
    ======================================== */
 
+/* GPU-accelerated transforms for instant hover/press */
+.gpu-accelerate {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Remove 300ms tap delay on mobile - CRITICAL for snappy feel */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+.touch-instant {
+  touch-action: manipulation;
+}
+
+/* Content-visibility for long lists - prevents off-screen rendering */
 .cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: 1px 350px;
-  /* Estimated height of a GameCard to prevent scroll jumping */
+}
+
+/* Scrollbar gutter to prevent layout shift */
+.scroll-stable {
+  scrollbar-gutter: stable;
+}
+
+/* Instant transitions - 100ms max */
+.transition-instant {
+  transition-duration: 100ms !important;
+}
+
+/* Active state feedback - immediate visual response */
+button:active,
+a:active,
+[role="button"]:active {
+  transform: scale(0.98);
+  transition: transform 50ms ease-out;
+}
+
+/* Momentum scrolling for iOS - snappy feel */
+.scroll-smooth-ios {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto; /* Disable smooth scroll for instant response */
+}
+
+/* Prevent layout thrashing during scroll */
+.contain-layout {
+  contain: layout style paint;
+}
+
+/* Hardware-accelerated animations only */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-gpu {
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform, opacity;
+  }
+}
+
+/* Ultra-fast hover transitions */
+.hover-instant {
+  transition: all 80ms ease-out;
+}
+
+.hover-instant:hover {
+  transition: all 50ms ease-out;
 }

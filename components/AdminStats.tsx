@@ -284,13 +284,13 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         return (
             <div
                 className={`
-                    group relative p-4 md:p-5 rounded-2xl border overflow-hidden
+                    cv-auto group relative p-4 md:p-5 rounded-2xl border overflow-hidden
                     bg-white dark:bg-slate-800/50 backdrop-blur-sm
                     ${game.isUrgent
                         ? 'border-red-300 dark:border-red-500/50 shadow-red-100 dark:shadow-red-500/10'
                         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }
-                    transition-all duration-200 hover:shadow-lg
+                    transition-all duration-100 hover:shadow-lg
                 `}
             >
                 {/* Urgent Glow Effect */}
