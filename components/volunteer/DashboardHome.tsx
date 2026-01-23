@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { UserRegistration, Game } from '../../types';
 import { User } from 'firebase/auth';
 import { Briefcase, Star, Clock, Award, CalendarOff } from 'lucide-react';
-import { motion, Variants } from 'framer-motion';
 import { StatCard } from './StatCard';
 import { NextMissionCard } from './NextMissionCard';
 import { MissionList } from './MissionList';
@@ -17,26 +16,6 @@ interface DashboardHomeProps {
     onToggleFavorite: (team: string) => Promise<void>;
     user: User;
 }
-
-const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.02,
-            delayChildren: 0,
-        }
-    }
-};
-
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 8 },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: { type: "tween", duration: 0.15, ease: "easeOut" }
-    }
-};
 
 export const DashboardHome: React.FC<DashboardHomeProps> = ({
     registrations,
@@ -66,21 +45,16 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
     }, [registrations]);
 
     return (
-        <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="space-y-6 max-w-5xl mx-auto"
-        >
+        <div className="space-y-6 max-w-5xl mx-auto">
             {/* Welcome & Stats Grid */}
-            <motion.div variants={itemVariants} className="mb-2">
+            <div className="mb-2">
                 <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-400 mb-1">
                     Bonjour {user.displayName?.split(' ')[0]} 👋
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm">
                     Prêt pour votre prochain match ? Voici votre activité.
                 </p>
-            </motion.div>
+            </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -89,21 +63,18 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                     value={totalMissions}
                     icon={<Briefcase className="w-5 h-5 text-white" />}
                     gradient="from-blue-500 to-indigo-600"
-                    delay={0.1}
                 />
                 <StatCard
                     label="Heures (Estimées)"
                     value={`${totalHours}h`}
                     icon={<Clock className="w-5 h-5 text-white" />}
                     gradient="from-emerald-500 to-teal-600"
-                    delay={0.2}
                 />
                 <StatCard
                     label="Rôle Favori"
                     value={favoriteRole}
                     icon={<Star className="w-5 h-5 text-white" />}
                     gradient="from-purple-500 to-pink-600"
-                    delay={0.3}
                 />
             </div>
 
@@ -111,11 +82,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
             {nextMission ? (
                 <NextMissionCard registration={nextMission} onUnsubscribe={onUnsubscribe} user={user} />
             ) : (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 p-8 text-center border border-slate-200 dark:border-slate-700"
-                >
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 p-8 text-center border border-slate-200 dark:border-slate-700">
                     <CalendarOff className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">
                         Aucune mission prévue
@@ -123,7 +90,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                         Consultez le planning général pour vous inscrire à un match et aider le club !
                     </p>
-                </motion.div>
+                </div>
             )}
 
             {/* Main Content Split: Missions & Preferences */}
@@ -138,12 +105,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                 </div>
 
                 {/* Right Col: Preferences / Teams */}
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="space-y-6"
-                >
+                <div className="space-y-6">
                     <div className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
                         <h3 className="flex items-center gap-3 font-bold text-slate-800 dark:text-white mb-4">
                             <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg text-white shadow-lg shadow-amber-500/20">
@@ -156,23 +118,21 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                         </p>
                         <div className="flex flex-wrap gap-2">
                             {allTeams.map(team => (
-                                <motion.button
+                                <button
                                     key={team}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => onToggleFavorite(team)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${favoriteTeams.includes(team)
-                                        ? 'bg-gradient-to-r from-slate-800 to-slate-900 dark:from-white dark:to-slate-100 text-white dark:text-slate-900 border-transparent shadow-lg'
-                                        : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 border ${favoriteTeams.includes(team)
+                                            ? 'bg-gradient-to-r from-slate-800 to-slate-900 dark:from-white dark:to-slate-100 text-white dark:text-slate-900 border-transparent shadow-lg'
+                                            : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'
                                         }`}
                                 >
                                     {team}
-                                </motion.button>
+                                </button>
                             ))}
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
-        </motion.div>
+        </div>
     );
 };

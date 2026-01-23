@@ -282,9 +282,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         };
 
         return (
-            <motion.div
-                variants={cardVariants}
-                layout
+            <div
                 className={`
                     group relative p-4 md:p-5 rounded-2xl border overflow-hidden
                     bg-white dark:bg-slate-800/50 backdrop-blur-sm
@@ -362,7 +360,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${game.percent}%` }}
-                            transition={{ duration: 0.8, delay: index * 0.05, ease: "easeOut" }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
                             className={`h-full bg-gradient-to-r ${getProgressColor(game.percent)} rounded-full`}
                         />
                     </div>
@@ -370,7 +368,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                         {game.filled} / {formatCapacity(game.total)} postes pourvus
                     </p>
                 </div>
-            </motion.div>
+            </div>
         );
     };
 
@@ -564,12 +562,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                                     </motion.div>
 
                                     {/* Games List */}
-                                    <motion.div
-                                        variants={containerVariants}
-                                        initial="hidden"
-                                        animate="show"
-                                        className="space-y-3"
-                                    >
+                                    <div className="space-y-3">
                                         {filteredGames.length === 0 ? (
                                             <motion.div
                                                 initial={{ opacity: 0, scale: 0.95 }}
@@ -589,7 +582,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                                                 <GameCard key={game.id} game={game} index={index} />
                                             ))
                                         )}
-                                    </motion.div>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
