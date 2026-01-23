@@ -139,11 +139,11 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className={`
-            relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col overflow-hidden transition-all duration-300 h-full
+            relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col overflow-hidden transition-all duration-150 h-full
             bg-white dark:bg-slate-900
         `}>
             {/* Border/Ring Overlay - Always on top */}
@@ -230,7 +230,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         className="overflow-hidden bg-white dark:bg-slate-900"
                     >
                         <div className="p-4 pt-2 border-t border-slate-100 dark:border-slate-700">

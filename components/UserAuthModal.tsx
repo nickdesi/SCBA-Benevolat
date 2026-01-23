@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { GoogleIcon, AppleIcon } from './Icons';
+import { Mail, Lock, User, X, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { GoogleIcon } from './Icons';
 import { signIn, signUp } from '../utils/authStore';
 import useScrollLock from '../utils/useScrollLock';
 
@@ -82,12 +83,10 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                     onClick={() => setView('login')}
                     className="flex flex-col items-center justify-center gap-2 p-4 bg-white border-2 border-slate-200 
                                  hover:border-indigo-500 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 
-                                 rounded-xl transition-all duration-150 shadow-sm hover:shadow-md"
+                                 rounded-xl transition-all duration-150 shadow-sm hover:shadow-md group"
                 >
-                    <div className="p-2 bg-indigo-100 rounded-full text-indigo-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                        </svg>
+                    <div className="p-2.5 bg-indigo-100 rounded-full text-indigo-600 group-hover:scale-110 transition-transform">
+                        <LogIn className="w-5 h-5" />
                     </div>
                     <span className="font-bold text-sm">Se connecter</span>
                 </button>
@@ -96,12 +95,10 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                     onClick={() => setView('signup')}
                     className="flex flex-col items-center justify-center gap-2 p-4 bg-white border-2 border-slate-200 
                                  hover:border-purple-500 hover:bg-purple-50 text-slate-700 hover:text-purple-700 
-                                 rounded-xl transition-all duration-150 shadow-sm hover:shadow-md"
+                                 rounded-xl transition-all duration-150 shadow-sm hover:shadow-md group"
                 >
-                    <div className="p-2 bg-purple-100 rounded-full text-purple-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
-                        </svg>
+                    <div className="p-2.5 bg-purple-100 rounded-full text-purple-600 group-hover:scale-110 transition-transform">
+                        <UserPlus className="w-5 h-5" />
                     </div>
                     <span className="font-bold text-sm">Créer un compte</span>
                 </button>
@@ -116,7 +113,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
             {/* Option 3: Guest */}
             <button
                 onClick={handleClose}
-                className="w-full px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-xl transition-colors"
+                className="w-full px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm rounded-xl transition-colors hover:shadow-inner"
             >
                 Continuer en tant qu'invité
             </button>
@@ -126,57 +123,69 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
     const renderForm = () => (
         <form onSubmit={handleEmailAuth} className="space-y-4">
             {error && (
-                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-200">
+                <div className="p-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl border border-red-200 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
                     {error}
                 </div>
             )}
 
             {view === 'signup' && (
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Nom complet</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-900 placeholder:text-slate-400"
-                        placeholder="Ex: Pierre Martin"
-                        required
-                    />
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Nom complet</label>
+                    <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                            placeholder="Ex: Pierre Martin"
+                            required
+                        />
+                    </div>
                 </div>
             )}
 
             <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-900 placeholder:text-slate-400"
-                    placeholder="votre@email.com"
-                    required
-                />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Email</label>
+                <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                        placeholder="votre@email.com"
+                        required
+                    />
+                </div>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-slate-900 placeholder:text-slate-400"
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                />
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                    />
+                </div>
             </div>
 
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl 
-                         hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50"
+                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl 
+                         hover:from-blue-500 hover:to-indigo-500 transition-all disabled:opacity-50 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0"
             >
-                {loading ? 'Chargement...' : (view === 'login' ? 'Se connecter' : 'Créer un compte')}
+                {loading ? (
+                    <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (view === 'login' ? 'Se connecter' : 'Créer un compte')}
             </button>
 
             {/* Social Logins inside Form */}
@@ -189,7 +198,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
             <button
                 type="button"
                 onClick={onGoogleLogin}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
                 <div className="w-5 h-5"><GoogleIcon /></div>
                 <span>Google</span>
@@ -199,9 +208,9 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                 <button
                     type="button"
                     onClick={() => setView('menu')}
-                    className="text-slate-500 hover:text-slate-800 font-medium flex items-center gap-1"
+                    className="text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
                 >
-                    ← Retour
+                    <ArrowLeft className="w-4 h-4" /> Retour
                 </button>
                 <button
                     type="button"
@@ -209,7 +218,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                         setView(view === 'login' ? 'signup' : 'login');
                         setError('');
                     }}
-                    className="text-blue-600 hover:text-blue-800 font-bold"
+                    className="text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
                 >
                     {view === 'login' ? 'Créer un compte' : 'J\'ai déjà un compte'}
                 </button>
@@ -225,36 +234,37 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
             />
 
             <div
-                className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden border border-slate-100"
+                className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl transform transition-all overflow-hidden border border-slate-100"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="relative px-6 py-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white text-center">
-                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
-                        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(255,255,255,0.3)_0%,transparent_60%)] animate-pulse" />
+                <div className="relative px-8 py-8 bg-slate-900 text-white text-center overflow-hidden">
+                    {/* Dynamic Background */}
+                    <div className="absolute inset-0">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-900 opacity-90" />
+                        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(255,255,255,0.1)_0%,transparent_60%)] animate-pulse" />
                     </div>
 
                     <div className="relative z-10">
-                        <h2 className="text-xl font-bold mb-1">
-                            {view === 'menu' ? 'Espace Bénévoles' : (view === 'login' ? 'Connexion' : 'Inscription')}
+                        <h2 className="text-2xl font-black mb-1.5 tracking-tight">
+                            {view === 'menu' ? 'Espace Bénévoles' : (view === 'login' ? 'Bon retour !' : 'Rejoindre l\'équipe')}
                         </h2>
-                        <p className="text-slate-300 text-xs">
+                        <p className="text-blue-100 text-sm font-medium">
                             {view === 'menu'
-                                ? 'Sauvegardez votre planning sur tous vos appareils.'
-                                : (view === 'login' ? 'Entrez vos identifiants' : 'Rejoignez la team SCBA !')}
+                                ? 'Gérez vos inscriptions et matchs.'
+                                : (view === 'login' ? 'Entrez vos identifiants pour continuer' : 'Créez votre compte en 30 secondes')}
                         </p>
                     </div>
 
                     <button
                         onClick={handleClose}
+                        aria-label="Fermer"
                         className="absolute top-4 right-4 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors z-[20]"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 md:p-8">
                     {view === 'menu' ? renderMenu() : renderForm()}
                 </div>
             </div>

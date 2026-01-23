@@ -18,7 +18,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     modals
 }) => {
     return (
-        <div className="min-h-screen font-outfit pb-12">
+        <div className="min-h-[100dvh] font-outfit pb-12">
             {header}
 
             {topElements}
