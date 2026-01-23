@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
     BarChart3, Megaphone, Activity, Users, AlertTriangle,
     AlertOctagon, CheckCircle2, X, TrendingUp, Calendar,
@@ -19,7 +19,7 @@ type FilterType = 'all' | 'urgent' | 'incomplete';
 type TabType = 'stats' | 'broadcast';
 
 // Animation variants
-const containerVariants = {
+const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
@@ -30,7 +30,7 @@ const containerVariants = {
     }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
     show: {
         opacity: 1,
@@ -40,7 +40,7 @@ const itemVariants = {
     }
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     show: {
         opacity: 1,
@@ -446,8 +446,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                             <button
                                 onClick={() => setActiveTab('stats')}
                                 className={`flex-1 px-4 md:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'stats'
-                                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
+                                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                                     }`}
                             >
                                 <BarChart3 className="w-4 h-4" />
@@ -457,8 +457,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                             <button
                                 onClick={() => setActiveTab('broadcast')}
                                 className={`flex-1 px-4 md:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'broadcast'
-                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                                     }`}
                             >
                                 <Megaphone className="w-4 h-4" />
@@ -535,8 +535,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                                         <button
                                             onClick={() => setFilter('all')}
                                             className={`shrink-0 px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 ${filter === 'all'
-                                                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                                                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
+                                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                                                 }`}
                                         >
                                             <Activity className="w-3.5 h-3.5" />
@@ -545,8 +545,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                                         <button
                                             onClick={() => setFilter('urgent')}
                                             className={`shrink-0 px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 ${filter === 'urgent'
-                                                    ? 'bg-red-600 text-white shadow-lg shadow-red-500/30'
-                                                    : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/30'
+                                                ? 'bg-red-600 text-white shadow-lg shadow-red-500/30'
+                                                : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/30'
                                                 }`}
                                         >
                                             <AlertTriangle className="w-3.5 h-3.5" />
@@ -555,8 +555,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                                         <button
                                             onClick={() => setFilter('incomplete')}
                                             className={`shrink-0 px-4 py-2 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 ${filter === 'incomplete'
-                                                    ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/30'
-                                                    : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30'
+                                                ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/30'
+                                                : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30'
                                                 }`}
                                         >
                                             <AlertOctagon className="w-3.5 h-3.5" />

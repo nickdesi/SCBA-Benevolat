@@ -3,14 +3,14 @@ import { addDoc, collection, serverTimestamp, updateDoc, doc } from 'firebase/fi
 import { db } from '../../firebase';
 import { Announcement } from '../../types';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, X, List, CheckCircle2, Siren } from 'lucide-react';
 
 interface AdminBroadcastPanelProps {
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: {
         opacity: 1,
