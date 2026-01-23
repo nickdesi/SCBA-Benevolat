@@ -284,7 +284,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         return (
             <div
                 className={`
-                    cv-auto group relative p-4 md:p-5 rounded-2xl border overflow-hidden
+                    group relative p-4 md:p-5 rounded-2xl border overflow-hidden
                     bg-white/90 dark:bg-slate-800/90
                     ${game.isUrgent
                         ? 'border-red-300 dark:border-red-500/50 shadow-red-100 dark:shadow-red-500/10'
