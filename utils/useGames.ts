@@ -35,7 +35,7 @@ interface UseGamesReturn {
     deleteGame: (gameId: string) => Promise<boolean>;
     importGames: (matchesData: (GameFormData & { id?: string })[]) => Promise<void>;
     // Volunteer operations
-    handleVolunteer: (gameId: string, roleId: string, parentName: string) => Promise<void>;
+    handleVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => Promise<void>;
     handleRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     handleUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => Promise<void>;
     // Carpool operations

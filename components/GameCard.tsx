@@ -14,7 +14,7 @@ const GameForm = lazy(() => import('./GameForm'));
 
 interface GameCardProps {
     game: Game;
-    onVolunteer: (gameId: string, roleId: string, parentName: string) => void;
+    onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
     onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
     onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;

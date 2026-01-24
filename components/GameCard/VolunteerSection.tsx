@@ -8,7 +8,7 @@ interface VolunteerSectionProps {
     isAdmin: boolean;
     userRegistrations?: Map<string, string>;
     isAuthenticated?: boolean;
-    onVolunteer: (gameId: string, roleId: string, parentName: string) => void;
+    onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
     onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
 }

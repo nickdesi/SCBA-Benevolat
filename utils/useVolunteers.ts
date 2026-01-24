@@ -13,7 +13,7 @@ import type { Game, UserRegistration } from '../types';
 interface UseVolunteersReturn {
     userRegistrations: UserRegistration[];
     userRegistrationsMap: Map<string, string>;
-    handleVolunteer: (gameId: string, roleId: string, parentName: string) => Promise<void>;
+    handleVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => Promise<void>;
     handleRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     handleUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => Promise<void>;
 }
@@ -72,8 +72,9 @@ export const useVolunteers = (): UseVolunteersReturn => {
     // Volunteer Operations - TRANSACTIONAL
     // ---------------------------------------------------------------------------
 
-    const handleVolunteer = useCallback(async (gameId: string, roleId: string, parentName: string) => {
+    const handleVolunteer = useCallback(async (gameId: string, roleId: string, parentName: string | string[]) => {
         const gameRef = doc(db, "matches", gameId);
+        const namesToAdd = Array.isArray(parentName) ? parentName : [parentName];
 
         try {
             await runTransaction(db, async (transaction) => {
@@ -85,7 +86,7 @@ export const useVolunteers = (): UseVolunteersReturn => {
 
                 const updatedRoles = gameData.roles.map(role => {
                     if (role.id === roleId) {
-                        return { ...role, volunteers: [...role.volunteers, parentName] };
+                        return { ...role, volunteers: [...role.volunteers, ...namesToAdd] };
                     }
                     return role;
                 });
@@ -93,19 +94,27 @@ export const useVolunteers = (): UseVolunteersReturn => {
                 transaction.update(gameRef, { roles: updatedRoles });
 
                 if (auth.currentUser) {
-                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, `${gameId}_${roleId}`);
-                    transaction.set(userRegRef, {
-                        gameId,
-                        roleId,
-                        roleName: gameData.roles.find(r => r.id === roleId)?.name || 'Bénévole',
-                        gameDate: gameData.date,
-                        gameDateISO: gameData.dateISO,
-                        gameTime: gameData.time,
-                        location: gameData.location,
-                        team: gameData.team,
-                        opponent: gameData.opponent,
-                        createdAt: new Date().toISOString(),
-                        volunteerName: parentName
+                    // Note: If multiple names are added by one user, we currently only register the FIRST one 
+                    // or we need to decide how to track "My Registration" for multiple people.
+                    // For now, let's just register all of them as "Mine" if I added them.
+
+                    namesToAdd.forEach(name => {
+                        const uniqueKey = `${gameId}_${roleId}_${name}`; // New Key Format
+                        const userRegReference = doc(db, `users/${auth.currentUser!.uid}/registrations`, uniqueKey);
+
+                        transaction.set(userRegReference, {
+                            gameId,
+                            roleId,
+                            roleName: gameData.roles.find(r => r.id === roleId)?.name || 'Bénévole',
+                            gameDate: gameData.date,
+                            gameDateISO: gameData.dateISO,
+                            gameTime: gameData.time,
+                            location: gameData.location,
+                            team: gameData.team,
+                            opponent: gameData.opponent,
+                            createdAt: new Date().toISOString(),
+                            volunteerName: name
+                        });
                     });
                 }
             });

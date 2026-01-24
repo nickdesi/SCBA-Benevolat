@@ -5,11 +5,13 @@ import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
 import { Hand, CheckCircle, Sparkles } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import { saveMyRegistration, removeMyRegistration, isMyRegistration, claimRegistration, mightBeMyRegistration } from '../utils/storage';
+import { parseNames } from '../utils/textUtils';
+
 
 interface VolunteerSlotProps {
     role: Role;
     gameId: string;
-    onVolunteer: (parentName: string) => void;
+    onVolunteer: (parentName: string | string[]) => void;
     onRemoveVolunteer: (parentName: string) => void;
     onUpdateVolunteer: (oldName: string, newName: string) => void;
     isAdmin: boolean;
@@ -53,10 +55,17 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
 
     const confirmSignUp = () => {
         const name = confirmModal.name;
-        onVolunteer(name);
+        const names = parseNames(name);
+
+        // Atomic update for all names
+        onVolunteer(names);
+
+        // Local storage backup (loop needed as it likely handles 1 by 1 or we check implementation)
+        // verify saveMyRegistration signature? It likely takes string.
         if (!isAuthenticated) {
-            saveMyRegistration(registrationKey, name);
+            names.forEach(n => saveMyRegistration(registrationKey, n));
         }
+
         setNewName('');
         setIsInputVisible(false);
         setConfirmModal({ isOpen: false, type: 'add', name: '' });
@@ -100,11 +109,26 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
 
     const handleUpdate = () => {
         if (newName.trim() && editingVolunteer) {
-            removeMyRegistration(registrationKey, editingVolunteer);
-            if (!isAuthenticated) {
-                saveMyRegistration(registrationKey, newName.trim());
+            const names = parseNames(newName);
+
+            if (names.length === 1) {
+                // Standard update
+                const updatedName = names[0];
+                removeMyRegistration(registrationKey, editingVolunteer);
+                if (!isAuthenticated) {
+                    saveMyRegistration(registrationKey, updatedName);
+                }
+                onUpdateVolunteer(editingVolunteer, updatedName);
+            } else {
+                // Split logic: Remove old + Add new ones
+                onRemoveVolunteer(editingVolunteer);
+                removeMyRegistration(registrationKey, editingVolunteer);
+
+                names.forEach(n => {
+                    onVolunteer(n);
+                    if (!isAuthenticated) saveMyRegistration(registrationKey, n);
+                });
             }
-            onUpdateVolunteer(editingVolunteer, newName.trim());
             cancelEditing();
         }
     };
@@ -125,7 +149,13 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                 title={confirmModal.type === 'add' ? 'Confirmer l\'inscription' : 'Se désinscrire ?'}
                 message={
                     confirmModal.type === 'add'
-                        ? `Voulez-vous vous inscrire en tant que "${confirmModal.name}" pour ${role.name} ?`
+                        ? (() => {
+                            const names = parseNames(confirmModal.name);
+                            if (names.length > 1) {
+                                return `Voulez-vous inscrire ces ${names.length} personnes : ${names.join(", ")} ?`;
+                            }
+                            return `Voulez-vous vous inscrire en tant que "${confirmModal.name}" pour ${role.name} ?`;
+                        })()
                         : `Êtes-vous sûr de vouloir vous désinscrire de ${role.name} ?`
                 }
                 confirmText={confirmModal.type === 'add' ? 'Je confirme !' : 'Me désinscrire'}
