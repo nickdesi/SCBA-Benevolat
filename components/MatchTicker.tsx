@@ -46,7 +46,7 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
                     const visitor = game.isHome ? game.opponent : game.team;
 
                     return (
-                        <div key={`${game.id}-${i}`} className="flex items-center gap-2 text-sm font-medium mr-8">
+                        <div key={`${game.id}-${i}`} className="flex items-center gap-2 text-base font-medium mr-8">
                             <span className="text-slate-400">{game.date} à {game.time}</span>
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${game.isHome
                                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'

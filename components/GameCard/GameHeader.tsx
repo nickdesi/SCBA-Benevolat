@@ -124,15 +124,15 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500 dark:from-red-400 dark:to-orange-400">{game.opponent}</span>
             </p>
 
-            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-3">
+            <div className="text-sm text-slate-500 dark:text-slate-400 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white/60 dark:bg-black/30 rounded-lg border border-white/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
-                        <CalendarIcon className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/60 dark:bg-black/30 rounded-lg border border-white/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
+                        <CalendarIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                         <span className="font-bold text-slate-700 dark:text-slate-300">{game.date}</span>
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white/60 dark:bg-black/30 rounded-lg border border-white/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
-                        <ClockIcon className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                        <span className="font-bold text-slate-700 dark:text-slate-300">{game.time}</span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/60 dark:bg-black/30 rounded-lg border border-white/50 dark:border-white/5 backdrop-blur-sm shadow-sm">
+                        <ClockIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                        <span className="font-black text-slate-800 dark:text-slate-200 text-base">{game.time}</span>
                     </span>
                 </div>
 

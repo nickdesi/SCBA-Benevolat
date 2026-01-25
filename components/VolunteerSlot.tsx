@@ -207,21 +207,23 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                     value={newName}
                                     onChange={(e) => setNewName(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    className="flex-1 min-w-0 px-3 py-1.5 text-sm border border-blue-300 rounded-lg
+                                    className="flex-1 min-w-0 px-3 py-2 min-h-[44px] text-sm border border-blue-300 rounded-lg
                                                focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
                                     autoFocus
                                 />
                                 <button
                                     onClick={cancelEditing}
-                                    className="px-2 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                                    className="min-w-[44px] min-h-[44px] flex items-center justify-center text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                                    aria-label="Annuler la modification"
                                 >
                                     ✕
                                 </button>
                                 <button
                                     onClick={handleUpdate}
-                                    className="px-2 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                                    className="min-w-[44px] min-h-[44px] flex items-center justify-center text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                                    aria-label="Confirmer la modification"
                                 >
-                                    <CheckIcon className="w-3.5 h-3.5" />
+                                    <CheckIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         ) : (
@@ -261,30 +263,30 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                     {isAdmin && (
                                         <button
                                             onClick={() => handleRemoveClick(volunteer)}
-                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             aria-label={`Supprimer ${volunteer}`}
                                         >
-                                            <DeleteIcon className="w-4 h-4" />
+                                            <DeleteIcon className="w-5 h-5" />
                                         </button>
                                     )}
                                     {/* User can only remove their own registration */}
                                     {!isAdmin && isMine && (
                                         <button
                                             onClick={() => handleRemoveClick(volunteer)}
-                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                             aria-label="Se désinscrire"
                                         >
-                                            <DeleteIcon className="w-4 h-4" />
+                                            <DeleteIcon className="w-5 h-5" />
                                         </button>
                                     )}
                                     {/* User can edit their own registration */}
                                     {!isAdmin && isMine && (
                                         <button
                                             onClick={() => startEditing(volunteer)}
-                                            className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors"
+                                            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
                                             aria-label="Modifier mon nom"
                                         >
-                                            <EditPencilIcon className="w-3.5 h-3.5" />
+                                            <EditPencilIcon className="w-5 h-5" />
                                         </button>
                                     )}
                                     {/* Identity recovery */}
@@ -294,8 +296,8 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                                 claimRegistration(registrationKey, volunteer);
                                                 setNewName('');
                                             }}
-                                            className="px-1.5 py-0.5 text-[10px] font-medium text-amber-700 bg-amber-100
-                                                       hover:bg-amber-200 rounded-md transition-colors"
+                                            className="min-h-[44px] px-3 py-2 text-sm font-medium text-amber-700 bg-amber-100
+                                                       hover:bg-amber-200 rounded-lg transition-colors"
                                             title="Récupérer cette inscription"
                                         >
                                             C'est moi ?
@@ -317,20 +319,21 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                                         onChange={(e) => setNewName(e.target.value)}
                                         onKeyDown={handleKeyDown}
                                         placeholder="Votre nom..."
-                                        className="flex-1 min-w-0 px-3 py-2 text-sm border border-slate-200 rounded-lg
+                                        className="flex-1 min-w-0 px-3 py-2 min-h-[44px] text-sm border border-slate-200 rounded-lg
                                                    focus:outline-none focus:ring-2 focus:ring-red-400 bg-white"
                                         autoFocus
                                     />
                                     <button
                                         onClick={() => { setIsInputVisible(false); setNewName(''); }}
-                                        className="px-2.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                                        aria-label="Annuler l'inscription"
                                     >
                                         ✕
                                     </button>
                                     <button
                                         onClick={handleSignUpClick}
                                         disabled={!newName.trim()}
-                                        className="px-3 py-2 text-xs font-semibold text-white bg-red-500 rounded-lg
+                                        className="min-w-[44px] min-h-[44px] px-4 flex items-center justify-center text-sm font-semibold text-white bg-red-500 rounded-lg
                                                    hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         OK
@@ -339,7 +342,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                             ) : (
                                 <button
                                     onClick={() => setIsInputVisible(true)}
-                                    className="w-full py-2.5 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-xl
+                                    className="w-full min-h-[44px] py-3 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-xl
                                                hover:from-red-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg
                                                flex items-center justify-center gap-2"
                                 >
