@@ -1,7 +1,7 @@
 {
   "name": "scba-benevoles",
   "private": true,
-  "version": "2.2.0",
+  "version": "2.2.1",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -14,7 +14,7 @@
   "dependencies": {
     "firebase": "^12.6.0",
     "framer-motion": "^12.25.0",
-    "lucide-react": "^0.562.0",
+    "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-fast-marquee": "^1.6.5",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
-    "@types/node": "^22.13.0",
+    "@types/node": "^24.10.9",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",

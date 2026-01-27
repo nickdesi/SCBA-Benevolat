@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1] - 2026-01-27
+
+### 🔧 Maintenance (v2.2.1)
+
+- **Node.js** : Mise à jour des définitions de types (`@types/node`) pour correspondre au runtime LTS v24.
+
+---
+
 ## [2.2.0] - 2026-01-27
 
 ### ⚡ Infrastructure (v2.2.0)
