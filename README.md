@@ -8,7 +8,7 @@
 > **L'application officielle de gestion du bénévolat pour le Stade Clermontois Basket Auvergne.**
 > Une expérience moderne, fluide et sociale pour simplifier la vie du club.
 
-![App Screenshot](public/screenshot-hero.png)
+![App Screenshot](public/screenshot-hero.webp)
 
 ## ✨ Expérience "Pro Max"
 
