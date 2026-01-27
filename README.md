@@ -73,7 +73,7 @@ graph TD
 
 ### Prérequis
 
-- Node.js v22+
+- Node.js v24+
 - Clé API Firebase configurée
 
 ### Démarrage Rapide

@@ -4,7 +4,7 @@
 
 ### ⚡ Infrastructure (v2.2.0)
 
-- **Node.js v22** : Migration du runtime vers la dernière version LTS (v22.22.0) pour de meilleures performances et sécurité.
+- **Node.js v24** : Migration du runtime vers la dernière version LTS (v24.13.0) pour de meilleures performances et sécurité.
 - **Dépendances** : Mise à jour complète de toutes les librairies (`npm update`), aucune vulnérabilité détectée.
 - **Sécurité** : Audit complet validé (SAST, Secrets, Firestore Rules).
 - **Assets** : Conversion de `screenshot-hero.png` en WebP (Gain de perf).

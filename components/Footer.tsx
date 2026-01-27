@@ -7,7 +7,7 @@ const CHANGELOG = [
         version: "v2.2.0",
         date: "27/01/2026",
         changes: [
-            "⚡ Core : Mise à jour Node.js v22",
+            "⚡ Core : Mise à jour Node.js v24 LTS",
             "📦 Deps : Refresh complet des dépendances",
             "🔒 Security : Audit validé (0 vulnérabilité)"
         ]
