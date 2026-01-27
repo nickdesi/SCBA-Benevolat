@@ -1,8 +1,17 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.1.0';
+const APP_VERSION = 'v2.2.0';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: "v2.2.0",
+        date: "27/01/2026",
+        changes: [
+            "⚡ Core : Mise à jour Node.js v22",
+            "📦 Deps : Refresh complet des dépendances",
+            "🔒 Security : Audit validé (0 vulnérabilité)"
+        ]
+    },
     {
         version: "v2.1.0",
         date: "22/01/2026",
