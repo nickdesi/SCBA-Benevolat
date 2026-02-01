@@ -5,12 +5,16 @@ import { Briefcase, Star, Clock, Award, CalendarOff } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { NextMissionCard } from './NextMissionCard';
 import { MissionList } from './MissionList';
+import { CarpoolList } from './CarpoolList';
+import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';
 
 interface DashboardHomeProps {
     registrations: UserRegistration[];
     games: Game[];
+    userCarpools: UserCarpoolRegistration[];
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+    onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
     allTeams: string[];
     favoriteTeams: string[];
     onToggleFavorite: (team: string) => Promise<void>;
@@ -20,7 +24,9 @@ interface DashboardHomeProps {
 export const DashboardHome: React.FC<DashboardHomeProps> = ({
     registrations,
     games,
+    userCarpools,
     onUnsubscribe,
+    onRemoveCarpool,
     allTeams,
     favoriteTeams,
     onToggleFavorite,
@@ -122,8 +128,8 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                                     key={team}
                                     onClick={() => onToggleFavorite(team)}
                                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 border ${favoriteTeams.includes(team)
-                                            ? 'bg-gradient-to-r from-slate-800 to-slate-900 dark:from-white dark:to-slate-100 text-white dark:text-slate-900 border-transparent shadow-lg'
-                                            : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'
+                                        ? 'bg-gradient-to-r from-slate-800 to-slate-900 dark:from-white dark:to-slate-100 text-white dark:text-slate-900 border-transparent shadow-lg'
+                                        : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'
                                         }`}
                                 >
                                     {team}
@@ -131,6 +137,12 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                             ))}
                         </div>
                     </div>
+
+                    {/* Carpooling Section */}
+                    <CarpoolList
+                        carpools={userCarpools}
+                        onRemoveCarpool={onRemoveCarpool}
+                    />
                 </div>
             </div>
         </div>

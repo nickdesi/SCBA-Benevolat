@@ -6,13 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardHome } from './DashboardHome';
 import { DashboardComm } from './DashboardCommunications';
 import { DashboardHeader } from './DashboardHeader';
+import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
 
 interface VolunteerDashboardProps {
     user: User;
     registrations: UserRegistration[];
     games: Game[];
+    userCarpools: UserCarpoolRegistration[];
     onClose: () => void;
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+    onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
     allTeams: string[];
     favoriteTeams: string[];
     onToggleFavorite: (team: string) => Promise<void>;
@@ -22,8 +25,10 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
     user,
     registrations,
     games,
+    userCarpools,
     onClose,
     onUnsubscribe,
+    onRemoveCarpool,
     allTeams,
     favoriteTeams,
     onToggleFavorite
@@ -56,7 +61,9 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
                             <DashboardHome
                                 registrations={registrations}
                                 games={games}
+                                userCarpools={userCarpools}
                                 onUnsubscribe={onUnsubscribe}
+                                onRemoveCarpool={onRemoveCarpool}
                                 allTeams={allTeams}
                                 favoriteTeams={favoriteTeams}
                                 onToggleFavorite={onToggleFavorite}

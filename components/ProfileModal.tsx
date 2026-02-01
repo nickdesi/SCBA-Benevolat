@@ -4,6 +4,7 @@ import { User } from 'firebase/auth';
 import { UserRegistration, Game } from '../types';
 import useScrollLock from '../utils/useScrollLock';
 import { VolunteerDashboard } from './volunteer/VolunteerDashboard';
+import type { UserCarpoolRegistration } from '../utils/useCarpoolRegistrations';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -11,6 +12,7 @@ interface ProfileModalProps {
     user: User;
     registrations: UserRegistration[];
     games: Game[];
+    userCarpools: UserCarpoolRegistration[];
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
@@ -25,6 +27,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     user,
     registrations,
     games,
+    userCarpools,
     onUnsubscribe,
     onRemoveCarpool,
     onToast,
@@ -45,8 +48,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     user={user}
                     registrations={registrations}
                     games={games}
+                    userCarpools={userCarpools}
                     onClose={onClose}
                     onUnsubscribe={onUnsubscribe}
+                    onRemoveCarpool={onRemoveCarpool}
                     allTeams={allTeams}
                     favoriteTeams={favoriteTeams}
                     onToggleFavorite={onToggleFavorite}

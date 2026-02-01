@@ -14,6 +14,7 @@ import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut, signInWithGoogle } from './utils/authStore';
 import UserAuthModal from './components/UserAuthModal';
 import { useGames } from './utils/useGames';
+import { useCarpoolRegistrations } from './utils/useCarpoolRegistrations';
 import { useUserProfile } from './utils/useUserProfile';
 import EventSchema from './components/EventSchema';
 
@@ -81,6 +82,9 @@ function App() {
     userRegistrationsMap,
     allTeams // Use allTeams from useGames for the most up-to-date list
   } = useGames({ selectedTeam, currentView, favoriteTeams });
+
+  // User carpools from games data
+  const { userCarpools } = useCarpoolRegistrations({ games });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -328,6 +332,7 @@ function App() {
               user={currentUser}
               registrations={userRegistrations}
               games={games}
+              userCarpools={userCarpools}
               onUnsubscribe={handleRemoveVolunteer}
               onRemoveCarpool={handleRemoveCarpool}
               onToast={addToast}
