@@ -148,14 +148,15 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                 key={day.toISOString()}
                                 className="relative"
                                 variants={dayVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="hidden"
                                 layout
                             >
                                 {/* Date Header - Pill Style with Stats */}
                                 <motion.div
                                     className="mb-4"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: dayIdx * 0.05 }}
+                                    variants={dayVariants} // Use same variants to sync opacity
                                 >
                                     <div className={`
                                         inline-flex items-center gap-3 px-6 py-3 rounded-full shadow-lg z-10 relative
@@ -183,6 +184,8 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                 <motion.div
                                     className="flex flex-col gap-4"
                                     variants={containerVariants}
+                                    initial="hidden"
+                                    animate="visible"
                                 >
                                     {dayGames.map((game, gameIdx) => (
                                         <motion.div
@@ -224,17 +227,18 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                         variants={emptyVariants}
                         initial="hidden"
                         animate="visible"
+                        exit="hidden"
                     >
                         <span className="text-4xl mb-2">💤</span>
                         <p className="text-slate-500 text-sm">Pas de matchs cette semaine</p>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </motion.div >
     );
 });
 
 MobileTimeline.displayName = 'MobileTimeline';
 
-export default MobileTimeline;
 
+export default MobileTimeline;
