@@ -73,6 +73,10 @@ function App() {
     handleUpdateVolunteer,
     handleAddCarpool,
     handleRemoveCarpool,
+    handleRequestSeat,
+    handleAcceptPassenger,
+    handleRejectPassenger,
+    handleCancelRequest,
     userRegistrations,
     userRegistrationsMap,
     allTeams // Use allTeams from useGames for the most up-to-date list
@@ -202,6 +206,46 @@ function App() {
       addToast("Erreur lors de l'inscription covoiturage", 'error');
     }
   }, [handleAddCarpool, addToast, isAuthenticated]);
+
+  const handleRequestSeatWithToast = useCallback(async (gameId: string, passengerId: string, driverId: string) => {
+    try {
+      await handleRequestSeat(gameId, passengerId, driverId);
+      addToast('✨ Demande envoyée au conducteur !', 'success');
+    } catch (err) {
+      console.error("Error requesting seat:", err);
+      addToast("Erreur lors de la demande", 'error');
+    }
+  }, [handleRequestSeat, addToast]);
+
+  const handleAcceptPassengerWithToast = useCallback(async (gameId: string, driverId: string, passengerId: string) => {
+    try {
+      await handleAcceptPassenger(gameId, driverId, passengerId);
+      addToast('✅ Passager accepté !', 'success');
+    } catch (err: any) {
+      console.error("Error accepting passenger:", err);
+      addToast(err.message || "Erreur lors de l'acceptation", 'error');
+    }
+  }, [handleAcceptPassenger, addToast]);
+
+  const handleRejectPassengerWithToast = useCallback(async (gameId: string, driverId: string, passengerId: string) => {
+    try {
+      await handleRejectPassenger(gameId, driverId, passengerId);
+      addToast('Demande refusée', 'info');
+    } catch (err) {
+      console.error("Error rejecting passenger:", err);
+      addToast("Erreur lors du refus", 'error');
+    }
+  }, [handleRejectPassenger, addToast]);
+
+  const handleCancelRequestWithToast = useCallback(async (gameId: string, passengerId: string) => {
+    try {
+      await handleCancelRequest(gameId, passengerId);
+      addToast('Demande annulée', 'info');
+    } catch (err) {
+      console.error("Error canceling request:", err);
+      addToast("Erreur lors de l'annulation", 'error');
+    }
+  }, [handleCancelRequest, addToast]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -400,6 +444,10 @@ function App() {
                 onUpdateVolunteer={handleUpdateVolunteer}
                 onAddCarpool={handleAddCarpoolWithToast}
                 onRemoveCarpool={handleRemoveCarpool}
+                onRequestSeat={handleRequestSeatWithToast}
+                onAcceptPassenger={handleAcceptPassengerWithToast}
+                onRejectPassenger={handleRejectPassengerWithToast}
+                onCancelRequest={handleCancelRequestWithToast}
                 onToast={addToast}
                 onEditRequest={setEditingGameId}
                 onCancelEdit={() => setEditingGameId(null)}
@@ -424,6 +472,10 @@ function App() {
                 onUpdateVolunteer={handleUpdateVolunteer}
                 onAddCarpool={handleAddCarpoolWithToast}
                 onRemoveCarpool={handleRemoveCarpool}
+                onRequestSeat={handleRequestSeatWithToast}
+                onAcceptPassenger={handleAcceptPassengerWithToast}
+                onRejectPassenger={handleRejectPassengerWithToast}
+                onCancelRequest={handleCancelRequestWithToast}
                 onToast={addToast}
                 onEditRequest={setEditingGameId}
                 onCancelEdit={() => setEditingGameId(null)}

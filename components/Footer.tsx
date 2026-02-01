@@ -1,8 +1,17 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.2.1';
+const APP_VERSION = 'v2.3.0';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: "v2.3.0",
+        date: "01/02/2026",
+        changes: [
+            "🚗 Matching Covoiturage : Demande de place & Acceptation",
+            "✨ UI Premium : Animations Framer Motion",
+            "🔔 Suggestions automatiques de conducteurs"
+        ]
+    },
     {
         version: "v2.2.1",
         date: "27/01/2026",

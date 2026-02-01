@@ -19,6 +19,10 @@ interface GameCardProps {
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
     onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
     onRemoveCarpool: (gameId: string, entryId: string) => void;
+    onRequestSeat?: (gameId: string, passengerId: string, driverId: string) => void;
+    onAcceptPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+    onRejectPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+    onCancelRequest?: (gameId: string, passengerId: string) => void;
     onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
     isAdmin: boolean;
     isEditing: boolean;
@@ -66,6 +70,10 @@ const GameCard: React.FC<GameCardProps> = memo(({
     onUpdateVolunteer,
     onAddCarpool,
     onRemoveCarpool,
+    onRequestSeat,
+    onAcceptPassenger,
+    onRejectPassenger,
+    onCancelRequest,
     onToast,
     isAdmin,
     isEditing,
@@ -263,6 +271,10 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                     isAdmin={isAdmin}
                                     onAddEntry={(entry) => onAddCarpool(game.id, entry)}
                                     onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
+                                    onRequestSeat={onRequestSeat ? (passengerId, driverId) => onRequestSeat(game.id, passengerId, driverId) : undefined}
+                                    onAcceptPassenger={onAcceptPassenger ? (driverId, passengerId) => onAcceptPassenger(game.id, driverId, passengerId) : undefined}
+                                    onRejectPassenger={onRejectPassenger ? (driverId, passengerId) => onRejectPassenger(game.id, driverId, passengerId) : undefined}
+                                    onCancelRequest={onCancelRequest ? (passengerId) => onCancelRequest(game.id, passengerId) : undefined}
                                 />
                             )}
                         </div>

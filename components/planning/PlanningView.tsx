@@ -13,6 +13,10 @@ interface PlanningViewProps {
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
     onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
     onRemoveCarpool: (gameId: string, entryId: string) => void;
+    onRequestSeat?: (gameId: string, passengerId: string, driverId: string) => void;
+    onAcceptPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+    onRejectPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+    onCancelRequest?: (gameId: string, passengerId: string) => void;
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
     onEditRequest: (gameId: string) => void;
     onCancelEdit: () => void;
@@ -31,6 +35,10 @@ const PlanningView: React.FC<PlanningViewProps> = memo(({
     onUpdateVolunteer,
     onAddCarpool,
     onRemoveCarpool,
+    onRequestSeat,
+    onAcceptPassenger,
+    onRejectPassenger,
+    onCancelRequest,
     onToast,
     onEditRequest,
     onCancelEdit,
@@ -66,6 +74,10 @@ const PlanningView: React.FC<PlanningViewProps> = memo(({
         onUpdateVolunteer,
         onAddCarpool,
         onRemoveCarpool,
+        onRequestSeat,
+        onAcceptPassenger,
+        onRejectPassenger,
+        onCancelRequest,
         onToast,
         onEditRequest,
         onCancelEdit,

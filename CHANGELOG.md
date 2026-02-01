@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.3.0] - 2026-02-01
+
+### ✨ Nouveautés (v2.3.0)
+
+- **Système de Matching Covoiturage** :
+  - **Demande de place** : Les passagers peuvent demander une place à un conducteur spécifique.
+  - **Acceptation/Refus** : Les conducteurs peuvent accepter ou refuser les demandes reçues.
+  - **Suggestions automatiques** : Affichage des conducteurs disponibles avec places restantes.
+  - **Statuts visuels** : Badges de statut (En attente 🟡, Confirmé ✅, Disponible 🟢).
+  - **Mise à jour temps réel** : Les places disponibles se mettent à jour automatiquement via Firestore.
+
+- **UI/UX Covoiturage Premium** :
+  - **Animations Framer Motion** : Transitions fluides et animations modernes.
+  - **Icônes Lucide** : Remplacement des emojis par des icônes SVG professionnelles.
+  - **Boutons en gradient** : Design moderne avec dégradés de couleurs.
+  - **Feedback utilisateur** : Toasts de confirmation pour chaque action.
+
+### ⚡ Technique (v2.3.0)
+
+- **Modèle de données étendu** : Nouveaux champs `status`, `matchedWith`, `requestedDriverId` sur `CarpoolEntry`.
+- **Hook `useCarpool.ts`** : Nouvelles fonctions `handleRequestSeat`, `handleAcceptPassenger`, `handleRejectPassenger`, `handleCancelRequest`.
+- **Propagation des props** : Intégration complète à travers `App.tsx`, `GameCard`, `GameList`, `PlanningView`, `DesktopGrid`, `MobileTimeline`.
+
+---
+
 ## [2.2.1] - 2026-01-27
 
 ### 🔧 Maintenance (v2.2.1)

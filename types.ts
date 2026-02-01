@@ -14,6 +14,10 @@ export interface CarpoolEntry {
   type: 'driver' | 'passenger';
   seats?: number;           // For drivers: available seats
   departureLocation?: string; // Optional: departure point
+  // Matching system
+  status?: 'available' | 'pending' | 'matched'; // Current matching status
+  matchedWith?: string[];   // IDs of matched passengers (for drivers) or driver ID (for passengers)
+  requestedDriverId?: string; // For passengers: ID of driver they requested
 }
 
 export interface Game {

@@ -41,6 +41,10 @@ interface UseGamesReturn {
     // Carpool operations
     handleAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => Promise<void>;
     handleRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
+    handleRequestSeat: (gameId: string, passengerId: string, driverId: string) => Promise<void>;
+    handleAcceptPassenger: (gameId: string, driverId: string, passengerId: string) => Promise<void>;
+    handleRejectPassenger: (gameId: string, driverId: string, passengerId: string) => Promise<void>;
+    handleCancelRequest: (gameId: string, passengerId: string) => Promise<void>;
     userRegistrations: UserRegistration[];
     userRegistrationsMap: Map<string, string>;
 }
@@ -67,7 +71,11 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
 
     const {
         handleAddCarpool,
-        handleRemoveCarpool
+        handleRemoveCarpool,
+        handleRequestSeat,
+        handleAcceptPassenger,
+        handleRejectPassenger,
+        handleCancelRequest
     } = useCarpool();
 
     // ---------------------------------------------------------------------------
@@ -204,6 +212,10 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         handleUpdateVolunteer,
         handleAddCarpool,
         handleRemoveCarpool,
+        handleRequestSeat,
+        handleAcceptPassenger,
+        handleRejectPassenger,
+        handleCancelRequest,
         userRegistrations,
         userRegistrationsMap
     };
