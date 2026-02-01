@@ -137,7 +137,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
             initial="hidden"
             animate="visible"
         >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="popLayout">
                 {activeDays.length > 0 ? (
                     activeDays.map((day, dayIdx) => {
                         const dayGames = getGamesForDay(day);
