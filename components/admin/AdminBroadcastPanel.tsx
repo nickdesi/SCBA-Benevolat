@@ -4,7 +4,8 @@ import { db } from '../../firebase';
 import { Announcement } from '../../types';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, X, List, CheckCircle2, Siren } from 'lucide-react';
+import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, X, List, CheckCircle2, Siren, Zap, ChevronRight } from 'lucide-react';
+import { CustomSelect } from '../ui/CustomSelect';
 
 interface AdminBroadcastPanelProps {
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
@@ -151,18 +152,18 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
                             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                                 Durée
                             </label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
-                                <select
+                            <div className="relative z-20">
+                                <CustomSelect
                                     value={daysDuration}
-                                    onChange={(e) => setDaysDuration(Number(e.target.value))}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-                                >
-                                    <option value={1}>24h (Flash)</option>
-                                    <option value={3}>3 jours (Court)</option>
-                                    <option value={7}>1 semaine (Standard)</option>
-                                    <option value={30}>1 mois (Long)</option>
-                                </select>
+                                    onChange={(val) => setDaysDuration(Number(val))}
+                                    options={[
+                                        { value: 1, label: '24h (Flash)' },
+                                        { value: 3, label: '3 jours (Court)' },
+                                        { value: 7, label: '1 semaine (Standard)' },
+                                        { value: 30, label: '1 mois (Long)' }
+                                    ]}
+                                    icon={<Clock className="w-4 h-4" />}
+                                />
                             </div>
                         </div>
                     </div>

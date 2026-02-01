@@ -7,6 +7,7 @@ import { getRemainingSeats, getAvailableDrivers, getPendingRequests } from '../.
 import PhoneDisplay from '../PhoneDisplay';
 import { DeleteIcon } from '../Icons';
 import ConfirmModal from '../ConfirmModal';
+import { CustomSelect } from '../ui/CustomSelect';
 
 interface CarpoolingSectionProps {
     gameId: string;
@@ -605,16 +606,14 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                 />
 
                                 {/* Seats */}
-                                <select
+                                <CustomSelect
                                     value={seats}
-                                    onChange={(e) => setSeats(Number(e.target.value))}
-                                    className="w-full px-4 py-3 text-sm text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
-                                        focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 cursor-pointer"
-                                >
-                                    {(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => (
-                                        <option key={n} value={n}>{n} place{n > 1 ? 's' : ''}</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setSeats(Number(val))}
+                                    options={(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => ({
+                                        value: n,
+                                        label: `${n} place${n > 1 ? 's' : ''}`
+                                    }))}
+                                />
 
                                 {/* Driver-specific: Departure Location */}
                                 {formType === 'driver' && (

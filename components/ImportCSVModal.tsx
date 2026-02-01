@@ -2,6 +2,7 @@ import React, { useState, useCallback, memo } from 'react';
 import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../utils/useScrollLock';
+import { CustomSelect } from './ui/CustomSelect';
 
 interface ImportCSVModalProps {
     isOpen: boolean;
@@ -208,7 +209,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up flex flex-col">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up flex flex-col">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white flex-shrink-0">
                     <h2 className="text-xl font-bold flex items-center gap-2">
@@ -227,24 +228,20 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                         <>
                             {/* Team Selector */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     Équipe concernée
                                 </label>
-                                <select
+                                <CustomSelect
                                     value={selectedTeam}
-                                    onChange={(e) => setSelectedTeam(e.target.value)}
-                                    className="w-full p-2 border-2 border-slate-200 rounded-xl text-sm focus:border-blue-500 outline-none"
-                                >
-                                    {teams.map(team => (
-                                        <option key={team} value={team}>{team}</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setSelectedTeam(val as string)}
+                                    options={teams.map(team => ({ value: team, label: team }))}
+                                />
                             </div>
 
                             {/* Input Area */}
-                            <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <p className="text-sm text-slate-600 font-medium mb-2">📋 Instructions :</p>
-                                <ul className="text-xs text-slate-500 list-disc list-inside space-y-1">
+                            <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600">
+                                <p className="text-sm text-slate-600 dark:text-slate-300 font-medium mb-2">📋 Instructions :</p>
+                                <ul className="text-xs text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
                                     <li>Allez sur la page FFBB de l'équipe</li>
                                     <li>Sélectionnez le tableau des matchs</li>
                                     <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
@@ -254,16 +251,17 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                 value={csvContent}
                                 onChange={(e) => setCsvContent(e.target.value)}
                                 placeholder="Collez le tableau FFBB ici..."
-                                className="w-full h-40 p-4 border-2 border-slate-200 rounded-xl font-mono text-sm
+                                className="w-full h-40 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-xl font-mono text-sm
+                                     bg-white dark:bg-slate-700 text-slate-900 dark:text-white
                                      focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                                     resize-none"
+                                     resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             />
 
                             {/* Errors */}
                             {errors.length > 0 && (
-                                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-                                    <p className="text-sm font-semibold text-red-700 mb-2">⚠️ Erreurs :</p>
-                                    <ul className="text-xs text-red-600 space-y-1">
+                                <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl">
+                                    <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">⚠️ Erreurs :</p>
+                                    <ul className="text-xs text-red-600 dark:text-red-300 space-y-1">
                                         {errors.map((err, i) => (
                                             <li key={i}>{err.error}</li>
                                         ))}
@@ -278,10 +276,10 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                             {/* Preview */}
                             <div className="mb-4">
                                 <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                                    <div className="text-sm font-semibold text-slate-700">
-                                        <span className="text-emerald-600">✅ {parsedMatches.length - duplicatesCount} nouveau(x)</span>
+                                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                        <span className="text-emerald-600 dark:text-emerald-400">✅ {parsedMatches.length - duplicatesCount} nouveau(x)</span>
                                         {duplicatesCount > 0 && (
-                                            <span className="text-blue-500 ml-2">
+                                            <span className="text-blue-500 dark:text-blue-400 ml-2">
                                                 (🔄 {duplicatesCount} mise(s) à jour)
                                             </span>
                                         )}
@@ -299,7 +297,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
                                     {parsedMatches.length === 0 && (
-                                        <div className="text-center py-8 text-slate-400 italic">
+                                        <div className="text-center py-8 text-slate-400 dark:text-slate-500 italic">
                                             Aucun nouveau match à importer.
                                         </div>
                                     )}
@@ -318,12 +316,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                                     }`}>
                                                     {match.isHome ? '🏠 DOM' : '🚗 EXT'}
                                                 </span>
-                                                <span className="ml-2 font-semibold text-slate-800">{match.team}</span>
-                                                <span className="text-slate-500 mx-2">vs</span>
-                                                <span className="font-medium text-slate-700">{match.opponent}</span>
+                                                <span className="ml-2 font-semibold text-slate-800 dark:text-white">{match.team}</span>
+                                                <span className="text-slate-500 dark:text-slate-400 mx-2">vs</span>
+                                                <span className="font-medium text-slate-700 dark:text-slate-300">{match.opponent}</span>
                                             </div>
                                             <div className="mt-2 flex flex-col gap-1">
-                                                <div className="text-xs text-slate-500">
+                                                <div className="text-xs text-slate-500 dark:text-slate-400">
                                                     📅 {match.date} à {match.time}
                                                 </div>
 
@@ -338,7 +336,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                                                                 newMatches[i] = { ...match, location: e.target.value };
                                                                 setParsedMatches(newMatches);
                                                             }}
-                                                            className="w-full text-xs p-1.5 border border-slate-300 rounded focus:border-blue-500 focus:outline-none"
+                                                            className="w-full text-xs p-1.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                                                             placeholder="Adresse du match"
                                                         />
 
@@ -375,18 +373,18 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 flex-shrink-0">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
                     {step === 'preview' && (
                         <button
                             onClick={() => setStep('input')}
-                            className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                            className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
                         >
                             ← Modifier
                         </button>
                     )}
                     <button
                         onClick={handleClose}
-                        className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                        className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
                     >
                         Annuler
                     </button>

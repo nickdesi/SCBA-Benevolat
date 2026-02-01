@@ -159,16 +159,43 @@ textarea,
   user-select: text;
 }
 
-/* Force dark text in all form inputs for readability */
+/* Form inputs - Light mode default */
 input,
 textarea,
 select {
-  color: #0f172a !important;
+  color: #0f172a;
 }
 
+/* Form inputs - Dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  color: #f1f5f9 !important;
+}
+
+/* Placeholders - Light mode */
 input::placeholder,
 textarea::placeholder {
   color: #94a3b8 !important;
+}
+
+/* Placeholders - Dark mode */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Date picker placeholder text in dark mode */
+.dark input[type="date"]::-webkit-datetime-edit-text,
+.dark input[type="date"]::-webkit-datetime-edit-month-field,
+.dark input[type="date"]::-webkit-datetime-edit-day-field,
+.dark input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #f1f5f9 !important;
+}
+
+/* Calendar icon dark mode */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 
 ::selection {
