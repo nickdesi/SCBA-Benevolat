@@ -1,8 +1,16 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.3.0';
+const APP_VERSION = 'v2.3.1';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: "v2.3.1",
+        date: "01/02/2026",
+        changes: [
+            "🐛 Fix : Affichage Timeline (Animation)",
+            "🚀 Perf : Bundle optimisé (-27%)"
+        ]
+    },
     {
         version: "v2.3.0",
         date: "01/02/2026",

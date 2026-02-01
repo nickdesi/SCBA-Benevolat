@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.1] - 2026-02-01
+
+### Corrigé (v2.3.1)
+
+- **MobileTimeline** : Correction du bug d'affichage des matchs lors du changement de semaine (conflit d'animation résolu).
+
+### Performance (v2.3.1)
+
+- **Bundle Optimization** : Extraction des bibliothèques UI (Framer Motion, Lucide) dans un chunk dédié (`vendor-ui`), réduisant le script principal de 27% pour un chargement plus rapide.
+
+---
+
 ## [2.3.0] - 2026-02-01
 
 ### ✨ Nouveautés (v2.3.0)
