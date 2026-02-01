@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 
@@ -24,6 +25,52 @@ interface MobileTimelineProps {
     userRegistrations?: Map<string, string>;
     isAuthenticated?: boolean;
 }
+
+// Animation variants for staggered entrance
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const dayVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: 'spring' as const,
+            stiffness: 300,
+            damping: 24
+        }
+    }
+};
+
+const gameVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: {
+            type: 'spring' as const,
+            stiffness: 400,
+            damping: 25
+        }
+    }
+};
+
+const emptyVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: {
+        opacity: 0.6,
+        scale: 1,
+        transition: { duration: 0.4 }
+    }
+};
 
 const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     games,
@@ -84,74 +131,110 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     const activeDays = days.filter(day => getGamesForDay(day).length > 0);
 
     return (
-        <div className="lg:hidden flex flex-col gap-6 ">
-            {activeDays.length > 0 ? (
-                activeDays.map((day, dayIdx) => {
-                    const dayGames = getGamesForDay(day);
-                    const isToday = toISODate(day) === toISODate(new Date());
+        <motion.div
+            className="lg:hidden flex flex-col gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <AnimatePresence mode="wait">
+                {activeDays.length > 0 ? (
+                    activeDays.map((day, dayIdx) => {
+                        const dayGames = getGamesForDay(day);
+                        const isToday = toISODate(day) === toISODate(new Date());
 
-                    return (
-                        <div key={day.toISOString()} className="relative">
-                            {/* Date Header - Pill Style with Stats */}
-                            <div className="mb-4">
-                                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-700 rounded-full shadow-lg shadow-slate-900/20 z-10 relative">
-                                    <span className="text-2xl">📅</span>
-                                    <div className="flex flex-col items-start leading-tight">
-                                        <span className="text-lg font-black text-white tracking-wide capitalize whitespace-nowrap">
-                                            {day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                                        </span>
-                                        <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">
-                                            {dayGames.filter(g => (g.isHome ?? true)).length} Dom • {dayGames.filter(g => !(g.isHome ?? true)).length} Ext
+                        return (
+                            <motion.div
+                                key={day.toISOString()}
+                                className="relative"
+                                variants={dayVariants}
+                                layout
+                            >
+                                {/* Date Header - Pill Style with Stats */}
+                                <motion.div
+                                    className="mb-4"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: dayIdx * 0.05 }}
+                                >
+                                    <div className={`
+                                        inline-flex items-center gap-3 px-6 py-3 rounded-full shadow-lg z-10 relative
+                                        ${isToday
+                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-blue-500/30'
+                                            : 'bg-gradient-to-r from-slate-800 to-slate-700 shadow-slate-900/20'}
+                                    `}>
+                                        <span className="text-2xl">{isToday ? '🔥' : '📅'}</span>
+                                        <div className="flex flex-col items-start leading-tight">
+                                            <span className="text-lg font-black text-white tracking-wide capitalize whitespace-nowrap">
+                                                {isToday ? "Aujourd'hui" : day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                            </span>
+                                            <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">
+                                                {dayGames.filter(g => (g.isHome ?? true)).length} Dom • {dayGames.filter(g => !(g.isHome ?? true)).length} Ext
+                                            </span>
+                                        </div>
+                                        <span className="self-center flex flex-col items-center text-center font-bold px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-2">
+                                            <span className="text-base leading-tight">{dayGames.length}</span>
+                                            <span className="text-[10px] leading-tight">matchs</span>
                                         </span>
                                     </div>
-                                    <span className="self-center flex flex-col items-center text-center font-bold px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-2">
-                                        <span className="text-base leading-tight">{dayGames.length}</span>
-                                        <span className="text-[10px] leading-tight">matchs</span>
-                                    </span>
-                                </div>
-                            </div>
+                                </motion.div>
 
-                            {/* Games using FULL GameCard */}
-                            <div className="flex flex-col gap-4">
-                                {dayGames.map(game => (
-                                    <GameCard
-                                        key={game.id}
-                                        game={game}
-                                        isAdmin={isAdmin}
-                                        isEditing={editingGameId === game.id}
-                                        onVolunteer={onVolunteer}
-                                        onRemoveVolunteer={onRemoveVolunteer}
-                                        onUpdateVolunteer={onUpdateVolunteer}
-                                        onAddCarpool={onAddCarpool}
-                                        onRemoveCarpool={onRemoveCarpool}
-                                        onRequestSeat={onRequestSeat}
-                                        onAcceptPassenger={onAcceptPassenger}
-                                        onRejectPassenger={onRejectPassenger}
-                                        onCancelRequest={onCancelRequest}
-                                        onToast={onToast}
-                                        onEditRequest={() => onEditRequest(game.id)}
-                                        onCancelEdit={onCancelEdit}
-                                        onDeleteRequest={() => onDeleteRequest(game.id)}
-                                        onUpdateRequest={onUpdateRequest}
-                                        userRegistrations={userRegistrations}
-                                        isAuthenticated={isAuthenticated}
-                                    />
-                                ))}
-                            </div>
+                                {/* Games using FULL GameCard with stagger */}
+                                <motion.div
+                                    className="flex flex-col gap-4"
+                                    variants={containerVariants}
+                                >
+                                    {dayGames.map((game, gameIdx) => (
+                                        <motion.div
+                                            key={game.id}
+                                            variants={gameVariants}
+                                            layout
+                                        >
+                                            <GameCard
+                                                game={game}
+                                                isAdmin={isAdmin}
+                                                isEditing={editingGameId === game.id}
+                                                onVolunteer={onVolunteer}
+                                                onRemoveVolunteer={onRemoveVolunteer}
+                                                onUpdateVolunteer={onUpdateVolunteer}
+                                                onAddCarpool={onAddCarpool}
+                                                onRemoveCarpool={onRemoveCarpool}
+                                                onRequestSeat={onRequestSeat}
+                                                onAcceptPassenger={onAcceptPassenger}
+                                                onRejectPassenger={onRejectPassenger}
+                                                onCancelRequest={onCancelRequest}
+                                                onToast={onToast}
+                                                onEditRequest={() => onEditRequest(game.id)}
+                                                onCancelEdit={onCancelEdit}
+                                                onDeleteRequest={() => onDeleteRequest(game.id)}
+                                                onUpdateRequest={onUpdateRequest}
+                                                userRegistrations={userRegistrations}
+                                                isAuthenticated={isAuthenticated}
+                                            />
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
 
-                        </div>
-                    );
-                })
-            ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-center opacity-60">
-                    <span className="text-4xl mb-2">💤</span>
-                    <p className="text-slate-500 text-sm">Pas de matchs cette semaine</p>
-                </div>
-            )}
-        </div>
+                            </motion.div>
+                        );
+                    })
+                ) : (
+                    <motion.div
+                        className="py-12 flex flex-col items-center justify-center text-center"
+                        variants={emptyVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <span className="text-4xl mb-2">💤</span>
+                        <p className="text-slate-500 text-sm">Pas de matchs cette semaine</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 });
 
 MobileTimeline.displayName = 'MobileTimeline';
 
 export default MobileTimeline;
+
