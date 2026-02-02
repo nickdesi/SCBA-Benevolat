@@ -29,6 +29,7 @@ import PullToRefresh from './components/PullToRefresh';
 import { EmptyState } from './components/EmptyState';
 import { AppLayout } from './components/Layout/AppLayout';
 import { AnnouncementBanner } from './components/Layout/AnnouncementBanner';
+import NetworkStatus from './components/NetworkStatus';
 
 function App() {
   // UI State
@@ -284,7 +285,10 @@ function App() {
         </>
       }
       toasts={
-        <ToastContainer toasts={toasts} removeToast={removeToast} />
+        <>
+          <NetworkStatus />
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+        </>
       }
       footer={
         <>

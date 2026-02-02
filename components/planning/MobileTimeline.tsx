@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
@@ -27,38 +27,39 @@ interface MobileTimelineProps {
 }
 
 // Animation variants for staggered entrance
+// Optimized animation variants - snappy feel per Context7 best practices
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1
+            staggerChildren: 0.05 // Faster stagger for snappier feel
         }
     }
 };
 
 const dayVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     visible: {
         opacity: 1,
         y: 0,
         transition: {
             type: 'spring' as const,
-            stiffness: 300,
-            damping: 24
+            stiffness: 500, // Increased for snappy feel
+            damping: 30     // Higher damping = less bounce, faster settle
         }
     }
 };
 
 const gameVariants = {
-    hidden: { opacity: 0, x: -20 },
+    hidden: { opacity: 0, x: -10 },
     visible: {
         opacity: 1,
         x: 0,
         transition: {
             type: 'spring' as const,
-            stiffness: 400,
-            damping: 25
+            stiffness: 600, // Very snappy
+            damping: 35     // Quick settle, minimal bounce
         }
     }
 };
@@ -94,23 +95,21 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     userRegistrations,
     isAuthenticated,
 }) => {
-    // Helpers
-    const getDaysOfWeek = (date: Date) => {
-        const start = new Date(date);
+    // Memoized week calculation - avoids recalc on every render
+    const days = useMemo(() => {
+        const start = new Date(currentDate);
         const day = start.getDay();
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
         start.setDate(diff);
 
-        const days = [];
+        const result = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(start);
             d.setDate(start.getDate() + i);
-            days.push(d);
+            result.push(d);
         }
-        return days;
-    };
-
-    const days = getDaysOfWeek(currentDate);
+        return result;
+    }, [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()]);
 
     // Helper to format local date YYYY-MM-DD for comparison (avoiding UTC conversion issues)
     const toISODate = (date: Date) => {

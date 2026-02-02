@@ -147,9 +147,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.12, ease: [0.25, 0.46, 0.45, 0.94] }} // Snappy easing
             className={`
             relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col overflow-hidden transition-all duration-150 h-full
             bg-white dark:bg-slate-900
@@ -238,7 +238,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 32 }} // Snappy accordion
                         className="overflow-hidden bg-white dark:bg-slate-900"
                     >
                         <div className="p-4 pt-2 border-t border-slate-100 dark:border-slate-700">
