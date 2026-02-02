@@ -4,6 +4,38 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ========================================
+   CLS-Optimized Fallback Fonts
+   These match the dimensions of our web fonts
+   to prevent layout shifts when fonts load
+   ======================================== */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Outfit Fallback';
+  src: local('Impact'), local('Haettenschweiler');
+  size-adjust: 95%;
+  ascent-override: 105%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Oswald Fallback';
+  src: local('Arial Narrow'), local('Arial');
+  size-adjust: 88%;
+  ascent-override: 100%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+/* ========================================
    SCBA Bénévoles - Modern Design System
    ======================================== */
 
@@ -78,7 +110,7 @@
 
 /* Sports Font Utility */
 .font-sport {
-  font-family: 'Oswald', 'Outfit', sans-serif;
+  font-family: 'Oswald', 'Oswald Fallback', 'Outfit', 'Outfit Fallback', system-ui, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -137,7 +169,7 @@ html {
 }
 
 body {
-  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', 'Outfit Fallback', 'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
   min-height: 100vh;
@@ -614,7 +646,8 @@ a:active,
 /* Momentum scrolling for iOS - snappy feel */
 .scroll-smooth-ios {
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: auto; /* Disable smooth scroll for instant response */
+  scroll-behavior: auto;
+  /* Disable smooth scroll for instant response */
 }
 
 /* Prevent layout thrashing during scroll */
