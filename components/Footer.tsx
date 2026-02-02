@@ -1,8 +1,16 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.3.1';
+const APP_VERSION = 'v2.3.2';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: "v2.3.2",
+        date: "02/02/2026",
+        changes: [
+            "⚡ Performance : CLS réduit à 0.18 (Layout Stability)",
+            "🛠️ Fix : Grid Stack Pattern pour Skeleton Loading"
+        ]
+    },
     {
         version: "v2.3.1",
         date: "01/02/2026",

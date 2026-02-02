@@ -280,7 +280,7 @@ function App() {
         <>
           <AnnouncementBanner />
           <EventSchema games={games} />
-          {/* Ticker for upcoming matches */}
+          {/* Ticker restored */}
           <MatchTicker games={sortedGames} />
         </>
       }
@@ -362,154 +362,160 @@ function App() {
           await new Promise(resolve => setTimeout(resolve, 800));
           addToast('Données synchronisées', 'success');
         }}>
-          {/* Loading State */}
-          {loading && <SkeletonLoader />}
-
-          {/* Desktop View Toggle */}
-          {!loading && (
-            <div className="flex justify-center mb-8 hidden md:flex animate-fade-in-up">
-              <div className="bg-white/70 dark:bg-slate-900/60 p-1.5 rounded-2xl shadow-lg border border-white/50 dark:border-slate-700 backdrop-blur-xl inline-flex relative">
-                {/* Active Indicator Background */}
-                <div
-                  className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 shadow-md transition-all duration-300 ease-out`}
-                  style={{
-                    left: currentView === 'home' ? '6px' : '50%',
-                    width: 'calc(50% - 6px)',
-                    transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)' // subtle adjustment
-                  }}
-                />
-
-                <button
-                  onClick={() => handleViewChange('home')}
-                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                >
-                  <List className="w-4 h-4" /> Liste
-                </button>
-                <button
-                  onClick={() => handleViewChange('calendar')}
-                  className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                >
-                  <Calendar className="w-4 h-4" /> Calendrier
-                </button>
-              </div>
+          {/* Grid Stack Container for stable layout transition */}
+          <div className="grid grid-cols-1">
+            {/* Skeleton Layer - Maintains height contribution to grid */}
+            <div
+              className={`col-start-1 row-start-1 transition-opacity duration-500 ease-out ${loading ? 'opacity-100 z-20' : 'opacity-0 -z-10 pointer-events-none'}`}
+              aria-hidden={!loading}
+            >
+              <SkeletonLoader />
             </div>
-          )}
 
-          {!loading && (
-            <div className="flex justify-end mb-6 gap-4">
-              {isAdmin && (
-                <AdminToolbar
-                  onImport={() => setIsImportModalOpen(true)}
-                  onAddGame={() => setIsAddingGame(true)}
-                />
+            {/* Content Layer - Superimposed in same grid cell */}
+            <div className={`col-start-1 row-start-1 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100 z-30'}`}>
+              {/* Desktop View Toggle - always rendered, visibility controlled by parent opacity */}
+              <div className="flex justify-center mb-8 hidden md:flex">
+                <div className="bg-white/70 dark:bg-slate-900/60 p-1.5 rounded-2xl shadow-lg border border-white/50 dark:border-slate-700 backdrop-blur-xl inline-flex relative">
+                  {/* Active Indicator Background */}
+                  <div
+                    className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 shadow-md transition-all duration-300 ease-out`}
+                    style={{
+                      left: currentView === 'home' ? '6px' : '50%',
+                      width: 'calc(50% - 6px)',
+                      transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)'
+                    }}
+                  />
+
+                  <button
+                    onClick={() => handleViewChange('home')}
+                    className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                  >
+                    <List className="w-4 h-4" /> Liste
+                  </button>
+                  <button
+                    onClick={() => handleViewChange('calendar')}
+                    className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                  >
+                    <Calendar className="w-4 h-4" /> Calendrier
+                  </button>
+                </div>
+              </div>
+
+              {/* Admin Toolbar - always rendered, visibility controlled by parent opacity */}
+              <div className="flex justify-end mb-6 gap-4">
+                {isAdmin && (
+                  <AdminToolbar
+                    onImport={() => setIsImportModalOpen(true)}
+                    onAddGame={() => setIsAddingGame(true)}
+                  />
+                )}
+              </div>
+
+              {/* Empty State - conditional render (no space reservation needed) */}
+              {!loading && games.length === 0 && !isAddingGame && (
+                <div className="animate-fade-in-up">
+                  <EmptyState
+                    icon="🏀"
+                    title="Aucun match prévu"
+                    description="Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !"
+                    variant="fun"
+                    action={isAdmin ? {
+                      label: "Ajouter un match",
+                      onClick: () => setIsAddingGame(true),
+                      icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    } : undefined}
+                  />
+                </div>
               )}
-            </div>
-          )}
 
-          {/* Empty State */}
-          {!loading && games.length === 0 && !isAddingGame && (
-            <div className="animate-fade-in-up">
-              <EmptyState
-                icon="🏀"
-                title="Aucun match prévu"
-                description="Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !"
-                variant="fun"
-                action={isAdmin ? {
-                  label: "Ajouter un match",
-                  onClick: () => setIsAddingGame(true),
-                  icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                } : undefined}
-              />
-            </div>
-          )}
+              {/* Add Game Form */}
+              {isAddingGame && (
+                <Suspense fallback={<div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
+                  <div className="mb-8">
+                    <GameForm
+                      onSave={handleAddGame}
+                      onCancel={() => setIsAddingGame(false)}
+                      existingLocations={uniqueLocations}
+                      existingOpponents={uniqueOpponents}
+                    />
+                  </div>
+                </Suspense>
+              )}
 
-          {/* Add Game Form */}
-          {isAddingGame && (
-            <Suspense fallback={<div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
-              <div className="mb-8">
-                <GameForm
-                  onSave={handleAddGame}
-                  onCancel={() => setIsAddingGame(false)}
-                  existingLocations={uniqueLocations}
-                  existingOpponents={uniqueOpponents}
-                />
+              {/* Planning View - Always mounted, hidden when not active */}
+              <div className={currentView === 'calendar' ? '' : 'hidden'}>
+                <Suspense fallback={<SkeletonLoader />}>
+                  <PlanningView
+                    games={filteredGames}
+                    userRegistrations={userRegistrationsMap}
+                    isAdmin={isAdmin}
+                    isAuthenticated={isAuthenticated}
+                    editingGameId={editingGameId}
+                    onVolunteer={handleVolunteerWithToast}
+                    onRemoveVolunteer={handleRemoveVolunteer}
+                    onUpdateVolunteer={handleUpdateVolunteer}
+                    onAddCarpool={handleAddCarpoolWithToast}
+                    onRemoveCarpool={handleRemoveCarpool}
+                    onRequestSeat={handleRequestSeatWithToast}
+                    onAcceptPassenger={handleAcceptPassengerWithToast}
+                    onRejectPassenger={handleRejectPassengerWithToast}
+                    onCancelRequest={handleCancelRequestWithToast}
+                    onToast={addToast}
+                    onEditRequest={setEditingGameId}
+                    onCancelEdit={() => setEditingGameId(null)}
+                    onDeleteRequest={handleDeleteGame}
+                    onUpdateRequest={handleUpdateGame}
+                  />
+                </Suspense>
               </div>
-            </Suspense>
-          )}
 
-          {/* Planning View - Always mounted, hidden when not active */}
-          <div className={currentView === 'calendar' ? '' : 'hidden'}>
-            <Suspense fallback={<SkeletonLoader />}>
-              <PlanningView
-                games={filteredGames}
-                userRegistrations={userRegistrationsMap}
-                isAdmin={isAdmin}
-                isAuthenticated={isAuthenticated}
-                editingGameId={editingGameId}
-                onVolunteer={handleVolunteerWithToast}
-                onRemoveVolunteer={handleRemoveVolunteer}
-                onUpdateVolunteer={handleUpdateVolunteer}
-                onAddCarpool={handleAddCarpoolWithToast}
-                onRemoveCarpool={handleRemoveCarpool}
-                onRequestSeat={handleRequestSeatWithToast}
-                onAcceptPassenger={handleAcceptPassengerWithToast}
-                onRejectPassenger={handleRejectPassengerWithToast}
-                onCancelRequest={handleCancelRequestWithToast}
-                onToast={addToast}
-                onEditRequest={setEditingGameId}
-                onCancelEdit={() => setEditingGameId(null)}
-                onDeleteRequest={handleDeleteGame}
-                onUpdateRequest={handleUpdateGame}
-              />
-            </Suspense>
-          </div>
+              {/* Grouped Games List - Always mounted, hidden when not active */}
+              {/* Grouped Games List - Always mounted, hidden when not active */}
+              <div className={currentView === 'home' ? '' : 'hidden'}>
+                {filteredGames.length > 0 ? (
+                  <GameList
+                    games={filteredGames}
+                    userRegistrations={userRegistrationsMap}
+                    isAdmin={isAdmin}
+                    isAuthenticated={isAuthenticated}
+                    editingGameId={editingGameId}
+                    onVolunteer={handleVolunteerWithToast}
+                    onRemoveVolunteer={handleRemoveVolunteer}
+                    onUpdateVolunteer={handleUpdateVolunteer}
+                    onAddCarpool={handleAddCarpoolWithToast}
+                    onRemoveCarpool={handleRemoveCarpool}
+                    onRequestSeat={handleRequestSeatWithToast}
+                    onAcceptPassenger={handleAcceptPassengerWithToast}
+                    onRejectPassenger={handleRejectPassengerWithToast}
+                    onCancelRequest={handleCancelRequestWithToast}
+                    onToast={addToast}
+                    onEditRequest={setEditingGameId}
+                    onCancelEdit={() => setEditingGameId(null)}
+                    onDeleteRequest={handleDeleteGame}
+                    onUpdateRequest={handleUpdateGame}
+                  />
+                ) : (
+                  !loading && games.length > 0 && (
+                    <EmptyState
+                      icon="🔍"
+                      title="Aucun résultat"
+                      description="Aucun match ne correspond à vos filtres actuels."
+                      variant="simple"
+                      className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                      action={{
+                        label: "Effacer les filtres",
+                        onClick: () => setSelectedTeam(null), // Assuming resetting filter helps
+                        icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                      }}
+                    />
+                  )
+                )}
+              </div>
 
-          {/* Grouped Games List - Always mounted, hidden when not active */}
-          {/* Grouped Games List - Always mounted, hidden when not active */}
-          <div className={currentView === 'home' ? '' : 'hidden'}>
-            {filteredGames.length > 0 ? (
-              <GameList
-                games={filteredGames}
-                userRegistrations={userRegistrationsMap}
-                isAdmin={isAdmin}
-                isAuthenticated={isAuthenticated}
-                editingGameId={editingGameId}
-                onVolunteer={handleVolunteerWithToast}
-                onRemoveVolunteer={handleRemoveVolunteer}
-                onUpdateVolunteer={handleUpdateVolunteer}
-                onAddCarpool={handleAddCarpoolWithToast}
-                onRemoveCarpool={handleRemoveCarpool}
-                onRequestSeat={handleRequestSeatWithToast}
-                onAcceptPassenger={handleAcceptPassengerWithToast}
-                onRejectPassenger={handleRejectPassengerWithToast}
-                onCancelRequest={handleCancelRequestWithToast}
-                onToast={addToast}
-                onEditRequest={setEditingGameId}
-                onCancelEdit={() => setEditingGameId(null)}
-                onDeleteRequest={handleDeleteGame}
-                onUpdateRequest={handleUpdateGame}
-              />
-            ) : (
-              !loading && games.length > 0 && (
-                <EmptyState
-                  icon="🔍"
-                  title="Aucun résultat"
-                  description="Aucun match ne correspond à vos filtres actuels."
-                  variant="simple"
-                  className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
-                  action={{
-                    label: "Effacer les filtres",
-                    onClick: () => setSelectedTeam(null), // Assuming resetting filter helps
-                    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                  }}
-                />
-              )
-            )}
-          </div>
-
-          {/* Empty State for Planning View specifically (was previously separate, merged into AppLayout children logic implicitly by placement order logic in App.tsx?) 
+              {/* Empty State for Planning View specifically (was previously separate, merged into AppLayout children logic implicitly by placement order logic in App.tsx?) 
              Wait, in original App.tsx, this empty state block was AFTER </main> but BEFORE <ReloadPrompt>.
              It seemed to be floating? 
              Ah, lines 352-371 in original App.tsx. 
@@ -519,21 +525,23 @@ function App() {
              But the original code had it outside.
              Let's put it at the end of `children`.
           */}
-          {
-            !loading && currentView === 'planning' && filteredGames.length === 0 && (
-              <EmptyState
-                icon="📅"
-                title="Planning vide"
-                description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
-                variant="simple"
-                className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
-                action={{
-                  label: "Voir tous les matchs",
-                  onClick: () => handleViewChange('home')
-                }}
-              />
-            )
-          }
+              {
+                !loading && currentView === 'planning' && filteredGames.length === 0 && (
+                  <EmptyState
+                    icon="📅"
+                    title="Planning vide"
+                    description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
+                    variant="simple"
+                    className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                    action={{
+                      label: "Voir tous les matchs",
+                      onClick: () => handleViewChange('home')
+                    }}
+                  />
+                )
+              }
+            </div>{/* End content layer */}
+          </div>{/* End grid container */}
         </PullToRefresh>
       </main>
     </AppLayout>

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.3.2] - 2026-02-02
+
+### Performance (v2.3.2)
+
+- **Layout Stability (CLS)** : Réduction majeure du Cumulative Layout Shift (0.53 -> 0.18).
+- **Grid Stack Pattern** : Implémentation d'une stratégie de superposition Grid pour éviter l'effondrement du layout pendant le chargement des données.
+
+---
+
 ## [2.3.1] - 2026-02-01
 
 ### Corrigé (v2.3.1)

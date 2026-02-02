@@ -11,6 +11,11 @@ const SkeletonLoader: React.FC = memo(() => {
                 <div
                     key={index}
                     className="relative overflow-hidden rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+                    style={{
+                        minHeight: '160px',
+                        contentVisibility: 'auto',
+                        containIntrinsicSize: '0 160px'
+                    }}
                 >
                     {/* Shimmer overlay */}
                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/60 dark:via-slate-700/40 to-transparent z-10" />
