@@ -3,7 +3,6 @@ import { User } from 'firebase/auth';
 import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStore';
 import { GoogleIcon, LogoutIcon, UserIcon } from './Icons';
 import UserAuthModal from './UserAuthModal';
-import ProfileModal from './ProfileModal';
 import { UserRegistration, Game } from '../types';
 
 interface UserProfileProps {
@@ -19,6 +18,7 @@ interface UserProfileProps {
     onToggleFavorite?: (team: string) => Promise<void>;
     isAdmin?: boolean;
     onOpenAdminStats?: () => void;
+    onOpenProfile: () => void;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
@@ -33,13 +33,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
     favoriteTeams = [],
     onToggleFavorite = async () => { },
     isAdmin = false,
-    onOpenAdminStats = () => { }
+    onOpenAdminStats = () => { },
+    onOpenProfile
 }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [showMenu, setShowMenu] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged((currentUser) => {
@@ -143,7 +143,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     <div className="p-1">
                         <button
                             onClick={() => {
-                                setIsProfileOpen(true); // Open modal FIRST
+                                onOpenProfile(); // Open global modal
                                 setShowMenu(false); // Then close menu
                             }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-indigo-600 font-bold 
@@ -185,21 +185,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                 </div>
             )}
 
-            {user && (
-                <ProfileModal
-                    isOpen={isProfileOpen}
-                    onClose={() => setIsProfileOpen(false)}
-                    user={user}
-                    registrations={registrations}
-                    games={games}
-                    onUnsubscribe={onUnsubscribe}
-                    onRemoveCarpool={onRemoveCarpool}
-                    onToast={onToast}
-                    allTeams={allTeams}
-                    favoriteTeams={favoriteTeams}
-                    onToggleFavorite={onToggleFavorite}
-                />
-            )}
+            {/* Removed local ProfileModal - now handled by App.tsx via onOpenProfile */}
         </div>
     );
 };

@@ -20,6 +20,7 @@ interface HeaderProps {
   favoriteTeams?: string[];
   onToggleFavorite?: (team: string) => Promise<void>;
   onOpenAdminStats?: () => void;
+  onOpenProfile: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -36,9 +37,11 @@ const Header: React.FC<HeaderProps> = ({
   allTeams = [],
   favoriteTeams = [],
   onToggleFavorite = async () => { },
-  onOpenAdminStats = () => { }
+  onOpenAdminStats = () => { },
+  onOpenProfile
 }) => {
   const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
+
 
   return (
     <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50 bg-noise">
@@ -95,6 +98,7 @@ const Header: React.FC<HeaderProps> = ({
               onToggleFavorite={onToggleFavorite}
               isAdmin={isAdmin}
               onOpenAdminStats={onOpenAdminStats}
+              onOpenProfile={onOpenProfile}
             />
           </div>
         </div>

@@ -2,6 +2,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles.css';
+
+// Modern Font Loading (Self-hosted via @fontsource for performance)
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/outfit/700.css';
+import '@fontsource/outfit/900.css';
+import '@fontsource/oswald/500.css';
+import '@fontsource/oswald/700.css';
+
 import App from './App';
 import { ThemeProvider } from './utils/ThemeContext';
 

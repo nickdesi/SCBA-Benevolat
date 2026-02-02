@@ -45,6 +45,7 @@ function App() {
   const handleViewChange = useCallback((view: 'home' | 'planning' | 'calendar') => {
     startTransition(() => {
       setCurrentView(view);
+      setIsProfileModalOpen(false); // Close Profile Modal when switching views
     });
   }, []);
 
@@ -274,6 +275,7 @@ function App() {
           onRemoveCarpool={handleRemoveCarpool}
           onToast={addToast}
           onOpenAdminStats={() => setIsAdminStatsOpen(true)}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
         />
       }
       topElements={

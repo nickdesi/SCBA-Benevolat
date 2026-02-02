@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
 import { Clock, MapPin, Trash2, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../ConfirmModal';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface NextMissionCardProps {
     registration: UserRegistration;
@@ -13,75 +15,102 @@ interface NextMissionCardProps {
 export const NextMissionCard: React.FC<NextMissionCardProps> = ({ registration, onUnsubscribe, user }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
 
-    const handleUnsubscribe = () => {
+    const handleUnsubscribe = useCallback(() => {
+        triggerHaptic('medium');
         setConfirmOpen(true);
-    };
+    }, []);
 
     return (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl p-6 sm:p-8">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full blur-[120px] opacity-30 -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500 rounded-full blur-[100px] opacity-30 translate-y-1/2 -translate-x-1/2" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500 rounded-full blur-[150px] opacity-10" />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="group relative overflow-hidden rounded-[2rem] bg-slate-950/40 backdrop-blur-2xl text-white border border-white/10 shadow-3xl p-6 sm:p-8"
+        >
+            {/* High-End Background Decor */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-slate-800/50 to-indigo-900/30 -z-10" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 group-hover:bg-indigo-400/30 transition-colors duration-700" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.02]" />
 
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-xs font-bold text-indigo-200 mb-4">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <Zap className="w-3 h-3" />
-                        PROCHAINE MISSION
-                    </div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="flex-1">
+                    {/* Premium Animated Badge */}
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/30 text-[10px] font-black tracking-[0.2em] text-indigo-300 mb-6 uppercase"
+                    >
+                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+                        Next Mission
+                    </motion.div>
 
-                    {/* Title */}
-                    <h2 className="text-2xl sm:text-3xl font-black leading-tight mb-3">
-                        {registration.team} <span className="text-indigo-400">vs</span> {registration.opponent}
+                    {/* Title with Elite Typography */}
+                    <h2 className="text-3xl sm:text-4xl font-black leading-tight tracking-tighter mb-4 first-letter:text-indigo-500">
+                        {registration.team} <span className="text-white/30 font-light mx-1">vs</span> {registration.opponent}
                     </h2>
 
-                    {/* Details */}
-                    <div className="flex flex-wrap gap-4 text-sm text-slate-300 font-medium">
-                        <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                            <Clock className="w-4 h-4 text-indigo-400" />
-                            {registration.gameDate} à {registration.gameTime}
+                    {/* Elite Details Badges */}
+                    <div className="flex flex-wrap gap-3">
+                        <div className="flex items-center gap-2.5 bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-xl shadow-premium group/item hover:bg-white/10 transition-all">
+                            <Clock className="w-4 h-4 text-indigo-400 group-hover/item:scale-110 transition-transform" />
+                            <span className="text-sm font-bold text-slate-200">
+                                {registration.gameDate} <span className="text-white/30 ml-1">•</span> {registration.gameTime}
+                            </span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                            <MapPin className="w-4 h-4 text-indigo-400" />
-                            {registration.location}
+                        <div className="flex items-center gap-2.5 bg-white/5 px-4 py-2 rounded-full border border-white/5 backdrop-blur-xl shadow-premium group/item hover:bg-white/10 transition-all">
+                            <MapPin className="w-4 h-4 text-indigo-400 group-hover/item:scale-110 transition-transform" />
+                            <span className="text-sm font-bold text-slate-200">{registration.location}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Role + Cancel */}
-                <div className="flex items-center gap-4">
+                {/* Role + Cancel Experience */}
+                <div className="flex items-center gap-6 self-end md:self-center">
                     <div className="text-right">
-                        <p className="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1.5">Votre Rôle</p>
-                        <div className="inline-block px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold shadow-xl shadow-indigo-900/50 transform rotate-1 hover:rotate-0 transition-transform duration-150">
-                            {registration.roleName}
-                        </div>
+                        <p className="text-[10px] uppercase text-indigo-300/90 font-black tracking-[0.2em] mb-2 px-1">Engagement</p>
+                        <motion.div
+                            whileHover={{ scale: 1.05, rotate: 0 }}
+                            className="relative px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full font-black shadow-2xl shadow-indigo-500/40 transform rotate-1 text-sm tracking-wide overflow-hidden group/role"
+                        >
+                            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/role:translate-x-[100%] transition-transform duration-700 slant" />
+                            <div className="relative z-10 flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-indigo-200" />
+                                {registration.roleName}
+                            </div>
+                        </motion.div>
                     </div>
 
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.25)' }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={handleUnsubscribe}
-                        className="flex-shrink-0 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-150"
+                        className="flex-shrink-0 p-4 rounded-full bg-red-400/20 dark:bg-red-400/10 border border-red-400/30 text-red-500 dark:text-red-400 shadow-lg shadow-red-500/10 transition-all duration-300"
                         title="Annuler ma participation"
                     >
                         <Trash2 className="w-5 h-5" />
-                    </button>
+                    </motion.button>
                 </div>
             </div>
 
-            <ConfirmModal
-                isOpen={confirmOpen}
-                onCancel={() => setConfirmOpen(false)}
-                onConfirm={() => {
-                    onUnsubscribe(registration.gameId, registration.roleId, registration.volunteerName || user.displayName || "");
-                    setConfirmOpen(false);
-                }}
-                title="Annuler ma venue ?"
-                message="Êtes-vous sûr de vouloir annuler votre participation à ce match ?"
-                confirmText="Confirmer l'annulation"
-                confirmStyle="danger"
-            />
-        </div>
+            <AnimatePresence>
+                {confirmOpen && (
+                    <ConfirmModal
+                        isOpen={confirmOpen}
+                        onCancel={() => {
+                            triggerHaptic('light');
+                            setConfirmOpen(false);
+                        }}
+                        onConfirm={() => {
+                            triggerHaptic('success');
+                            onUnsubscribe(registration.gameId, registration.roleId, registration.volunteerName || user.displayName || "");
+                            setConfirmOpen(false);
+                        }}
+                        title="Annuler ma venue ?"
+                        message="Êtes-vous sûr de vouloir annuler votre participation à ce match ?"
+                        confirmText="Confirmer l'annulation"
+                        confirmStyle="danger"
+                    />
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 };

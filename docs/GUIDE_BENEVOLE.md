@@ -80,7 +80,7 @@ Sur chaque carte de match, vous trouverez des boutons d'action rapide :
 
 ## 👤 Mon Espace
 
-Cliquez sur le bouton **"Profil"** (ou "Mes Matchs" sur mobile) pour :
+Cliquez sur le bouton **"Profil"** (ou "Mon Espace" sur mobile) pour :
 
 - Voir tous vos engagements futurs.
 - Vous désinscrire d'un match si vous avez un empêchement (cliquez sur la 🗑️ corbeille à côté de votre nom).

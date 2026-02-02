@@ -1,13 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { UserRegistration, Game } from '../../types';
 import { User } from 'firebase/auth';
-import { Briefcase, Star, Clock, Award, CalendarOff } from 'lucide-react';
+import { Briefcase, Star, Clock, Award, CalendarOff, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { StatCard } from './StatCard';
 import { NextMissionCard } from './NextMissionCard';
 import { MissionList } from './MissionList';
 import { CarpoolList } from './CarpoolList';
 import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface DashboardHomeProps {
     registrations: UserRegistration[];
@@ -32,17 +34,26 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
     onToggleFavorite,
     user
 }) => {
-    // Stats Calculation
-    const totalMissions = registrations.length;
-    const totalHours = totalMissions * 2;
+    // Optimized Stats Calculation
+    const stats = useMemo(() => {
+        const totalMissions = registrations.length;
+        const totalHours = totalMissions * 2;
 
-    // Calculate "Favorite Role"
-    const roleCounts = registrations.reduce((acc, curr) => {
-        acc[curr.roleName] = (acc[curr.roleName] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
+        const roleCounts = registrations.reduce((acc, curr) => {
+            acc[curr.roleName] = (acc[curr.roleName] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
 
-    const favoriteRole = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Aucun';
+        const favoriteRole = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Aucun';
+
+        return { totalMissions, totalHours, favoriteRole };
+    }, [registrations]);
+
+    // Enhanced toggle favorite with haptic
+    const handleToggleFavorite = useCallback((team: string) => {
+        triggerHaptic('light');
+        onToggleFavorite(team);
+    }, [onToggleFavorite]);
 
     // Find Next Mission
     const nextMission = useMemo(() => {
@@ -51,99 +62,141 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
     }, [registrations]);
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto">
-            {/* Welcome & Stats Grid */}
-            <div className="mb-2">
-                <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-400 mb-1">
-                    Bonjour {user.displayName?.split(' ')[0]} 👋
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    Prêt pour votre prochain match ? Voici votre activité.
+        <div className="space-y-8 max-w-5xl mx-auto pb-8">
+            {/* Elite Welcome & Stats Grid */}
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="mb-4"
+            >
+                <div className="flex items-center gap-3 mb-1">
+                    <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-800 dark:from-white dark:via-slate-200 dark:to-slate-400">
+                        Top {user.displayName?.split(' ')[0]}
+                    </h1>
+                    <motion.div
+                        animate={{ rotate: [0, 20, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <Sparkles className="w-6 h-6 text-amber-500 drop-shadow-lg" />
+                    </motion.div>
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium tracking-tight">
+                    Votre dévouement propulse le club. Voici votre bilan d'élite.
                 </p>
-            </div>
+            </motion.div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* Elite Stats Cards Grid */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5"
+            >
                 <StatCard
                     label="Missions Totales"
-                    value={totalMissions}
-                    icon={<Briefcase className="w-5 h-5 text-white" />}
-                    gradient="from-blue-500 to-indigo-600"
+                    value={stats.totalMissions}
+                    icon={<Briefcase className="w-5 h-5" />}
+                    gradient="from-indigo-500 via-violet-600 to-purple-700"
                 />
                 <StatCard
                     label="Heures (Estimées)"
-                    value={`${totalHours}h`}
-                    icon={<Clock className="w-5 h-5 text-white" />}
-                    gradient="from-emerald-500 to-teal-600"
+                    value={`${stats.totalHours}h`}
+                    icon={<Clock className="w-5 h-5" />}
+                    gradient="from-emerald-400 via-teal-500 to-cyan-600"
                 />
                 <StatCard
                     label="Rôle Favori"
-                    value={favoriteRole}
-                    icon={<Star className="w-5 h-5 text-white" />}
-                    gradient="from-purple-500 to-pink-600"
+                    value={stats.favoriteRole}
+                    icon={<Star className="w-5 h-5" />}
+                    gradient="from-amber-400 via-orange-500 to-rose-600"
                 />
-            </div>
+            </motion.div>
 
             {/* Next Mission Spotlight */}
-            {nextMission ? (
-                <NextMissionCard registration={nextMission} onUnsubscribe={onUnsubscribe} user={user} />
-            ) : (
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 p-8 text-center border border-slate-200 dark:border-slate-700">
-                    <CalendarOff className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        Aucune mission prévue
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Consultez le planning général pour vous inscrire à un match et aider le club !
-                    </p>
-                </div>
-            )}
+            <div className="relative group">
+                {nextMission ? (
+                    <NextMissionCard registration={nextMission} onUnsubscribe={onUnsubscribe} user={user} />
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative overflow-hidden rounded-[2rem] bg-slate-100/50 dark:bg-slate-900/40 backdrop-blur-xl p-10 text-center border border-slate-200 dark:border-white/5"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 pointer-events-none" />
+                        <CalendarOff className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600 animate-pulse" />
+                        <h3 className="text-xl font-black text-slate-700 dark:text-slate-200 mb-2">
+                            Aucun match au planning
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
+                            Le club a besoin de vous ! Allez jeter un œil au planning pour vous inscrire.
+                        </p>
+                    </motion.div>
+                )}
+            </div>
 
             {/* Main Content Split: Missions & Preferences */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Col: Missions List */}
-                <div className="lg:col-span-2">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="lg:col-span-2"
+                >
                     <MissionList
                         registrations={registrations}
                         onUnsubscribe={onUnsubscribe}
                         user={user}
                     />
-                </div>
+                </motion.div>
 
                 {/* Right Col: Preferences / Teams */}
-                <div className="space-y-6">
-                    <div className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-                        <h3 className="flex items-center gap-3 font-bold text-slate-800 dark:text-white mb-4">
-                            <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg text-white shadow-lg shadow-amber-500/20">
-                                <Award className="w-4 h-4" />
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="space-y-8"
+                >
+                    <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl p-6 shadow-premium border border-white/10 dark:border-white/5 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl" />
+                        <h3 className="flex items-center gap-3 font-black text-slate-800 dark:text-white mb-5 tracking-tight">
+                            <div className="p-2.5 bg-gradient-to-br from-amber-400 via-orange-500 to-amber-600 rounded-xl text-white shadow-xl shadow-amber-500/20 transform -rotate-3">
+                                <Award className="w-5 h-5 shadow-sm" />
                             </div>
-                            Mes Équipes Favorites
+                            Mes Équipes
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                            Sélectionnez les équipes à afficher dans le planning.
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-5 font-bold uppercase tracking-widest leading-relaxed">
+                            Ceci filtrera votre vue planning automatiquement.
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                            {allTeams.map(team => (
-                                <button
-                                    key={team}
-                                    onClick={() => onToggleFavorite(team)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 border ${favoriteTeams.includes(team)
-                                        ? 'bg-gradient-to-r from-slate-800 to-slate-900 dark:from-white dark:to-slate-100 text-white dark:text-slate-900 border-transparent shadow-lg'
-                                        : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500'
-                                        }`}
-                                >
-                                    {team}
-                                </button>
-                            ))}
+                        <div className="flex flex-wrap gap-2.5">
+                            {allTeams.map(team => {
+                                const isFav = favoriteTeams.includes(team);
+                                return (
+                                    <motion.button
+                                        key={team}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleToggleFavorite(team)}
+                                        className={`px-4 py-2 rounded-full text-xs font-black transition-all duration-300 border ${isFav
+                                            ? 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-white dark:to-slate-100 text-white dark:text-slate-900 border-transparent shadow-xl shadow-slate-950/20 dark:shadow-white/5 scale-105'
+                                            : 'bg-white/5 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/5 hover:border-indigo-400 dark:hover:border-indigo-500'
+                                            }`}
+                                    >
+                                        {team}
+                                    </motion.button>
+                                );
+                            })}
                         </div>
                     </div>
 
                     {/* Carpooling Section */}
-                    <CarpoolList
-                        carpools={userCarpools}
-                        onRemoveCarpool={onRemoveCarpool}
-                    />
-                </div>
+                    <div className="relative">
+                        <CarpoolList
+                            carpools={userCarpools}
+                            onRemoveCarpool={onRemoveCarpool}
+                        />
+                    </div>
+                </motion.div>
             </div>
         </div>
     );

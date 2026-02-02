@@ -40,7 +40,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-40 flex items-center justify-center p-0 sm:p-4 pb-20 sm:pb-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-premium transition-opacity" onClick={onClose} />
 
             <div className="relative w-full h-full sm:h-[85vh] sm:max-w-5xl bg-slate-50 dark:bg-slate-900 sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-in">

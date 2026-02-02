@@ -2,27 +2,33 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, UserRoundPlus, MapPin, Check, Clock, Calendar, Users, Phone } from 'lucide-react';
 import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
+import { triggerHaptic } from '../../utils/haptics';
 
 interface CarpoolListProps {
     carpools: UserCarpoolRegistration[];
     onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
 }
 
-// Animation variants with proper typing
+// Elite Animation variants
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.05 }
+        transition: { staggerChildren: 0.1 }
     }
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
+    hidden: { opacity: 0, scale: 0.95, y: 15 },
     visible: {
         opacity: 1,
+        scale: 1,
         y: 0,
-        transition: { type: 'tween' as const, duration: 0.15 }
+        transition: {
+            type: 'spring' as const,
+            bounce: 0.3,
+            duration: 0.8
+        }
     }
 };
 
@@ -46,7 +52,7 @@ const isCarpoolUpcoming = (gameDateISO: string, gameTime?: string): boolean => {
 export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemoveCarpool }) => {
     const [showHistory, setShowHistory] = useState(false);
 
-    // Split upcoming vs past - handle empty/undefined carpools safely
+    // Split upcoming vs past
     const { upcoming, past } = useMemo(() => {
         const result: { upcoming: UserCarpoolRegistration[], past: UserCarpoolRegistration[] } = { upcoming: [], past: [] };
         if (!carpools || carpools.length === 0) return result;
@@ -63,77 +69,73 @@ export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemov
 
     const displayedCarpools = showHistory ? carpools : upcoming;
 
-    // Handle empty or undefined carpools
-    if (!carpools || carpools.length === 0) {
-        return (
-            <div className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-                <h3 className="flex items-center gap-3 font-bold text-slate-800 dark:text-white mb-4">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg text-white shadow-lg shadow-blue-500/20">
-                        <Car className="w-4 h-4" />
-                    </div>
-                    Mes Covoiturages
-                </h3>
-                <div className="text-center py-6">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 mb-3">
-                        <Car className="w-6 h-6 text-slate-400" />
-                    </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                        Aucun covoiturage
-                    </p>
-                    <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-                        Inscrivez-vous sur un match extérieur !
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+        <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl p-6 shadow-premium border border-white/10 dark:border-white/5 relative overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="flex items-center gap-3 font-bold text-slate-800 dark:text-white">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg text-white shadow-lg shadow-blue-500/20">
-                        <Car className="w-4 h-4" />
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="flex items-center gap-3 font-black text-slate-800 dark:text-white tracking-tight">
+                    <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white shadow-xl shadow-blue-500/20 transform rotate-3">
+                        <Car className="w-5 h-5" />
                     </div>
-                    Mes Covoiturages
+                    Covoiturages
                 </h3>
                 {past.length > 0 && (
-                    <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
+                    <label className="flex items-center gap-3 text-[11px] font-black text-slate-500 dark:text-slate-400 cursor-pointer select-none uppercase tracking-widest hover:text-indigo-500 transition-colors">
                         <input
                             type="checkbox"
                             checked={showHistory}
-                            onChange={(e) => setShowHistory(e.target.checked)}
-                            className="rounded border-slate-300 dark:border-slate-600"
+                            onChange={(e) => {
+                                triggerHaptic('light');
+                                setShowHistory(e.target.checked);
+                            }}
+                            className="w-4 h-4 rounded-md text-indigo-600 focus:ring-offset-0 focus:ring-indigo-500 border-slate-300 dark:border-white/10 bg-white/50 dark:bg-slate-800/50 transition-all"
                         />
-                        Voir historique
+                        Historique
                     </label>
                 )}
             </div>
 
             {/* Carpool List */}
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="space-y-3"
-            >
-                <AnimatePresence mode="popLayout">
-                    {displayedCarpools.map((carpool) => (
-                        <CarpoolCard
-                            key={carpool.id}
-                            carpool={carpool}
-                            onRemove={() => onRemoveCarpool(carpool.gameId, carpool.id)}
-                        />
-                    ))}
-                </AnimatePresence>
-            </motion.div>
+            {carpools.length === 0 ? (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-[2rem]"
+                >
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 mb-4 opacity-50">
+                        <Car className="w-7 h-7 text-slate-400" />
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-[0.2em]">
+                        Rien à signaler
+                    </p>
+                    <p className="text-slate-400 dark:text-slate-600 text-[11px] mt-2 font-medium">
+                        Pensez aux matchs extérieurs !
+                    </p>
+                </motion.div>
+            ) : (
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-4"
+                >
+                    <AnimatePresence mode="popLayout">
+                        {displayedCarpools.map((carpool) => (
+                            <CarpoolCard
+                                key={carpool.id}
+                                carpool={carpool}
+                                onRemove={() => onRemoveCarpool(carpool.gameId, carpool.id)}
+                            />
+                        ))}
+                    </AnimatePresence>
+                </motion.div>
+            )}
 
             {/* Summary */}
             {upcoming.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                        {upcoming.length} covoiturage{upcoming.length > 1 ? 's' : ''} à venir
+                <div className="mt-6 pt-4 border-t border-white/10 dark:border-white/5">
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 text-center uppercase tracking-widest">
+                        {upcoming.length} trajet{upcoming.length > 1 ? 's' : ''} actif{upcoming.length > 1 ? 's' : ''}
                     </p>
                 </div>
             )}
@@ -157,107 +159,112 @@ const CarpoolCard: React.FC<CarpoolCardProps> = ({ carpool }) => {
         <motion.div
             variants={itemVariants}
             layout
+            whileHover={{ scale: 1.02 }}
             className={`
-                relative overflow-hidden rounded-xl border transition-all duration-200
+                relative overflow-hidden rounded-2xl border transition-all duration-300 shadow-premium
                 ${isDriver
-                    ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800'
+                    ? 'bg-gradient-to-br from-indigo-500/5 to-blue-600/10 border-blue-500/20 dark:border-blue-500/10'
                     : isMatched
-                        ? 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-800'
+                        ? 'bg-gradient-to-br from-emerald-500/5 to-teal-600/10 border-emerald-500/20 dark:border-emerald-500/10'
                         : isPending
-                            ? 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-800'
-                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                            ? 'bg-gradient-to-br from-amber-500/5 to-orange-600/10 border-amber-500/20 dark:border-amber-500/10'
+                            : 'bg-white/5 dark:bg-slate-800/20 border-white/10 dark:border-white/5'
                 }
-                ${!isUpcoming ? 'opacity-60' : ''}
+                ${!isUpcoming ? 'opacity-50 grayscale-[0.5]' : ''}
             `}
         >
-            <div className="p-3">
-                {/* Header Row */}
-                <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {/* Type Badge */}
+            <div className="p-4">
+                {/* reflection flair */}
+                <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+
+                <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex flex-wrap gap-2 min-w-0 flex-1">
                         <span className={`
-                            flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold
-                            ${isDriver
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-amber-500 text-white'
-                            }
+                            flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm
+                            ${isDriver ? 'bg-blue-600 text-white' : 'bg-amber-600 text-white'}
                         `}>
-                            {isDriver ? <Car className="w-3 h-3" /> : <UserRoundPlus className="w-3 h-3" />}
+                            {isDriver ? <Car className="w-3.5 h-3.5" /> : <UserRoundPlus className="w-3.5 h-3.5" />}
                             {isDriver ? 'Conducteur' : 'Passager'}
                         </span>
 
-                        {/* Status Badge */}
                         {isMatched && (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-lg">
-                                <Check className="w-3 h-3" />
-                                Confirmé
+                            <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-sm">
+                                <Check className="w-3.5 h-3.5" />
+                                Validé
                             </span>
                         )}
                         {isPending && (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg animate-pulse">
-                                <Clock className="w-3 h-3" />
-                                En attente
+                            <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-500 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-sm animate-pulse">
+                                <Clock className="w-3.5 h-3.5" />
+                                Attente
                             </span>
                         )}
                     </div>
 
-                    {/* Seats/Passengers Info */}
                     {isDriver && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                             {carpool.pendingRequestsCount && carpool.pendingRequestsCount > 0 && (
-                                <span className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-lg">
-                                    {carpool.pendingRequestsCount} demande{carpool.pendingRequestsCount > 1 ? 's' : ''}
-                                </span>
+                                <motion.span
+                                    animate={{ scale: [1, 1.1, 1] }}
+                                    transition={{ duration: 1, repeat: Infinity }}
+                                    className="px-2.5 py-1 bg-amber-400 text-white text-[10px] font-black rounded-full shadow-lg shadow-amber-500/30"
+                                >
+                                    !
+                                </motion.span>
                             )}
-                            <span className="flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-medium rounded-lg">
-                                <Users className="w-3 h-3" />
+                            <span className="flex items-center gap-1.5 px-3 py-1 bg-white/10 dark:bg-white/5 text-slate-700 dark:text-slate-300 text-[10px] font-black rounded-full border border-white/10">
+                                <Users className="w-3.5 h-3.5" />
                                 {carpool.matchedPassengersCount || 0}/{carpool.seats || 1}
                             </span>
                         </div>
                     )}
                 </div>
 
-                {/* Match Info */}
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <div className="flex items-center gap-2.5 text-base font-black text-slate-800 dark:text-white tracking-tight mb-2">
                     <span>{carpool.team}</span>
-                    <span className="text-slate-400">vs</span>
+                    <span className="text-indigo-500 opacity-40">vs</span>
                     <span>{carpool.opponent}</span>
                 </div>
 
-                {/* Date & Location */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+                        <Calendar className="w-3.5 h-3.5 text-indigo-500" />
                         {carpool.gameDate} • {carpool.gameTime}
                     </span>
-                    <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
+                    <span className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+                        <MapPin className="w-3.5 h-3.5 text-indigo-500" />
                         {carpool.location}
                     </span>
                 </div>
 
-                {/* Driver departure location */}
                 {isDriver && carpool.departureLocation && (
-                    <p className="mt-2 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        Départ: {carpool.departureLocation}
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-[11px] text-blue-600 dark:text-blue-400 font-bold flex items-center gap-2"
+                    >
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        <span>Départ: {carpool.departureLocation}</span>
+                    </motion.div>
                 )}
 
-                {/* Matched driver info (for passengers) */}
                 {!isDriver && isMatched && carpool.matchedDriverName && (
-                    <div className="mt-2 p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                        <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-1">
-                            <Check className="w-3 h-3" />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mt-4 p-4 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-2xl border border-emerald-500/20"
+                    >
+                        <p className="text-xs text-emerald-700 dark:text-emerald-400 font-black flex items-center gap-2 uppercase tracking-wide">
+                            <Check className="w-4 h-4" />
                             Avec {carpool.matchedDriverName}
                         </p>
                         {carpool.matchedDriverPhone && (
-                            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-1">
-                                <Phone className="w-3 h-3" />
+                            <p className="text-[11px] text-emerald-600 dark:text-emerald-500 font-bold flex items-center gap-2 mt-2 ml-1">
+                                <Phone className="w-3.5 h-3.5" />
                                 {carpool.matchedDriverPhone}
                             </p>
                         )}
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </motion.div>

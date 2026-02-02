@@ -12,6 +12,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/oswald": "^5.2.8",
+    "@fontsource/outfit": "^5.2.8",
     "firebase": "^12.6.0",
     "framer-motion": "^12.25.0",
     "lucide-react": "^0.563.0",
