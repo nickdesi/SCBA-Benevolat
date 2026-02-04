@@ -4,7 +4,7 @@ import { User } from 'firebase/auth';
 import { Briefcase, Star, Clock, Award, CalendarOff, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { StatCard } from './StatCard';
-import { NextMissionCard } from './NextMissionCard';
+
 import { MissionList } from './MissionList';
 import { CarpoolList } from './CarpoolList';
 import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
@@ -55,11 +55,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
         onToggleFavorite(team);
     }, [onToggleFavorite]);
 
-    // Find Next Mission
-    const nextMission = useMemo(() => {
-        const future = registrations.filter(r => isGameUpcoming(r));
-        return future.sort((a, b) => (a.gameDateISO || '').localeCompare(b.gameDateISO || ''))[0];
-    }, [registrations]);
+
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto pb-8">
@@ -112,27 +108,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                 />
             </motion.div>
 
-            {/* Next Mission Spotlight */}
-            <div className="relative group">
-                {nextMission ? (
-                    <NextMissionCard registration={nextMission} onUnsubscribe={onUnsubscribe} user={user} />
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative overflow-hidden rounded-[2rem] bg-slate-100/50 dark:bg-slate-900/40 backdrop-blur-xl p-10 text-center border border-slate-200 dark:border-white/5"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 pointer-events-none" />
-                        <CalendarOff className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600 animate-pulse" />
-                        <h3 className="text-xl font-black text-slate-700 dark:text-slate-200 mb-2">
-                            Aucun match au planning
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
-                            Le club a besoin de vous ! Allez jeter un œil au planning pour vous inscrire.
-                        </p>
-                    </motion.div>
-                )}
-            </div>
+
 
             {/* Main Content Split: Missions & Preferences */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

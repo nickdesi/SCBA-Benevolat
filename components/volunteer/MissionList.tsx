@@ -37,12 +37,16 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
         <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl p-6 shadow-premium border border-white/10 dark:border-white/5 relative overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-                <h3 className="font-black text-slate-800 dark:text-white text-lg flex items-center gap-3 tracking-tight">
-                    <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white shadow-xl shadow-indigo-500/20 transform rotate-3">
-                        <Calendar className="w-5 h-5" />
-                    </div>
-                    Planning
-                </h3>
+                <div className="flex items-center gap-3">
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 dark:bg-indigo-500/20 backdrop-blur-md rounded-full border border-indigo-500/30 text-[10px] font-black tracking-[0.1em] text-indigo-600 dark:text-indigo-300 uppercase"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
+                        Prochaine Mission
+                    </motion.div>
+                </div>
                 <label className="flex items-center gap-3 text-[11px] font-black text-slate-500 dark:text-slate-400 cursor-pointer select-none uppercase tracking-widest hover:text-indigo-500 transition-colors group">
                     <input
                         type="checkbox"
