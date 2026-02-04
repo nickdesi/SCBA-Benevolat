@@ -34,7 +34,9 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      allow update: if isAuth(); 
+      // Allow update ONLY if authenticated AND only modifying the 'roles' field (for volunteer signup)
+      // OR if the user is an admin (who can edit everything)
+      allow update: if isAdmin() || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles'])); 
     }
 
     // Données Utilisateurs (Inscriptions, Profil...)

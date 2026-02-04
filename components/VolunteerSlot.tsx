@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useOptimistic, startTransition } from 'react';
 import type { Role } from '../types';
 import { DeleteIcon, EditPencilIcon, CheckIcon, UserIcon } from './Icons';
 import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
@@ -42,9 +42,24 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
         name: string;
     }>({ isOpen: false, type: 'add', name: '' });
 
+    // React 19 Optimistic UI
+    const [optimisticVolunteers, setOptimisticVolunteers] = useOptimistic(
+        role.volunteers,
+        (currentVolunteers: string[], action: { type: 'add' | 'remove', names: string[] }) => {
+            if (action.type === 'add') {
+                return [...currentVolunteers, ...action.names];
+            } else if (action.type === 'remove') {
+                return currentVolunteers.filter(v => !action.names.includes(v));
+            }
+            return currentVolunteers;
+        }
+    );
+
+    // Use optimistic state for calculations
     const isUnlimited = role.capacity === Infinity || role.capacity === 0;
-    const canSignUp = isUnlimited || role.volunteers.length < role.capacity;
-    const isFull = !isUnlimited && role.volunteers.length >= role.capacity;
+    const canSignUp = isUnlimited || optimisticVolunteers.length < role.capacity;
+    const isFull = !isUnlimited && optimisticVolunteers.length >= role.capacity;
+    // Registration key remains based on props, assuming role.id is stable
     const registrationKey = `${gameId}-${role.id}`;
 
     const handleSignUpClick = () => {
@@ -56,6 +71,11 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     const confirmSignUp = () => {
         const name = confirmModal.name;
         const names = parseNames(name);
+
+        // Optimistic Update
+        startTransition(() => {
+            setOptimisticVolunteers({ type: 'add', names });
+        });
 
         // Atomic update for all names
         onVolunteer(names);
@@ -77,6 +97,12 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
 
     const confirmRemove = () => {
         const name = confirmModal.name;
+
+        // Optimistic Update
+        startTransition(() => {
+            setOptimisticVolunteers({ type: 'remove', names: [name] });
+        });
+
         onRemoveVolunteer(name);
         removeMyRegistration(registrationKey, name);
         setConfirmModal({ isOpen: false, type: 'remove', name: '' });
@@ -110,6 +136,12 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     const handleUpdate = () => {
         if (newName.trim() && editingVolunteer) {
             const names = parseNames(newName);
+
+            // Optimistic Update
+            startTransition(() => {
+                setOptimisticVolunteers({ type: 'remove', names: [editingVolunteer] });
+                setOptimisticVolunteers({ type: 'add', names });
+            });
 
             if (names.length === 1) {
                 // Standard update
@@ -194,7 +226,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
 
                 {/* Volunteers List */}
                 <div className="divide-y divide-slate-50 dark:divide-slate-700">
-                    {role.volunteers.map((volunteer, idx) => {
+                    {optimisticVolunteers.map((volunteer, idx) => {
                         const isMine = isAuthenticated
                             ? (myRegistrationName === volunteer)
                             : isMyRegistration(registrationKey, volunteer);
@@ -354,7 +386,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                     )}
 
                     {/* Full Message */}
-                    {isFull && role.volunteers.length > 0 && (
+                    {isFull && optimisticVolunteers.length > 0 && (
                         <div className="px-3 py-2.5 text-center bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20">
                             <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center justify-center gap-1.5">
                                 <Sparkles className="w-3.5 h-3.5" /> Merci à tous les bénévoles !
