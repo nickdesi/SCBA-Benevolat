@@ -83,7 +83,7 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="group flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 border border-transparent hover:border-white/20 dark:hover:border-white/10 hover:shadow-xl relative overflow-hidden"
+                                    className="group flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 border border-slate-100 hover:border-white/20 dark:border-white/5 dark:hover:border-white/10 hover:shadow-xl relative overflow-hidden"
                                 >
                                     {/* Glass reflection flair */}
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
