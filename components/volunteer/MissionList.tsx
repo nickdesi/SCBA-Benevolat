@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
-import { Calendar, Trash2, CheckCircle2 } from 'lucide-react';
+import { Calendar, Trash2, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../ConfirmModal';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';
@@ -99,12 +99,23 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                                         <h4 className="font-black text-slate-800 dark:text-slate-100 truncate text-sm tracking-tight mb-1">
                                             {reg.team} <span className="text-indigo-500 font-bold opacity-50">vs</span> {reg.opponent}
                                         </h4>
-                                        <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                                            <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 shadow-sm">
+                                        <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                            {/* Role Pill */}
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 shadow-sm">
                                                 {reg.roleName}
                                             </span>
-                                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-                                            <span className="opacity-80 uppercase tracking-widest">{reg.gameTime}</span>
+
+                                            {/* Time Pill */}
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                                                <Clock className="w-3 h-3" />
+                                                {reg.gameTime}
+                                            </span>
+
+                                            {/* Location Pill */}
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                                                <MapPin className="w-3 h-3" />
+                                                {reg.location}
+                                            </span>
                                         </div>
                                     </div>
 
