@@ -41,7 +41,7 @@ graph TD
     
     subgraph "Frontend (PWA)"
         UI[React 19 + Vite]
-        Store[Zustand / Context]
+        Store[Context API]
         Router[Custom Router]
         
         UI --> Store

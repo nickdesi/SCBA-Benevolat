@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.3] - 2026-02-04
+
+### Added
+
+- **UI**: Nouvelles icônes Emoji (🏠/✈️) pour le MatchTicker avec taille agrandie.
+
+### Changed
+
+- **Refactor**: Migration complète du code source vers le dossier `src/` standardisé.
+- **Config**: Mise à jour des alias Vite et TypeScript.
+- **Documentation**: Suppression des références obsolètes (Zustand).
+
 ## [2.3.2] - 2026-02-02
 
 ### Performance (v2.3.2)
