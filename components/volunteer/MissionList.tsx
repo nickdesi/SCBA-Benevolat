@@ -89,9 +89,10 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
 
                                     {/* Date Badge Elite */}
-                                    <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-slate-50 to-indigo-50/50 dark:from-slate-700 dark:to-slate-800 text-indigo-600 dark:text-indigo-400 rounded-2xl flex flex-col items-center justify-center font-black text-xs uppercase shadow-premium border border-white/50 dark:border-white/5 relative z-10 transition-transform group-hover:scale-105 group-hover:-rotate-3">
-                                        <span className="text-[10px] opacity-60 tracking-tighter">{reg.gameDate?.split(' ')[0].substring(0, 3)}</span>
-                                        <span className="text-xl leading-none tracking-tighter">{reg.gameDate?.match(/\d+/)?.[0]}</span>
+                                    <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-slate-50 to-indigo-50/50 dark:from-slate-700 dark:to-slate-800 text-indigo-600 dark:text-indigo-400 rounded-2xl flex flex-col items-center justify-center font-black text-xs uppercase shadow-premium border border-white/50 dark:border-white/5 relative z-10 transition-transform group-hover:scale-105 group-hover:-rotate-3 leading-tight p-1">
+                                        <span className="text-[9px] opacity-60 tracking-tighter">{reg.gameDate?.split(' ')[0].substring(0, 3)}</span>
+                                        <span className="text-2xl tracking-tighter my-[-2px]">{reg.gameDate?.match(/\d+/)?.[0]}</span>
+                                        <span className="text-[9px] opacity-60 tracking-widest">{reg.gameDate?.split(' ')[2]?.substring(0, 3).toUpperCase()}</span>
                                     </div>
 
                                     {/* Content */}
