@@ -45,7 +45,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             </div>
 
             {/* Top Row: Status only (Date moved to info) */}
-            <div className="relative flex items-center justify-end mb-2 z-10">
+            <div className={`relative flex items-center justify-end mb-2 z-10 ${isAdmin ? 'pr-16' : ''}`}>
                 <div className="flex flex-col items-end gap-1.5">
                     {/* Urgency / Status Pills */}
                     <div className="flex items-center gap-1.5">
@@ -108,7 +108,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                     </div>
 
                     {/* Time Pill */}
-                    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50 min-w-max">
+                    <div className="flex items-center gap-2.5 px-3 sm:px-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50 min-w-max">
                         <div className="flex-shrink-0 p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-lg">
                             <ClockIcon className="w-4 h-4" />
                         </div>
@@ -165,7 +165,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 
             {/* Admin Controls */}
             {isAdmin && (
-                <div className="absolute top-2 right-2 flex gap-1">
+                <div className="absolute top-2 right-2 flex gap-1 z-50">
                     <button onClick={onEditRequest} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><EditIcon className="w-3.5 h-3.5" /></button>
                     <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><DeleteIcon className="w-3.5 h-3.5" /></button>
                     <ConfirmModal

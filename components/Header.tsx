@@ -75,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({
           {/* Title - Exact Match: Full Width & Readable */}
           <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1">
             <h1 className="flex flex-col items-center justify-center leading-none w-full">
-              <span className="text-sm xs:text-base sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport whitespace-nowrap w-full">
+              <span className="text-[10px] xs:text-xs sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport text-center leading-none w-full break-words max-w-full">
                 STADE CLERMONTOIS BASKET AUVERGNE
               </span>
               {/* Green Separator */}
