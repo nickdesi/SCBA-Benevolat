@@ -36,7 +36,7 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
     return (
         <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl p-6 shadow-premium border border-white/10 dark:border-white/5 relative overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-6 sm:mb-8">
                 <div className="flex items-center gap-3">
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
@@ -97,8 +97,8 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
 
                                     {/* Content */}
                                     <div className="flex-grow min-w-0 relative z-10">
-                                        <h4 className="font-black text-slate-800 dark:text-slate-100 truncate text-sm tracking-tight mb-1">
-                                            {reg.team} <span className="text-indigo-500 font-bold opacity-50">vs</span> {reg.opponent}
+                                        <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm tracking-tight mb-2 leading-snug break-words">
+                                            {reg.team} <span className="text-indigo-500 font-bold opacity-50 mx-1">vs</span> {reg.opponent}
                                         </h4>
                                         <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
                                             {/* Role Pill */}
