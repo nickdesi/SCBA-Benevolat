@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import UserProfile from './UserProfile';
 import { UserRegistration, Game } from '../types';
 import { ThemeToggle } from '../utils/ThemeContext';
@@ -44,48 +45,49 @@ const Header: React.FC<HeaderProps> = ({
 
 
   return (
-    <header className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white z-50 bg-noise">
-      {/* Background decorations */}
-      <div className="absolute inset-0">
-
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.4) 0%, transparent 40%),
-                           radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.3) 0%, transparent 40%)`
-        }}></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+    <header className="sticky top-0 z-40 bg-slate-900/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
+      {/* Dynamic Background Gradient */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
       </div>
 
-      <div className="container mx-auto px-4 py-2 sm:py-4 relative z-30">
-        <div className="flex items-center justify-between">
-          {/* Logo - Left */}
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 rounded-full scale-150"></div>
+      <div className="container mx-auto px-4 py-2 sm:py-3 relative z-30">
+        <div className="flex items-center justify-between gap-2">
+          {/* Logo - Animated & Glowing */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="relative flex-shrink-0 group cursor-pointer"
+          >
+            <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full" />
             <img
               src="/logo-scba.webp"
-              alt="Logo Stade Clermontois Basket Auvergne"
-              className="relative w-10 h-12 sm:w-16 sm:h-20 object-contain drop-shadow-lg hover:scale-105 transition-transform duration-150"
-              width="64"
-              height="80"
-              // @ts-ignore - fetchPriority is standard but missing in React 18 types
+              alt="Logo SCBA"
+              className="relative w-10 h-12 sm:w-14 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300 ease-out"
+              width="56"
+              height="70"
+              // @ts-ignore
               fetchPriority="high"
             />
-          </div>
+          </motion.div>
 
-          {/* Title - Center */}
-          <div className="text-center flex-1 px-2 sm:px-3">
-            <h1 className="text-sm sm:text-2xl lg:text-3xl font-bold tracking-tight leading-tight font-sport flex flex-col sm:block">
-              <span className="bg-gradient-to-r from-blue-400 via-blue-200 to-blue-400 bg-clip-text text-transparent">
-                STADE CLERMONTOIS
+          {/* Title - Exact Match: Full Width & Readable */}
+          <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1">
+            <h1 className="flex flex-col items-center justify-center leading-none w-full">
+              <span className="text-sm xs:text-base sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport whitespace-nowrap w-full">
+                STADE CLERMONTOIS BASKET AUVERGNE
               </span>
-              <span className="text-white block sm:inline sm:ml-2 font-normal tracking-widest opacity-90">BASKET AUVERGNE</span>
+              {/* Green Separator */}
+              <span className="w-1/2 sm:w-32 h-[2px] sm:h-[3px] bg-emerald-500 my-0.5 sm:my-1 rounded-full"></span>
+              <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-emerald-400 font-sport">
+                ESPACE BÉNÉVOLES
+              </span>
             </h1>
-            <p className="text-blue-400/80 text-[10px] sm:text-sm font-medium tracking-[0.2em] mt-1 uppercase flex items-center justify-center gap-1.5">
-              <BasketballIcon className="w-3 h-3 sm:w-4 sm:h-4" /> Espace Bénévoles
-            </p>
           </div>
 
           {/* User Profile + Theme Toggle */}
-          <div className="flex-shrink-0 flex items-center gap-2">
+          <div className="flex-shrink-0 flex items-center gap-1.5 sm:gap-3">
             <ThemeToggle />
             <UserProfile
               registrations={registrations}
@@ -104,42 +106,43 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Filter Bar Integration - Seamless Glassmorphism */}
+      {/* Filter Bar - Floating Horizontal Scroll */}
       {teams.length > 0 && (
-        <div className="relative z-20 pb-4 pt-3">
+        <div className="relative pb-3 pt-1">
           <div className="container mx-auto px-4">
             <div
               ref={scrollRef}
               {...scrollEvents}
-              className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap p-2 active:cursor-grabbing cursor-grab"
+              className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap px-1 py-1 snap-x"
               style={{
                 ...scrollStyle,
-                maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)'
+                maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
               }}
             >
-              <button
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onSelectTeam(null)}
-                aria-label="Afficher tous les matchs"
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-150 backdrop-blur-md border ${selectedTeam === null
-                  ? 'bg-white text-slate-900 border-white shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105'
-                  : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-indigo-500/50 hover:shadow-[0_0_10px_rgba(99,102,241,0.2)]'
+                className={`snap-center px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md ${selectedTeam === null
+                  ? 'bg-white text-slate-900 border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] ring-1 ring-white/50'
+                  : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
                   }`}
               >
                 Tous les matchs
-              </button>
+              </motion.button>
               {teams.map((team) => (
-                <button
+                <motion.button
                   key={team}
+                  layoutId={`team-pill-${team}`}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => onSelectTeam(team)}
-                  aria-label={`Filtrer par équipe : ${team}`}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 backdrop-blur-md border ${selectedTeam === team
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-transparent shadow-[0_0_15px_rgba(99,102,241,0.5)] scale-105 ring-1 ring-white/20'
-                    : 'bg-slate-800/40 text-slate-300 border-slate-700/50 hover:bg-slate-800/60 hover:text-white hover:border-indigo-500/50 hover:shadow-[0_0_10px_rgba(99,102,241,0.2)]'
+                  className={`snap-center px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md ${selectedTeam === team
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-1 ring-white/20'
+                    : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
                     }`}
                 >
                   {team}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>

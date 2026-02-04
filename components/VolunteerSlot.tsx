@@ -173,7 +173,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                 <div className={`
                     flex items-center justify-between px-3 py-3
                     bg-gradient-to-r ${roleConfig.gradientFrom} ${roleConfig.gradientTo}
-                    dark:from-slate-800/80 dark:to-slate-900/50
+                    dark:from-slate-800 dark:to-slate-900
                     border-l-4 ${roleConfig.borderColor}
                     ${isFull ? 'border-l-emerald-500' : ''}
                 `}>

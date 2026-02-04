@@ -1,5 +1,5 @@
 import React, { memo, useState, Suspense, lazy, useMemo } from 'react';
-import { Car } from 'lucide-react';
+import { Car, CheckIcon } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -147,24 +147,31 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.12, ease: [0.25, 0.46, 0.45, 0.94] }} // Snappy easing
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.05 }}
             className={`
-            relative rounded-2xl shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col overflow-hidden transition-all duration-150 h-full
+            relative rounded-3xl overflow-hidden transition-all duration-300 h-full
             bg-white dark:bg-slate-900
+            ${isFullyStaffed ? 'shadow-sm hover:shadow-md' : 'shadow-lg hover:shadow-2xl hover:-translate-y-1'}
         `}>
-            {/* Border/Ring Overlay - Always on top */}
+            {/* Glass Gradient Overlay */}
+            <div className={`absolute inset-0 bg-gradient-to-br from-white/80 via-white/40 to-white/10 dark:from-slate-800/80 dark:via-slate-900/40 dark:to-slate-950/20 pointer-events-none z-0`} />
+
+            {/* Border/Ring Overlay */}
             <div className={`
-                absolute inset-0 pointer-events-none z-50 rounded-2xl
+                absolute inset-0 pointer-events-none z-50 rounded-3xl border
                 ${isFullyStaffed
-                    ? 'ring-2 ring-emerald-400 dark:ring-emerald-600 ring-inset'
-                    : 'ring-1 ring-slate-200 dark:ring-slate-700 ring-inset'
+                    ? 'border-emerald-500/20 dark:border-emerald-400/10'
+                    : isUrgent
+                        ? 'border-red-500/30 dark:border-red-500/30 shadow-[inset_0_0_20px_rgba(239,68,68,0.15)]' // Inner glow for urgent
+                        : 'border-white/40 dark:border-white/5'
                 }
-                ${isUrgent && !isFullyStaffed ? 'animate-pulse-red ring-2 ring-red-400 dark:ring-red-400' : ''}
             `} />
+
             {/* 1. Header Section */}
-            <div className="flex-1">
+            <div className="relative z-10">
                 <GameHeader
                     game={game}
                     isHomeGame={isHomeGame}
@@ -180,55 +187,75 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
             {/* 2. Accordion Trigger */}
             <motion.button
-                whileTap={{ scale: 0.995 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
                     w-full px-4 py-3 flex items-center justify-between cursor-pointer
-                    bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700
-                    hover:bg-slate-100 dark:hover:bg-slate-700/50 active:bg-slate-100 dark:active:bg-slate-700
-                    transition-colors relative overflow-hidden
+                    bg-slate-50/80 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800
+                    hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative group
                 `}
             >
                 {/* Progress Bar Background */}
                 {!isFullyStaffed && isHomeGame && (
-                    <div className="absolute left-0 top-0 bottom-0 bg-emerald-500/5 z-0 transition-all duration-200"
+                    <div className="absolute left-0 top-0 bottom-0 bg-emerald-500/10 dark:bg-emerald-400/10 z-0 transition-all duration-500 ease-out"
                         style={{ width: `${(filledSlots / totalCapacity) * 100}%` }}
-                    ></div>
+                    />
                 )}
 
-                <div className="flex items-center gap-3 relative z-10">
+                <div className="flex items-center gap-3 relative z-10 pl-1">
                     {isHomeGame && (
-                        <span className={`text-sm font-medium ${isFullyStaffed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <span className={`text-sm font-bold tracking-tight ${isFullyStaffed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>
                             {isFullyStaffed ? (
-                                <>🎉 Équipe complète !</>
+                                <span className="flex items-center gap-2">
+                                    <span className="p-1 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400"><CheckIcon className="w-3 h-3" /></span>
+                                    Équipe au complet
+                                </span>
                             ) : (
                                 <>
-                                    <span className="font-bold">{filledSlots}/{totalCapacity}</span> bénévoles
+                                    <span className="font-black text-lg align-bottom">{filledSlots}</span>
+                                    <span className="text-slate-400 mx-1">/</span>
+                                    <span className="font-bold text-slate-500">{totalCapacity}</span>
+                                    <span className="ml-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Bénévoles</span>
+
                                     {getMissingRoles().length > 0 && (
-                                        <span className="text-slate-500 dark:text-slate-400 ml-1.5 hidden sm:inline">
-                                            • Manque : <span className="text-red-600 dark:text-red-400 font-medium">{getMissingRoles().join(', ')}</span>
-                                        </span>
+                                        <div className="hidden sm:inline-flex ml-3 px-2 py-0.5 rounded bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
+                                            <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">
+                                                Manque : {getMissingRoles()[0]} {getMissingRoles().length > 1 ? `+${getMissingRoles().length - 1}` : ''}
+                                            </span>
+                                        </div>
                                     )}
                                 </>
                             )}
                         </span>
                     )}
                     {!isHomeGame && (
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             {(() => {
                                 const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
                                 const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
 
-                                const content = drivers === 0 && passengers === 0
-                                    ? '0 inscription'
-                                    : [drivers > 0 && `${drivers} cond.`, passengers > 0 && `${passengers} pass.`].filter(Boolean).join(' • ');
+                                if (drivers === 0 && passengers === 0) return <span className="opacity-60">Aucun covoiturage</span>;
 
-                                return <><Car className="w-4 h-4 inline mr-1" />{content}</>;
+                                return (
+                                    <>
+                                        {drivers > 0 && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-bold">{drivers} cond.</span>}
+                                        {passengers > 0 && <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-xs font-bold">{passengers} pass.</span>}
+                                    </>
+                                );
                             })()}
                         </span>
                     )}
                 </div>
-                <ChevronIcon className="w-5 h-5 text-slate-400 relative z-10" isOpen={isExpanded} />
+
+                <div className={`
+                    w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+                    ${isExpanded
+                        ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
+                        : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
+                    }
+                `}>
+                    <ChevronIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" isOpen={false} />
+                </div>
             </motion.button>
 
             {/* 3. Dropdown Content */}
@@ -238,10 +265,10 @@ const GameCard: React.FC<GameCardProps> = memo(({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 32 }} // Snappy accordion
-                        className="overflow-hidden bg-white dark:bg-slate-900"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        className="overflow-hidden"
                     >
-                        <div className="p-4 pt-2 border-t border-slate-100 dark:border-slate-700">
+                        <div className="p-4 pt-2 border-t border-slate-200/50 dark:border-slate-800">
 
                             {/* Actions (Calendrier, Trajet) */}
                             <ActionButtons

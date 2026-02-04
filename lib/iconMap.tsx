@@ -51,7 +51,7 @@ export interface RoleConfig {
 export const roleConfigMap: Record<string, RoleConfig> = {
     'Buvette': {
         iconId: 'beer',
-        bgColor: 'bg-amber-100 dark:bg-amber-900/40',
+        bgColor: 'bg-amber-100 dark:bg-amber-500/20',
         textColor: 'text-amber-600 dark:text-amber-400',
         borderColor: 'border-l-amber-500',
         gradientFrom: 'from-amber-50/50',
@@ -59,7 +59,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
     },
     'Chrono': {
         iconId: 'timer',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/40',
+        bgColor: 'bg-blue-100 dark:bg-blue-500/20',
         textColor: 'text-blue-600 dark:text-blue-400',
         borderColor: 'border-l-blue-500',
         gradientFrom: 'from-blue-50/50',
@@ -67,7 +67,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
     },
     'Table de marque': {
         iconId: 'clipboard',
-        bgColor: 'bg-indigo-100 dark:bg-indigo-900/40',
+        bgColor: 'bg-indigo-100 dark:bg-indigo-500/20',
         textColor: 'text-indigo-600 dark:text-indigo-400',
         borderColor: 'border-l-indigo-500',
         gradientFrom: 'from-indigo-50/50',
@@ -75,7 +75,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
     },
     'Goûter': {
         iconId: 'cookie',
-        bgColor: 'bg-pink-100 dark:bg-pink-900/40',
+        bgColor: 'bg-pink-100 dark:bg-pink-500/20',
         textColor: 'text-pink-600 dark:text-pink-400',
         borderColor: 'border-l-pink-500',
         gradientFrom: 'from-pink-50/50',
