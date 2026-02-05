@@ -31,7 +31,7 @@ root.render(
 );
 
 // Performance Monitoring
-import reportWebVitals from './src/reportWebVitals';
+import reportWebVitals from './reportWebVitals';
 reportWebVitals();
 
 // PWA Service Worker Registration
