@@ -691,3 +691,7 @@ a:active,
 .hover-instant:hover {
   transition: all 50ms ease-out;
 }
+/* Force hide scrollbars in marquee */
+.rfm-marquee-container {
+  overflow-y: hidden !important;
+}

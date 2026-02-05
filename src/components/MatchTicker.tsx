@@ -24,9 +24,9 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
     if (upcomingGames.length === 0) return null;
 
     return (
-        <div className="relative z-30 border-b border-slate-800 bg-slate-950 overflow-hidden">
+        <div className="relative z-30 border-b border-slate-800 bg-slate-950 overflow-hidden py-2.5">
             {/* Gradient Overlay for modern feel */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/10 via-transparent to-emerald-900/10 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/10 via-transparent to-emerald-900/10 pointer-events-none z-10" />
 
             <Marquee
                 speed={35}
@@ -35,7 +35,7 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
                 gradientWidth={50}
                 pauseOnHover={true}
                 autoFill={true}
-                className="py-2.5"
+                className="!overflow-y-hidden"
             >
                 {upcomingGames.map((game, i) => {
                     // Determine Host and Visitor
