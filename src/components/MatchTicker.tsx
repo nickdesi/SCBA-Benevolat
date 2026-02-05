@@ -24,7 +24,7 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
     if (upcomingGames.length === 0) return null;
 
     return (
-        <div className="relative z-30 border-b border-slate-800 bg-slate-950">
+        <div className="relative z-30 border-b border-slate-800 bg-slate-950 overflow-hidden">
             {/* Gradient Overlay for modern feel */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-900/10 via-transparent to-emerald-900/10 pointer-events-none" />
 
