@@ -1,6 +1,12 @@
 import React from 'react';
 import { MotionIconWrapper } from './Icons';
 import { motion } from 'framer-motion';
+import { Inbox } from 'lucide-react';
+
+// Default SVG icon component (per UI/UX Pro Max: no emoji icons)
+const DefaultIcon = () => (
+    <Inbox className="w-12 h-12 text-slate-400" strokeWidth={1.5} />
+);
 
 interface EmptyStateProps {
     /** Unicode icon or SVG component */
@@ -22,7 +28,7 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-    icon = '📭',
+    icon = <DefaultIcon />,
     title,
     description,
     action,

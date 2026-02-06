@@ -49,10 +49,84 @@ Design Firestore data structure around query patterns
 
 ### ❌ No Security Rules
 
+```javascript
+// WRONG - Open to the world (default test mode)
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true; // SECURITY BREACH
+    }
+  }
+}
+
+// CORRECT - User-scoped access
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null 
+                         && request.auth.uid == userId;
+    }
+  }
+}
+```
+
 ### ❌ Client-Side Admin Operations
+
+```typescript
+// WRONG - Admin SDK in client (exposes credentials)
+import { getFirestore } from 'firebase-admin/firestore';
+
+// CORRECT - Use Cloud Functions for admin operations
+// In Cloud Function:
+import { onCall } from 'firebase-functions/v2/https';
+export const deleteUser = onCall(async (request) => {
+  if (!request.auth?.token.admin) throw new Error('Unauthorized');
+  // Admin operation here
+});
+```
 
 ### ❌ Listener on Large Collections
 
+```typescript
+// WRONG - Listens to ALL documents (billing nightmare)
+onSnapshot(collection(db, 'posts'), (snapshot) => { ... });
+
+// CORRECT - Limit + paginate
+const q = query(
+  collection(db, 'posts'),
+  where('userId', '==', currentUser.uid),
+  orderBy('createdAt', 'desc'),
+  limit(20)
+);
+onSnapshot(q, (snapshot) => { ... });
+```
+
+## Red Flags - STOP and Fix
+
+If you catch yourself:
+
+- Writing rules with `allow read, write: if true`
+- Using admin SDK in client-side code
+- Attaching listeners without `where()` or `limit()`
+- Storing nested arrays (can't query them)
+- Not using emulator for development
+- Designing data like SQL (normalize → denormalize)
+
+**ALL of these mean: STOP. Rethink before proceeding.**
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "It's just for testing" | Test rules become prod rules. |
+| "We'll add security later" | Later = after the breach. |
+| "Small collection, no need to limit" | Collections grow. Always limit. |
+| "Emulator is slow to setup" | Emulator saves money and credentials. |
+
 ## Related Skills
 
-Works well with: `nextjs-app-router`, `react-patterns`, `authentication-oauth`, `stripe`
+- `systematic-debugging` - For debugging security rules
+- `verification-before-completion` - Test rules before deploy
+- Works well with: `react-ui-patterns`, `authentication-oauth`

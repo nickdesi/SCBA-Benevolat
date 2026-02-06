@@ -62,3 +62,32 @@ Comprehensive design guide for web and mobile applications.
 |------|----|----- |
 | **Glass card** | `bg-white/80` (light) | `bg-white/10` (invisible) |
 | **Border** | `border-gray-200` (light) | `border-white/10` (invisible) |
+
+## Red Flags - STOP and Fix
+
+If you catch yourself:
+
+- Using emojis as icons in production UI
+- Skipping focus states on interactive elements
+- Touch targets smaller than 44x44px
+- No loading indicator on async buttons
+- Contrast ratio below 4.5:1
+- Missing dark mode variant
+- Using `scale` transforms on hover (causes layout shift)
+
+**ALL of these mean: STOP. Fix before proceeding.**
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "It's just a prototype" | Prototype becomes production. Do it right. |
+| "Users won't notice" | 15% of users have visual impairments. |
+| "Dark mode can wait" | Adding later = 2x the work. |
+| "Touch targets look too big" | 44px is the minimum for usability. |
+| "The design tool shows it fine" | Test on real devices. |
+
+## Related Skills
+
+- `react-ui-patterns` - Loading/error/empty state patterns
+- `verification-before-completion` - Test on real devices before claiming done

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
-import { List, Calendar } from 'lucide-react';
+import { List, Calendar, Trophy, Search, CalendarDays } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
@@ -418,7 +418,7 @@ function App() {
               {!loading && games.length === 0 && !isAddingGame && (
                 <div className="animate-fade-in-up">
                   <EmptyState
-                    icon="🏀"
+                    icon={<Trophy className="w-16 h-16 text-orange-500" strokeWidth={1.5} />}
                     title="Aucun match prévu"
                     description="Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !"
                     variant="fun"
@@ -502,7 +502,7 @@ function App() {
                 ) : (
                   !loading && games.length > 0 && (
                     <EmptyState
-                      icon="🔍"
+                      icon={<Search className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
                       title="Aucun résultat"
                       description="Aucun match ne correspond à vos filtres actuels."
                       variant="simple"
@@ -530,7 +530,7 @@ function App() {
               {
                 !loading && currentView === 'planning' && filteredGames.length === 0 && (
                   <EmptyState
-                    icon="📅"
+                    icon={<CalendarDays className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
                     title="Planning vide"
                     description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
                     variant="simple"
