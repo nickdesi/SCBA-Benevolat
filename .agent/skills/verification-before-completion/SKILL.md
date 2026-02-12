@@ -8,7 +8,7 @@ source: obra/superpowers (MIT License)
 
 ## The Iron Law
 
-```
+```text
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 
@@ -18,9 +18,10 @@ If you haven't run the verification command in this message, you cannot claim it
 
 ## The Gate Function
 
-```
+```text
 BEFORE claiming any status:
 
+0. SECURITY: Scan for secrets (grep "AIza", "key", "secret", check .gitignore)
 1. IDENTIFY: What command proves this claim?
 2. RUN: Execute the FULL command (fresh, complete)
 3. READ: Full output, check exit code, count failures
@@ -41,26 +42,27 @@ Skip any step = lying, not verifying
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
 | Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
 | Requirements met | Line-by-line checklist | Tests passing |
+| Secure code | Git status checked + Grep secrets | "I used .env", "Looks safe" |
 
 ## Key Patterns
 
 **Tests:**
 
-```
+```text
 ✅ [Run test command] [See: 34/34 pass] "All tests pass"
 ❌ "Should pass now" / "Looks correct"
 ```
 
 **Build:**
 
-```
+```text
 ✅ [Run build] [See: exit 0] "Build passes"
 ❌ "Linter passed" (linter doesn't check compilation)
 ```
 
 **Requirements:**
 
-```
+```text
 ✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
 ❌ "Tests pass, phase complete"
 ```
@@ -72,6 +74,7 @@ Skip any step = lying, not verifying
 - About to commit/push/PR without verification
 - Relying on partial verification
 - Thinking "just this once"
+- Committing .env or hardcoded keys
 - **ANY wording implying success without having run verification**
 
 ## Rationalization Prevention

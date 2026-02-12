@@ -177,7 +177,7 @@ function App() {
   }, [importGames, addToast]);
 
   // Wrapped handlers with toast feedback
-  const handleVolunteerWithToast = useCallback(async (gameId: string, roleId: string, parentName: string) => {
+  const handleVolunteerWithToast = useCallback(async (gameId: string, roleId: string, parentName: string | string[]) => {
     // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
     if (!isAuthenticated) {
       addToast('Connectez-vous pour vous inscrire', 'info');

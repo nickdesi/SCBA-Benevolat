@@ -138,7 +138,7 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                                                 isOpen={true}
                                                 title="Annuler ?"
                                                 message={`Voulez-vous vraiment annuler votre aide pour ${reg.team} ?`}
-                                                confirmText="Annuler"
+                                                confirmText="Confirmer"
                                                 confirmStyle="danger"
                                                 onConfirm={() => handleDelete(reg)}
                                                 onCancel={() => {

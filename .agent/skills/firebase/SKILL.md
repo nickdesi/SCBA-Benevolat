@@ -37,6 +37,11 @@ limited querying, cold starts, and vendor lock-in.
 
 Import only what you need for smaller bundles
 
+### Secrets Management
+
+NEVER hardcode API keys. Use `.env` files and `import.meta.env` (Vite) or `process.env`.
+ALWAYS add `.env` to `.gitignore` BEFORE creating it.
+
 ### Security Rules Design
 
 Secure your data with proper rules from day one
@@ -46,6 +51,22 @@ Secure your data with proper rules from day one
 Design Firestore data structure around query patterns
 
 ## Anti-Patterns
+
+### ❌ Hardcoded API Keys
+
+```typescript
+// WRONG - Credentials visible in git
+const firebaseConfig = {
+  apiKey: "AIza...", // SECURITY BREACH waiting to happen
+  ...
+};
+
+// CORRECT - Environment Variables
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  ...
+};
+```
 
 ### ❌ No Security Rules
 
@@ -107,6 +128,8 @@ onSnapshot(q, (snapshot) => { ... });
 
 If you catch yourself:
 
+- Hardcoding API keys anywhere
+- Committing .env files
 - Writing rules with `allow read, write: if true`
 - Using admin SDK in client-side code
 - Attaching listeners without `where()` or `limit()`

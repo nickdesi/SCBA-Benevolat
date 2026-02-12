@@ -46,7 +46,7 @@ interface UseGamesReturn {
     handleRejectPassenger: (gameId: string, driverId: string, passengerId: string) => Promise<void>;
     handleCancelRequest: (gameId: string, passengerId: string) => Promise<void>;
     userRegistrations: UserRegistration[];
-    userRegistrationsMap: Map<string, string>;
+    userRegistrationsMap: Map<string, string[]>;
 }
 
 interface UseGamesOptions {

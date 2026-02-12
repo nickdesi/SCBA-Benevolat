@@ -30,7 +30,7 @@ interface GameCardProps {
     onCancelEdit: () => void;
     onDeleteRequest: () => void;
     onUpdateRequest: (game: Game) => void;
-    userRegistrations?: Map<string, string>;
+    userRegistrations?: Map<string, string[]>;
     isAuthenticated?: boolean;
     index?: number;
 }
@@ -195,65 +195,83 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative group
                 `}
             >
-                {/* Progress Bar Background */}
-                {!isFullyStaffed && isHomeGame && (
-                    <div className="absolute left-0 top-0 bottom-0 bg-emerald-500/10 dark:bg-emerald-400/10 z-0 transition-all duration-500 ease-out"
-                        style={{ width: `${(filledSlots / totalCapacity) * 100}%` }}
+                {/* Progress Bar Background - Modern Gradient */}
+                {isHomeGame && (
+                    <div className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-1000 ease-out
+                        ${isFullyStaffed
+                            ? 'bg-gradient-to-r from-emerald-500/10 via-emerald-500/20 to-emerald-500/30 dark:from-emerald-900/30 dark:to-emerald-900/50'
+                            : 'bg-gradient-to-r from-emerald-500/5 via-emerald-500/10 to-emerald-500/15 dark:from-emerald-900/10 dark:to-emerald-900/20 border-r border-emerald-500/10'
+                        }`}
+                        style={{ width: isFullyStaffed ? '100%' : `${(filledSlots / totalCapacity) * 100}%` }}
                     />
                 )}
 
-                <div className="flex items-center gap-3 relative z-10 pl-1">
-                    {isHomeGame && (
-                        <span className={`text-sm font-bold tracking-tight ${isFullyStaffed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                            {isFullyStaffed ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="p-1 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400"><CheckIcon className="w-3 h-3" /></span>
-                                    Équipe au complet
-                                </span>
-                            ) : (
+                {/* Status Content */}
+                {isHomeGame && (
+                    <div className="flex items-center gap-3 relative z-10 pl-1">
+                        {isFullyStaffed ? (
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                className="flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
+                            >
+                                <motion.span
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ delay: 0.1, type: "spring", stiffness: 500, damping: 20 }}
+                                    className="p-0.5 rounded-full bg-emerald-500 text-white"
+                                >
+                                    <CheckIcon className="w-3 h-3" strokeWidth={3} />
+                                </motion.span>
+                                <span className="font-bold text-emerald-800 dark:text-emerald-200 text-sm">Équipe au complet</span>
+                            </motion.div>
+                        ) : (
+                            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="font-black text-xl text-slate-800 dark:text-slate-100">{filledSlots}</span>
+                                    <span className="text-slate-400 font-light text-lg">/</span>
+                                    <span className="font-bold text-slate-500 dark:text-slate-400 text-lg">{totalCapacity}</span>
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">Bénévoles</span>
+
+                                {getMissingRoles().length > 0 && (
+                                    <div className="hidden sm:inline-flex ml-2 items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 shadow-sm shadow-rose-100/50 dark:shadow-none">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                        <span className="text-[10px] font-bold text-rose-600 dark:text-rose-300 uppercase tracking-wide">
+                                            Manque : {getMissingRoles()[0]} {getMissingRoles().length > 1 ? `+${getMissingRoles().length - 1}` : ''}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+                {!isHomeGame && (
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 relative z-10 pl-1">
+                        {(() => {
+                            const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
+                            const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
+
+                            if (drivers === 0 && passengers === 0) return <span className="opacity-60">Aucun covoiturage</span>;
+
+                            return (
                                 <>
-                                    <span className="font-black text-lg align-bottom">{filledSlots}</span>
-                                    <span className="text-slate-400 mx-1">/</span>
-                                    <span className="font-bold text-slate-500">{totalCapacity}</span>
-                                    <span className="ml-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Bénévoles</span>
-
-                                    {getMissingRoles().length > 0 && (
-                                        <div className="hidden sm:inline-flex ml-3 px-2 py-0.5 rounded bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
-                                            <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">
-                                                Manque : {getMissingRoles()[0]} {getMissingRoles().length > 1 ? `+${getMissingRoles().length - 1}` : ''}
-                                            </span>
-                                        </div>
-                                    )}
+                                    {drivers > 0 && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-bold">{drivers} cond.</span>}
+                                    {passengers > 0 && <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-xs font-bold">{passengers} pass.</span>}
                                 </>
-                            )}
-                        </span>
-                    )}
-                    {!isHomeGame && (
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            {(() => {
-                                const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
-                                const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
-
-                                if (drivers === 0 && passengers === 0) return <span className="opacity-60">Aucun covoiturage</span>;
-
-                                return (
-                                    <>
-                                        {drivers > 0 && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-bold">{drivers} cond.</span>}
-                                        {passengers > 0 && <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-xs font-bold">{passengers} pass.</span>}
-                                    </>
-                                );
-                            })()}
-                        </span>
-                    )}
-                </div>
+                            );
+                        })()}
+                    </span>
+                )}
 
                 <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
-                    ${isExpanded
+                        w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+                        ${isExpanded
                         ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
                         : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
                     }
-                `}>
+                    `}>
                     <ChevronIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" isOpen={false} />
                 </div>
             </motion.button>
@@ -281,6 +299,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 <VolunteerSection
                                     roles={game.roles}
                                     gameId={game.id}
+                                    teamName={game.team}
                                     isAdmin={isAdmin}
                                     userRegistrations={userRegistrations}
                                     isAuthenticated={isAuthenticated}
@@ -308,7 +327,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.div>
+        </motion.div >
     );
 });
 

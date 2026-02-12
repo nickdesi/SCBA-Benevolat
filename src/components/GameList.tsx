@@ -7,7 +7,7 @@ interface GameListProps {
     games: Game[];
     isAdmin: boolean;
     editingGameId: string | null;
-    onVolunteer: (gameId: string, roleId: string, parentName: string) => void;
+    onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
     onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
     onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
@@ -21,7 +21,7 @@ interface GameListProps {
     onCancelEdit: () => void;
     onDeleteRequest: (gameId: string) => void;
     onUpdateRequest: (game: Game) => void;
-    userRegistrations?: Map<string, string>;
+    userRegistrations?: Map<string, string[]>;
     isAuthenticated?: boolean;
 }
 

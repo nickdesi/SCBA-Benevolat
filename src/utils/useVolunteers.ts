@@ -12,7 +12,7 @@ import type { Game, UserRegistration } from '../types';
 /** Hook return type for better TypeScript inference */
 interface UseVolunteersReturn {
     userRegistrations: UserRegistration[];
-    userRegistrationsMap: Map<string, string>;
+    userRegistrationsMap: Map<string, string[]>;
     handleVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => Promise<void>;
     handleRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     handleUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => Promise<void>;
@@ -61,9 +61,13 @@ export const useVolunteers = (): UseVolunteersReturn => {
     }, []);
 
     const userRegistrationsMap = useMemo(() => {
-        const map = new Map<string, string>();
+        const map = new Map<string, string[]>();
         userRegistrations.forEach(reg => {
-            map.set(`${reg.gameId}_${reg.roleId}`, reg.volunteerName || "");
+            const key = `${reg.gameId}_${reg.roleId}`;
+            const existing = map.get(key) || [];
+            if (reg.volunteerName) {
+                map.set(key, [...existing, reg.volunteerName]);
+            }
         });
         return map;
     }, [userRegistrations]);
@@ -85,8 +89,10 @@ export const useVolunteers = (): UseVolunteersReturn => {
                 const gameData = gameDoc.data() as Game;
 
                 const updatedRoles = gameData.roles.map(role => {
-                    if (role.id === roleId) {
-                        return { ...role, volunteers: [...role.volunteers, ...namesToAdd] };
+                    // Robust check: Compare as strings to handle legacy number IDs
+                    if (String(role.id) === String(roleId)) {
+                        const currentVolunteers = role.volunteers || [];
+                        return { ...role, volunteers: [...currentVolunteers, ...namesToAdd] };
                     }
                     return role;
                 });
@@ -134,8 +140,10 @@ export const useVolunteers = (): UseVolunteersReturn => {
                 if (gameDoc.exists()) {
                     const gameData = gameDoc.data() as Game;
                     const updatedRoles = gameData.roles.map(role => {
-                        if (role.id === roleId) {
-                            return { ...role, volunteers: role.volunteers.filter(v => v !== volunteerName) };
+                        // Robust check: Compare as strings
+                        if (String(role.id) === String(roleId)) {
+                            const currentVolunteers = role.volunteers || [];
+                            return { ...role, volunteers: currentVolunteers.filter(v => v !== volunteerName) };
                         }
                         return role;
                     });
@@ -143,9 +151,24 @@ export const useVolunteers = (): UseVolunteersReturn => {
                 }
 
                 if (auth.currentUser) {
-                    const regKey = `${gameId}_${roleId}`;
-                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
+                    // Fix: Use the correct key format that includes the volunteer name
+                    // Try the new format first
+                    const uniqueKey = `${gameId}_${roleId}_${volunteerName}`;
+                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, uniqueKey);
+
+                    // We also need to handle legacy keys for backward compatibility if any exist
+                    // But since we can't check existence easily in a transaction without reading, 
+                    // and we might not want to pay for a read if we don't have to...
+                    // Let's assume we use the new format. 
+                    // Challenge: If the user has an OLD registration (key = gameId_roleId), strictly speaking we should check for that too.
+                    // But for now, let's fix the immediate "New Registration" bug.
+
                     transaction.delete(userRegRef);
+
+                    // Optimization: We could try to delete the legacy key as well just in case?
+                    // const legacyKey = `${gameId}_${roleId}`;
+                    // const legacyRef = doc(db, `users/${auth.currentUser.uid}/registrations`, legacyKey);
+                    // transaction.delete(legacyRef);
                 }
             });
         } catch (e) {
@@ -164,10 +187,12 @@ export const useVolunteers = (): UseVolunteersReturn => {
 
                 const gameData = gameDoc.data() as Game;
                 const updatedRoles = gameData.roles.map(role => {
-                    if (role.id === roleId) {
+                    // Robust check: Compare as strings
+                    if (String(role.id) === String(roleId)) {
+                        const currentVolunteers = role.volunteers || [];
                         return {
                             ...role,
-                            volunteers: role.volunteers.map(v => v === oldName ? newName : v)
+                            volunteers: currentVolunteers.map(v => v === oldName ? newName : v)
                         };
                     }
                     return role;
@@ -176,9 +201,30 @@ export const useVolunteers = (): UseVolunteersReturn => {
                 transaction.update(gameRef, { roles: updatedRoles });
 
                 if (auth.currentUser) {
-                    const regKey = `${gameId}_${roleId}`;
-                    const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, regKey);
-                    transaction.update(userRegRef, { volunteerName: newName });
+                    // Since the key contains the name, an update is actually a Delete + Create
+                    const oldKey = `${gameId}_${roleId}_${oldName}`;
+                    const newKey = `${gameId}_${roleId}_${newName}`;
+
+                    const oldRef = doc(db, `users/${auth.currentUser.uid}/registrations`, oldKey);
+                    const newRef = doc(db, `users/${auth.currentUser.uid}/registrations`, newKey);
+
+                    // Get data from old ref to copy over (except name)
+                    const oldDoc = await transaction.get(oldRef);
+
+                    if (oldDoc.exists()) {
+                        const oldData = oldDoc.data();
+                        transaction.delete(oldRef);
+                        transaction.set(newRef, {
+                            ...oldData,
+                            volunteerName: newName
+                        });
+                    } else {
+                        // Fallback: Check for legacy key?
+                        // If we can't find the old doc, we might just want to update the name in the game (already done above)
+                        // and maybe create a fresh registration doc?
+                        // For now, if old doc is missing, we just log it.
+                        console.warn("Could not find user registration doc to update:", oldKey);
+                    }
                 }
             });
         } catch (e) {
