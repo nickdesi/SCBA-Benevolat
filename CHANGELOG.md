@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.3.4] - 2026-02-12
+
+### Fixed
+
+- **Inscriptions** : Correction critique de la gestion des IDs (string/number mismatch) qui empêchait l'affichage des bénévoles.
+- **Affichage** : Les noms des bénévoles ne sont plus tronqués au prénom seul (affichage complet genre "Nico desi").
+- **UX** : Le bouton de confirmation d'annulation affiche maintenant "Confirmer" au lieu de "Annuler" pour éviter la confusion.
+
+### Changed
+
+- Refonte complète de l'UI des `VolunteerSlot` avec une sheet modale pour l'inscription.
+- Ajout de barres de progression visuelles pour le remplissage des équipes.
+
 ## [2.3.3] - 2026-02-04
 
 ### Added

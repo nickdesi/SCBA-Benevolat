@@ -1,8 +1,13 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.3.3';
+const APP_VERSION = 'v2.3.4';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.3.4',
+        date: '12 Février 2026',
+        changes: ['Fix: Inscriptions bénévoles', 'UI: Noms complets', 'UX: Bouton Confirmer']
+    },
     {
         version: "v2.3.3",
         date: "04/02/2026",
