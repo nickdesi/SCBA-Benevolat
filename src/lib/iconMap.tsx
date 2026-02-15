@@ -54,7 +54,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
         bgColor: 'bg-amber-100 dark:bg-amber-500/20',
         textColor: 'text-amber-600 dark:text-amber-400',
         borderColor: 'border-l-amber-500',
-        gradientFrom: 'from-amber-50/50',
+        gradientFrom: 'from-white',
         gradientTo: 'to-white',
     },
     'Chrono': {
@@ -62,7 +62,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
         bgColor: 'bg-blue-100 dark:bg-blue-500/20',
         textColor: 'text-blue-600 dark:text-blue-400',
         borderColor: 'border-l-blue-500',
-        gradientFrom: 'from-blue-50/50',
+        gradientFrom: 'from-white',
         gradientTo: 'to-white',
     },
     'Table de marque': {
@@ -70,7 +70,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
         bgColor: 'bg-indigo-100 dark:bg-indigo-500/20',
         textColor: 'text-indigo-600 dark:text-indigo-400',
         borderColor: 'border-l-indigo-500',
-        gradientFrom: 'from-indigo-50/50',
+        gradientFrom: 'from-white',
         gradientTo: 'to-white',
     },
     'Goûter': {
@@ -78,7 +78,7 @@ export const roleConfigMap: Record<string, RoleConfig> = {
         bgColor: 'bg-pink-100 dark:bg-pink-500/20',
         textColor: 'text-pink-600 dark:text-pink-400',
         borderColor: 'border-l-pink-500',
-        gradientFrom: 'from-pink-50/50',
+        gradientFrom: 'from-white',
         gradientTo: 'to-white',
     },
 };
@@ -89,7 +89,7 @@ const defaultRoleConfig: RoleConfig = {
     bgColor: 'bg-slate-100 dark:bg-slate-800',
     textColor: 'text-slate-600 dark:text-slate-400',
     borderColor: 'border-l-slate-400',
-    gradientFrom: 'from-slate-50/50',
+    gradientFrom: 'from-white',
     gradientTo: 'to-white',
 };
 

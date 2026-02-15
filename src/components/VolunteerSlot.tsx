@@ -147,8 +147,8 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
             {/* Header */}
             <div className={`
                 flex items-center justify-between px-4 py-3
-                bg-gradient-to-r ${roleConfig.gradientFrom} ${roleConfig.gradientTo}
-                dark:from-slate-800 dark:to-slate-900
+                bg-slate-50 dark:bg-slate-900/50
+                border-b border-slate-100 dark:border-slate-700
                 border-l-4 ${roleConfig.borderColor}
             `}>
                 <div className="flex items-center gap-3">
@@ -194,6 +194,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                         <VolunteerAvatar
                             key={volunteer}
                             name={volunteer}
+                            avatarUrl={role.avatars?.[volunteer]}
                             isMine={isMine}
                             isAdmin={isAdmin}
                             onRemove={() => handleRemoveClick(volunteer)}

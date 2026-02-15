@@ -88,11 +88,28 @@ export const useVolunteers = (): UseVolunteersReturn => {
                 }
                 const gameData = gameDoc.data() as Game;
 
+                // Get current user's avatar URL if available
+                const currentUserAvatar = auth.currentUser?.photoURL || undefined;
+
                 const updatedRoles = gameData.roles.map(role => {
                     // Robust check: Compare as strings to handle legacy number IDs
                     if (String(role.id) === String(roleId)) {
                         const currentVolunteers = role.volunteers || [];
-                        return { ...role, volunteers: [...currentVolunteers, ...namesToAdd] };
+                        const currentAvatars = role.avatars || {};
+
+                        // Add new avatars to the map if currentUser has one
+                        const newAvatars = { ...currentAvatars };
+                        if (currentUserAvatar) {
+                            namesToAdd.forEach(name => {
+                                newAvatars[name] = currentUserAvatar;
+                            });
+                        }
+
+                        return {
+                            ...role,
+                            volunteers: [...currentVolunteers, ...namesToAdd],
+                            avatars: newAvatars
+                        };
                     }
                     return role;
                 });
@@ -143,7 +160,17 @@ export const useVolunteers = (): UseVolunteersReturn => {
                         // Robust check: Compare as strings
                         if (String(role.id) === String(roleId)) {
                             const currentVolunteers = role.volunteers || [];
-                            return { ...role, volunteers: currentVolunteers.filter(v => v !== volunteerName) };
+                            const currentAvatars = role.avatars || {};
+
+                            // Remove avatar entry
+                            const newAvatars = { ...currentAvatars };
+                            delete newAvatars[volunteerName];
+
+                            return {
+                                ...role,
+                                volunteers: currentVolunteers.filter(v => v !== volunteerName),
+                                avatars: newAvatars
+                            };
                         }
                         return role;
                     });
@@ -190,9 +217,19 @@ export const useVolunteers = (): UseVolunteersReturn => {
                     // Robust check: Compare as strings
                     if (String(role.id) === String(roleId)) {
                         const currentVolunteers = role.volunteers || [];
+                        const currentAvatars = role.avatars || {};
+
+                        // Move avatar to new name key
+                        const newAvatars = { ...currentAvatars };
+                        if (newAvatars[oldName]) {
+                            newAvatars[newName] = newAvatars[oldName];
+                            delete newAvatars[oldName];
+                        }
+
                         return {
                             ...role,
-                            volunteers: currentVolunteers.map(v => v === oldName ? newName : v)
+                            volunteers: currentVolunteers.map(v => v === oldName ? newName : v),
+                            avatars: newAvatars
                         };
                     }
                     return role;

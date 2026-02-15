@@ -3,6 +3,7 @@ export interface Role {
   id: string;
   name: string;
   volunteers: string[];
+  avatars?: Record<string, string>; // Map<VolunteerName, AvatarURL>
   capacity: number;
 }
 

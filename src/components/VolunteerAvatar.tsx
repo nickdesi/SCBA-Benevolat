@@ -1,9 +1,9 @@
 import React from 'react';
-import { UserIcon } from './Icons';
-import { CheckCircle } from 'lucide-react';
+import { useAvatars } from '../hooks/useAvatars';
 
 interface VolunteerAvatarProps {
     name: string;
+    avatarUrl?: string; // Optional direct URL (overrides lookup)
     isMine?: boolean;
     onRemove?: () => void;
     isAdmin?: boolean;
@@ -22,29 +22,40 @@ const getInitials = (name: string) => {
 
 const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
     name,
+    avatarUrl: propAvatarUrl,
     isMine,
     onRemove,
     isAdmin,
-    canEdit,
-    onEdit
 }) => {
+    const { getAvatar } = useAvatars();
+    // Prioritize passed prop (from game data), fallback to global user lookup
+    const avatarUrl = propAvatarUrl || getAvatar(name);
+
     return (
         <div className="group relative flex flex-col items-center gap-1 animate-scale-in">
             {/* Avatar Circle */}
             <div className={`
-                w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105
+                w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden
                 ${isMine
                     ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white ring-2 ring-blue-200 dark:ring-blue-900'
                     : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300'
                 }
             `}>
-                <span className="text-sm font-bold tracking-tight">
-                    {getInitials(name)}
-                </span>
+                {avatarUrl ? (
+                    <img
+                        src={avatarUrl}
+                        alt={name}
+                        className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <span className="text-sm font-bold tracking-tight">
+                        {getInitials(name)}
+                    </span>
+                )}
 
                 {/* Badge "Me" */}
                 {isMine && (
-                    <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm">
+                    <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm z-10">
                         Moi
                     </div>
                 )}
@@ -55,14 +66,13 @@ const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
                 {name}
             </span>
 
-            {/* Admin/User Actions Overlay (Hover) - DEBUG: Removed opacity-0 for visibility check */}
+            {/* Admin/User Actions Overlay (Hover) */}
             {(isAdmin || isMine) && (
-                <div className="absolute -top-2 -right-2 flex gap-1 z-10">
+                <div className="absolute -top-2 -right-2 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                     {onRemove && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                console.log('Delete button clicked for', name);
                                 onRemove();
                             }}
                             className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md"

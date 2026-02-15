@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.1] - 2026-02-15
+
+### Added
+
+- **Avatar Proxy** : L'avatar de l'utilisateur connecté est automatiquement affiché pour tous les bénévoles qu'il inscrit (même avec un nom différent).
+
+### Fixed
+
+- **Performance** : Correction d'un crash (écran vide) lors du repli des cartes de match, causé par des listeners Firestore excessifs.
+
+---
+
 ## [2.4.0] - 2026-02-15
 
 ### Added

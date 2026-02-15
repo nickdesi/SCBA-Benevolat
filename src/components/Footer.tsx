@@ -1,8 +1,16 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.0';
+const APP_VERSION = 'v2.4.1';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.4.1',
+        date: '15 Février 2026',
+        changes: [
+            '🔗 Avatar Proxy : L\'avatar est affiché pour tous les bénévoles inscrits par un utilisateur connecté',
+            '⚡ Performance : Correction du crash (écran vide) lors du repli des cartes',
+        ]
+    },
     {
         version: 'v2.4.0',
         date: '15 Février 2026',

@@ -1,8 +1,7 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User } from 'firebase/auth';
-import { UserRegistration, Game } from '../types';
-import useScrollLock from '../utils/useScrollLock';
+import type { Game, UserRegistration, CarpoolEntry } from '../types';
 import { VolunteerDashboard } from './volunteer/VolunteerDashboard';
 import type { UserCarpoolRegistration } from '../utils/useCarpoolRegistrations';
 
@@ -15,7 +14,7 @@ interface ProfileModalProps {
     userCarpools: UserCarpoolRegistration[];
     onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
     onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
-    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
+    onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
     allTeams: string[];
     favoriteTeams: string[];
     onToggleFavorite: (team: string) => Promise<void>;
@@ -35,30 +34,44 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     favoriteTeams,
     onToggleFavorite
 }) => {
-    useScrollLock(isOpen);
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                    />
 
-    if (!isOpen) return null;
-
-    return createPortal(
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-0 sm:p-4 pb-20 sm:pb-4">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-premium transition-opacity" onClick={onClose} />
-
-            <div className="relative w-full h-full sm:h-[85vh] sm:max-w-5xl bg-slate-50 dark:bg-slate-900 sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-in">
-                <VolunteerDashboard
-                    user={user}
-                    registrations={registrations}
-                    games={games}
-                    userCarpools={userCarpools}
-                    onClose={onClose}
-                    onUnsubscribe={onUnsubscribe}
-                    onRemoveCarpool={onRemoveCarpool}
-                    allTeams={allTeams}
-                    favoriteTeams={favoriteTeams}
-                    onToggleFavorite={onToggleFavorite}
-                />
-            </div>
-        </div>,
-        document.body
+                    {/* Modal Content */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        transition={{ type: "spring", duration: 0.5 }}
+                        className="relative w-full max-w-4xl h-[85vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+                    >
+                        <VolunteerDashboard
+                            user={user}
+                            registrations={registrations}
+                            games={games}
+                            userCarpools={userCarpools}
+                            onClose={onClose}
+                            onUnsubscribe={onUnsubscribe}
+                            onRemoveCarpool={onRemoveCarpool}
+                            onToast={onToast}
+                            allTeams={allTeams}
+                            favoriteTeams={favoriteTeams}
+                            onToggleFavorite={onToggleFavorite}
+                        />
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 };
 

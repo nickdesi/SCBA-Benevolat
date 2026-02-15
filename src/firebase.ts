@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 // Firebase configuration from environment variables
 // REQUIRED: Set these in your .env.local file (copy from .env.example)
@@ -26,3 +27,4 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const storage = getStorage(app);

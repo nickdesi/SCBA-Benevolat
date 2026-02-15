@@ -1,28 +1,64 @@
 import React, { useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { X, LayoutDashboard, MessageCircle } from 'lucide-react';
+import { X, LayoutDashboard, MessageCircle, Camera, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { triggerHaptic } from '../../utils/haptics';
+import { uploadAvatar, updateUserAvatar } from '../../utils/userStore';
+import { updateProfile } from 'firebase/auth';
 
 interface DashboardHeaderProps {
     user: User;
     activeTab: 'dashboard' | 'communication';
     setActiveTab: (tab: 'dashboard' | 'communication') => void;
     onClose: () => void;
+    onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     user,
     activeTab,
     setActiveTab,
-    onClose
+    onClose,
+    onToast
 }) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = React.useState(false);
+
     const handleTabChange = useCallback((tab: 'dashboard' | 'communication') => {
         if (activeTab !== tab) {
             triggerHaptic('light');
             setActiveTab(tab);
         }
     }, [activeTab, setActiveTab]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            onToast?.('Veuillez sélectionner une image.', 'error');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            onToast?.('L\'image est trop volumineuse (max 5Mo).', 'error');
+            return;
+        }
+
+        try {
+            setUploading(true);
+            const downloadURL = await uploadAvatar(file, user.uid);
+            await updateProfile(user, { photoURL: downloadURL });
+            await updateUserAvatar(user, downloadURL);
+            onToast?.('Photo de profil mise à jour !', 'success');
+        } catch (error) {
+            console.error("Error uploading avatar:", error);
+            onToast?.('Erreur lors de la mise à jour.', 'error');
+        } finally {
+            setUploading(false);
+        }
+    };
+
 
     return (
         <div className="relative flex-shrink-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 p-4 sm:p-5 shadow-xl z-20 overflow-hidden border-b border-white/5">
@@ -43,9 +79,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-lg shadow-indigo-500/30 cursor-pointer"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-lg shadow-indigo-500/30 cursor-pointer group"
                     >
-                        <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden border border-white/10">
+                        <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden border border-white/10 relative">
                             {user.photoURL ? (
                                 <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" />
                             ) : (
@@ -53,7 +90,23 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     {user.displayName?.charAt(0).toUpperCase()}
                                 </div>
                             )}
+
+                            {/* Upload Overlay */}
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                {uploading ? (
+                                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                ) : (
+                                    <Camera className="w-4 h-4 text-white" />
+                                )}
+                            </div>
                         </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={handleFileChange}
+                        />
                     </motion.div>
                     <div className="hidden xs:block">
                         <h2 className="text-base sm:text-lg font-black leading-tight text-white tracking-tight">{user.displayName}</h2>
