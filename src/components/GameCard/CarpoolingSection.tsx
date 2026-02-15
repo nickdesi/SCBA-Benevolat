@@ -1,13 +1,13 @@
 import React, { useState, useCallback, memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, UserRoundPlus, MapPin, Check, X, Clock, Users, ChevronRight, Sparkles } from 'lucide-react';
+import { Car, UserRoundPlus, MapPin, Check, X, Clock, Users, ChevronRight, ChevronDown, Sparkles } from 'lucide-react';
 import type { CarpoolEntry } from '../../types';
 import { getStoredName, setStoredName } from '../../utils/storage';
 import { getRemainingSeats, getAvailableDrivers, getPendingRequests } from '../../utils/useCarpool';
 import PhoneDisplay from '../PhoneDisplay';
 import { DeleteIcon } from '../Icons';
 import ConfirmModal from '../ConfirmModal';
-import { CustomSelect } from '../ui/CustomSelect';
+
 
 interface CarpoolingSectionProps {
     gameId: string;
@@ -103,6 +103,9 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
 
     const openForm = (type: 'driver' | 'passenger') => {
         setFormType(type);
+        setName('');
+        setPhone('');
+        setDepartureLocation('');
         setIsFormOpen(true);
     };
 
@@ -605,15 +608,25 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                         placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                 />
 
-                                {/* Seats */}
-                                <CustomSelect
-                                    value={seats}
-                                    onChange={(val) => setSeats(Number(val))}
-                                    options={(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => ({
-                                        value: n,
-                                        label: `${n} place${n > 1 ? 's' : ''}`
-                                    }))}
-                                />
+                                {/* Seats - Native select for reliable mobile/desktop UX */}
+                                <div className="relative">
+                                    <select
+                                        value={seats}
+                                        onChange={(e) => setSeats(Number(e.target.value))}
+                                        className="w-full appearance-none px-4 py-3 pr-10 text-sm font-medium
+                                            text-slate-800 dark:!text-white bg-white dark:bg-slate-800 
+                                            border border-slate-200 dark:border-slate-700 rounded-xl
+                                            focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600
+                                            cursor-pointer"
+                                    >
+                                        {(formType === 'driver' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4]).map(n => (
+                                            <option key={n} value={n}>
+                                                {n} place{n > 1 ? 's' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                </div>
 
                                 {/* Driver-specific: Departure Location */}
                                 {formType === 'driver' && (
