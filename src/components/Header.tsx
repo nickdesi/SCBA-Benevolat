@@ -116,8 +116,8 @@ const Header: React.FC<HeaderProps> = ({
               className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap px-1 py-1 snap-x"
               style={{
                 ...scrollStyle,
-                maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
+                maskImage: 'linear-gradient(to right, black 0%, black 95%, transparent)',
+                WebkitMaskImage: 'linear-gradient(to right, black 0%, black 95%, transparent)'
               }}
             >
               <motion.button
