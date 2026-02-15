@@ -162,3 +162,33 @@ Store callbacks in refs when used in effects that shouldn't re-subscribe on call
 ### 5.2 useLatest for Stable Callback Refs
 
 Access latest values in callbacks without adding them to dependency arrays using a `useLatest` hook.
+
+## 6. CSS Flexbox Gotchas (Mobile-Critical)
+
+### 6.1 Always Add `min-w-0` on Flex Children That Must Shrink
+
+**Impact: HIGH (causes clipping/overflow on narrow mobile screens)**
+
+Flex items default to `min-width: auto`, meaning they refuse to shrink below their content size. Combined with `overflow-hidden` on a parent, this clips adjacent siblings.
+
+**Incorrect: date pill won't shrink, time pill gets clipped**
+
+```tsx
+<div className="flex overflow-hidden">
+  <div className="flex-1">Long date text...</div>  {/* won't shrink! */}
+  <div className="min-w-max">20h00</div>             {/* clipped on mobile */}
+</div>
+```
+
+**Correct: add `min-w-0` so flex-1 can shrink**
+
+```tsx
+<div className="flex overflow-hidden">
+  <div className="flex-1 min-w-0">  {/* now shrinks properly */}
+    <span className="truncate">Long date text...</span>
+  </div>
+  <div className="min-w-max">20h00</div>  {/* always fully visible */}
+</div>
+```
+
+**Rule**: Every `flex-1` or `flex-grow` child inside an `overflow-hidden` parent MUST have `min-w-0`. Test on smallest target device (e.g., 360px width).

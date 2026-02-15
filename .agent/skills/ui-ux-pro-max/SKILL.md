@@ -45,23 +45,37 @@ Comprehensive design guide for web and mobile applications.
 ### Icons & Visual Elements
 
 | Rule | Do | Don't |
-|------|----|----- |
+|------|----|-------|
 | **No emoji icons** | Use SVG icons (Heroicons, Lucide) | Use emojis like 🎨 🚀 |
 | **Stable hover** | Color/opacity transitions | Scale transforms shifting layout |
 
 ### Interaction
 
 | Rule | Do | Don't |
-|------|----|----- |
+|------|----|-------|
 | **Cursor pointer** | Add `cursor-pointer` | Leave default cursor |
 | **Transitions** | `transition-colors duration-200` | Instant or >500ms |
+
+### Semantic Color Consistency
+
+| Rule | Do | Don't |
+|------|----|-------|
+| **Same meaning = same color** | Use one palette for a concept across ALL components | Green in desktop, orange in mobile for the same concept |
+| **Audit all variants** | Check desktop, mobile, list, card, header views | Fix one component and forget siblings |
 
 ### Light/Dark Mode
 
 | Rule | Do | Don't |
-|------|----|----- |
+|------|----|-------|
 | **Glass card** | `bg-white/80` (light) | `bg-white/10` (invisible) |
 | **Border** | `border-gray-200` (light) | `border-white/10` (invisible) |
+
+### Data Display
+
+| Rule | Do | Don't |
+|------|----|-------|
+| **No Truncation** | Show full content or use tooltip/marquee | Truncate names/titles blindly (e.g. "Nic...") |
+| **Clear Actions** | Distinct labels ("Confirmer", "Annuler") | Ambiguous labels (two "Annuler" buttons) |
 
 ## Red Flags - STOP and Fix
 
@@ -74,6 +88,8 @@ If you catch yourself:
 - Contrast ratio below 4.5:1
 - Missing dark mode variant
 - Using `scale` transforms on hover (causes layout shift)
+- `flex-1` without `min-w-0` inside `overflow-hidden` parent (clips on mobile)
+- Semantic color mismatch between components (e.g., green=home in cards but orange=home in headers)
 
 **ALL of these mean: STOP. Fix before proceeding.**
 
