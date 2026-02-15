@@ -88,29 +88,47 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
                                 className="flex flex-col gap-4 flex-1 min-w-[380px] max-w-[500px]"
                             >
 
-                                {/* Column Header - Matching GameCard dark style */}
+                                {/* Column Header — Modern horizontal glassmorphism */}
                                 <div className={`
-                                flex flex-col items-center justify-center py-4 rounded-xl border mb-2 transition-colors
-                                bg-slate-800 dark:bg-slate-800 border-slate-700
-                                ${isToday ? 'ring-2 ring-blue-500' : ''}
-                            `}>
-                                    <div className={`text-xs font-bold uppercase tracking-widest ${isToday ? 'text-blue-400' : 'text-slate-300'}`}>
-                                        {day.toLocaleDateString('fr-FR', { weekday: 'long' })}
-                                    </div>
-                                    <div className={`text-3xl font-black mt-1 ${isToday ? 'text-blue-400' : 'text-white'}`}>
-                                        {day.getDate()}
-                                    </div>
-                                    <div className={`text-[10px] font-medium uppercase mt-1 ${isToday ? 'text-blue-300' : 'text-slate-400'}`}>
-                                        {day.toLocaleDateString('fr-FR', { month: 'short' })}
+                                    relative flex items-center justify-between px-5 py-3.5 rounded-2xl border mb-2
+                                    transition-all duration-300 overflow-hidden
+                                    ${isToday
+                                        ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/40 shadow-[0_0_24px_rgba(59,130,246,0.1)] dark:shadow-[0_0_24px_rgba(59,130,246,0.15)]'
+                                        : 'bg-white dark:bg-slate-800/60 backdrop-blur-md border-slate-200 dark:border-slate-700/60'
+                                    }
+                                `}>
+                                    {/* Subtle gradient shimmer for today */}
+                                    {isToday && (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/8 to-blue-500/5 pointer-events-none" />
+                                    )}
+
+                                    {/* Left: Date info */}
+                                    <div className="relative flex items-center gap-3">
+                                        <div className={`text-3xl font-black leading-none ${isToday ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-white'}`}>
+                                            {day.getDate()}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className={`text-xs font-bold uppercase tracking-wider leading-tight ${isToday ? 'text-blue-600 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                {day.toLocaleDateString('fr-FR', { weekday: 'long' })}
+                                            </span>
+                                            <span className={`text-[10px] font-medium uppercase tracking-wide ${isToday ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-slate-400 dark:text-slate-500'}`}>
+                                                {day.toLocaleDateString('fr-FR', { month: 'long' })}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    {/* Match Stats */}
-                                    <div className="mt-3 pt-3 border-t border-slate-700 w-full flex flex-col items-center gap-1">
-                                        <div className="font-bold text-sm text-white bg-slate-700/50 px-3 py-0.5 rounded-full">
-                                            {dayGames.length} matchs
+                                    {/* Right: Stats */}
+                                    <div className="relative flex items-center gap-2">
+                                        <div className={`text-sm font-bold px-3 py-1 rounded-lg ${isToday ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'}`}>
+                                            {dayGames.length} match{dayGames.length > 1 ? 's' : ''}
                                         </div>
-                                        <div className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
-                                            {dayGames.filter((g: Game) => (g.isHome ?? true)).length} DOM • {dayGames.filter((g: Game) => !(g.isHome ?? true)).length} EXT
+                                        <div className="flex gap-1">
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                                {dayGames.filter((g: Game) => (g.isHome ?? true)).length}D
+                                            </span>
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                                                {dayGames.filter((g: Game) => !(g.isHome ?? true)).length}E
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
