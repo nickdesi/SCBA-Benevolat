@@ -124,6 +124,18 @@ const q = query(
 onSnapshot(q, (snapshot) => { ... });
 ```
 
+### ❌ ID Type Mismatch (String vs Number)
+
+**CRITICAL BUG SOURCE:** Firestore IDs are strings. Legacy data might be numbers.
+
+```typescript
+// WRONG - Fails silently if role.id is "1" and roleId is 1
+if (role.id === roleId) { ... }
+
+// CORRECT - Always normalize to strings for comparison
+if (String(role.id) === String(roleId)) { ... }
+```
+
 ## Red Flags - STOP and Fix
 
 If you catch yourself:

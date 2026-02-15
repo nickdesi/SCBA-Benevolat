@@ -153,23 +153,15 @@ const GameCard: React.FC<GameCardProps> = memo(({
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.05 }}
             className={`
             relative rounded-3xl overflow-hidden transition-all duration-300 h-full
-            bg-white dark:bg-slate-900
-            ${isFullyStaffed ? 'shadow-sm hover:shadow-md' : 'shadow-lg hover:shadow-2xl hover:-translate-y-1'}
+            bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
+            border border-white/20 dark:border-slate-700/50
+            ${isFullyStaffed 
+                ? 'shadow-sm hover:shadow-md border-emerald-500/20 dark:border-emerald-500/20' 
+                : isUrgent
+                    ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
+                    : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
+            }
         `}>
-            {/* Glass Gradient Overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-br from-white/80 via-white/40 to-white/10 dark:from-slate-800/80 dark:via-slate-900/40 dark:to-slate-950/20 pointer-events-none z-0`} />
-
-            {/* Border/Ring Overlay */}
-            <div className={`
-                absolute inset-0 pointer-events-none z-50 rounded-3xl border
-                ${isFullyStaffed
-                    ? 'border-emerald-500/20 dark:border-emerald-400/10'
-                    : isUrgent
-                        ? 'border-red-500/30 dark:border-red-500/30 shadow-[inset_0_0_20px_rgba(239,68,68,0.15)]' // Inner glow for urgent
-                        : 'border-white/40 dark:border-white/5'
-                }
-            `} />
-
             {/* 1. Header Section */}
             <div className="relative z-10">
                 <GameHeader
@@ -191,8 +183,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
                     w-full px-4 py-3 flex items-center justify-between cursor-pointer
-                    bg-slate-50/80 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800
-                    hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative group
+                    bg-slate-50/50 dark:bg-slate-900/30 
+                    border-t border-slate-200/60 dark:border-slate-800/60
+                    hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors relative group
                 `}
             >
                 {/* Progress Bar Background - Modern Gradient */}

@@ -8,7 +8,7 @@ source: obra/superpowers (MIT License)
 
 ## The Iron Law
 
-```
+```text
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ```
 
@@ -60,6 +60,11 @@ Use for ANY technical issue:
    - What called this with bad value?
    - Keep tracing up until you find the source
    - **Fix at source, not at symptom**
+
+5. **Verify Callback Signatures**
+   - Are you wrapper functions passing arguments correctly?
+   - Do child component props match parent handlers?
+   - Common bug: `(val) => handler(val)` vs `handler`
 
 ### Phase 2: Pattern Analysis
 
@@ -138,7 +143,7 @@ If you catch yourself thinking:
 ## Quick Reference
 
 | Phase | Key Activities | Success Criteria |
-|-------|---------------|------------------|
+|-------|----------------|------------------|
 | **1. Root Cause** | Read errors, reproduce, check changes | Understand WHAT and WHY |
 | **2. Pattern** | Find working examples, compare | Identify differences |
 | **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
