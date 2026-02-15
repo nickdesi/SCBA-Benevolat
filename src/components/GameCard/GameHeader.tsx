@@ -98,7 +98,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 {/* Row 1: Date & Time */}
                 <div className="flex items-stretch gap-2">
                     {/* Date Pill */}
-                    <div className="flex-1 flex items-center gap-2.5 px-3 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50">
+                    <div className="flex-1 min-w-0 flex items-center gap-2.5 px-3 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50">
                         <div className="flex-shrink-0 p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-lg">
                             <CalendarIcon className="w-4 h-4" />
                         </div>
