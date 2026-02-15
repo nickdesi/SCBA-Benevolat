@@ -1,8 +1,13 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.3.4';
+const APP_VERSION = 'v2.3.5';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.3.5',
+        date: '15 Février 2026',
+        changes: ['✨ UI : Compteur de matchs (Total/Dom/Ext) sur le calendrier', '📱 UX : Amélioration lisibilité header planning']
+    },
     {
         version: 'v2.3.4',
         date: '12 Février 2026',

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.5] - 2026-02-15
+
+### Added
+
+- **UI**: Compteur de matchs dans l'en-tête du calendrier Desktop (Total + Domicile/Exterieur).
+
+### Changed
+
+- **UX**: Amélioration de la lisibilité du header planning sur desktop.
+
 ## [2.3.4] - 2026-02-12
 
 ### Fixed
