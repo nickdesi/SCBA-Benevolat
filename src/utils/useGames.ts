@@ -125,22 +125,28 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     });
 
     // ---------------------------------------------------------------------------
-    // CRUD Operations
+    // Shared helper: build default roles based on team
     // ---------------------------------------------------------------------------
-    const addGame = useCallback(async (gameData: GameFormData) => {
-        const isSenior = ['SENIOR M1', 'SENIOR M2'].includes(gameData.team);
+    const buildDefaultRoles = (team: string) => {
+        const isSenior = ['SENIOR M1', 'SENIOR M2'].includes(team);
         const applicableRoles = DEFAULT_ROLES.filter(role =>
             !(role.name === 'Goûter' && isSenior)
         );
+        return applicableRoles.map((role, idx) => ({
+            id: String(idx + 1),
+            name: role.name,
+            capacity: role.capacity === 0 ? Infinity : role.capacity,
+            volunteers: []
+        }));
+    };
 
+    // ---------------------------------------------------------------------------
+    // CRUD Operations
+    // ---------------------------------------------------------------------------
+    const addGame = useCallback(async (gameData: GameFormData) => {
         const newGame = {
             ...gameData,
-            roles: applicableRoles.map((role, idx) => ({
-                id: String(idx + 1),
-                name: role.name,
-                capacity: role.capacity === 0 ? Infinity : role.capacity,
-                volunteers: []
-            }))
+            roles: buildDefaultRoles(gameData.team)
         };
         await addDoc(collection(db, "matches"), newGame);
     }, []);
@@ -170,18 +176,9 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
                     const docRef = doc(db, "matches", id);
                     batch.set(docRef, data, { merge: true });
                 } else {
-                    const isSenior = ['SENIOR M1', 'SENIOR M2'].includes((cleanData.team as string) || '');
-                    const applicableRoles = DEFAULT_ROLES.filter(role =>
-                        !(role.name === 'Goûter' && isSenior)
-                    );
                     const newGame = {
                         ...cleanData,
-                        roles: applicableRoles.map((role, idx) => ({
-                            id: String(idx + 1),
-                            name: role.name,
-                            capacity: role.capacity === 0 ? Infinity : role.capacity,
-                            volunteers: []
-                        }))
+                        roles: buildDefaultRoles((cleanData.team as string) || '')
                     };
                     const docRef = doc(collection(db, "matches"));
                     batch.set(docRef, newGame);

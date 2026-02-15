@@ -98,3 +98,21 @@ export const getGameDateValue = (game: Game): string => {
 
     return '9999-12-31'; // Far future for unparseable dates
 };
+
+/**
+ * Get the 7 days of the week (Monday to Sunday) for a given date
+ */
+export const getDaysOfWeek = (date: Date): Date[] => {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    start.setDate(diff);
+
+    const days: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        days.push(d);
+    }
+    return days;
+};

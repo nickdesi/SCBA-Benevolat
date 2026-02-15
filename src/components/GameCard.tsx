@@ -131,11 +131,11 @@ const GameCard: React.FC<GameCardProps> = memo(({
         }
     }, [game.dateISO, isFullyStaffed, isHomeGame]);
 
-    const getMissingRoles = () => {
+    const missingRoles = useMemo(() => {
         return game.roles
             .filter(r => !isRoleComplete(r))
             .map(r => r.name);
-    };
+    }, [game.roles]);
 
     if (isEditing) {
         return (
@@ -235,11 +235,11 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">Bénévoles</span>
 
-                                {getMissingRoles().length > 0 && (
+                                {missingRoles.length > 0 && (
                                     <div className="hidden sm:inline-flex ml-2 items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 shadow-sm shadow-rose-100/50 dark:shadow-none">
                                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                                         <span className="text-[10px] font-bold text-rose-600 dark:text-rose-300 uppercase tracking-wide">
-                                            Manque : {getMissingRoles()[0]} {getMissingRoles().length > 1 ? `+${getMissingRoles().length - 1}` : ''}
+                                            Manque : {missingRoles[0]} {missingRoles.length > 1 ? `+${missingRoles.length - 1}` : ''}
                                         </span>
                                     </div>
                                 )}

@@ -19,24 +19,6 @@ export const useGameFilters = ({
     userRegistrations
 }: UseGameFiltersProps) => {
 
-    // Apply primary filter: Favorite Teams (internal use for getting available teams if needed, 
-    // but typically we restrict 'teams' list based on favorites, while showing all games if no filter picked)
-    // Actually, in the original code, 'favoritedGames' was just an intermediate step for 'filteredGames'??
-    // Let's re-read the original logic.
-    // Original: 
-    // favoritedGames = sortedGames.filter(g => favoriteTeams.includes(g.team)) // IF favorites exist
-    // teams = favorites || uniqueTeams
-    // filteredGames = sortedGames (base) -> filter by selectedTeam -> filter by Planning
-
-    // WAIT: The original logic for 'filteredGames' started with "result = sortedGames".
-    // It did NOT start with 'favoritedGames'.
-    // 'favoritedGames' was ONLY used in the 'filteredGames' dependency array in the original code, BUT NOT IN THE BODY.
-    // Logic check: "const filteredGames = useMemo(() => { let result = sortedGames; ... }, [sortedGames, favoritedGames, ...])"
-    // So 'favoritedGames' was unused logic in the filtering chain itself, unless I missed something.
-    // Ah, 'teams' list DID depend on favorites.
-
-    // Let's Clean this up:
-
     // Helper for team sorting order
     const getTeamPriority = (team: string) => {
         const t = team.toUpperCase();
@@ -136,7 +118,7 @@ export const useGameFilters = ({
         }
 
         return result;
-    }, [games, selectedTeam, currentView, userRegistrations, favoriteTeams]); // favoriteTeams added if we ever decide to filter default view by favorites (not currently done in logic above, mimicking original)
+    }, [games, selectedTeam, currentView, userRegistrations]);
 
     return {
         teams,

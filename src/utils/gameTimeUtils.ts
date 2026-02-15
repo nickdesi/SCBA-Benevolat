@@ -1,12 +1,11 @@
 import { UserRegistration } from '../types';
+import { getTodayISO } from './dateUtils';
 
 export const isGameUpcoming = (reg: UserRegistration): boolean => {
     if (!reg.gameDateISO) return true;
 
     const now = new Date();
-    // Use local date to avoid timezone issues (e.g. 00:30 local might be previous day UTC)
-    // "fr-CA" gives YYYY-MM-DD format
-    const todayISO = now.toLocaleDateString('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const todayISO = getTodayISO();
     const currentHours = now.getHours();
     const currentMinutes = now.getMinutes();
 

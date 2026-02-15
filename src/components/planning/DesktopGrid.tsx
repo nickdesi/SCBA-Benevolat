@@ -1,6 +1,7 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
+import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
 
 interface DesktopGridProps {
     games: Game[];
@@ -47,49 +48,39 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
     userRegistrations,
     isAuthenticated,
 }) => {
-    // Helpers
-    const getDaysOfWeek = (date: Date) => {
-        const start = new Date(date);
-        const day = start.getDay();
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        start.setDate(diff);
+    // Memoized week calculation
+    const days = useMemo(() => getDaysOfWeek(currentDate),
+        [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()]
+    );
 
-        const days = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            days.push(d);
+    // Pre-compute games grouped by day to avoid double filtering
+    const gamesByDay = useMemo(() => {
+        const map = new Map<string, Game[]>();
+        for (const game of games) {
+            const existing = map.get(game.dateISO) || [];
+            existing.push(game);
+            map.set(game.dateISO, existing);
         }
-        return days;
-    };
+        // Sort each day's games by time
+        for (const [key, dayGames] of map) {
+            map.set(key, dayGames.sort((a, b) => a.time.localeCompare(b.time)));
+        }
+        return map;
+    }, [games]);
 
-    const days = getDaysOfWeek(currentDate);
-
-    // Helper to format local date YYYY-MM-DD for comparison (avoiding UTC conversion issues)
-    const toISODate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-
-    const getGamesForDay = (date: Date) => {
-        const dateStr = toISODate(date);
-        return games
-            .filter(g => g.dateISO === dateStr)
-            .sort((a, b) => a.time.localeCompare(b.time));
-    };
-
-    // Filter out days with no games
-    const activeDays = days.filter(day => getGamesForDay(day).length > 0);
+    // Filter out days with no games using pre-computed map
+    const activeDays = useMemo(() =>
+        days.filter(day => (gamesByDay.get(toISODateString(day))?.length ?? 0) > 0),
+        [days, gamesByDay]
+    );
 
     return (
         <div className="hidden lg:block relative min-h-[600px] border-t border-slate-800/50 pt-6">
             {activeDays.length > 0 ? (
                 <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
                     {activeDays.map((day) => {
-                        const dayGames = getGamesForDay(day);
-                        const isToday = toISODate(day) === toISODate(new Date());
+                        const dayGames = gamesByDay.get(toISODateString(day)) || [];
+                        const isToday = toISODateString(day) === toISODateString(new Date());
 
                         return (
                             <div
@@ -99,10 +90,10 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
 
                                 {/* Column Header - Matching GameCard dark style */}
                                 <div className={`
-                                    flex flex-col items-center justify-center py-4 rounded-xl border mb-2 transition-colors
-                                    bg-slate-800 dark:bg-slate-800 border-slate-700
-                                    ${isToday ? 'ring-2 ring-blue-500' : ''}
-                                `}>
+                                flex flex-col items-center justify-center py-4 rounded-xl border mb-2 transition-colors
+                                bg-slate-800 dark:bg-slate-800 border-slate-700
+                                ${isToday ? 'ring-2 ring-blue-500' : ''}
+                            `}>
                                     <div className={`text-xs font-bold uppercase tracking-widest ${isToday ? 'text-blue-400' : 'text-slate-300'}`}>
                                         {day.toLocaleDateString('fr-FR', { weekday: 'long' })}
                                     </div>
@@ -112,11 +103,21 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
                                     <div className={`text-[10px] font-medium uppercase mt-1 ${isToday ? 'text-blue-300' : 'text-slate-400'}`}>
                                         {day.toLocaleDateString('fr-FR', { month: 'short' })}
                                     </div>
+
+                                    {/* Match Stats */}
+                                    <div className="mt-3 pt-3 border-t border-slate-700 w-full flex flex-col items-center gap-1">
+                                        <div className="font-bold text-sm text-white bg-slate-700/50 px-3 py-0.5 rounded-full">
+                                            {dayGames.length} matchs
+                                        </div>
+                                        <div className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
+                                            {dayGames.filter((g: Game) => (g.isHome ?? true)).length} DOM • {dayGames.filter((g: Game) => !(g.isHome ?? true)).length} EXT
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Games List - Using FULL GameCard */}
                                 <div className="flex flex-col gap-4">
-                                    {dayGames.map((game, idx) => (
+                                    {dayGames.map((game: Game) => (
                                         <div
                                             key={game.id}
                                             className=""

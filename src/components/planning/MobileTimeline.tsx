@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
+import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
 
 interface MobileTimelineProps {
     games: Game[];
@@ -26,14 +27,13 @@ interface MobileTimelineProps {
     isAuthenticated?: boolean;
 }
 
-// Animation variants for staggered entrance
-// Optimized animation variants - snappy feel per Context7 best practices
+// Optimized animation variants - snappy feel
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.05 // Faster stagger for snappier feel
+            staggerChildren: 0.05
         }
     }
 };
@@ -45,8 +45,8 @@ const dayVariants = {
         y: 0,
         transition: {
             type: 'spring' as const,
-            stiffness: 500, // Increased for snappy feel
-            damping: 30     // Higher damping = less bounce, faster settle
+            stiffness: 500,
+            damping: 30
         }
     }
 };
@@ -58,8 +58,8 @@ const gameVariants = {
         x: 0,
         transition: {
             type: 'spring' as const,
-            stiffness: 600, // Very snappy
-            damping: 35     // Quick settle, minimal bounce
+            stiffness: 600,
+            damping: 35
         }
     }
 };
@@ -95,32 +95,13 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     userRegistrations,
     isAuthenticated,
 }) => {
-    // Memoized week calculation - avoids recalc on every render
-    const days = useMemo(() => {
-        const start = new Date(currentDate);
-        const day = start.getDay();
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-        start.setDate(diff);
-
-        const result = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            result.push(d);
-        }
-        return result;
-    }, [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()]);
-
-    // Helper to format local date YYYY-MM-DD for comparison (avoiding UTC conversion issues)
-    const toISODate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
+    // Memoized week calculation using shared utility
+    const days = useMemo(() => getDaysOfWeek(currentDate),
+        [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()]
+    );
 
     const getGamesForDay = (date: Date) => {
-        const dateStr = toISODate(date);
+        const dateStr = toISODateString(date);
         return games
             .filter(g => g.dateISO === dateStr)
             .sort((a, b) => a.time.localeCompare(b.time));
@@ -138,9 +119,9 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
         >
             <AnimatePresence mode="popLayout">
                 {activeDays.length > 0 ? (
-                    activeDays.map((day, dayIdx) => {
+                    activeDays.map((day) => {
                         const dayGames = getGamesForDay(day);
-                        const isToday = toISODate(day) === toISODate(new Date());
+                        const isToday = toISODateString(day) === toISODateString(new Date());
 
                         return (
                             <motion.div
@@ -186,7 +167,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                     initial="hidden"
                                     animate="visible"
                                 >
-                                    {dayGames.map((game, gameIdx) => (
+                                    {dayGames.map((game) => (
                                         <motion.div
                                             key={game.id}
                                             variants={gameVariants}

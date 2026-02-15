@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { getDaysOfWeek } from '../../utils/dateUtils';
 
 interface PlanningHeaderProps {
     currentDate: Date;
@@ -23,15 +24,11 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
     // Capitalize first letter
     const formattedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
-    // Get week range (assuming Start is Monday)
+    // Get week range using shared utility
     const getWeekRange = (date: Date) => {
-        const start = new Date(date);
-        const day = start.getDay();
-        const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        start.setDate(diff);
-
-        const end = new Date(start);
-        end.setDate(start.getDate() + 6);
+        const weekDays = getDaysOfWeek(date);
+        const start = weekDays[0];
+        const end = weekDays[6];
 
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
         return `${start.toLocaleDateString('fr-FR', options)} - ${end.toLocaleDateString('fr-FR', options)}`;
