@@ -57,7 +57,7 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
                             {/* Teams */}
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-bold uppercase tracking-tight ${game.isHome ? 'text-white' : 'text-slate-400'}`}>
+                                    <span className={`text-sm font-bold uppercase tracking-tight ${game.isHome ? 'text-emerald-400' : 'text-slate-400'}`}>
                                         {host}
                                     </span>
                                 </div>
@@ -67,7 +67,7 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-bold uppercase tracking-tight ${!game.isHome ? 'text-white' : 'text-slate-400'}`}>
+                                    <span className={`text-sm font-bold uppercase tracking-tight ${!game.isHome ? 'text-blue-400' : 'text-slate-400'}`}>
                                         {visitor}
                                     </span>
                                 </div>
