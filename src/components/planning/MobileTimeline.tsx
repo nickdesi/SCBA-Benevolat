@@ -149,8 +149,10 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                             <span className="text-lg font-black text-white tracking-wide capitalize whitespace-nowrap">
                                                 {isToday ? "Aujourd'hui" : day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                             </span>
-                                            <span className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">
-                                                {dayGames.filter(g => (g.isHome ?? true)).length} Dom • {dayGames.filter(g => !(g.isHome ?? true)).length} Ext
+                                            <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
+                                                <span className="text-emerald-400">{dayGames.filter(g => (g.isHome ?? true)).length} Dom</span>
+                                                <span className="text-slate-500">•</span>
+                                                <span className="text-blue-400">{dayGames.filter(g => !(g.isHome ?? true)).length} Ext</span>
                                             </span>
                                         </div>
                                         <span className="self-center flex flex-col items-center text-center font-bold px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-2">
