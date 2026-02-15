@@ -1,8 +1,17 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.3.5';
+const APP_VERSION = 'v2.4.0';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.4.0',
+        date: '15 Février 2026',
+        changes: [
+            '✨ Avatar : Upload de photo de profil pour les bénévoles',
+            '🎨 Dashboard : Restauration complète (Historique, Covoit)',
+            '🐞 Fix : Doublons d\'interface dans le header'
+        ]
+    },
     {
         version: 'v2.3.5',
         date: '15 Février 2026',

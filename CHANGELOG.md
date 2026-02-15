@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.4.0] - 2026-02-15
+
+### Added
+
+- **Avatar Utilisateur** : Possibilité pour les bénévoles d'uploader une photo de profil personnalisée.
+- **Support Stockage** : Intégration de Firebase Storage pour les avatars utilisateurs.
+
+### Fixed
+
+- **Dashboard Bénévole** : Restauration des sections "Historique" et "Covoiturage" qui avaient disparu.
+- **Header Dashboard** : Correction des conflits de déclaration TypeScript.
+
+---
+
 ## [2.3.5] - 2026-02-15
 
 ### Added
