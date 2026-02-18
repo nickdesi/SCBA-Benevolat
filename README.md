@@ -1,7 +1,7 @@
 # SCBA Bénévoles 🏀
 
 [![coolify](https://img.shields.io/badge/Coolify-Self%20Hosted-blueviolet?style=for-the-badge&logo=server)](https://coolify.io)
-[![Version](https://img.shields.io/badge/version-v2.4.1-blue?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
+[![Version](https://img.shields.io/badge/version-v2.4.2-blue?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
 [![pwa](https://img.shields.io/badge/PWA-Ready-5A67D8?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 [![firebase](https://img.shields.io/badge/Firebase-Powered-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
 
@@ -68,6 +68,7 @@ graph TD
 - **Tailwind v4** : Styling performant via le nouveau moteur JIT.
 - **Firestore** : Base de données temps réel avec **Transactions Atomiques** pour garantir la cohérence des inscriptions.
 - **PWA** : Support hors-ligne, installable sur iOS/Android.
+- **API FFBB** : Synchronisation des matchs via [FFBBApiClientV2](https://github.com/Rinzler78/FFBBApiClientV2_Python).
 
 ## 📱 Guide d'Installation
 

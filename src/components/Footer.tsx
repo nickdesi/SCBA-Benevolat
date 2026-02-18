@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.1';
+const APP_VERSION = 'v2.4.2';
 // Changelog data
 const CHANGELOG = [
     {

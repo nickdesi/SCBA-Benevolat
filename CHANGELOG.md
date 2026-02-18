@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.4.2] - 2026-02-18
+
+### Fixed
+
+- **Données Matchs** : Correction et vérification automatique des horaires de matchs via l'API FFBB.
+- **Script de Résilience** : Ajout d'un outil robuste (`verify_match_times.py`) pour détecter et corriger les incohérences d'horaires, prenant en compte les catégories (U9 vs U11) et le statut Domicile/Extérieur.
+
+## [2.4.2] - 2026-02-18
+
+### Fixed
+
+- **Données Matchs** : Correction et vérification automatique des horaires de matchs via l'API FFBB.
+- **Script de Résilience** : Ajout d'un outil robuste (`verify_match_times.py`) pour détecter et corriger les incohérences d'horaires, prenant en compte les catégories (U9 vs U11) et le statut Domicile/Extérieur.
+- **Documentation** : Ajout de la référence au projet [FFBBApiClientV2](https://github.com/Rinzler78/FFBBApiClientV2_Python).
+
 ## [2.4.1] - 2026-02-15
 
 ### Added
