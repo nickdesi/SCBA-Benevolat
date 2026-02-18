@@ -68,7 +68,7 @@ graph TD
 - **Tailwind v4** : Styling performant via le nouveau moteur JIT.
 - **Firestore** : Base de données temps réel avec **Transactions Atomiques** pour garantir la cohérence des inscriptions.
 - **PWA** : Support hors-ligne, installable sur iOS/Android.
-- **API FFBB** : Synchronisation des matchs via [FFBBApiClientV2](https://github.com/Rinzler78/FFBBApiClientV2_Python).
+- **API FFBB** : Synchronisation des matchs via [FFBB MCP Server](https://github.com/nickdesi/FFBB-MCP-Server).
 
 ## 📱 Guide d'Installation
 
