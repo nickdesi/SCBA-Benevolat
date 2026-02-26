@@ -6,6 +6,7 @@ import {
     GoogleAuthProvider,
     signOut as firebaseSignOut,
     onAuthStateChanged as firebaseOnAuthStateChanged,
+    sendPasswordResetEmail,
     User
 } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -21,6 +22,7 @@ const AUTH_ERRORS: Record<string, string> = {
     'auth/weak-password': 'Le mot de passe doit contenir au moins 6 caractères.',
     'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard.',
     'auth/network-request-failed': 'Erreur réseau. Vérifiez votre connexion.',
+    'auth/missing-email': 'Veuillez renseigner une adresse email.',
 };
 
 /**
@@ -84,4 +86,18 @@ export const signOut = async (): Promise<void> => {
  */
 export const onAuthStateChanged = (callback: (user: User | null) => void): (() => void) => {
     return firebaseOnAuthStateChanged(auth, callback);
+};
+
+/**
+ * Send password reset email
+ */
+export const resetUserPassword = async (email: string): Promise<void> => {
+    try {
+        auth.languageCode = 'fr';
+        await sendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+        const code = error?.code || '';
+        const message = AUTH_ERRORS[code] || 'Erreur lors de la réinitialisation du mot de passe.';
+        throw new Error(message);
+    }
 };

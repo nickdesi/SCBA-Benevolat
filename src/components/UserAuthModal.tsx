@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Mail, Lock, User, X, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
 import { GoogleIcon } from './Icons';
-import { signIn, signUp } from '../utils/authStore';
+import { signIn, signUp, resetUserPassword } from '../utils/authStore';
 import useScrollLock from '../utils/useScrollLock';
 
 interface UserAuthModalProps {
@@ -12,7 +12,7 @@ interface UserAuthModalProps {
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
-type AuthView = 'menu' | 'login' | 'signup';
+type AuthView = 'menu' | 'login' | 'signup' | 'forgot-password';
 
 const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogleLogin, onToast }) => {
     useScrollLock(isOpen);
@@ -55,6 +55,23 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
             handleClose(); // Close on success
         } catch (err: any) {
             setError(err.message);
+            setLoading(false);
+        }
+    };
+
+    const handlePasswordReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            if (!email.trim()) throw new Error("Veuillez renseigner une adresse email");
+            await resetUserPassword(email);
+            onToast('Un email de réinitialisation vous a été envoyé.', 'success');
+            setView('login');
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
             setLoading(false);
         }
     };
@@ -121,7 +138,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
     );
 
     const renderForm = () => (
-        <form onSubmit={handleEmailAuth} className="space-y-4">
+        <form onSubmit={view === 'forgot-password' ? handlePasswordReset : handleEmailAuth} className="space-y-4">
             {error && (
                 <div className="p-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl border border-red-200 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
@@ -161,21 +178,38 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                 </div>
             </div>
 
-            <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Mot de passe</label>
-                <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                    />
+            {view !== 'forgot-password' && (
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                    <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                            placeholder="••••••••"
+                            required
+                            minLength={6}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {view === 'login' && (
+                <div className="flex justify-end -mt-2">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setView('forgot-password');
+                            setError('');
+                        }}
+                        className="text-slate-500 hover:text-blue-600 text-xs font-semibold px-2 py-1 transition-colors"
+                    >
+                        Mot de passe oublié ?
+                    </button>
+                </div>
+            )}
 
             <button
                 type="submit"
@@ -185,43 +219,52 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
             >
                 {loading ? (
                     <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (view === 'login' ? 'Se connecter' : 'Créer un compte')}
+                ) : (view === 'login' ? 'Se connecter' : view === 'signup' ? 'Créer un compte' : 'Envoyer le lien')}
             </button>
 
             {/* Social Logins inside Form */}
-            <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-200"></div>
-                <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider font-semibold">ou avec</span>
-                <div className="flex-grow border-t border-slate-200"></div>
-            </div>
+            {view !== 'forgot-password' && (
+                <>
+                    <div className="relative flex py-2 items-center">
+                        <div className="flex-grow border-t border-slate-200"></div>
+                        <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider font-semibold">ou avec</span>
+                        <div className="flex-grow border-t border-slate-200"></div>
+                    </div>
 
-            <button
-                type="button"
-                onClick={onGoogleLogin}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
-            >
-                <div className="w-5 h-5"><GoogleIcon /></div>
-                <span>Google</span>
-            </button>
+                    <button
+                        type="button"
+                        onClick={onGoogleLogin}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
+                    >
+                        <div className="w-5 h-5"><GoogleIcon /></div>
+                        <span>Google</span>
+                    </button>
+                </>
+            )}
 
             <div className="flex justify-between items-center text-sm pt-2">
                 <button
                     type="button"
-                    onClick={() => setView('menu')}
+                    onClick={() => {
+                        setView(view === 'forgot-password' ? 'login' : 'menu');
+                        setError('');
+                    }}
                     className="text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" /> Retour
                 </button>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setView(view === 'login' ? 'signup' : 'login');
-                        setError('');
-                    }}
-                    className="text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                    {view === 'login' ? 'Créer un compte' : 'J\'ai déjà un compte'}
-                </button>
+                {view !== 'forgot-password' && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setView(view === 'login' ? 'signup' : 'login');
+                            setError('');
+                        }}
+                        className="text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                        {view === 'login' ? 'Créer un compte' : 'J\'ai déjà un compte'}
+                    </button>
+                )}
             </div>
         </form>
     );
@@ -246,12 +289,18 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
 
                     <div className="relative z-10">
                         <h2 className="text-2xl font-black mb-1.5 tracking-tight">
-                            {view === 'menu' ? 'Espace Bénévoles' : (view === 'login' ? 'Bon retour !' : 'Rejoindre l\'équipe')}
+                            {view === 'menu' ? 'Espace Bénévoles' :
+                                view === 'login' ? 'Bon retour !' :
+                                    view === 'forgot-password' ? 'Mot de passe oublié' : 'Rejoindre l\'équipe'}
                         </h2>
                         <p className="text-blue-100 text-sm font-medium">
                             {view === 'menu'
                                 ? 'Gérez vos inscriptions et matchs.'
-                                : (view === 'login' ? 'Entrez vos identifiants pour continuer' : 'Créez votre compte en 30 secondes')}
+                                : view === 'login'
+                                    ? 'Entrez vos identifiants pour continuer'
+                                    : view === 'forgot-password'
+                                        ? 'Saisissez votre email pour réinitialiser'
+                                        : 'Créez votre compte en 30 secondes'}
                         </p>
                     </div>
 
