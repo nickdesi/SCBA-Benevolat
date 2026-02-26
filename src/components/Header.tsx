@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onSelectTeam(null)}
-                className={`snap-center px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md ${selectedTeam === null
+                className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${selectedTeam === null
                   ? 'bg-white text-slate-900 border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] ring-1 ring-white/50'
                   : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
                   }`}
@@ -136,7 +136,7 @@ const Header: React.FC<HeaderProps> = ({
                   layoutId={`team-pill-${team}`}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onSelectTeam(team)}
-                  className={`snap-center px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md ${selectedTeam === team
+                  className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${selectedTeam === team
                     ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-1 ring-white/20'
                     : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
                     }`}

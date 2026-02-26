@@ -222,19 +222,20 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                             onChange={(e) => setNewName(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="Votre Prénom et Nom..."
-                            className="flex-1 min-w-0 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="flex-1 min-w-0 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             autoFocus
                         />
                         <button
                             onClick={() => setIsInputVisible(false)}
-                            className="p-2 text-slate-400 hover:text-slate-600"
+                            className="w-11 h-11 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            aria-label="Annuler"
                         >
                             ✕
                         </button>
                         <button
                             onClick={handleSignUpClick}
                             disabled={!newName.trim()}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-5 py-2.5 min-h-[44px] flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Valider
                         </button>
