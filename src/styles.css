@@ -222,7 +222,7 @@ select {
 .dark input,
 .dark textarea,
 .dark select {
-  color: #f1f5f9 !important;
+  color: #f1f5f9;
 }
 
 /* Placeholders - Light mode */

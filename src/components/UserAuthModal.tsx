@@ -155,7 +155,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 dark:text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
                             placeholder="Ex: Pierre Martin"
                             required
                         />
@@ -171,7 +171,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 dark:text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
                         placeholder="votre@email.com"
                         required
                     />
@@ -187,7 +187,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({ isOpen, onClose, onGoogle
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 placeholder:text-slate-400 font-medium"
+                            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 dark:text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
                             placeholder="••••••••"
                             required
                             minLength={6}
