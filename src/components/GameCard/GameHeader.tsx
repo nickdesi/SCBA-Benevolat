@@ -32,14 +32,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 
     return (
         <div className={`relative p-5 overflow-hidden transition-colors duration-300 ${isHomeGame
-            ? 'bg-gradient-to-br from-emerald-100 via-emerald-50/50 to-white/50 dark:from-emerald-900/40 dark:via-slate-900 dark:to-slate-900'
-            : 'bg-gradient-to-br from-blue-100 via-blue-50/50 to-white/50 dark:from-blue-900/40 dark:via-slate-900 dark:to-slate-900'
+            ? 'bg-gradient-to-br from-emerald-200/80 via-emerald-100/60 to-white/80 dark:from-emerald-900/60 dark:via-emerald-900/20 dark:to-slate-900'
+            : 'bg-gradient-to-br from-blue-200/80 via-blue-100/60 to-white/80 dark:from-blue-900/60 dark:via-blue-900/20 dark:to-slate-900'
             }`}>
 
             {/* Watermark Icon - Subtle & Elegant */}
             <div className={`absolute -right-6 -top-6 pointer-events-none transform rotate-12 scale-150 transition-opacity duration-300 ${isHomeGame
-                ? 'text-emerald-500/10 dark:text-emerald-400/10'
-                : 'text-blue-500/10 dark:text-blue-400/10'
+                ? 'text-emerald-500/20 dark:text-emerald-400/10'
+                : 'text-blue-500/20 dark:text-blue-400/10'
                 }`}>
                 {isHomeGame ? <Home className="w-48 h-48" /> : <Plane className="w-48 h-48" />}
             </div>
