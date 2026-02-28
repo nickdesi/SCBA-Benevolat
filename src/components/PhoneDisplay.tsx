@@ -30,7 +30,7 @@ const PhoneDisplay: React.FC<PhoneDisplayProps> = memo(({ phone }) => {
             <span className={isRevealed ? '' : 'font-mono'}>
                 {isRevealed ? phone : maskPhone(phone)}
             </span>
-            <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-xs opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 {isRevealed ? '🔒' : '👁️'}
             </span>
         </button>

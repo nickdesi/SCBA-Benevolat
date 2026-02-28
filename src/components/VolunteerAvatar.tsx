@@ -68,17 +68,17 @@ const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
 
             {/* Admin/User Actions Overlay (Hover) */}
             {(isAdmin || isMine) && (
-                <div className="absolute -top-2 -right-2 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute -top-2 -right-2 flex gap-1 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     {onRemove && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onRemove();
                             }}
-                            className="bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md"
+                            className="bg-red-500 text-white rounded-full p-1.5 md:p-1 hover:bg-red-600 shadow-md"
                             title="Retirer"
                         >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-4 h-4 md:w-3 md:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>

@@ -1,8 +1,15 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.2';
+const APP_VERSION = 'v2.4.3';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.4.3',
+        date: '28 Février 2026',
+        changes: [
+            '📱 Mobile UX : Amélioration des cibles tactiles et suppression des actions limitées au survol',
+        ]
+    },
     {
         version: 'v2.4.1',
         date: '15 Février 2026',
