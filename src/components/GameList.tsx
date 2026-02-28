@@ -104,7 +104,7 @@ const GameList: React.FC<GameListProps> = memo(({
                                 <span className="text-lg font-black text-white tracking-wide">
                                     {group.label}
                                 </span>
-                                <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
+                                <span className="text-[11px] font-medium uppercase tracking-wider flex items-center gap-1">
                                     <span className="text-emerald-300">{group.games.filter(g => (g.isHome ?? true)).length} Dom</span>
                                     <span className="text-slate-400">•</span>
                                     <span className="text-blue-300">{group.games.filter(g => !(g.isHome ?? true)).length} Ext</span>

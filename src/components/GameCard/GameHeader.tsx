@@ -123,7 +123,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                     href={`https://waze.com/ul?q=${encodeURIComponent(game.location)}&navigate=yes`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between px-3 py-2.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50 group transition-all transform hover:-translate-y-0.5"
+                    className="flex items-center justify-between px-3 py-2.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50 group transition-all transform hover:-translate-y-0.5 active:scale-95"
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="flex-shrink-0 p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 rounded-lg group-hover:scale-110 transition-transform">
@@ -166,8 +166,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             {/* Admin Controls */}
             {isAdmin && (
                 <div className="absolute top-2 right-2 flex gap-1 z-50">
-                    <button onClick={onEditRequest} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><EditIcon className="w-3.5 h-3.5" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><DeleteIcon className="w-3.5 h-3.5" /></button>
+                    <button onClick={onEditRequest} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:bg-blue-100"><EditIcon className="w-4 h-4" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors active:bg-red-100"><DeleteIcon className="w-4 h-4" /></button>
                     <ConfirmModal
                         isOpen={showDeleteConfirm}
                         title="Supprimer ce match ?"

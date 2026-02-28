@@ -55,7 +55,7 @@ const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
 
                 {/* Badge "Me" */}
                 {isMine && (
-                    <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm z-10">
+                    <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[11px] px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm z-10">
                         Moi
                     </div>
                 )}
