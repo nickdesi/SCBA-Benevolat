@@ -8,6 +8,7 @@ const CHANGELOG = [
         date: '28 Février 2026',
         changes: [
             '📱 Mobile UX : Amélioration des cibles tactiles et suppression des actions limitées au survol',
+            '⚡ Performance : Optimisation des rendus React (suppression des re-rendus inutiles dans les listes)',
         ]
     },
     {
