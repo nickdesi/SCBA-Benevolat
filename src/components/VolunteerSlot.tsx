@@ -11,9 +11,9 @@ import EmptySlot from './EmptySlot';
 interface VolunteerSlotProps {
     role: Role;
     gameId: string;
-    onVolunteer: (parentName: string | string[]) => void;
-    onRemoveVolunteer: (parentName: string) => void;
-    onUpdateVolunteer: (oldName: string, newName: string) => void;
+    onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
+    onRemoveVolunteer: (gameId: string, roleId: string, parentName: string) => void;
+    onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
     isAdmin: boolean;
     animationDelay?: number;
     myRegistrationNames?: string[]; // Updated prop to support multiple
@@ -94,7 +94,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
             setOptimisticVolunteers({ type: 'add', names });
         });
 
-        onVolunteer(names);
+        onVolunteer(gameId, role.id, names);
 
         if (!isAuthenticated) {
             names.forEach(n => saveMyRegistration(registrationKey, n));
@@ -116,7 +116,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
             setOptimisticVolunteers({ type: 'remove', names: [name] });
         });
 
-        onRemoveVolunteer(name);
+        onRemoveVolunteer(gameId, role.id, name);
         removeMyRegistration(registrationKey, name);
         setConfirmModal({ isOpen: false, type: 'remove', name: '' });
     };

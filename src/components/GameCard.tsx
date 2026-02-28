@@ -26,9 +26,9 @@ interface GameCardProps {
     onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
     isAdmin: boolean;
     isEditing: boolean;
-    onEditRequest: () => void;
+    onEditRequest: (gameId: string) => void;
     onCancelEdit: () => void;
-    onDeleteRequest: () => void;
+    onDeleteRequest: (gameId: string) => void;
     onUpdateRequest: (game: Game) => void;
     userRegistrations?: Map<string, string[]>;
     isAuthenticated?: boolean;
@@ -155,12 +155,12 @@ const GameCard: React.FC<GameCardProps> = memo(({
             relative rounded-3xl overflow-hidden transition-all duration-300 h-full
             bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
             border border-white/20 dark:border-slate-700/50
-            ${isFullyStaffed 
-                ? 'shadow-sm hover:shadow-md border-emerald-500/20 dark:border-emerald-500/20' 
-                : isUrgent
-                    ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
-                    : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
-            }
+            ${isFullyStaffed
+                    ? 'shadow-sm hover:shadow-md border-emerald-500/20 dark:border-emerald-500/20'
+                    : isUrgent
+                        ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
+                        : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
+                }
         `}>
             {/* 1. Header Section */}
             <div className="relative z-10">
@@ -172,8 +172,8 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     totalPassengerRequests={totalPassengerRequests}
                     isUrgent={isUrgent}
                     isAdmin={isAdmin}
-                    onEditRequest={onEditRequest}
-                    onDeleteRequest={onDeleteRequest}
+                    onEditRequest={() => onEditRequest(game.id)}
+                    onDeleteRequest={() => onDeleteRequest(game.id)}
                 />
             </div>
 

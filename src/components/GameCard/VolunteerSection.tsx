@@ -66,9 +66,9 @@ const VolunteerSection: React.FC<VolunteerSectionProps> = ({
                         isAdmin={isAdmin}
                         myRegistrationNames={userRegistrations?.get(`${gameId}_${role.id}`)}
                         isAuthenticated={isAuthenticated}
-                        onVolunteer={(parentName) => onVolunteer(gameId, role.id, parentName)}
-                        onRemoveVolunteer={(volunteerName) => onRemoveVolunteer(gameId, role.id, volunteerName)}
-                        onUpdateVolunteer={(oldName, newName) => onUpdateVolunteer(gameId, role.id, oldName, newName)}
+                        onVolunteer={onVolunteer}
+                        onRemoveVolunteer={onRemoveVolunteer}
+                        onUpdateVolunteer={onUpdateVolunteer}
                         animationDelay={index * 0.05}
                     />
                 ))}

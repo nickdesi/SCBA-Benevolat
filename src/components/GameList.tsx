@@ -137,9 +137,9 @@ const GameList: React.FC<GameListProps> = memo(({
                                     onRejectPassenger={onRejectPassenger}
                                     onCancelRequest={onCancelRequest}
                                     onToast={onToast}
-                                    onEditRequest={() => onEditRequest(game.id)}
+                                    onEditRequest={onEditRequest}
                                     onCancelEdit={onCancelEdit}
-                                    onDeleteRequest={() => onDeleteRequest(game.id)}
+                                    onDeleteRequest={onDeleteRequest}
                                     onUpdateRequest={onUpdateRequest}
                                     userRegistrations={userRegistrations}
                                     isAuthenticated={isAuthenticated}

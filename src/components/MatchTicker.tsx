@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import Marquee from 'react-fast-marquee';
 import type { Game } from '../types';
 
@@ -6,7 +6,7 @@ interface MatchTickerProps {
     games: Game[];
 }
 
-const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
+const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     // Filter games: get the next 10 upcoming games regardless of timeframe
     const upcomingGames = useMemo(() => {
         const nowISO = new Date().toISOString().split('T')[0];
@@ -88,6 +88,8 @@ const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
             </Marquee>
         </div>
     );
-};
+});
+
+MatchTicker.displayName = 'MatchTicker';
 
 export default MatchTicker;
