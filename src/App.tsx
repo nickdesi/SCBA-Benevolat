@@ -365,7 +365,7 @@ function App() {
           addToast('Données synchronisées', 'success');
         }}>
           {/* Grid Stack Container for stable layout transition */}
-          <div className="grid grid-cols-1">
+          <div className="grid grid-cols-1 min-h-[400px]">
             {/* Skeleton Layer - Maintains height contribution to grid */}
             <div
               className={`col-start-1 row-start-1 transition-opacity duration-500 ease-out ${loading ? 'opacity-100 z-20' : 'opacity-0 -z-10 pointer-events-none'}`}

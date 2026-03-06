@@ -55,9 +55,7 @@ const Header: React.FC<HeaderProps> = ({
       <div className="container mx-auto px-4 py-2 sm:py-3 relative z-30">
         <div className="flex items-center justify-between gap-2">
           {/* Logo - Animated & Glowing */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+          <div
             className="relative flex-shrink-0 group cursor-pointer"
           >
             <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full" />
@@ -70,10 +68,10 @@ const Header: React.FC<HeaderProps> = ({
               // @ts-ignore
               fetchPriority="high"
             />
-          </motion.div>
+          </div>
 
           {/* Title - Exact Match: Full Width & Readable */}
-          <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1">
+          <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1 min-h-[48px] sm:min-h-[72px]">
             <h1 className="flex flex-col items-center justify-center leading-none w-full">
               <span className="text-[10px] xs:text-xs sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport text-center leading-none w-full break-words max-w-full">
                 STADE CLERMONTOIS BASKET AUVERGNE
@@ -106,9 +104,9 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Filter Bar - Floating Horizontal Scroll */}
-      {teams.length > 0 && (
-        <div className="relative pb-3 pt-1">
+      {/* Filter Bar - Floating Horizontal Scroll (always reserves height to prevent CLS) */}
+      <div className="relative pb-3 pt-1" style={{ minHeight: '60px' }}>
+        {teams.length > 0 && (
           <div className="container mx-auto px-4">
             <div
               ref={scrollRef}
@@ -146,8 +144,8 @@ const Header: React.FC<HeaderProps> = ({
               ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 };

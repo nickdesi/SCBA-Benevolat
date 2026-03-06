@@ -63,34 +63,36 @@ export const AnnouncementBanner: React.FC = () => {
     };
 
     return (
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
             {visible && (
-                <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className={`${getStyles()} relative z-40 shadow-md overflow-hidden`}
-                    role="alert"
-                >
-                    <div className="max-w-7xl mx-auto px-4 py-3 flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 flex-1">
-                            {getIcon()}
-                            <p className="text-sm font-medium leading-tight">
-                                <span className="sr-only">{activeAnnouncement.type === 'warning' ? 'Important' : activeAnnouncement.type}:</span>
-                                {activeAnnouncement.message}
-                            </p>
-                        </div>
+                <div className="fixed bottom-20 sm:bottom-6 left-0 right-0 z-50 px-4 pointer-events-none flex justify-center">
+                    <motion.div
+                        initial={{ y: 50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 50, opacity: 0 }}
+                        className={`${getStyles()} shadow-2xl overflow-hidden rounded-2xl w-full max-w-4xl pointer-events-auto border border-white/20`}
+                        role="alert"
+                    >
+                        <div className="px-4 py-3 flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3 flex-1">
+                                {getIcon()}
+                                <p className="text-sm font-medium leading-tight">
+                                    <span className="sr-only">{activeAnnouncement.type === 'warning' ? 'Important' : activeAnnouncement.type}:</span>
+                                    {activeAnnouncement.message}
+                                </p>
+                            </div>
 
-                        {/* Close button - Only if not SUPER urgent? Let's allow closing always for UI sanity */}
-                        <button
-                            onClick={handleDismiss}
-                            className="p-1 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
-                            aria-label="Fermer l'annonce"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                </motion.div>
+                            {/* Close button - Only if not SUPER urgent? Let's allow closing always for UI sanity */}
+                            <button
+                                onClick={handleDismiss}
+                                className="p-1 hover:bg-black/20 rounded-full transition-colors cursor-pointer shrink-0"
+                                aria-label="Fermer l'annonce"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
             )}
         </AnimatePresence>
     );

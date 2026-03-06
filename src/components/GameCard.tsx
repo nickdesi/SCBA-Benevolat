@@ -178,8 +178,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
             </div>
 
             {/* 2. Accordion Trigger */}
-            <motion.button
-                whileTap={{ scale: 0.99 }}
+            <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`
                     w-full px-4 py-3 flex items-center justify-between cursor-pointer
@@ -267,7 +266,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                     `}>
                     <ChevronIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" isOpen={false} />
                 </div>
-            </motion.button>
+            </button>
 
             {/* 3. Dropdown Content */}
             <AnimatePresence initial={false}>
@@ -276,7 +275,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                         className="overflow-hidden relative z-20"
                     >
                         <div className="p-4 pt-2 border-t border-slate-200/50 dark:border-slate-800">

@@ -21,7 +21,10 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
             .slice(0, 10); // Take next 10 games
     }, [games]);
 
-    if (upcomingGames.length === 0) return null;
+    // Reserve space even when empty to prevent CLS (layout shift)
+    if (upcomingGames.length === 0) {
+        return <div className="h-[53px] bg-slate-950" aria-hidden="true" />;
+    }
 
     return (
         <div className="relative z-30 border-b border-slate-800 bg-slate-950 overflow-hidden py-2.5">
