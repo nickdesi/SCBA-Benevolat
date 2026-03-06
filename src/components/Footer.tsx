@@ -1,8 +1,17 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.3';
+const APP_VERSION = 'v2.4.4';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.4.4',
+        date: '06 Mars 2026',
+        changes: [
+            '✨ Performance : Optimisation de l\'animation "Badge Complet" (Pseudo-éléments CSS vs DOM nodes)',
+            '🌐 Browser : Correction de l\'animation sur Brave (Bypass force-reduced-motion)',
+            '🎨 UI : Adaptation automatique du shine aux thèmes clair/sombre'
+        ]
+    },
     {
         version: 'v2.4.3',
         date: '28 Février 2026',

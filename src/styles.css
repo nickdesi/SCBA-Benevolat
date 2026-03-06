@@ -318,6 +318,46 @@ textarea::placeholder {
   }
 }
 
+@theme {
+  --animate-shine: shine 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-40px) skewX(-20deg);
+  }
+
+  20% {
+    transform: translateX(250px) skewX(-20deg);
+  }
+
+  100% {
+    transform: translateX(250px) skewX(-20deg);
+  }
+}
+
+.shine-badge {
+  contain: paint;
+}
+
+.shine-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: 9999px;
+  width: 4rem;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: var(--animate-shine);
+  will-change: transform;
+  pointer-events: none;
+}
+
+:is(.dark) .shine-badge::after {
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
 @keyframes slideInRight {
   from {
     opacity: 0;
@@ -605,17 +645,14 @@ textarea::placeholder {
 /* Reduced motion - respects user preference while keeping essential animations */
 @media (prefers-reduced-motion: reduce) {
 
-  /* Exclude marquee from forced stop */
-  *:not(.rfm-marquee),
-  *:not(.rfm-marquee)::before,
-  *:not(.rfm-marquee)::after {
+  /* Exclude marquee and shine from forced stop — they are informational, not decorative */
+  *:not(.rfm-marquee):not(.shine-badge),
+  *:not(.rfm-marquee):not(.shine-badge)::before,
+  *:not(.rfm-marquee):not(.shine-badge)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-
-  /* Exception: Ticker marquee is informational, not decorative - keep it running */
-  .animate-marquee {}
 }
 
 /* ========================================
@@ -691,6 +728,7 @@ a:active,
 .hover-instant:hover {
   transition: all 50ms ease-out;
 }
+
 /* Force hide scrollbars in marquee */
 .rfm-marquee-container {
   overflow-y: hidden !important;

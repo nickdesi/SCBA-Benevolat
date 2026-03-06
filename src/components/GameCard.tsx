@@ -156,7 +156,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
             bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
             border border-white/20 dark:border-slate-700/50
             ${isFullyStaffed
-                    ? 'shadow-sm hover:shadow-md border-emerald-500/20 dark:border-emerald-500/20'
+                    ? 'shadow-none border-emerald-500/20 dark:border-emerald-500/20 opacity-70 dark:opacity-50 grayscale-[30%] hover:opacity-100 hover:grayscale-0'
                     : isUrgent
                         ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
                         : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
@@ -206,17 +206,17 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                className="flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
+                                className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
                             >
                                 <motion.span
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.1, type: "spring", stiffness: 500, damping: 20 }}
-                                    className="p-0.5 rounded-full bg-emerald-500 text-white"
+                                    className="relative z-10 p-0.5 rounded-full bg-emerald-500 text-white"
                                 >
                                     <CheckIcon className="w-3 h-3" strokeWidth={3} />
                                 </motion.span>
-                                <span className="font-bold text-emerald-800 dark:text-emerald-200 text-sm">Équipe au complet</span>
+                                <span className="relative z-10 font-bold text-emerald-800 dark:text-emerald-200 text-sm">Équipe au complet</span>
                             </motion.div>
                         ) : (
                             <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
