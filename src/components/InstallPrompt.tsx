@@ -15,12 +15,18 @@ function isAlreadyInstalled(): boolean {
     );
 }
 
-function isIOSSafari(): boolean {
+/** Téléphones iPhone sans iPad, en Safari uniquement (les autres navigateurs iOS ne supportent pas l'installation) */
+function isIOSPhoneSafari(): boolean {
     const ua = navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream;
-    // Exclure Chrome et Firefox sur iOS (qui ne supportent pas l'installation PWA)
+    const isIOSPhone = /iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream;
     const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
-    return isIOS && isSafari;
+    return isIOSPhone && isSafari;
+}
+
+/** Téléphone Android (le UA Android + Mobile exclut les tablettes Android) */
+function isAndroidPhone(): boolean {
+    const ua = navigator.userAgent;
+    return /Android/.test(ua) && /Mobile/.test(ua);
 }
 
 function wasDismissedRecently(): boolean {
@@ -37,12 +43,12 @@ const InstallPrompt: React.FC = () => {
     useEffect(() => {
         if (isAlreadyInstalled() || wasDismissedRecently()) return;
 
-        if (isIOSSafari()) {
+        if (isIOSPhoneSafari()) {
             setIos(true);
             // Délai pour ne pas gêner le chargement initial
             const t = setTimeout(() => setShow(true), 4000);
             return () => clearTimeout(t);
-        } else {
+        } else if (isAndroidPhone()) {
             const handler = (e: Event) => {
                 e.preventDefault();
                 setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -51,6 +57,7 @@ const InstallPrompt: React.FC = () => {
             window.addEventListener('beforeinstallprompt', handler);
             return () => window.removeEventListener('beforeinstallprompt', handler);
         }
+        // Tablettes, desktop → rien
     }, []);
 
     const handleInstall = async () => {
