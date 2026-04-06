@@ -43,11 +43,18 @@ const InstallPrompt: React.FC = () => {
     useEffect(() => {
         if (isAlreadyInstalled() || wasDismissedRecently()) return;
 
+        // Ferme la bannière si l'appli est installée par n'importe quel moyen
+        const onInstalled = () => setShow(false);
+        window.addEventListener('appinstalled', onInstalled);
+
         if (isIOSPhoneSafari()) {
             setIos(true);
             // Délai pour ne pas gêner le chargement initial
             const t = setTimeout(() => setShow(true), 4000);
-            return () => clearTimeout(t);
+            return () => {
+                clearTimeout(t);
+                window.removeEventListener('appinstalled', onInstalled);
+            };
         } else if (isAndroidPhone()) {
             const handler = (e: Event) => {
                 e.preventDefault();
@@ -55,9 +62,13 @@ const InstallPrompt: React.FC = () => {
                 setShow(true);
             };
             window.addEventListener('beforeinstallprompt', handler);
-            return () => window.removeEventListener('beforeinstallprompt', handler);
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handler);
+                window.removeEventListener('appinstalled', onInstalled);
+            };
         }
         // Tablettes, desktop → rien
+        return () => window.removeEventListener('appinstalled', onInstalled);
     }, []);
 
     const handleInstall = async () => {
