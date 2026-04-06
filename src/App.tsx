@@ -6,6 +6,7 @@ import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
 import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
+import InstallPrompt from './components/InstallPrompt';
 import Footer from './components/Footer';
 import ProfileModal from './components/ProfileModal';
 import { ToastContainer, useToast } from './components/Toast';
@@ -294,6 +295,7 @@ function App() {
       }
       footer={
         <>
+          <InstallPrompt />
           <ReloadPrompt />
           <Footer />
           {/* Bottom Navigation for Mobile */}
