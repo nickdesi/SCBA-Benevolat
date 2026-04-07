@@ -1,8 +1,22 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.4';
+const APP_VERSION = 'v2.4.5';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.4.5',
+        date: '07 Avril 2026',
+        changes: [
+            '📱 Mobile : Breakpoint xs (390px) activé — titre header, badge Itinéraire et Dashboard visibles sur iPhone',
+            '📐 Layout : Padding bas augmenté (pb-28) — contenu no longer masqué sous la bottom nav',
+            '⚠️ Rôles manquants affichés dès xs: au lieu de sm: dans les cartes de match',
+            '🗓️ Pill de mois compact sur petits écrans (évite le débordement sur iPhone SE)',
+            '🚫 Anti-zoom iOS : font-size ≥ 16px sur tous les inputs (VolunteerSlot, Covoiturage)',
+            '📲 ProfileModal : bottom sheet natif sur mobile (glisse depuis le bas + drag handle)',
+            '📊 Stats Dashboard : grille 2 colonnes sur mobile (était 1 colonne)',
+            '🍞 Toast repositionné à bottom-[90px] pour ne pas chevaucher la bottom nav',
+        ]
+    },
     {
         version: 'v2.4.4',
         date: '06 Mars 2026',
