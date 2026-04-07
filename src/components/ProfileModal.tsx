@@ -37,7 +37,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -47,14 +47,18 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
                     />
 
-                    {/* Modal Content */}
+                    {/* Modal Content — bottom sheet on mobile, centered dialog on sm+ */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ type: "spring", duration: 0.5 }}
-                        className="relative w-full max-w-4xl h-[85vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+                        initial={{ opacity: 0, y: '100%' }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: '100%' }}
+                        transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                        className="relative w-full sm:max-w-4xl h-[92dvh] sm:h-[85vh] bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
                     >
+                        {/* Drag handle — mobile only */}
+                        <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+                            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+                        </div>
                         <VolunteerDashboard
                             user={user}
                             registrations={registrations}

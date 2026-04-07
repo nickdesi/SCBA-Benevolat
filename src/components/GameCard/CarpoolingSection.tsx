@@ -593,7 +593,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Votre nom *"
                                     required
-                                    className="w-full px-4 py-3 text-sm text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
+                                    className="w-full px-4 py-3 text-base text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
                                         focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600
                                         placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                 />
@@ -603,7 +603,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="Téléphone (optionnel)"
-                                    className="w-full px-4 py-3 text-sm text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
+                                    className="w-full px-4 py-3 text-base text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
                                         focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600
                                         placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                 />
@@ -613,7 +613,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                     <select
                                         value={seats}
                                         onChange={(e) => setSeats(Number(e.target.value))}
-                                        className="w-full appearance-none px-4 py-3 pr-10 text-sm font-medium
+                                        className="w-full appearance-none px-4 py-3 pr-10 text-base font-medium
                                             text-slate-800 dark:!text-white bg-white dark:bg-slate-800 
                                             border border-slate-200 dark:border-slate-700 rounded-xl
                                             focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600
@@ -635,7 +635,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                         value={departureLocation}
                                         onChange={(e) => setDepartureLocation(e.target.value)}
                                         placeholder="Lieu de départ (ex: Clermont-Ferrand)"
-                                        className="w-full px-4 py-3 text-sm text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
+                                        className="w-full px-4 py-3 text-base text-slate-800 dark:!text-white bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl
                                             focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600
                                             placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                     />

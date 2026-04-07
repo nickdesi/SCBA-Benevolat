@@ -222,7 +222,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                             onChange={(e) => setNewName(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="Votre Prénom et Nom..."
-                            className="flex-1 min-w-0 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="flex-1 min-w-0 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 min-h-[44px] text-base focus:ring-2 focus:ring-blue-500 outline-none"
                             autoFocus
                         />
                         <button

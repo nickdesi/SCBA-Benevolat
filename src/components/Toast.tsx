@@ -36,7 +36,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, removeTo
     return createPortal(
         <div
             className="fixed z-[99999] pointer-events-none
-                       bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6
+                       bottom-[90px] sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6
                        flex flex-col gap-3 items-center sm:items-end"
             aria-live="polite"
             aria-label="Notifications"

@@ -139,14 +139,14 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                     variants={dayVariants} // Use same variants to sync opacity
                                 >
                                     <div className={`
-                                        inline-flex items-center gap-3 px-6 py-3 rounded-full shadow-lg z-10 relative
+                                        inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg z-10 relative
                                         ${isToday
                                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-blue-500/30'
                                             : 'bg-gradient-to-r from-slate-800 to-slate-700 shadow-slate-900/20'}
                                     `}>
-                                        <span className="text-2xl">{isToday ? '🔥' : '📅'}</span>
+                                        <span className="text-lg sm:text-2xl">{isToday ? '🔥' : '📅'}</span>
                                         <div className="flex flex-col items-start leading-tight">
-                                            <span className="text-lg font-black text-white tracking-wide capitalize whitespace-nowrap">
+                                            <span className="text-sm sm:text-lg font-black text-white tracking-wide capitalize">
                                                 {isToday ? "Aujourd'hui" : day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                             </span>
                                             <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
@@ -155,7 +155,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                                 <span className="text-blue-400">{dayGames.filter(g => !(g.isHome ?? true)).length} Ext</span>
                                             </span>
                                         </div>
-                                        <span className="self-center flex flex-col items-center text-center font-bold px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-2">
+                                        <span className="self-center flex flex-col items-center text-center font-bold px-2 sm:px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-1 sm:ml-2">
                                             <span className="text-base leading-tight">{dayGames.length}</span>
                                             <span className="text-[10px] leading-tight">matchs</span>
                                         </span>

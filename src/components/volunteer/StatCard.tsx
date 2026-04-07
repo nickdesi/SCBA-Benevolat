@@ -6,14 +6,15 @@ interface StatCardProps {
     value: string | number;
     icon: React.ReactNode;
     gradient: string;
+    colSpan?: boolean;
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, gradient }) => {
+export const StatCard: React.FC<StatCardProps> = ({ label, value, icon, gradient, colSpan }) => {
     return (
         <motion.div
             whileHover={{ y: -5, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="group relative bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-200/60 dark:border-white/10 shadow-premium hover:shadow-2xl transition-all duration-300 cursor-default overflow-hidden"
+            className={`group relative bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-200/60 dark:border-white/10 shadow-premium hover:shadow-2xl transition-all duration-300 cursor-default overflow-hidden${colSpan ? ' col-span-2 sm:col-span-1' : ''}`}
         >
             {/* Elite Glass Depth Layer */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 pointer-events-none" />

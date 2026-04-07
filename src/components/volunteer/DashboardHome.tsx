@@ -86,7 +86,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5"
+                className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5"
             >
                 <StatCard
                     label="Missions Totales"
@@ -105,6 +105,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
                     value={stats.favoriteRole}
                     icon={<Star className="w-5 h-5" />}
                     gradient="from-amber-400 via-orange-500 to-rose-600"
+                    colSpan
                 />
             </motion.div>
 
