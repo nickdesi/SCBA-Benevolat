@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, PartialWithFieldValue } from "firebase/firestore";
 import { db } from "../firebase";
 import { User } from "firebase/auth";
 
@@ -64,10 +64,14 @@ const resizeImageToBase64 = (file: File, size = 128): Promise<string> =>
  * Redimensionne l'avatar et le stocke en base64 dans Firestore (sans Firebase Storage).
  * Retourne le data URI pour affichage immédiat.
  */
-export const saveAvatarToFirestore = async (file: File, uid: string): Promise<string> => {
+export const saveAvatarToFirestore = async (file: File, uid: string, displayName?: string): Promise<string> => {
     const dataUri = await resizeImageToBase64(file);
     const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, { photoURL: dataUri });
+    // setDoc avec merge: crée le document s'il n'existe pas, et garantit que displayName
+    // est présent pour que useAvatars puisse construire le mapping displayName→photoURL
+    const update: Record<string, string> = { photoURL: dataUri };
+    if (displayName) update.displayName = displayName;
+    await setDoc(userRef, update, { merge: true });
     return dataUri;
 };
 

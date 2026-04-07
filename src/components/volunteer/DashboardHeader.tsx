@@ -50,7 +50,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         try {
             setUploading(true);
-            await saveAvatarToFirestore(file, user.uid);
+            await saveAvatarToFirestore(file, user.uid, user.displayName ?? undefined);
             onToast?.('Photo de profil mise à jour !', 'success');
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : String(error);
