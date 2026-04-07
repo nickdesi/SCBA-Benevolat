@@ -66,9 +66,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <div className="relative flex-shrink-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 p-4 sm:p-5 shadow-xl z-20 overflow-hidden border-b border-white/5">
             {/* Elite Decorative Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px] animate-pulse" />
+                {/* Static blur — no animate-pulse to avoid costly GPU repaints */}
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]" />
                 <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500/10 rounded-full blur-[80px]" />
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] invert" />
+                {/* Subtle noise overlay via pure CSS — no external network request */}
+                <div className="absolute inset-0 opacity-[0.03]"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='2' height='2' fill='%23fff'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23fff'/%3E%3C/svg%3E\")" }} />
             </div>
 
             <div className="relative z-10 flex items-center justify-between gap-4">

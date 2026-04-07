@@ -23,41 +23,46 @@ export const useVolunteers = (): UseVolunteersReturn => {
 
     // Listen to User Registrations (for "My Planning" when logged in)
     useEffect(() => {
-        let unsubscribe = () => { };
+        // Track both the Firestore snapshot listener and the auth state listener
+        // so both can be cleaned up when the component unmounts.
+        let unsubscribeSnapshot = () => { };
 
-        const listenToUserRegistrations = async () => {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    const q = query(collection(db, `users/${user.uid}/registrations`));
-                    unsubscribe = onSnapshot(q, (snapshot) => {
-                        const regs: UserRegistration[] = [];
-                        snapshot.docs.forEach(d => {
-                            const data = d.data();
-                            regs.push({
-                                id: d.id,
-                                gameId: data.gameId,
-                                roleId: data.roleId,
-                                roleName: data.roleName,
-                                gameDate: data.gameDate,
-                                gameDateISO: data.gameDateISO,
-                                gameTime: data.gameTime,
-                                location: data.location,
-                                team: data.team,
-                                opponent: data.opponent,
-                                volunteerName: data.volunteerName,
-                                isValid: true
-                            } as UserRegistration);
-                        });
-                        setUserRegistrations(regs);
+        const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+            // Tear down any previous snapshot listener before setting up a new one
+            unsubscribeSnapshot();
+
+            if (user) {
+                const q = query(collection(db, `users/${user.uid}/registrations`));
+                unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+                    const regs: UserRegistration[] = [];
+                    snapshot.docs.forEach(d => {
+                        const data = d.data();
+                        regs.push({
+                            id: d.id,
+                            gameId: data.gameId,
+                            roleId: data.roleId,
+                            roleName: data.roleName,
+                            gameDate: data.gameDate,
+                            gameDateISO: data.gameDateISO,
+                            gameTime: data.gameTime,
+                            location: data.location,
+                            team: data.team,
+                            opponent: data.opponent,
+                            volunteerName: data.volunteerName,
+                            isValid: true
+                        } as UserRegistration);
                     });
-                } else {
-                    setUserRegistrations([]);
-                }
-            });
-        };
+                    setUserRegistrations(regs);
+                });
+            } else {
+                setUserRegistrations([]);
+            }
+        });
 
-        listenToUserRegistrations();
-        return () => unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            unsubscribeSnapshot();
+        };
     }, []);
 
     const userRegistrationsMap = useMemo(() => {

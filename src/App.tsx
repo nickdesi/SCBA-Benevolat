@@ -24,6 +24,9 @@ import EventSchema from './components/EventSchema';
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
 const GameForm = lazy(() => import('./components/GameForm'));
 const PlanningView = lazy(() => import('./components/planning/PlanningView'));
+// AdminStats must be declared at module level — NOT inside App() to avoid
+// creating a new lazy reference on every render (which remounts the component).
+const AdminStats = lazy(() => import('./components/AdminStats'));
 
 import AdminToolbar from './components/AdminToolbar';
 import PullToRefresh from './components/PullToRefresh';
@@ -49,9 +52,6 @@ function App() {
       setIsProfileModalOpen(false); // Close Profile Modal when switching views
     });
   }, []);
-
-  // Stats Component (lazy optional, but let's just import for now or lazy)
-  const AdminStats = lazy(() => import('./components/AdminStats'));
 
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();

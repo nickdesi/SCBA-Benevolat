@@ -11,6 +11,27 @@ interface UseGameFiltersProps {
     userRegistrations: UserRegistration[];
 }
 
+// Pure helpers — defined at module level so they are never recreated on render
+const getTeamPriority = (team: string) => {
+    const t = team.toUpperCase();
+    if (t.includes('U9')) return 1;
+    if (t.includes('U11')) return 2;
+    if (t.includes('U13')) return 3;
+    if (t.includes('U15')) return 4;
+    if (t.includes('U18')) return 5;
+    if (t.includes('SENIOR')) return 6;
+    if (t.includes('VETERAN')) return 7;
+    return 99;
+};
+
+const sortTeams = (teamList: string[]) =>
+    teamList.sort((a, b) => {
+        const prioA = getTeamPriority(a);
+        const prioB = getTeamPriority(b);
+        if (prioA !== prioB) return prioA - prioB;
+        return a.localeCompare(b);
+    });
+
 export const useGameFilters = ({
     games,
     selectedTeam,
@@ -18,28 +39,6 @@ export const useGameFilters = ({
     favoriteTeams,
     userRegistrations
 }: UseGameFiltersProps) => {
-
-    // Helper for team sorting order
-    const getTeamPriority = (team: string) => {
-        const t = team.toUpperCase();
-        if (t.includes('U9')) return 1;
-        if (t.includes('U11')) return 2;
-        if (t.includes('U13')) return 3;
-        if (t.includes('U15')) return 4;
-        if (t.includes('U18')) return 5;
-        if (t.includes('SENIOR')) return 6;
-        if (t.includes('VETERAN')) return 7;
-        return 99;
-    };
-
-    const sortTeams = (teamList: string[]) => {
-        return teamList.sort((a, b) => {
-            const prioA = getTeamPriority(a);
-            const prioB = getTeamPriority(b);
-            if (prioA !== prioB) return prioA - prioB;
-            return a.localeCompare(b);
-        });
-    };
 
     // 1. Extract unique teams for dropdown (restricted to favorites if set)
     const teams = useMemo(() => {

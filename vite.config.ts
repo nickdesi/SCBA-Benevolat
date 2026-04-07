@@ -132,8 +132,16 @@ export default defineConfig({
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/scheduler')) {
             return 'vendor-react';
           }
-          if (id.includes('node_modules/firebase')) {
-            return 'vendor-firebase';
+          // Split Firebase into sub-chunks: auth (rarely changes) vs firestore/storage
+          // so a Firestore SDK update doesn't bust the auth chunk cache.
+          if (id.includes('node_modules/firebase/auth') || id.includes('node_modules/@firebase/auth')) {
+            return 'vendor-firebase-auth';
+          }
+          if (id.includes('node_modules/firebase/storage') || id.includes('node_modules/@firebase/storage')) {
+            return 'vendor-firebase-storage';
+          }
+          if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
+            return 'vendor-firebase-core';
           }
           if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
             return 'vendor-ui';
