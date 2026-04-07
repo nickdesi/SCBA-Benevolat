@@ -3,8 +3,8 @@ import { User } from 'firebase/auth';
 import { X, LayoutDashboard, MessageCircle, Camera, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { triggerHaptic } from '../../utils/haptics';
-import { uploadAvatar, updateUserAvatar } from '../../utils/userStore';
-import { updateProfile } from 'firebase/auth';
+import { saveAvatarToFirestore } from '../../utils/userStore';
+import { useAvatars } from '../../hooks/useAvatars';
 
 interface DashboardHeaderProps {
     user: User;
@@ -23,6 +23,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 }) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = React.useState(false);
+    const { getAvatar } = useAvatars();
 
     const handleTabChange = useCallback((tab: 'dashboard' | 'communication') => {
         if (activeTab !== tab) {
@@ -33,6 +34,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        // Reset input so the same file can be re-selected after an error
+        e.target.value = '';
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
@@ -47,13 +50,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         try {
             setUploading(true);
-            const downloadURL = await uploadAvatar(file, user.uid);
-            await updateProfile(user, { photoURL: downloadURL });
-            await updateUserAvatar(user, downloadURL);
+            await saveAvatarToFirestore(file, user.uid);
             onToast?.('Photo de profil mise à jour !', 'success');
-        } catch (error) {
-            console.error("Error uploading avatar:", error);
-            onToast?.('Erreur lors de la mise à jour.', 'error');
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error("Error uploading avatar:", msg);
+            onToast?.(`Erreur upload : ${msg}`, 'error');
         } finally {
             setUploading(false);
         }
@@ -83,8 +85,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-lg shadow-indigo-500/30 cursor-pointer group"
                     >
                         <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden border border-white/10 relative">
-                            {user.photoURL ? (
-                                <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" />
+                            {(getAvatar(user.displayName ?? '') || user.photoURL) ? (
+                                <img src={getAvatar(user.displayName ?? '') || user.photoURL!} alt={user.displayName || "User"} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center font-black text-lg text-indigo-400">
                                     {user.displayName?.charAt(0).toUpperCase()}

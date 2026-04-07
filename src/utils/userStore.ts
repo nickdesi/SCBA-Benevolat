@@ -1,6 +1,5 @@
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase";
+import { db } from "../firebase";
 import { User } from "firebase/auth";
 
 export interface UserProfile {
@@ -36,25 +35,40 @@ export const syncUserProfile = async (user: User) => {
 };
 
 /**
- * Uploads an avatar image to Firebase Storage and returns the download URL
+ * Redimensionne une image en 128×128 (center-crop) et retourne un data URI JPEG base64.
+ * Résultat ~10-20 KB — compatible Firestore (limite 1 MB/document).
  */
-export const uploadAvatar = async (file: File, uid: string): Promise<string> => {
-    // strict path: avatars/{uid}/avatar.jpg (or png)
-    // We overwrite the previous one to save space
-    const storageRef = ref(storage, `avatars/${uid}/profile_pic`);
-
-    // Upload
-    await uploadBytes(storageRef, file);
-
-    // Get URL
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-};
+const resizeImageToBase64 = (file: File, size = 128): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { reject(new Error('Canvas non supporté')); return; }
+            // Center-crop carré
+            const min = Math.min(img.width, img.height);
+            const sx = (img.width - min) / 2;
+            const sy = (img.height - min) / 2;
+            ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Impossible de charger l\'image')); };
+        img.src = url;
+    });
 
 /**
- * Updates the user's avatar in Auth and Firestore
+ * Redimensionne l'avatar et le stocke en base64 dans Firestore (sans Firebase Storage).
+ * Retourne le data URI pour affichage immédiat.
  */
-export const updateUserAvatar = async (user: User, photoURL: string) => {
-    const userRef = doc(db, "users", user.uid);
-    await updateDoc(userRef, { photoURL });
+export const saveAvatarToFirestore = async (file: File, uid: string): Promise<string> => {
+    const dataUri = await resizeImageToBase64(file);
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { photoURL: dataUri });
+    return dataUri;
 };
+
+
