@@ -228,7 +228,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">Bénévoles</span>
 
                                 {missingRoles.length > 0 && (
-                                    <div className="hidden sm:inline-flex ml-2 items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 shadow-sm shadow-rose-100/50 dark:shadow-none">
+                                    <div className="hidden xs:inline-flex ml-2 items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 shadow-sm shadow-rose-100/50 dark:shadow-none">
                                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                                         <span className="text-[10px] font-bold text-rose-600 dark:text-rose-300 uppercase tracking-wide">
                                             Manque : {missingRoles[0]} {missingRoles.length > 1 ? `+${missingRoles.length - 1}` : ''}

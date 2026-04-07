@@ -96,12 +96,12 @@ const GameList: React.FC<GameListProps> = memo(({
                 <div key={`${group.label}-${groupIdx}`}>
                     {/* Month Header - Modern pill style */}
                     <div className="flex items-center justify-center my-10">
-                        <div className="inline-flex items-center gap-3 px-6 py-3 
+                        <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 
                           bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-900 dark:to-purple-900
                           rounded-full shadow-lg shadow-indigo-500/30 border border-white/10">
-                            <Calendar className="w-6 h-6 text-white" />
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
                             <div className="flex flex-col items-start leading-tight">
-                                <span className="text-lg font-black text-white tracking-wide">
+                                <span className="text-base sm:text-lg font-black text-white tracking-wide">
                                     {group.label}
                                 </span>
                                 <span className="text-[11px] font-medium uppercase tracking-wider flex items-center gap-1">
@@ -110,7 +110,7 @@ const GameList: React.FC<GameListProps> = memo(({
                                     <span className="text-blue-300">{group.games.filter(g => !(g.isHome ?? true)).length} Ext</span>
                                 </span>
                             </div>
-                            <span className="text-sm font-bold px-2.5 py-0.5 bg-white/20 text-white/90 rounded-full ml-2">
+                            <span className="text-xs sm:text-sm font-bold px-2 py-0.5 bg-white/20 text-white/90 rounded-full ml-1 sm:ml-2 flex-shrink-0">
                                 {group.games.length} matchs
                             </span>
                         </div>
