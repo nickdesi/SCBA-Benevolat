@@ -1,8 +1,19 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.5';
+const APP_VERSION = 'v2.4.6';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.4.6',
+        date: '07 Avril 2026',
+        changes: [
+            '⚡ Perf : AdminStats lazy() déplacé au niveau module — évite le remount à chaque render',
+            '🛡️ Perf : Fuite mémoire corrigée dans useVolunteers (onAuthStateChanged non désabonné)',
+            '🎨 Perf : Suppression animate-pulse sur blur-[100px] — réduit les repaints GPU',
+            '🌐 Perf : Suppression de la requête externe (transparenttextures.com) dans DashboardHeader',
+            '📦 Build : Découpage Firebase en 3 chunks (auth/storage/core) pour un meilleur cache navigateur',
+        ]
+    },
     {
         version: 'v2.4.5',
         date: '07 Avril 2026',
