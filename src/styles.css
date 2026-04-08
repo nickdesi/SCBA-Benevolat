@@ -320,8 +320,8 @@ textarea::placeholder {
 
 @theme {
   --animate-shine: shine 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  /* Custom xs breakpoint for very small phones (375–400px) */
-  --breakpoint-xs: 390px;
+  /* Custom xs breakpoint for very small phones (375–400px) — must use rem like other TW4 breakpoints */
+  --breakpoint-xs: 24.375rem; /* 390px ÷ 16 */
 }
 
 @keyframes shine {

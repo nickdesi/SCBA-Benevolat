@@ -133,7 +133,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                             {game.location}
                         </span>
                     </div>
-                    <span className="hidden xs:inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-600 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm transition-all">
+                    <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-600 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm transition-all flex-shrink-0">
                         Itinéraire
                     </span>
                 </a>
