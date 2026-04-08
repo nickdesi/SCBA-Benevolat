@@ -258,6 +258,25 @@ function App() {
     }
   }, [handleCancelRequest, addToast]);
 
+  const handleRemoveVolunteerWithToast = useCallback(async (gameId: string, roleId: string, volunteerName: string) => {
+    try {
+      await handleRemoveVolunteer(gameId, roleId, volunteerName);
+    } catch (err) {
+      console.error("Error removing volunteer:", err);
+      addToast("Erreur lors de la désinscription", 'error');
+    }
+  }, [handleRemoveVolunteer, addToast]);
+
+  const handleUpdateVolunteerWithToast = useCallback(async (gameId: string, roleId: string, oldName: string, newName: string) => {
+    try {
+      await handleUpdateVolunteer(gameId, roleId, oldName, newName);
+      addToast('Nom modifié', 'success');
+    } catch (err) {
+      console.error("Error updating volunteer:", err);
+      addToast("Erreur lors de la modification du nom", 'error');
+    }
+  }, [handleUpdateVolunteer, addToast]);
+
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
@@ -276,7 +295,7 @@ function App() {
           allTeams={allTeams}
           favoriteTeams={favoriteTeams}
           onToggleFavorite={toggleFavoriteTeam}
-          onUnsubscribe={handleRemoveVolunteer}
+          onUnsubscribe={handleRemoveVolunteerWithToast}
           onRemoveCarpool={handleRemoveCarpool}
           onToast={addToast}
           onOpenAdminStats={() => setIsAdminStatsOpen(true)}
@@ -345,7 +364,7 @@ function App() {
               registrations={userRegistrations}
               games={games}
               userCarpools={userCarpools}
-              onUnsubscribe={handleRemoveVolunteer}
+              onUnsubscribe={handleRemoveVolunteerWithToast}
               onRemoveCarpool={handleRemoveCarpool}
               onToast={addToast}
               allTeams={allTeams}
@@ -463,8 +482,8 @@ function App() {
                     isAuthenticated={isAuthenticated}
                     editingGameId={editingGameId}
                     onVolunteer={handleVolunteerWithToast}
-                    onRemoveVolunteer={handleRemoveVolunteer}
-                    onUpdateVolunteer={handleUpdateVolunteer}
+                    onRemoveVolunteer={handleRemoveVolunteerWithToast}
+                    onUpdateVolunteer={handleUpdateVolunteerWithToast}
                     onAddCarpool={handleAddCarpoolWithToast}
                     onRemoveCarpool={handleRemoveCarpool}
                     onRequestSeat={handleRequestSeatWithToast}
@@ -491,8 +510,8 @@ function App() {
                     isAuthenticated={isAuthenticated}
                     editingGameId={editingGameId}
                     onVolunteer={handleVolunteerWithToast}
-                    onRemoveVolunteer={handleRemoveVolunteer}
-                    onUpdateVolunteer={handleUpdateVolunteer}
+                    onRemoveVolunteer={handleRemoveVolunteerWithToast}
+                    onUpdateVolunteer={handleUpdateVolunteerWithToast}
                     onAddCarpool={handleAddCarpoolWithToast}
                     onRemoveCarpool={handleRemoveCarpool}
                     onRequestSeat={handleRequestSeatWithToast}

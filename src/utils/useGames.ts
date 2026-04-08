@@ -10,6 +10,7 @@ import {
     query,
     where,
     orderBy,
+    limit,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { DEFAULT_ROLES } from '../constants';
@@ -86,7 +87,8 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
         const matchesQuery = query(
             collection(db, "matches"),
             where("dateISO", ">=", todayISO),
-            orderBy("dateISO", "asc")
+            orderBy("dateISO", "asc"),
+            limit(50)
         );
 
         const unsubscribe = onSnapshot(matchesQuery, (snapshot) => {
@@ -96,6 +98,9 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             } as Game));
 
             setGames(matchesData);
+            setLoading(false);
+        }, (error) => {
+            console.error('[useGames] Firestore snapshot error:', error);
             setLoading(false);
         });
 

@@ -159,9 +159,12 @@ export const useVolunteers = (): UseVolunteersReturn => {
             await runTransaction(db, async (transaction) => {
                 const gameDoc = await transaction.get(gameRef);
 
-                if (gameDoc.exists()) {
-                    const gameData = gameDoc.data() as Game;
-                    const updatedRoles = gameData.roles.map(role => {
+                if (!gameDoc.exists()) {
+                    throw new Error("Game does not exist!");
+                }
+
+                const gameData = gameDoc.data() as Game;
+                const updatedRoles = gameData.roles.map(role => {
                         // Robust check: Compare as strings
                         if (String(role.id) === String(roleId)) {
                             const currentVolunteers = role.volunteers || [];
@@ -179,8 +182,7 @@ export const useVolunteers = (): UseVolunteersReturn => {
                         }
                         return role;
                     });
-                    transaction.update(gameRef, { roles: updatedRoles });
-                }
+                transaction.update(gameRef, { roles: updatedRoles });
 
                 if (auth.currentUser) {
                     // Fix: Use the correct key format that includes the volunteer name
@@ -215,7 +217,7 @@ export const useVolunteers = (): UseVolunteersReturn => {
         try {
             await runTransaction(db, async (transaction) => {
                 const gameDoc = await transaction.get(gameRef);
-                if (!gameDoc.exists()) throw "Game missing";
+                if (!gameDoc.exists()) throw new Error("Game missing");
 
                 const gameData = gameDoc.data() as Game;
                 const updatedRoles = gameData.roles.map(role => {

@@ -1,12 +1,23 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.4.6';
+const APP_VERSION = 'v2.5.0';
 // Changelog data
 const CHANGELOG = [
     {
+        version: 'v2.5.0',
+        date: '8 Avril 2026',
+        changes: [
+            '🛡️ Stabilité : Error Boundary global — l\'app affiche un écran de récupération au lieu de crasher',
+            '⚡ Perf : Pagination Firestore (limit 50) — évite de charger tous les matchs futurs',
+            '🔥 Fix : onSnapshot avec callback d\'erreur — le spinner ne reste plus bloqué hors-ligne',
+            '🐛 Fix : Désinscription bénévole échouée notifiée par toast (était silencieuse)',
+            '🐛 Fix : handleRemoveVolunteer lève une erreur si le match est introuvable (was: skip silencieux)',
+            '🐛 Fix : throw string remplacé par Error object dans handleUpdateVolunteer',
+        ]
+    },
+    {
         version: 'v2.4.6',
         date: '07 Avril 2026',
-        changes: [
             '⚡ Perf : AdminStats lazy() déplacé au niveau module — évite le remount à chaque render',
             '🛡️ Perf : Fuite mémoire corrigée dans useVolunteers (onAuthStateChanged non désabonné)',
             '🎨 Perf : Suppression animate-pulse sur blur-[100px] — réduit les repaints GPU',
