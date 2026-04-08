@@ -4,6 +4,7 @@ from firebase_admin import credentials, firestore
 from ffbb_api_client_v2 import FFBBAPIClientV2, TokenManager
 from datetime import datetime
 import re
+import os
 import sys
 
 # Copy logic from verify_match_times.py
@@ -28,7 +29,8 @@ def extract_team_number_ffbb(team_name):
 def debug_match():
     # Init Firebase
     try:
-        cred = credentials.Certificate("serviceAccountKey.json")
+        key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'serviceAccountKey.json')
+        cred = credentials.Certificate(key_path)
         firebase_admin.initialize_app(cred)
     except: pass
     db = firestore.client()

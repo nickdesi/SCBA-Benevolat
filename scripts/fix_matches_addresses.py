@@ -6,6 +6,7 @@ from ffbb_api_client_v2.config import API_FFBB_BASE_URL, DEFAULT_USER_AGENT
 import requests
 import argparse
 import sys
+import os
 import time
 from datetime import datetime
 
@@ -39,10 +40,10 @@ MATCH_DETAILS_CACHE = {} # match_id -> details
 
 def init_firebase():
     try:
-        # Try finding a service account file
-        cred = credentials.Certificate("serviceAccountKey.json")
+        key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'serviceAccountKey.json')
+        cred = credentials.Certificate(key_path)
         firebase_admin.initialize_app(cred)
-        print("Initialized Firebase with serviceAccountKey.json.")
+        print(f"Initialized Firebase with {key_path}.")
     except Exception as e:
         print(f"Failed to init Firebase: {e}")
         sys.exit(1)

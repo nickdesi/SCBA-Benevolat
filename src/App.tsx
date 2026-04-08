@@ -96,12 +96,16 @@ function App() {
 
   // Firebase Auth listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(async (user) => {
       setCurrentUser(user);
       setIsAuthenticated(!!user);
-      // Check if the user is the specific admin account
-      if (user && user.email === 'benevole@scba.fr') {
-        setIsAdmin(true);
+      if (user) {
+        // Source de vérité : custom claim 'admin' défini côté serveur (Cloud Function).
+        // Fallback : email vérifié pendant la période de transition (avant que le claim soit présent).
+        const tokenResult = await user.getIdTokenResult();
+        const adminByClaim = tokenResult.claims['admin'] === true;
+        const adminByEmail = user.email === 'benevole@scba.fr';
+        setIsAdmin(adminByClaim || adminByEmail);
       } else {
         setIsAdmin(false);
       }

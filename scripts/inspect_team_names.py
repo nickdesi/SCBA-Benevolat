@@ -2,10 +2,12 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 import sys
+import os
 
 def init_firebase():
     try:
-        cred = credentials.Certificate("serviceAccountKey.json")
+        key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'serviceAccountKey.json')
+        cred = credentials.Certificate(key_path)
         firebase_admin.initialize_app(cred)
     except Exception as e:
         pass # Likely already init
