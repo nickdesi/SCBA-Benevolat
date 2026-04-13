@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import UserProfile from './UserProfile';
 import { UserRegistration, Game } from '../types';
@@ -24,7 +24,7 @@ interface HeaderProps {
   onOpenProfile: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({
+const Header: React.FC<HeaderProps> = memo(({
   isAdmin,
   onLogout,
   teams = [],
@@ -148,6 +148,8 @@ const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;
