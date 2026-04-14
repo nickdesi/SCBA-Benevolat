@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React from 'react';
 import Marquee from 'react-fast-marquee';
 import type { Game } from '../types';
 
@@ -6,20 +6,18 @@ interface MatchTickerProps {
     games: Game[];
 }
 
-const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
+const MatchTicker: React.FC<MatchTickerProps> = ({ games }) => {
     // Filter games: get the next 10 upcoming games regardless of timeframe
-    const upcomingGames = useMemo(() => {
-        const nowISO = new Date().toISOString().split('T')[0];
+    const nowISO = new Date().toISOString().split('T')[0];
 
-        return games
-            .filter(g => {
-                const d = g.dateISO;
-                // Keep only future or today's games
-                return d && d >= nowISO;
-            })
-            .sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))
-            .slice(0, 10); // Take next 10 games
-    }, [games]);
+    const upcomingGames = games
+        .filter(g => {
+            const d = g.dateISO;
+            // Keep only future or today's games
+            return d && d >= nowISO;
+        })
+        .sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))
+        .slice(0, 10); // Take next 10 games
 
     // Reserve space even when empty to prevent CLS (layout shift)
     if (upcomingGames.length === 0) {
@@ -91,7 +89,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
             </Marquee>
         </div>
     );
-});
+};
 
 MatchTicker.displayName = 'MatchTicker';
 

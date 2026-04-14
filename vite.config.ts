@@ -9,7 +9,11 @@ export default defineConfig({
     host: '0.0.0.0',
   },
   plugins: [
-    react(),
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler', {}]],
+      },
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo-scba.webp', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.webp', 'apple-touch-icon.png'],
@@ -126,6 +130,7 @@ export default defineConfig({
     }
   },
   build: {
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
