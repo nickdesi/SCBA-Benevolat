@@ -1,8 +1,19 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.5.0';
+const APP_VERSION = 'v2.6.0';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.6.0',
+        date: '16 Avril 2026',
+        changes: [
+            '🏗️ Refactor : Centralisation de la logique de staffing et d\'urgence dans gameUtils.ts',
+            '📊 AdminStats : Calcul des KPIs via les helpers partagés pour une cohérence totale',
+            '🃏 GameCard : Affichage des rôles manquants via la logique centralisée',
+            '♾️ Illimité : Gestion standardisée des capacités à 0 (infini)',
+            '⚖️ Tri : Unification de la priorité des catégories d\'équipes (U9 < U11 < ... < Senior)',
+        ]
+    },
     {
         version: 'v2.5.0',
         date: '8 Avril 2026',

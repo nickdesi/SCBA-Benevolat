@@ -34,6 +34,7 @@ import { EmptyState } from './components/EmptyState';
 import { AppLayout } from './components/Layout/AppLayout';
 import { AnnouncementBanner } from './components/Layout/AnnouncementBanner';
 import NetworkStatus from './components/NetworkStatus';
+import { useAppActions } from './hooks/useAppActions';
 
 function App() {
   // UI State
@@ -113,9 +114,36 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // Action Handlers
-  // ---------------------------------------------------------------------------
+  const {
+    addGameWithToast,
+    updateGameWithToast,
+    deleteGameWithToast,
+    importCSVWithToast,
+    volunteerWithToast,
+    removeVolunteerWithToast,
+    updateVolunteerWithToast,
+    addCarpoolWithToast,
+    requestSeatWithToast,
+    acceptPassengerWithToast,
+    rejectPassengerWithToast,
+    cancelRequestWithToast
+  } = useAppActions({
+    isAuthenticated,
+    setIsAuthModalOpen,
+    addGame,
+    updateGame,
+    deleteGame,
+    importGames,
+    handleVolunteer,
+    handleRemoveVolunteer,
+    handleUpdateVolunteer,
+    handleAddCarpool,
+    handleRemoveCarpool,
+    handleRequestSeat,
+    handleAcceptPassenger,
+    handleRejectPassenger,
+    handleCancelRequest
+  });
 
   const handleLogout = useCallback(async () => {
     try {
@@ -125,157 +153,6 @@ function App() {
       addToast('Erreur lors de la déconnexion', 'error');
     }
   }, [addToast]);
-
-  // Handler pour la connexion Google depuis le modal
-  const handleGoogleLogin = useCallback(async () => {
-    try {
-      await signInWithGoogle();
-      setIsAuthModalOpen(false);
-      addToast('Connexion réussie !', 'success');
-    } catch (error) {
-      console.error("Google login failed:", error);
-      addToast('Erreur de connexion Google', 'error');
-    }
-  }, [addToast]);
-
-  const handleAddGame = useCallback(async (gameData: GameFormData) => {
-    try {
-      await addGame(gameData);
-      setIsAddingGame(false);
-    } catch (err) {
-      console.error("Error adding game:", err);
-      addToast("Erreur lors de l'ajout du match", 'error');
-    }
-  }, [addGame, addToast]);
-
-  const handleUpdateGame = useCallback(async (updatedGame: Game) => {
-    try {
-      await updateGame(updatedGame);
-      setEditingGameId(null);
-    } catch (err) {
-      console.error("Error updating game:", err);
-      addToast("Erreur lors de la modification du match", 'error');
-    }
-  }, [updateGame, addToast]);
-
-  const handleDeleteGame = useCallback(async (gameId: string) => {
-    try {
-      const deleted = await deleteGame(gameId);
-      if (deleted && editingGameId === gameId) {
-        setEditingGameId(null);
-      }
-    } catch (err) {
-      console.error("Error deleting game:", err);
-      addToast("Erreur lors de la suppression du match", 'error');
-    }
-  }, [deleteGame, editingGameId, addToast]);
-
-  const handleImportCSV = useCallback(async (matchesData: GameFormData[]) => {
-    try {
-      await importGames(matchesData);
-      addToast(`${matchesData.length} match(s) importé(s) avec succès !`, 'success');
-      setIsImportModalOpen(false);
-    } catch (err) {
-      console.error("Error importing games:", err);
-      addToast("Erreur lors de l'import des matchs", 'error');
-    }
-  }, [importGames, addToast]);
-
-  // Wrapped handlers with toast feedback
-  const handleVolunteerWithToast = useCallback(async (gameId: string, roleId: string, parentName: string | string[]) => {
-    // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
-    if (!isAuthenticated) {
-      addToast('Connectez-vous pour vous inscrire', 'info');
-      // Petit délai pour que le toast soit visible avant le modal
-      setTimeout(() => setIsAuthModalOpen(true), 400);
-      return;
-    }
-
-    try {
-      await handleVolunteer(gameId, roleId, parentName);
-      addToast('Inscription confirmée !', 'success');
-    } catch (err) {
-      console.error("Error adding volunteer:", err);
-      addToast("Erreur lors de l'inscription", 'error');
-    }
-  }, [handleVolunteer, addToast, isAuthenticated]);
-
-  const handleAddCarpoolWithToast = useCallback(async (gameId: string, entry: Omit<import('./types').CarpoolEntry, 'id'>) => {
-    // Vérifier si l'utilisateur est connecté avant de tenter l'inscription
-    if (!isAuthenticated) {
-      addToast('Connectez-vous pour proposer un covoiturage', 'info');
-      // Petit délai pour que le toast soit visible avant le modal
-      setTimeout(() => setIsAuthModalOpen(true), 400);
-      return;
-    }
-
-    try {
-      await handleAddCarpool(gameId, entry);
-      addToast('🚗 Inscription covoiturage confirmée !', 'success');
-    } catch (err) {
-      console.error("Error adding carpool:", err);
-      addToast("Erreur lors de l'inscription covoiturage", 'error');
-    }
-  }, [handleAddCarpool, addToast, isAuthenticated]);
-
-  const handleRequestSeatWithToast = useCallback(async (gameId: string, passengerId: string, driverId: string) => {
-    try {
-      await handleRequestSeat(gameId, passengerId, driverId);
-      addToast('✨ Demande envoyée au conducteur !', 'success');
-    } catch (err) {
-      console.error("Error requesting seat:", err);
-      addToast("Erreur lors de la demande", 'error');
-    }
-  }, [handleRequestSeat, addToast]);
-
-  const handleAcceptPassengerWithToast = useCallback(async (gameId: string, driverId: string, passengerId: string) => {
-    try {
-      await handleAcceptPassenger(gameId, driverId, passengerId);
-      addToast('✅ Passager accepté !', 'success');
-    } catch (err: any) {
-      console.error("Error accepting passenger:", err);
-      addToast(err.message || "Erreur lors de l'acceptation", 'error');
-    }
-  }, [handleAcceptPassenger, addToast]);
-
-  const handleRejectPassengerWithToast = useCallback(async (gameId: string, driverId: string, passengerId: string) => {
-    try {
-      await handleRejectPassenger(gameId, driverId, passengerId);
-      addToast('Demande refusée', 'info');
-    } catch (err) {
-      console.error("Error rejecting passenger:", err);
-      addToast("Erreur lors du refus", 'error');
-    }
-  }, [handleRejectPassenger, addToast]);
-
-  const handleCancelRequestWithToast = useCallback(async (gameId: string, passengerId: string) => {
-    try {
-      await handleCancelRequest(gameId, passengerId);
-      addToast('Demande annulée', 'info');
-    } catch (err) {
-      console.error("Error canceling request:", err);
-      addToast("Erreur lors de l'annulation", 'error');
-    }
-  }, [handleCancelRequest, addToast]);
-
-  const handleRemoveVolunteerWithToast = useCallback(async (gameId: string, roleId: string, volunteerName: string) => {
-    try {
-      await handleRemoveVolunteer(gameId, roleId, volunteerName);
-    } catch (err) {
-      console.error("Error removing volunteer:", err);
-      addToast("Erreur lors de la désinscription", 'error');
-    }
-  }, [handleRemoveVolunteer, addToast]);
-
-  const handleUpdateVolunteerWithToast = useCallback(async (gameId: string, roleId: string, oldName: string, newName: string) => {
-    try {
-      await handleUpdateVolunteer(gameId, roleId, oldName, newName);
-      addToast('Nom modifié', 'success');
-    } catch (err) {
-      console.error("Error updating volunteer:", err);
-      addToast("Erreur lors de la modification du nom", 'error');
-    }
-  }, [handleUpdateVolunteer, addToast]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -295,7 +172,7 @@ function App() {
           allTeams={allTeams}
           favoriteTeams={favoriteTeams}
           onToggleFavorite={toggleFavoriteTeam}
-          onUnsubscribe={handleRemoveVolunteerWithToast}
+          onUnsubscribe={removeVolunteerWithToast}
           onRemoveCarpool={handleRemoveCarpool}
           onToast={addToast}
           onOpenAdminStats={() => setIsAdminStatsOpen(true)}
@@ -338,7 +215,7 @@ function App() {
               <ImportCSVModal
                 isOpen={isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
-                onImport={handleImportCSV}
+                onImport={async (d) => { if (await importCSVWithToast(d)) setIsImportModalOpen(false); }}
                 existingGames={sortedGames}
               />
             )}
@@ -364,7 +241,7 @@ function App() {
               registrations={userRegistrations}
               games={games}
               userCarpools={userCarpools}
-              onUnsubscribe={handleRemoveVolunteerWithToast}
+              onUnsubscribe={removeVolunteerWithToast}
               onRemoveCarpool={handleRemoveCarpool}
               onToast={addToast}
               allTeams={allTeams}
@@ -377,7 +254,7 @@ function App() {
           <UserAuthModal
             isOpen={isAuthModalOpen}
             onClose={() => setIsAuthModalOpen(false)}
-            onGoogleLogin={handleGoogleLogin}
+            onGoogleLogin={async () => { await signInWithGoogle(); setIsAuthModalOpen(false); addToast('Connexion !', 'success'); }}
             onToast={addToast}
           />
         </>
@@ -463,7 +340,7 @@ function App() {
                 <Suspense fallback={<div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
                   <div className="mb-8">
                     <GameForm
-                      onSave={handleAddGame}
+                      onSave={async (d) => { if (await addGameWithToast(d)) setIsAddingGame(false); }}
                       onCancel={() => setIsAddingGame(false)}
                       existingLocations={uniqueLocations}
                       existingOpponents={uniqueOpponents}
@@ -481,20 +358,20 @@ function App() {
                     isAdmin={isAdmin}
                     isAuthenticated={isAuthenticated}
                     editingGameId={editingGameId}
-                    onVolunteer={handleVolunteerWithToast}
-                    onRemoveVolunteer={handleRemoveVolunteerWithToast}
-                    onUpdateVolunteer={handleUpdateVolunteerWithToast}
-                    onAddCarpool={handleAddCarpoolWithToast}
+                    onVolunteer={volunteerWithToast}
+                    onRemoveVolunteer={removeVolunteerWithToast}
+                    onUpdateVolunteer={updateVolunteerWithToast}
+                    onAddCarpool={addCarpoolWithToast}
                     onRemoveCarpool={handleRemoveCarpool}
-                    onRequestSeat={handleRequestSeatWithToast}
-                    onAcceptPassenger={handleAcceptPassengerWithToast}
-                    onRejectPassenger={handleRejectPassengerWithToast}
-                    onCancelRequest={handleCancelRequestWithToast}
+                    onRequestSeat={requestSeatWithToast}
+                    onAcceptPassenger={acceptPassengerWithToast}
+                    onRejectPassenger={rejectPassengerWithToast}
+                    onCancelRequest={cancelRequestWithToast}
                     onToast={addToast}
                     onEditRequest={setEditingGameId}
                     onCancelEdit={() => setEditingGameId(null)}
-                    onDeleteRequest={handleDeleteGame}
-                    onUpdateRequest={handleUpdateGame}
+                    onDeleteRequest={deleteGameWithToast}
+                    onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
                   />
                 </Suspense>
               </div>
@@ -509,20 +386,20 @@ function App() {
                     isAdmin={isAdmin}
                     isAuthenticated={isAuthenticated}
                     editingGameId={editingGameId}
-                    onVolunteer={handleVolunteerWithToast}
-                    onRemoveVolunteer={handleRemoveVolunteerWithToast}
-                    onUpdateVolunteer={handleUpdateVolunteerWithToast}
-                    onAddCarpool={handleAddCarpoolWithToast}
+                    onVolunteer={volunteerWithToast}
+                    onRemoveVolunteer={removeVolunteerWithToast}
+                    onUpdateVolunteer={updateVolunteerWithToast}
+                    onAddCarpool={addCarpoolWithToast}
                     onRemoveCarpool={handleRemoveCarpool}
-                    onRequestSeat={handleRequestSeatWithToast}
-                    onAcceptPassenger={handleAcceptPassengerWithToast}
-                    onRejectPassenger={handleRejectPassengerWithToast}
-                    onCancelRequest={handleCancelRequestWithToast}
+                    onRequestSeat={requestSeatWithToast}
+                    onAcceptPassenger={acceptPassengerWithToast}
+                    onRejectPassenger={rejectPassengerWithToast}
+                    onCancelRequest={cancelRequestWithToast}
                     onToast={addToast}
                     onEditRequest={setEditingGameId}
                     onCancelEdit={() => setEditingGameId(null)}
-                    onDeleteRequest={handleDeleteGame}
-                    onUpdateRequest={handleUpdateGame}
+                    onDeleteRequest={deleteGameWithToast}
+                    onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
                   />
                 ) : (
                   !loading && games.length > 0 && (

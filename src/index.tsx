@@ -33,10 +33,6 @@ root.render(
   </React.StrictMode>
 );
 
-// Performance Monitoring
-import reportWebVitals from './reportWebVitals';
-reportWebVitals();
-
 // PWA Service Worker Registration
 import { registerSW } from 'virtual:pwa-register';
 

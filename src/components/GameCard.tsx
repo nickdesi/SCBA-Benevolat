@@ -8,6 +8,13 @@ import GameHeader from './GameCard/GameHeader';
 import VolunteerSection from './GameCard/VolunteerSection';
 import ActionButtons from './GameCard/ActionButtons';
 import CarpoolingSection from './GameCard/CarpoolingSection';
+import {
+    isGameFullyStaffed,
+    isGameUrgent,
+    getFilledSlotsCount,
+    getTotalCapacityCount,
+    getMissingRoles
+} from '../utils/gameUtils';
 
 // Lazy-loaded for code-splitting
 const GameForm = lazy(() => import('./GameForm'));
@@ -34,20 +41,6 @@ interface GameCardProps {
     isAuthenticated?: boolean;
     index?: number;
 }
-
-// Check if a role is considered "complete"
-const isRoleComplete = (role: { capacity: number; volunteers: string[] }): boolean => {
-    const isUnlimited = role.capacity === Infinity || role.capacity === 0;
-    if (isUnlimited) {
-        return role.volunteers.length >= 2;
-    }
-    return role.volunteers.length >= role.capacity;
-};
-
-// Check if all roles in a game are complete
-const isGameFullyStaffed = (game: Game): boolean => {
-    return game.roles.every(isRoleComplete);
-};
 
 // Chevron Icon for Accordion
 const ChevronIcon: React.FC<{ className?: string; isOpen: boolean }> = ({ className, isOpen }) => (
@@ -92,16 +85,8 @@ const GameCard: React.FC<GameCardProps> = memo(({
     const totalVolunteers = game.roles.reduce((sum, r) => sum + r.volunteers.length, 0);
 
     // Calculate "effective" filled slots (clamped to capacity) to avoid "7/6" situations
-    const filledSlots = game.roles.reduce((sum, r) => {
-        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
-        const capacity = isUnlimited ? 2 : r.capacity;
-        return sum + Math.min(r.volunteers.length, capacity);
-    }, 0);
-
-    const totalCapacity = game.roles.reduce((sum, r) => {
-        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
-        return sum + (isUnlimited ? 2 : r.capacity); // Target 2 for unlimited
-    }, 0);
+    const filledSlots = getFilledSlotsCount(game);
+    const totalCapacity = getTotalCapacityCount(game);
 
     const totalCarpoolSeats = useMemo(() => {
         if (!game.carpool) return 0;
@@ -117,25 +102,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     const isHomeGame = game.isHome ?? true;
 
-    const isUrgent = useMemo(() => {
-        if (!isHomeGame) return false;
-        if (isFullyStaffed) return false;
-        try {
-            const gameDate = new Date(game.dateISO);
-            const now = new Date();
-            const diffMs = gameDate.getTime() - now.getTime();
-            const diffHours = diffMs / (1000 * 60 * 60);
-            return diffHours > 0 && diffHours < 48;
-        } catch {
-            return false;
-        }
-    }, [game.dateISO, isFullyStaffed, isHomeGame]);
+    const isUrgent = useMemo(() => isGameUrgent(game), [game]);
 
-    const missingRoles = useMemo(() => {
-        return game.roles
-            .filter(r => !isRoleComplete(r))
-            .map(r => r.name);
-    }, [game.roles]);
+    const missingRolesNames = useMemo(() => getMissingRoles(game), [game]);
 
     if (isEditing) {
         return (
@@ -227,13 +196,10 @@ const GameCard: React.FC<GameCardProps> = memo(({
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">Bénévoles</span>
 
-                                {missingRoles.length > 0 && (
-                                    <div className="hidden xs:inline-flex ml-2 items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 shadow-sm shadow-rose-100/50 dark:shadow-none">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                                        <span className="text-[10px] font-bold text-rose-600 dark:text-rose-300 uppercase tracking-wide">
-                                            Manque : {missingRoles[0]} {missingRoles.length > 1 ? `+${missingRoles.length - 1}` : ''}
-                                        </span>
-                                    </div>
+                                {missingRolesNames.length > 0 && (
+                                    <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
+                                        Manque : {missingRolesNames[0]} {missingRolesNames.length > 1 ? `+${missingRolesNames.length - 1}` : ''}
+                                    </span>
                                 )}
                             </div>
                         )}

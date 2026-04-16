@@ -12,25 +12,7 @@ interface UseGameFiltersProps {
 }
 
 // Pure helpers — defined at module level so they are never recreated on render
-const getTeamPriority = (team: string) => {
-    const t = team.toUpperCase();
-    if (t.includes('U9')) return 1;
-    if (t.includes('U11')) return 2;
-    if (t.includes('U13')) return 3;
-    if (t.includes('U15')) return 4;
-    if (t.includes('U18')) return 5;
-    if (t.includes('SENIOR')) return 6;
-    if (t.includes('VETERAN')) return 7;
-    return 99;
-};
-
-const sortTeams = (teamList: string[]) =>
-    teamList.sort((a, b) => {
-        const prioA = getTeamPriority(a);
-        const prioB = getTeamPriority(b);
-        if (prioA !== prioB) return prioA - prioB;
-        return a.localeCompare(b);
-    });
+import { sortTeamNames } from '../utils/gameUtils';
 
 export const useGameFilters = ({
     games,
@@ -43,16 +25,16 @@ export const useGameFilters = ({
     // 1. Extract unique teams for dropdown (restricted to favorites if set)
     const teams = useMemo(() => {
         if (favoriteTeams && favoriteTeams.length > 0) {
-            return sortTeams([...favoriteTeams]);
+            return sortTeamNames([...favoriteTeams]);
         }
         const uniqueTeams = new Set(games.map(g => g.team));
-        return sortTeams(Array.from(uniqueTeams));
+        return sortTeamNames(Array.from(uniqueTeams));
     }, [games, favoriteTeams]);
 
     // 2. Full list of teams regardless of favorites (for ProfileModal)
     const allTeams = useMemo(() => {
         const uniqueAll = new Set(games.map(g => g.team));
-        return sortTeams(Array.from(uniqueAll));
+        return sortTeamNames(Array.from(uniqueAll));
     }, [games]);
 
     // 3. Extract unique locations

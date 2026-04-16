@@ -1,6 +1,17 @@
 # Changelog
 
-## [2.4.2] - 2026-02-18
+## [2.6.0] - 2026-04-16
+
+### Refactor
+
+- **Logique Métier** : Centralisation complète de la logique de staffing, d'urgence et de tri dans `gameUtils.ts`.
+- **GameCard / AdminStats** : Utilisation des helpers partagés pour une cohérence totale de l'affichage des manques.
+- **Support Illimité** : Standardisation de la gestion des rôles à capacité infinie (ex: Goûter).
+- **Tri Intelligent** : Déplacement de la logique de priorité des catégories d'équipes dans les utilitaires communs.
+
+---
+
+## [2.5.0] - 2026-04-08
 
 ### Fixed
 
