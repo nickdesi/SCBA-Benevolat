@@ -54,17 +54,27 @@ export const useGameFilters = ({
         const now = new Date();
 
         // First: Filter out past matches (matches that have already started)
+        // Optimization: Use string comparison instead of expensive Date object instantiation in loops
+        const nowIso = [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, '0'),
+            String(now.getDate()).padStart(2, '0')
+        ].join('-');
+        const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
         let result = games.filter(game => {
             try {
-                // Combine dateISO (YYYY-MM-DD) with time (HHhMM or HH:MM) to get exact match start
-                const timeParts = game.time.replace('h', ':').split(':');
-                const hours = parseInt(timeParts[0], 10) || 0;
-                const minutes = parseInt(timeParts[1], 10) || 0;
+                if (!game.dateISO) return true; // Keep games with missing dates (fallback)
 
-                const gameDateTime = new Date(game.dateISO);
-                gameDateTime.setHours(hours, minutes, 0, 0);
+                // Compare dates first
+                if (game.dateISO > nowIso) return true;  // Future day
+                if (game.dateISO < nowIso) return false; // Past day
 
-                return gameDateTime > now; // Only show games that haven't started yet
+                // Same day: compare times
+                const timeParts = game.time.split(/[h:]/i);
+                const h = (timeParts[0] || '0').padStart(2, '0');
+                const m = (timeParts[1] || '0').padStart(2, '0');
+                return `${h}${m}` > nowTimeStr; // Only show games that haven't started yet
             } catch {
                 return true; // Keep games with invalid dates (fallback)
             }
