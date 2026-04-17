@@ -59,6 +59,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
             .filter(({ match }) => !match.isHome && (match.location === 'Extérieur' || match.location.startsWith('Extérieur (')));
 
         const CHUNK_SIZE = 3;
+        const cache: Record<string, Promise<string[]>> = {};
 
         for (let i = 0; i < matchesToEnrich.length; i += CHUNK_SIZE) {
             const chunk = matchesToEnrich.slice(i, i + CHUNK_SIZE);
@@ -74,97 +75,103 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
 
                 const cityNameLower = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                // Parallel fetch from multiple sources
-                const fetchNominatim = async () => {
-                    const results: string[] = [];
-                    const queries = [
-                        `gymnase ${cityName}`,
-                        `salle polyvalente ${cityName}`,
-                        `complexe sportif ${cityName}`,
-                        `stade ${cityName}`,
-                        `${cityName}`
-                    ];
+                if (!cache[cityNameLower]) {
+                    cache[cityNameLower] = (async () => {
+                        // Parallel fetch from multiple sources
+                        const fetchNominatim = async () => {
+                            const results: string[] = [];
+                            const queries = [
+                                `gymnase ${cityName}`,
+                                `salle polyvalente ${cityName}`,
+                                `complexe sportif ${cityName}`,
+                                `stade ${cityName}`,
+                                `${cityName}`
+                            ];
 
-                    for (const query of queries) {
-                        try {
-                            const response = await fetch(
-                                `https://nominatim.openstreetmap.org/search?` +
-                                `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=3&countrycodes=fr`,
-                                { headers: { 'Accept-Language': 'fr' } }
-                            );
-                            const data = await response.json();
+                            for (const query of queries) {
+                                try {
+                                    const response = await fetch(
+                                        `https://nominatim.openstreetmap.org/search?` +
+                                        `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=3&countrycodes=fr`,
+                                        { headers: { 'Accept-Language': 'fr' } }
+                                    );
+                                    const data = await response.json();
 
-                            for (const result of data) {
-                                const addr = result.address || {};
-                                const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
-                                const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                    for (const result of data) {
+                                        const addr = result.address || {};
+                                        const resultCity = (addr.city || addr.town || addr.village || addr.municipality || '').toLowerCase();
+                                        const resultCityNorm = resultCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                                // Loose matching
-                                if (resultCityNorm.includes(cityNameLower) || cityNameLower.includes(resultCityNorm)) {
-                                    const name = result.name || 'Gymnase / Salle';
-                                    const street = addr.road || addr.pedestrian || '';
-                                    const houseNumber = addr.house_number || '';
-                                    const postcode = addr.postcode || '';
-                                    const city = addr.city || addr.town || addr.village || cityName;
+                                        // Loose matching
+                                        if (resultCityNorm.includes(cityNameLower) || cityNameLower.includes(resultCityNorm)) {
+                                            const name = result.name || 'Gymnase / Salle';
+                                            const street = addr.road || addr.pedestrian || '';
+                                            const houseNumber = addr.house_number || '';
+                                            const postcode = addr.postcode || '';
+                                            const city = addr.city || addr.town || addr.village || cityName;
 
-                                    const fullAddress = [
-                                        name,
-                                        [houseNumber, street].filter(Boolean).join(' '),
-                                        [postcode, city].filter(Boolean).join(' ')
-                                    ].filter(Boolean).join(', ');
+                                            const fullAddress = [
+                                                name,
+                                                [houseNumber, street].filter(Boolean).join(' '),
+                                                [postcode, city].filter(Boolean).join(' ')
+                                            ].filter(Boolean).join(', ');
 
-                                    results.push(fullAddress);
-                                }
+                                            results.push(fullAddress);
+                                        }
+                                    }
+                                } catch (e) { /* ignore */ }
+                                if (results.length > 0 && queries.indexOf(query) < 2) break;
                             }
-                        } catch (e) { /* ignore */ }
-                        if (results.length > 0 && queries.indexOf(query) < 2) break;
-                    }
-                    return results;
-                };
+                            return results;
+                        };
 
-                const fetchDataES = async () => {
-                    const results: string[] = [];
-                    try {
-                        // API Data ES: search for "Gymnase" + City Name
-                        const response = await fetch(
-                            `https://equipements.sports.gouv.fr/api/explore/v2.1/catalog/datasets/data-es/records?` +
-                            `where=search(inst_nom, "${encodeURIComponent(cityName)}")` +
-                            `%20OR%20search(equip_nom, "${encodeURIComponent(cityName)}")` +
-                            `%20OR%20search(com_nom, "${encodeURIComponent(cityName)}")` +
-                            `&limit=8`
-                        );
-                        const data = await response.json();
+                        const fetchDataES = async () => {
+                            const results: string[] = [];
+                            try {
+                                // API Data ES: search for "Gymnase" + City Name
+                                const response = await fetch(
+                                    `https://equipements.sports.gouv.fr/api/explore/v2.1/catalog/datasets/data-es/records?` +
+                                    `where=search(inst_nom, "${encodeURIComponent(cityName)}")` +
+                                    `%20OR%20search(equip_nom, "${encodeURIComponent(cityName)}")` +
+                                    `%20OR%20search(com_nom, "${encodeURIComponent(cityName)}")` +
+                                    `&limit=8`
+                                );
+                                const data = await response.json();
 
-                        if (data.results) {
-                            for (const record of data.results) {
-                                const sports = record.aps_name || [];
-                                const isBasket = sports.some((s: string) => s && s.toLowerCase().includes('basket'));
+                                if (data.results) {
+                                    for (const record of data.results) {
+                                        const sports = record.aps_name || [];
+                                        const isBasket = sports.some((s: string) => s && s.toLowerCase().includes('basket'));
 
-                                const recCity = (record.com_nom || record.lib_bdv || '').toLowerCase();
-                                const recCityNorm = recCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                        const recCity = (record.com_nom || record.lib_bdv || '').toLowerCase();
+                                        const recCityNorm = recCity.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                                if (recCityNorm.includes(cityNameLower) && (isBasket || record.equip_type_name?.includes('Gymnase') || record.equip_type_name?.includes('Salle multisports'))) {
-                                    const name = record.equip_nom || record.inst_nom || 'Gymnase';
-                                    const address = record.inst_adresse || '';
-                                    const zip = record.inst_cp || '';
-                                    const city = record.lib_bdv || record.com_nom || cityName;
+                                        if (recCityNorm.includes(cityNameLower) && (isBasket || record.equip_type_name?.includes('Gymnase') || record.equip_type_name?.includes('Salle multisports'))) {
+                                            const name = record.equip_nom || record.inst_nom || 'Gymnase';
+                                            const address = record.inst_adresse || '';
+                                            const zip = record.inst_cp || '';
+                                            const city = record.lib_bdv || record.com_nom || cityName;
 
-                                    const fullAddress = [name, address, `${zip} ${city}`].filter(Boolean).join(', ');
-                                    results.push(fullAddress);
+                                            const fullAddress = [name, address, `${zip} ${city}`].filter(Boolean).join(', ');
+                                            results.push(fullAddress);
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    } catch (e) { console.error('Data ES error', e); }
-                    return results;
-                };
+                            } catch (e) { console.error('Data ES error', e); }
+                            return results;
+                        };
 
-                const [nominatimResults, dataEsResults] = await Promise.all([
-                    fetchNominatim(),
-                    fetchDataES()
-                ]);
+                        const [nominatimResults, dataEsResults] = await Promise.all([
+                            fetchNominatim(),
+                            fetchDataES()
+                        ]);
 
-                // Merge and dedup
-                const candidates = Array.from(new Set([...dataEsResults, ...nominatimResults]));
+                        // Merge and dedup
+                        return Array.from(new Set([...dataEsResults, ...nominatimResults]));
+                    })();
+                }
+
+                const candidates = await cache[cityNameLower];
 
                 if (candidates.length > 0) {
                     updatedMatches[index] = {
