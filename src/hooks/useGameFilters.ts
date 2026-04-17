@@ -12,25 +12,7 @@ interface UseGameFiltersProps {
 }
 
 // Pure helpers — defined at module level so they are never recreated on render
-const getTeamPriority = (team: string) => {
-    const t = team.toUpperCase();
-    if (t.includes('U9')) return 1;
-    if (t.includes('U11')) return 2;
-    if (t.includes('U13')) return 3;
-    if (t.includes('U15')) return 4;
-    if (t.includes('U18')) return 5;
-    if (t.includes('SENIOR')) return 6;
-    if (t.includes('VETERAN')) return 7;
-    return 99;
-};
-
-const sortTeams = (teamList: string[]) =>
-    teamList.sort((a, b) => {
-        const prioA = getTeamPriority(a);
-        const prioB = getTeamPriority(b);
-        if (prioA !== prioB) return prioA - prioB;
-        return a.localeCompare(b);
-    });
+import { sortTeamNames } from '../utils/gameUtils';
 
 export const useGameFilters = ({
     games,
@@ -43,16 +25,16 @@ export const useGameFilters = ({
     // 1. Extract unique teams for dropdown (restricted to favorites if set)
     const teams = useMemo(() => {
         if (favoriteTeams && favoriteTeams.length > 0) {
-            return sortTeams([...favoriteTeams]);
+            return sortTeamNames([...favoriteTeams]);
         }
         const uniqueTeams = new Set(games.map(g => g.team));
-        return sortTeams(Array.from(uniqueTeams));
+        return sortTeamNames(Array.from(uniqueTeams));
     }, [games, favoriteTeams]);
 
     // 2. Full list of teams regardless of favorites (for ProfileModal)
     const allTeams = useMemo(() => {
         const uniqueAll = new Set(games.map(g => g.team));
-        return sortTeams(Array.from(uniqueAll));
+        return sortTeamNames(Array.from(uniqueAll));
     }, [games]);
 
     // 3. Extract unique locations
@@ -72,17 +54,27 @@ export const useGameFilters = ({
         const now = new Date();
 
         // First: Filter out past matches (matches that have already started)
+        // Optimization: Use string comparison instead of expensive Date object instantiation in loops
+        const nowIso = [
+            now.getFullYear(),
+            String(now.getMonth() + 1).padStart(2, '0'),
+            String(now.getDate()).padStart(2, '0')
+        ].join('-');
+        const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
         let result = games.filter(game => {
             try {
-                // Combine dateISO (YYYY-MM-DD) with time (HHhMM or HH:MM) to get exact match start
-                const timeParts = game.time.replace('h', ':').split(':');
-                const hours = parseInt(timeParts[0], 10) || 0;
-                const minutes = parseInt(timeParts[1], 10) || 0;
+                if (!game.dateISO) return true; // Keep games with missing dates (fallback)
 
-                const gameDateTime = new Date(game.dateISO);
-                gameDateTime.setHours(hours, minutes, 0, 0);
+                // Compare dates first
+                if (game.dateISO > nowIso) return true;  // Future day
+                if (game.dateISO < nowIso) return false; // Past day
 
-                return gameDateTime > now; // Only show games that haven't started yet
+                // Same day: compare times
+                const timeParts = game.time.split(/[h:]/i);
+                const h = (timeParts[0] || '0').padStart(2, '0');
+                const m = (timeParts[1] || '0').padStart(2, '0');
+                return `${h}${m}` > nowTimeStr; // Only show games that haven't started yet
             } catch {
                 return true; // Keep games with invalid dates (fallback)
             }

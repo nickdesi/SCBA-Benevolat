@@ -8,6 +8,15 @@ import {
 import type { Game, Role } from '../types';
 import useScrollLock from '../utils/useScrollLock';
 import { AdminBroadcastPanel } from './admin/AdminBroadcastPanel';
+import {
+    isRoleComplete,
+    getMissingRoles,
+    getTotalCapacityCount,
+    getFilledSlotsCount,
+    isGameUrgent,
+    getHoursUntilGame,
+    isGameFullyStaffed
+} from '../utils/gameUtils';
 
 interface AdminStatsProps {
     games: Game[];
@@ -45,20 +54,6 @@ const cardVariants: Variants = {
         y: 0,
         transition: { type: "tween", duration: 0.15, ease: "easeOut" }
     }
-};
-
-// Helper to check if a role is complete
-const isRoleComplete = (role: Role): boolean => {
-    const isUnlimited = role.capacity === Infinity || role.capacity === 0;
-    if (isUnlimited) return role.volunteers.length >= 2;
-    return role.volunteers.length >= role.capacity;
-};
-
-// Helper to get missing roles for a game
-const getMissingRoles = (game: Game): string[] => {
-    return game.roles
-        .filter(r => !isRoleComplete(r))
-        .map(r => r.name);
 };
 
 const formatCapacity = (val: number) => {
@@ -316,16 +311,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         let weekendFilled = 0;
 
         const gameStats = homeGames.map(game => {
-            const gameTotal = game.roles.reduce((acc, role) => {
-                const isUnlimited = !isFinite(role.capacity) || role.capacity === 0;
-                return acc + (isUnlimited ? 2 : role.capacity);
-            }, 0);
-
-            const gameFilled = game.roles.reduce((acc, role) => {
-                const isUnlimited = !isFinite(role.capacity) || role.capacity === 0;
-                const capacity = isUnlimited ? 2 : role.capacity;
-                return acc + Math.min(role.volunteers.length, capacity);
-            }, 0);
+            const gameTotal = getTotalCapacityCount(game);
+            const gameFilled = getFilledSlotsCount(game);
 
             totalSlots += gameTotal;
             filledSlots += gameFilled;
@@ -338,16 +325,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
             }
 
             // Check if urgent (<48h and not complete)
-            let isUrgent = false;
-            let hoursUntil = Infinity;
-            try {
-                const gameDate = new Date(game.dateISO);
-                const diffMs = gameDate.getTime() - now.getTime();
-                hoursUntil = diffMs / (1000 * 60 * 60);
-                const isComplete = gameFilled >= gameTotal;
-                isUrgent = hoursUntil > 0 && hoursUntil < 48 && !isComplete;
-            } catch { /* ignore */ }
-
+            const isUrgent = isGameUrgent(game, now);
+            const hoursUntil = getHoursUntilGame(game.dateISO, now);
             const missingRoles = getMissingRoles(game);
 
             return {
@@ -363,7 +342,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 isUrgent,
                 hoursUntil,
                 missingRoles,
-                isComplete: gameFilled >= gameTotal
+                isComplete: isGameFullyStaffed(game)
             };
         });
 

@@ -1,7 +1,7 @@
 # SCBA Bénévoles 🏀
 
 [![coolify](https://img.shields.io/badge/Coolify-Self%20Hosted-blueviolet?style=for-the-badge&logo=server)](https://coolify.io)
-[![Version](https://img.shields.io/badge/version-v2.5.0-blue?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
+[![Version](https://img.shields.io/badge/version-v2.6.0-blue?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
 [![pwa](https://img.shields.io/badge/PWA-Ready-5A67D8?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 [![firebase](https://img.shields.io/badge/Firebase-Powered-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
 
@@ -100,4 +100,4 @@ L'application utilise un modèle de sécurité hybride robuste :
 
 ---
 
-**Version 2.5.0** — *Fait avec ❤️ à Clermont-Ferrand.*
+**Version 2.6.0** — *Fait avec ❤️ à Clermont-Ferrand.*
