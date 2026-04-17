@@ -7,3 +7,6 @@
 ## 2024-05-19 - Testing Utilities
 **Learning:** Added testing for pure function string parsing utility `parseNames` using table-driven test cases via Vitest. Ensure all edge conditions and falsy values are explicitly handled.
 **Action:** Implemented comprehensive Vitest test cases that cover pure functions used by UI components to prevent silent bugs in UI rendering.
+## 2024-04-17 - Commented Out Code Removal
+**Learning:** Commented out code should be removed from the codebase to improve readability and maintainability. Using git for version control allows retrieving old code if needed.
+**Action:** Removed commented out code in useVolunteers.ts and used npm run build to ensure functionality is not broken.
