@@ -241,6 +241,8 @@ const isSCBATeam = (team: string): boolean => {
 /**
  * Helper to find address in registry or fall back to city inference
  */
+const SORTED_GYM_REGISTRY_KEYS = Object.keys(GYM_REGISTRY).sort((a, b) => b.length - a.length);
+
 const findAddressForOpponent = (opponent: string): string => {
     // 1. Check Registry (Exact or Partial Match)
     const upperOpponent = opponent.toUpperCase();
@@ -252,9 +254,7 @@ const findAddressForOpponent = (opponent: string): string => {
 
     // Strategy B: Partial Match (Iterate registry keys)
     // Priority to LONGEST keys to ensure specific matches (e.g. "CTC ... NOHANENT") are found before generic ones (e.g. "BÉDAT")
-    const registryKeys = Object.keys(GYM_REGISTRY).sort((a, b) => b.length - a.length);
-
-    for (const key of registryKeys) {
+    for (const key of SORTED_GYM_REGISTRY_KEYS) {
         if (upperOpponent.includes(key)) {
             return GYM_REGISTRY[key];
         }
@@ -470,7 +470,6 @@ export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string
     team: match.team,
     opponent: match.opponent,
     date: match.date,
-    dateISO: match.dateISO,
     time: match.time,
     location: match.location,
     isHome: match.isHome,
