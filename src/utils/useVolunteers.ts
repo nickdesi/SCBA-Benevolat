@@ -197,11 +197,6 @@ export const useVolunteers = (): UseVolunteersReturn => {
                     // But for now, let's fix the immediate "New Registration" bug.
 
                     transaction.delete(userRegRef);
-
-                    // Optimization: We could try to delete the legacy key as well just in case?
-                    // const legacyKey = `${gameId}_${roleId}`;
-                    // const legacyRef = doc(db, `users/${auth.currentUser.uid}/registrations`, legacyKey);
-                    // transaction.delete(legacyRef);
                 }
             });
         } catch (e) {
