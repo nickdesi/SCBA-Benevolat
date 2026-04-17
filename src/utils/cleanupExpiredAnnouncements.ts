@@ -17,7 +17,6 @@ export async function cleanupExpiredAnnouncements(): Promise<number | null> {
     if (lastCleanup) {
         const timeSinceLastCleanup = now - parseInt(lastCleanup, 10);
         if (timeSinceLastCleanup < CLEANUP_INTERVAL_MS) {
-            console.log('[Cleanup] Skipped - cleanup ran recently');
             return null;
         }
     }
@@ -32,7 +31,6 @@ export async function cleanupExpiredAnnouncements(): Promise<number | null> {
         const snapshot = await getDocs(expiredQuery);
 
         if (snapshot.empty) {
-            console.log('[Cleanup] No expired announcements to delete');
             localStorage.setItem(CLEANUP_THROTTLE_KEY, now.toString());
             return 0;
         }
@@ -48,7 +46,6 @@ export async function cleanupExpiredAnnouncements(): Promise<number | null> {
 
         await batch.commit();
 
-        console.log(`[Cleanup] Deleted ${count} expired announcement(s)`);
         localStorage.setItem(CLEANUP_THROTTLE_KEY, now.toString());
 
         return count;
