@@ -34,10 +34,9 @@ export const useVolunteers = (): UseVolunteersReturn => {
             if (user) {
                 const q = query(collection(db, `users/${user.uid}/registrations`));
                 unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-                    const regs: UserRegistration[] = [];
-                    snapshot.docs.forEach(d => {
+                    const regs: UserRegistration[] = snapshot.docs.map(d => {
                         const data = d.data();
-                        regs.push({
+                        return {
                             id: d.id,
                             gameId: data.gameId,
                             roleId: data.roleId,
@@ -50,7 +49,7 @@ export const useVolunteers = (): UseVolunteersReturn => {
                             opponent: data.opponent,
                             volunteerName: data.volunteerName,
                             isValid: true
-                        } as UserRegistration);
+                        } as UserRegistration;
                     });
                     setUserRegistrations(regs);
                 });
