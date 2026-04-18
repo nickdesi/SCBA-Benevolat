@@ -81,12 +81,12 @@ const GameCard: React.FC<GameCardProps> = memo(({
     // Accordion state - Default expanded if urgent logic removed or kept? kept locally but simplified
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const isFullyStaffed = isGameFullyStaffed(game);
-    const totalVolunteers = game.roles.reduce((sum, r) => sum + r.volunteers.length, 0);
+    const isFullyStaffed = useMemo(() => isGameFullyStaffed(game), [game]);
+    const totalVolunteers = useMemo(() => game.roles.reduce((sum, r) => sum + r.volunteers.length, 0), [game.roles]);
 
     // Calculate "effective" filled slots (clamped to capacity) to avoid "7/6" situations
-    const filledSlots = getFilledSlotsCount(game);
-    const totalCapacity = getTotalCapacityCount(game);
+    const filledSlots = useMemo(() => getFilledSlotsCount(game), [game]);
+    const totalCapacity = useMemo(() => getTotalCapacityCount(game), [game]);
 
     const totalCarpoolSeats = useMemo(() => {
         if (!game.carpool) return 0;
