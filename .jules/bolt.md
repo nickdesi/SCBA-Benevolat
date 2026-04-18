@@ -13,3 +13,6 @@
 ## 2024-04-17 - Commented Out Code Removal
 **Learning:** Commented out code should be removed from the codebase to improve readability and maintainability. Using git for version control allows retrieving old code if needed.
 **Action:** Removed commented out code in useVolunteers.ts and used npm run build to ensure functionality is not broken.
+## 2026-04-18 - Added useMemo to GameCard
+**Learning:** GameCard re-renders when parent state like `isAdmin`, `editingGameId`, `isAuthenticated` changes. Computations such as `isGameFullyStaffed`, `getFilledSlotsCount` and `getTotalCapacityCount` run on every render unless memoized.
+**Action:** Always use `useMemo` for expensive state derivatives in React components that frequently re-render, especially those passed complex `game` objects in lists.
