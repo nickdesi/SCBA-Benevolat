@@ -30,6 +30,9 @@ interface GameGroup {
     games: Game[];
 }
 
+// Cache Intl.DateTimeFormat for performance (drastically faster than toLocaleDateString in loops)
+const monthYearFormatter = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' });
+
 /**
  * Groups games by month/year for display
  */
@@ -42,7 +45,8 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
         if (game.dateISO) {
             const date = new Date(game.dateISO);
             if (!isNaN(date.getTime())) {
-                label = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                // Bolt optimization: use cached formatter
+                label = monthYearFormatter.format(date);
                 label = label.charAt(0).toUpperCase() + label.slice(1);
             }
         } else {
