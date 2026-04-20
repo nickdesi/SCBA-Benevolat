@@ -3,6 +3,10 @@ import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
 
+// ⚡ Bolt: Cache Intl.DateTimeFormat to dramatically improve performance over Date.toLocaleDateString in loops
+const weekdayFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' });
+const monthFormatter = new Intl.DateTimeFormat('fr-FR', { month: 'long' });
+
 interface DesktopGridProps {
     games: Game[];
     currentDate: Date;
@@ -109,10 +113,10 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
                                         </div>
                                         <div className="flex flex-col">
                                             <span className={`text-xs font-bold uppercase tracking-wider leading-tight ${isToday ? 'text-blue-600 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                {day.toLocaleDateString('fr-FR', { weekday: 'long' })}
+                                                {weekdayFormatter.format(day)}
                                             </span>
                                             <span className={`text-[10px] font-medium uppercase tracking-wide ${isToday ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-slate-400 dark:text-slate-500'}`}>
-                                                {day.toLocaleDateString('fr-FR', { month: 'long' })}
+                                                {monthFormatter.format(day)}
                                             </span>
                                         </div>
                                     </div>

@@ -3,6 +3,9 @@ import { useAnnouncements } from '../../hooks/useAnnouncements';
 import { AlertTriangle, Info, Bell, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+// ⚡ Bolt: Cache Intl.DateTimeFormat to avoid slow Date.toLocaleDateString inside the map loop
+const dateFormatter = new Intl.DateTimeFormat();
+
 export const DashboardComm: React.FC = () => {
     const { announcements } = useAnnouncements();
 
@@ -55,7 +58,7 @@ export const DashboardComm: React.FC = () => {
                                         </span>
                                         <span className="text-xs text-slate-400 flex items-center gap-1">
                                             <Calendar className="w-3 h-3" />
-                                            {new Date(ann.createdAt?.toMillis()).toLocaleDateString()}
+                                            {ann.createdAt ? dateFormatter.format(new Date(ann.createdAt.toMillis())) : ''}
                                         </span>
                                     </div>
                                     <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">

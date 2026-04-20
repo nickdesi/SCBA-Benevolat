@@ -7,6 +7,9 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, X, List, CheckCircle2, Siren, Zap, ChevronRight } from 'lucide-react';
 import { CustomSelect } from '../ui/CustomSelect';
 
+// ⚡ Bolt: Cache Intl.DateTimeFormat to avoid slow Date.toLocaleDateString inside the map loop
+const expiresAtFormatter = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+
 interface AdminBroadcastPanelProps {
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
@@ -252,7 +255,7 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
                                             </p>
                                             <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
                                                 <Clock className="w-3 h-3" />
-                                                <span>Expire le {item.expiresAt?.toDate().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                                                <span>Expire le {item.expiresAt ? expiresAtFormatter.format(item.expiresAt.toDate()) : ''}</span>
                                             </div>
                                         </div>
                                     </div>

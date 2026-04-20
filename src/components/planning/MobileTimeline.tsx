@@ -4,6 +4,9 @@ import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
 
+// ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in list rendering
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
 interface MobileTimelineProps {
     games: Game[];
     currentDate: Date;
@@ -147,7 +150,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                         <span className="text-lg sm:text-2xl">{isToday ? '🔥' : '📅'}</span>
                                         <div className="flex flex-col items-start leading-tight">
                                             <span className="text-sm sm:text-lg font-black text-white tracking-wide capitalize">
-                                                {isToday ? "Aujourd'hui" : day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                                {isToday ? "Aujourd'hui" : dateFormatter.format(day)}
                                             </span>
                                             <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
                                                 <span className="text-emerald-400">{dayGames.filter(g => (g.isHome ?? true)).length} Dom</span>
