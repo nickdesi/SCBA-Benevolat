@@ -6,6 +6,9 @@ interface MatchTickerProps {
     games: Game[];
 }
 
+// ⚡ Bolt: Cache Intl.DateTimeFormat outside component to avoid extremely slow Date.toLocaleDateString in render loops
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
+
 // ⚡ Bolt: Wrapped MatchTicker in React.memo to prevent unnecessary re-renders when parent states change.
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     // ⚡ Bolt: Memoized the O(N log N) sorting and O(N) filtering to prevent expensive recalculations.
@@ -52,7 +55,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
                             {/* Date & Time Group */}
                             <div className="flex flex-col items-end leading-none min-w-[50px]">
                                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">
-                                    {game.dateISO ? new Date(game.dateISO).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : ''}
+                                    {game.dateISO ? dateFormatter.format(new Date(game.dateISO)) : ''}
                                 </span>
                                 <span className="text-xs font-bold text-white font-mono">
                                     {game.time}
