@@ -32,7 +32,7 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { type: 'tween', duration: 0.15 } }
+    visible: { opacity: 1, y: 0, transition: { type: 'tween' as const, duration: 0.15 } }
 };
 
 const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({

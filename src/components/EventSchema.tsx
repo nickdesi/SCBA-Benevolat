@@ -12,9 +12,12 @@ interface EventSchemaProps {
 const EventSchema: React.FC<EventSchemaProps> = ({ games }) => {
     const schemaData = useMemo(() => {
         // Take only the next 10 upcoming matches to keep the header light
-        const upcomingGames = [...games]
-            .sort((a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime())
-            .filter(g => new Date(g.dateISO).getTime() > Date.now())
+        // ⚡ Bolt: Use string comparison instead of expensive Date instantiations. Filter before sorting.
+        const nowISO = new Date().toISOString();
+
+        const upcomingGames = games
+            .filter(g => g.dateISO && g.dateISO >= nowISO)
+            .sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))
             .slice(0, 10);
 
         const eventSchemas = upcomingGames.map(game => ({

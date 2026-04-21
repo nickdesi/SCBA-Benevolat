@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = memo(({
   onLogout,
   teams = [],
   selectedTeam = null,
-  onSelectTeam = (_team) => { },
+  onSelectTeam = (_team: string | null) => { },
   registrations = [],
   games = [],
   onUnsubscribe = async () => { },

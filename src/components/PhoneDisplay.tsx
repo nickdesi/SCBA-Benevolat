@@ -2,13 +2,14 @@ import React, { useState, memo } from 'react';
 
 interface PhoneDisplayProps {
     phone: string;
+    compact?: boolean;
 }
 
 /**
  * Phone number display component with privacy masking.
  * Shows masked phone by default, click to reveal.
  */
-const PhoneDisplay: React.FC<PhoneDisplayProps> = memo(({ phone }) => {
+const PhoneDisplay: React.FC<PhoneDisplayProps> = memo(({ phone, compact = false }) => {
     const [isRevealed, setIsRevealed] = useState(false);
 
     const maskPhone = (phoneNumber: string): string => {
@@ -23,10 +24,10 @@ const PhoneDisplay: React.FC<PhoneDisplayProps> = memo(({ phone }) => {
     return (
         <button
             onClick={() => setIsRevealed(!isRevealed)}
-            className="flex items-center gap-1 text-sm text-slate-500 hover:text-blue-600 transition-colors group"
+            className={`flex items-center gap-1 text-slate-500 hover:text-blue-600 transition-colors group ${compact ? 'text-xs' : 'text-sm'}`}
             title={isRevealed ? "Cliquer pour masquer" : "Cliquer pour afficher le numéro"}
         >
-            <span>📞</span>
+            {compact ? null : <span>📞</span>}
             <span className={isRevealed ? '' : 'font-mono'}>
                 {isRevealed ? phone : maskPhone(phone)}
             </span>
