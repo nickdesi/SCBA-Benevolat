@@ -13,7 +13,8 @@ import {
     isGameUrgent,
     getFilledSlotsCount,
     getTotalCapacityCount,
-    getMissingRoles
+    getMissingRoles,
+    getCarpoolStats
 } from '../utils/gameUtils';
 
 // Lazy-loaded for code-splitting
@@ -88,17 +89,9 @@ const GameCard: React.FC<GameCardProps> = memo(({
     const filledSlots = useMemo(() => getFilledSlotsCount(game), [game]);
     const totalCapacity = useMemo(() => getTotalCapacityCount(game), [game]);
 
-    const totalCarpoolSeats = useMemo(() => {
-        if (!game.carpool) return 0;
-        return game.carpool
-            .filter(e => e.type === 'driver')
-            .reduce((sum, driver) => sum + (driver.seats || 0), 0);
-    }, [game.carpool]);
-
-    const totalPassengerRequests = useMemo(() => {
-        if (!game.carpool) return 0;
-        return game.carpool.filter(e => e.type === 'passenger').length;
-    }, [game.carpool]);
+    const carpoolStats = useMemo(() => getCarpoolStats(game.carpool), [game.carpool]);
+    const totalCarpoolSeats = carpoolStats.totalSeats;
+    const totalPassengerRequests = carpoolStats.passengers;
 
     const isHomeGame = game.isHome ?? true;
 
@@ -208,8 +201,8 @@ const GameCard: React.FC<GameCardProps> = memo(({
                 {!isHomeGame && (
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 relative z-10 pl-1">
                         {(() => {
-                            const drivers = game.carpool?.filter(e => e.type === 'driver').length || 0;
-                            const passengers = game.carpool?.filter(e => e.type === 'passenger').length || 0;
+                            const drivers = carpoolStats.drivers;
+                            const passengers = carpoolStats.passengers;
 
                             if (drivers === 0 && passengers === 0) return <span className="opacity-60">Aucun covoiturage</span>;
 

@@ -1,4 +1,4 @@
-import type { Game, Role } from '../types';
+import type { Game, Role, CarpoolEntry } from '../types';
 import { getGameDateValue } from './dateUtils';
 
 /**
@@ -141,4 +141,27 @@ export const sortTeamNames = (teamList: string[]): string[] => {
         if (prioA !== prioB) return prioA - prioB;
         return a.localeCompare(b);
     });
+};
+
+/**
+ * Calculates carpool stats in a single pass over the carpool array.
+ */
+export const getCarpoolStats = (carpool: CarpoolEntry[] | undefined) => {
+    let drivers = 0;
+    let passengers = 0;
+    let totalSeats = 0;
+
+    if (!carpool) return { drivers, passengers, totalSeats };
+
+    for (let i = 0; i < carpool.length; i++) {
+        const entry = carpool[i];
+        if (entry.type === 'driver') {
+            drivers++;
+            totalSeats += (entry.seats || 0);
+        } else if (entry.type === 'passenger') {
+            passengers++;
+        }
+    }
+
+    return { drivers, passengers, totalSeats };
 };
