@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
+import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in list rendering
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -103,14 +104,26 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
         [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()]
     );
 
+    // Pre-compute games grouped by day to avoid O(N) filtering inside map
+    const gamesByDay = useMemo(() => {
+        const map = new Map<string, Game[]>();
+        for (const game of games) {
+            const existing = map.get(game.dateISO) || [];
+            existing.push(game);
+            map.set(game.dateISO, existing);
+        }
+        // Sort each day's games by time
+        for (const [key, dayGames] of map) {
+            map.set(key, dayGames.sort((a, b) => a.time.localeCompare(b.time)));
+        }
+        return map;
+    }, [games]);
+
     const getGamesForDay = (date: Date) => {
-        const dateStr = toISODateString(date);
-        return games
-            .filter(g => g.dateISO === dateStr)
-            .sort((a, b) => a.time.localeCompare(b.time));
+        return gamesByDay.get(toISODateString(date)) || [];
     };
 
-    // Filter out days with no games
+    // Filter out days with no games using pre-computed map
     const activeDays = days.filter(day => getGamesForDay(day).length > 0);
 
     return (
@@ -125,6 +138,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                     activeDays.map((day) => {
                         const dayGames = getGamesForDay(day);
                         const isToday = toISODateString(day) === toISODateString(new Date());
+                        const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
 
                         return (
                             <motion.div
@@ -153,9 +167,9 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
                                                 {isToday ? "Aujourd'hui" : dateFormatter.format(day)}
                                             </span>
                                             <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
-                                                <span className="text-emerald-400">{dayGames.filter(g => (g.isHome ?? true)).length} Dom</span>
+                                                <span className="text-emerald-400">{homeCount} Dom</span>
                                                 <span className="text-slate-500">•</span>
-                                                <span className="text-blue-400">{dayGames.filter(g => !(g.isHome ?? true)).length} Ext</span>
+                                                <span className="text-blue-400">{awayCount} Ext</span>
                                             </span>
                                         </div>
                                         <span className="self-center flex flex-col items-center text-center font-bold px-2 sm:px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-1 sm:ml-2">

@@ -165,3 +165,19 @@ export const getCarpoolStats = (carpool: CarpoolEntry[] | undefined) => {
 
     return { drivers, passengers, totalSeats };
 };
+
+/**
+ * Calculates home and away games count in a single pass over the games array.
+ */
+export const getHomeAwayCounts = (games: Game[]) => {
+    let homeCount = 0;
+    let awayCount = 0;
+    for (let i = 0; i < games.length; i++) {
+        if (games[i].isHome ?? true) {
+            homeCount++;
+        } else {
+            awayCount++;
+        }
+    }
+    return { homeCount, awayCount };
+};
