@@ -25,9 +25,13 @@ interface GameListProps {
     isAuthenticated?: boolean;
 }
 
+import { getHomeAwayCounts } from '../utils/gameUtils';
+
 interface GameGroup {
     label: string;
     games: Game[];
+    homeCount: number;
+    awayCount: number;
 }
 
 // Cache Intl.DateTimeFormat for performance (drastically faster than toLocaleDateString in loops)
@@ -60,9 +64,16 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
         if (lastGroup && lastGroup.label === label) {
             lastGroup.games.push(game);
         } else {
-            groups.push({ label, games: [game] });
+            groups.push({ label, games: [game], homeCount: 0, awayCount: 0 });
         }
     });
+
+    // Calculate home and away counts for each group in a single pass
+    for (let i = 0; i < groups.length; i++) {
+        const counts = getHomeAwayCounts(groups[i].games);
+        groups[i].homeCount = counts.homeCount;
+        groups[i].awayCount = counts.awayCount;
+    }
 
     return groups;
 };
@@ -109,9 +120,9 @@ const GameList: React.FC<GameListProps> = memo(({
                                     {group.label}
                                 </span>
                                 <span className="text-[11px] font-medium uppercase tracking-wider flex items-center gap-1">
-                                    <span className="text-emerald-300">{group.games.filter(g => (g.isHome ?? true)).length} Dom</span>
+                                    <span className="text-emerald-300">{group.homeCount} Dom</span>
                                     <span className="text-slate-400">•</span>
-                                    <span className="text-blue-300">{group.games.filter(g => !(g.isHome ?? true)).length} Ext</span>
+                                    <span className="text-blue-300">{group.awayCount} Ext</span>
                                 </span>
                             </div>
                             <span className="text-xs sm:text-sm font-bold px-2 py-0.5 bg-white/20 text-white/90 rounded-full ml-1 sm:ml-2 flex-shrink-0">

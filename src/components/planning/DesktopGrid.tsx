@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
+import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to dramatically improve performance over Date.toLocaleDateString in loops
 const weekdayFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' });
@@ -85,6 +86,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
                     {activeDays.map((day) => {
                         const dayGames = gamesByDay.get(toISODateString(day)) || [];
                         const isToday = toISODateString(day) === toISODateString(new Date());
+                        const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
 
                         return (
                             <div
@@ -128,10 +130,10 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
                                         </div>
                                         <div className="flex gap-1">
                                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                                                {dayGames.filter((g: Game) => (g.isHome ?? true)).length}D
+                                                {homeCount}D
                                             </span>
                                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400">
-                                                {dayGames.filter((g: Game) => !(g.isHome ?? true)).length}E
+                                                {awayCount}E
                                             </span>
                                         </div>
                                     </div>
