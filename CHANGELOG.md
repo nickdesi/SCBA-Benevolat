@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.6.2] - 2026-04-30
+
+### Corrigé
+
+- Rafraîchissement PWA renforcé pour appliquer les nouvelles versions sans vider manuellement le cache navigateur.
+- Suppression de l’inscription redondante du service worker.
+
+### Ajouté
+
+- Affichage d’un identifiant de build dans le pied de page pour repérer immédiatement un bundle obsolète.
+
 ## [2.6.1] - 2026-04-30
 
 ### Security

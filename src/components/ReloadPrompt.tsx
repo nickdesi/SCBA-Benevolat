@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+
+const UPDATE_CHECK_INTERVAL_MS = 30 * 1000;
 
 const ReloadPrompt: React.FC = () => {
     const [isUpdating, setIsUpdating] = useState(false);
+    const updateIntervalRef = useRef<number | null>(null);
+    const shouldReloadOnControllerChangeRef = useRef(false);
+    const hasReloadedRef = useRef(false);
 
     const {
         offlineReady: [offlineReady, setOfflineReady],
@@ -10,48 +15,48 @@ const ReloadPrompt: React.FC = () => {
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
-            // Check for updates every 30 seconds (more aggressive)
-            if (r) {
-                setInterval(() => {
-                    r.update();
-                }, 30 * 1000);
-                // Also check immediately on mount
-                r.update();
+            if (!r) return;
 
-                // Clear old caches on registration
-                if ('caches' in window) {
-                    caches.keys().then(names => {
-                        names.forEach(name => {
-                            // Delete old workbox caches
-                            if (name.includes('workbox') || name.includes('precache')) {
-                                caches.delete(name);
-                            }
-                        });
-                    });
-                }
-            }
+            r.update();
+            updateIntervalRef.current = window.setInterval(() => {
+                r.update();
+            }, UPDATE_CHECK_INTERVAL_MS);
         },
         onRegisterError(error) {
             console.warn('SW registration error', error);
         },
     });
 
+    useEffect(() => {
+        return () => {
+            if (updateIntervalRef.current !== null) {
+                window.clearInterval(updateIntervalRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!('serviceWorker' in navigator)) return;
+
+        const reloadOnControllerChange = () => {
+            if (!shouldReloadOnControllerChangeRef.current || hasReloadedRef.current) return;
+
+            hasReloadedRef.current = true;
+            window.location.reload();
+        };
+
+        navigator.serviceWorker.addEventListener('controllerchange', reloadOnControllerChange);
+        return () => {
+            navigator.serviceWorker.removeEventListener('controllerchange', reloadOnControllerChange);
+        };
+    }, []);
+
     // Auto-refresh when update is available
     useEffect(() => {
         if (needRefresh && !isUpdating) {
+            shouldReloadOnControllerChangeRef.current = true;
             setIsUpdating(true);
-
-            const performUpdate = async () => {
-                // Try to skip waiting (force activate)
-                updateServiceWorker(true);
-
-                // Wait a short moment for SW to activate, then reload unconditionally
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            };
-
-            performUpdate();
+            updateServiceWorker(true);
         }
     }, [needRefresh, isUpdating, updateServiceWorker]);
 

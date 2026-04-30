@@ -1,8 +1,23 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.6.1';
-// Changelog data
-const CHANGELOG = [
+const APP_VERSION = `v${__APP_VERSION__}`;
+const BUILD_LABEL = __APP_BUILD_COMMIT__ === 'dev' ? 'dev' : `build ${__APP_BUILD_COMMIT__}`;
+
+interface ChangelogEntry {
+    version: string;
+    date: string;
+    changes: string[];
+}
+
+const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: 'v2.6.2',
+        date: '30 Avril 2026',
+        changes: [
+            '🔄 PWA : Rafraîchissement automatique renforcé sans vider le cache manuellement',
+            '🏷️ Build : Identifiant de build visible dans le pied de page'
+        ]
+    },
     {
         version: 'v2.6.1',
         date: '30 Avril 2026',
@@ -209,7 +224,9 @@ const Footer: React.FC = memo(() => {
                             title="Voir le changelog"
                         >
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            {APP_VERSION}
+                            <span>Version {APP_VERSION}</span>
+                            <span className="text-slate-300">•</span>
+                            <span title={new Date(__APP_BUILD_DATE__).toLocaleString('fr-FR')}>{BUILD_LABEL}</span>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
