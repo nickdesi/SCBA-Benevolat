@@ -57,6 +57,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
     const drivers = useMemo(() => entries.filter(e => e.type === 'driver'), [entries]);
     const passengers = useMemo(() => entries.filter(e => e.type === 'passenger'), [entries]);
     const availableDrivers = useMemo(() => getAvailableDrivers(entries), [entries]);
+    const entriesById = useMemo(() => new Map(entries.map(entry => [entry.id, entry])), [entries]);
 
     const storedName = getStoredName();
     const currentUserEntry = useMemo(() =>
@@ -297,7 +298,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                                     </p>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {driver.matchedWith.map(passengerId => {
-                                                            const passenger = entries.find(e => e.id === passengerId);
+                                                            const passenger = entriesById.get(passengerId);
                                                             return passenger ? (
                                                                 <span
                                                                     key={passengerId}
@@ -336,10 +337,10 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                             {passengers.map((passenger) => {
                                 const isCurrentUser = passenger.name.toLowerCase() === storedName.toLowerCase();
                                 const matchedDriver = passenger.matchedWith?.[0]
-                                    ? entries.find(e => e.id === passenger.matchedWith?.[0])
+                                    ? entriesById.get(passenger.matchedWith[0])
                                     : undefined;
                                 const requestedDriver = passenger.requestedDriverId
-                                    ? entries.find(e => e.id === passenger.requestedDriverId)
+                                    ? entriesById.get(passenger.requestedDriverId)
                                     : undefined;
 
                                 return (

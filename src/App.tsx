@@ -8,12 +8,10 @@ import SkeletonLoader from './components/SkeletonLoader';
 import ReloadPrompt from './components/ReloadPrompt';
 import InstallPrompt from './components/InstallPrompt';
 import Footer from './components/Footer';
-import ProfileModal from './components/ProfileModal';
 import { ToastContainer, useToast } from './components/Toast';
 import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut, signInWithGoogle } from './utils/authStore';
-import UserAuthModal from './components/UserAuthModal';
 import { useGames } from './utils/useGames';
 import { useCarpoolRegistrations } from './utils/useCarpoolRegistrations';
 import { useUserProfile } from './utils/useUserProfile';
@@ -23,6 +21,8 @@ import EventSchema from './components/EventSchema';
 // AdminAuthModal removed as per request
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
 const GameForm = lazy(() => import('./components/GameForm'));
+const ProfileModal = lazy(() => import('./components/ProfileModal'));
+const UserAuthModal = lazy(() => import('./components/UserAuthModal'));
 const PlanningView = lazy(() => import('./components/planning/PlanningView'));
 // AdminStats must be declared at module level — NOT inside App() to avoid
 // creating a new lazy reference on every render (which remounts the component).
@@ -233,30 +233,36 @@ function App() {
           </Suspense>
 
           {/* Profile Modal - Triggered by Planning button on mobile */}
-          {currentUser && (
-            <ProfileModal
-              isOpen={isProfileModalOpen}
-              onClose={() => setIsProfileModalOpen(false)}
-              user={currentUser}
-              registrations={userRegistrations}
-              games={games}
-              userCarpools={userCarpools}
-              onUnsubscribe={removeVolunteerWithToast}
-              onRemoveCarpool={handleRemoveCarpool}
-              onToast={addToast}
-              allTeams={allTeams}
-              favoriteTeams={favoriteTeams}
-              onToggleFavorite={toggleFavoriteTeam}
-            />
-          )}
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+            {currentUser && isProfileModalOpen && (
+              <ProfileModal
+                isOpen={isProfileModalOpen}
+                onClose={() => setIsProfileModalOpen(false)}
+                user={currentUser}
+                registrations={userRegistrations}
+                games={games}
+                userCarpools={userCarpools}
+                onUnsubscribe={removeVolunteerWithToast}
+                onRemoveCarpool={handleRemoveCarpool}
+                onToast={addToast}
+                allTeams={allTeams}
+                favoriteTeams={favoriteTeams}
+                onToggleFavorite={toggleFavoriteTeam}
+              />
+            )}
+          </Suspense>
 
           {/* Auth Modal - Triggered when guest tries to volunteer */}
-          <UserAuthModal
-            isOpen={isAuthModalOpen}
-            onClose={() => setIsAuthModalOpen(false)}
-            onGoogleLogin={async () => { await signInWithGoogle(); setIsAuthModalOpen(false); addToast('Connexion !', 'success'); }}
-            onToast={addToast}
-          />
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+            {isAuthModalOpen && (
+              <UserAuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onGoogleLogin={async () => { await signInWithGoogle(); setIsAuthModalOpen(false); addToast('Connexion !', 'success'); }}
+                onToast={addToast}
+              />
+            )}
+          </Suspense>
         </>
       }
     >
@@ -349,8 +355,8 @@ function App() {
                 </Suspense>
               )}
 
-              {/* Planning View - Always mounted, hidden when not active */}
-              <div className={currentView === 'calendar' ? '' : 'hidden'}>
+              {/* Planning View - mounted only when active */}
+              {currentView === 'calendar' && (
                 <Suspense fallback={<SkeletonLoader />}>
                   <PlanningView
                     games={filteredGames}
@@ -374,61 +380,51 @@ function App() {
                     onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
                   />
                 </Suspense>
-              </div>
+              )}
 
-              {/* Grouped Games List - Always mounted, hidden when not active */}
-              {/* Grouped Games List - Always mounted, hidden when not active */}
-              <div className={currentView === 'home' ? '' : 'hidden'}>
-                {filteredGames.length > 0 ? (
-                  <GameList
-                    games={filteredGames}
-                    userRegistrations={userRegistrationsMap}
-                    isAdmin={isAdmin}
-                    isAuthenticated={isAuthenticated}
-                    editingGameId={editingGameId}
-                    onVolunteer={volunteerWithToast}
-                    onRemoveVolunteer={removeVolunteerWithToast}
-                    onUpdateVolunteer={updateVolunteerWithToast}
-                    onAddCarpool={addCarpoolWithToast}
-                    onRemoveCarpool={handleRemoveCarpool}
-                    onRequestSeat={requestSeatWithToast}
-                    onAcceptPassenger={acceptPassengerWithToast}
-                    onRejectPassenger={rejectPassengerWithToast}
-                    onCancelRequest={cancelRequestWithToast}
-                    onToast={addToast}
-                    onEditRequest={setEditingGameId}
-                    onCancelEdit={() => setEditingGameId(null)}
-                    onDeleteRequest={deleteGameWithToast}
-                    onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
-                  />
-                ) : (
-                  !loading && games.length > 0 && (
-                    <EmptyState
-                      icon={<Search className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
-                      title="Aucun résultat"
-                      description="Aucun match ne correspond à vos filtres actuels."
-                      variant="simple"
-                      className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
-                      action={{
-                        label: "Effacer les filtres",
-                        onClick: () => setSelectedTeam(null), // Assuming resetting filter helps
-                        icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                      }}
+              {/* Grouped Games List - mounted only when active */}
+              {currentView === 'home' && (
+                <>
+                  {filteredGames.length > 0 ? (
+                    <GameList
+                      games={filteredGames}
+                      userRegistrations={userRegistrationsMap}
+                      isAdmin={isAdmin}
+                      isAuthenticated={isAuthenticated}
+                      editingGameId={editingGameId}
+                      onVolunteer={volunteerWithToast}
+                      onRemoveVolunteer={removeVolunteerWithToast}
+                      onUpdateVolunteer={updateVolunteerWithToast}
+                      onAddCarpool={addCarpoolWithToast}
+                      onRemoveCarpool={handleRemoveCarpool}
+                      onRequestSeat={requestSeatWithToast}
+                      onAcceptPassenger={acceptPassengerWithToast}
+                      onRejectPassenger={rejectPassengerWithToast}
+                      onCancelRequest={cancelRequestWithToast}
+                      onToast={addToast}
+                      onEditRequest={setEditingGameId}
+                      onCancelEdit={() => setEditingGameId(null)}
+                      onDeleteRequest={deleteGameWithToast}
+                      onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
                     />
-                  )
-                )}
-              </div>
-
-              {/* Empty State for Planning View specifically (was previously separate, merged into AppLayout children logic implicitly by placement order logic in App.tsx?) 
-             Wait, in original App.tsx, this empty state block was AFTER </main> but BEFORE <ReloadPrompt>.
-             It seemed to be floating? 
-             Ah, lines 352-371 in original App.tsx. 
-             It was outside <main>!
-             I should include it in 'children' inside <main> if I want correct layout, or keep it outside. 
-             If it's content, it should probably be in main.
-             But the original code had it outside.
-             Let's put it at the end of `children`.
-          */}
+                  ) : (
+                    !loading && games.length > 0 && (
+                      <EmptyState
+                        icon={<Search className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
+                        title="Aucun résultat"
+                        description="Aucun match ne correspond à vos filtres actuels."
+                        variant="simple"
+                        className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                        action={{
+                          label: "Effacer les filtres",
+                          onClick: () => setSelectedTeam(null),
+                          icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        }}
+                      />
+                    )
+                  )}
+                </>
+              )}
               {
                 !loading && currentView === 'planning' && filteredGames.length === 0 && (
                   <EmptyState

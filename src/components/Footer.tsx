@@ -11,6 +11,16 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
     {
+        version: 'v2.6.4',
+        date: '30 Avril 2026',
+        changes: [
+            '⚡ Perf : Réduction massive des assets de polices via les subsets latin Fontsource',
+            '📦 Bundle : Modales profil/auth chargées uniquement à l’ouverture',
+            '🗓️ Vues : Planning et liste montés uniquement lorsqu’ils sont actifs',
+            '🚗 Covoiturage : Recherches de participants optimisées avec une Map mémoïsée'
+        ]
+    },
+    {
         version: 'v2.6.3',
         date: '30 Avril 2026',
         changes: [

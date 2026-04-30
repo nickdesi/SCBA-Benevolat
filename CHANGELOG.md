@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.6.4] - 2026-04-30
+
+### Performance
+
+- Réduction des assets de polices générés en important les subsets latin Fontsource utilisés par l’application.
+- Chargement différé des modales profil et authentification pour alléger le bundle initial.
+- Montage conditionnel des vues planning et liste pour éviter le rendu de composants masqués.
+- Optimisation des recherches de covoitureurs avec une `Map` mémoïsée dans la section covoiturage.
+
 ## [2.6.3] - 2026-04-30
 
 ### Corrigé

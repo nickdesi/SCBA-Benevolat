@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { User } from 'firebase/auth';
 import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStore';
 import { GoogleIcon, LogoutIcon, UserIcon } from './Icons';
-import UserAuthModal from './UserAuthModal';
 import { UserRegistration, Game } from '../types';
+
+const UserAuthModal = lazy(() => import('./UserAuthModal'));
 
 interface UserProfileProps {
     onLogin?: (user: User) => void;
@@ -92,12 +93,16 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     <span className="hidden sm:inline">Connexion / Inscription</span>
                 </button>
 
-                <UserAuthModal
-                    isOpen={isAuthModalOpen}
-                    onClose={() => setIsAuthModalOpen(false)}
-                    onGoogleLogin={handleGoogleLogin}
-                    onToast={onToast}
-                />
+                <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+                    {isAuthModalOpen && (
+                        <UserAuthModal
+                            isOpen={isAuthModalOpen}
+                            onClose={() => setIsAuthModalOpen(false)}
+                            onGoogleLogin={handleGoogleLogin}
+                            onToast={onToast}
+                        />
+                    )}
+                </Suspense>
             </>
         );
 
