@@ -3,7 +3,7 @@
  */
 
 // Track which registrations belong to this browser
-export const getMyRegistrations = (): Record<string, string[]> => {
+const getMyRegistrations = (): Record<string, string[]> => {
     try {
         const data = localStorage.getItem('scba-my-registrations');
         return data ? JSON.parse(data) : {};
@@ -60,7 +60,7 @@ export const setStoredName = (name: string): void => {
  * Claim a specific registration as belonging to this browser.
  * Used when a user says "C'est moi !" on a registration they made from another device.
  */
-export const claimRegistration = (key: string, name: string): void => {
+const claimRegistration = (key: string, name: string): void => {
     saveMyRegistration(key, name);
     // Also store the name for future use
     setStoredName(name);

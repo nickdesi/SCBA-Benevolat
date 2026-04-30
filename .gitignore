@@ -28,6 +28,10 @@ dist-ssr
 .env.*
 !.env.example
 VENVSCRIPTS
+venv_scripts/
 serviceAccountKey.json
 .agent
 .venv
+
+# Generated Firebase Functions output
+functions/lib/

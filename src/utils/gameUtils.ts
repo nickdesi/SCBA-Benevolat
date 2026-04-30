@@ -5,7 +5,7 @@ import { getGameDateValue } from './dateUtils';
  * Normalizes time string (e.g., "9h00" -> "0900", "14:30" -> "1430")
  * for consistent string comparison.
  */
-export const normalizeTime = (t: string): string => {
+const normalizeTime = (t: string): string => {
     if (!t) return '0000';
     // Split by 'h' or ':' case insensitive
     const parts = t.split(/[h:]/i);
@@ -119,7 +119,7 @@ export const getHoursUntilGame = (dateISO: string, now: Date = new Date()): numb
 /**
  * Get internal priority for a team to maintain a consistent logical order (U9 < U11 < ... < Senior).
  */
-export const getTeamPriority = (team: string): number => {
+const getTeamPriority = (team: string): number => {
     const t = team.toUpperCase();
     if (t.includes('U9')) return 1;
     if (t.includes('U11')) return 2;

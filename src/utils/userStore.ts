@@ -1,6 +1,5 @@
-import { doc, setDoc, getDoc, updateDoc, PartialWithFieldValue } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { User } from "firebase/auth";
 
 export interface UserProfile {
     uid: string;
@@ -8,31 +7,6 @@ export interface UserProfile {
     photoURL?: string;
     email?: string;
 }
-
-/**
- * Creates or updates a user profile in Firestore
- */
-export const syncUserProfile = async (user: User) => {
-    if (!user) return;
-
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-
-    const userData: UserProfile = {
-        uid: user.uid,
-        displayName: user.displayName || "Bénévole",
-        email: user.email || "",
-        photoURL: user.photoURL || ""
-    };
-
-    if (!userSnap.exists()) {
-        await setDoc(userRef, userData);
-    } else {
-        // Update only if changed to avoid unnecessary writes, 
-        // but for now simple merge is fine
-        await setDoc(userRef, userData, { merge: true });
-    }
-};
 
 /**
  * Redimensionne une image en 128×128 (center-crop) et retourne un data URI JPEG base64.

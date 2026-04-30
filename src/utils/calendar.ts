@@ -32,7 +32,7 @@ const formatICSDate = (date: Date): string => {
 /**
  * Generates an ICS calendar file content for a game
  */
-export const generateICSContent = (game: Game): string | null => {
+const generateICSContent = (game: Game): string | null => {
     const dateTime = parseGameDateTime(game);
     if (!dateTime) return null;
 

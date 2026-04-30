@@ -15,7 +15,7 @@ import {
 // Centralized icon mapping for consistent iconography across the app
 // Replaces emoji usage with professional SVG icons
 
-export type IconId =
+type IconId =
     | 'beer'
     | 'timer'
     | 'clipboard'
@@ -39,7 +39,7 @@ const iconMap: Record<IconId, LucideIcon> = {
 };
 
 // Role configuration with icon ID and colors for modern styling
-export interface RoleConfig {
+interface RoleConfig {
     iconId: IconId;
     bgColor: string;      // Background for icon circle
     textColor: string;    // Icon color
@@ -48,7 +48,7 @@ export interface RoleConfig {
     gradientTo: string;   // Card gradient end
 }
 
-export const roleConfigMap: Record<string, RoleConfig> = {
+const roleConfigMap: Record<string, RoleConfig> = {
     'Buvette': {
         iconId: 'beer',
         bgColor: 'bg-amber-100 dark:bg-amber-500/20',
@@ -93,14 +93,6 @@ const defaultRoleConfig: RoleConfig = {
     gradientTo: 'to-white',
 };
 
-// Role name to icon ID mapping (legacy, kept for compatibility)
-export const roleIconMap: Record<string, IconId> = {
-    'Buvette': 'beer',
-    'Chrono': 'timer',
-    'Table de marque': 'clipboard',
-    'Goûter': 'cookie',
-};
-
 /**
  * Get role configuration by role name
  */
@@ -118,18 +110,9 @@ interface IconProps {
  * Get a Lucide icon component by ID
  * @example <Icon id="beer" className="w-5 h-5" />
  */
-export const Icon: React.FC<IconProps> = ({ id, className = 'w-5 h-5', size }) => {
+const Icon: React.FC<IconProps> = ({ id, className = 'w-5 h-5', size }) => {
     const IconComponent = iconMap[id] || iconMap.default;
     return <IconComponent className={className} size={size} />;
-};
-
-/**
- * Get a Lucide icon for a volunteer role name
- * @example <RoleIcon role="Buvette" className="w-4 h-4" />
- */
-export const RoleIcon: React.FC<{ role: string; className?: string }> = ({ role, className = 'w-4 h-4' }) => {
-    const config = getRoleConfig(role);
-    return <Icon id={config.iconId} className={className} />;
 };
 
 /**

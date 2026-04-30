@@ -52,10 +52,6 @@ export const findMatchingGame = (newMatch: ParsedMatch, existingGames: Game[]): 
     });
 };
 
-export const isDuplicateMatch = (newMatch: ParsedMatch, existingGames: Game[]): boolean => {
-    return !!findMatchingGame(newMatch, existingGames);
-};
-
 export interface ParsedMatch {
     date: string;           // Display format: "Samedi 14 Décembre 2024"
     dateISO: string;        // ISO format: "2024-12-14"

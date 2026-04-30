@@ -270,5 +270,3 @@ const CarpoolCard: React.FC<CarpoolCardProps> = ({ carpool }) => {
         </motion.div>
     );
 };
-
-export default CarpoolList;

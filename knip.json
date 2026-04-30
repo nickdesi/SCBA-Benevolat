@@ -1,0 +1,12 @@
+{
+  "ignoreDependencies": ["tailwindcss"],
+  "ignoreBinaries": ["firebase"],
+  "workspaces": {
+    ".": {
+      "project": ["src/**/*.{ts,tsx}", "*.{ts,tsx}"]
+    },
+    "functions": {
+      "project": ["src/**/*.ts"]
+    }
+  }
+}
