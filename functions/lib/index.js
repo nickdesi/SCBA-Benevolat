@@ -38,8 +38,9 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setAdminRole = exports.cleanupExpiredAnnouncements = void 0;
+exports.setAdminClaim = exports.setAdminRole = exports.cleanupExpiredAnnouncements = void 0;
 const scheduler_1 = require("firebase-functions/v2/scheduler");
+const https_1 = require("firebase-functions/v2/https");
 const logger = __importStar(require("firebase-functions/logger"));
 const admin = __importStar(require("firebase-admin"));
 // Initialize Firebase Admin SDK
@@ -83,7 +84,6 @@ exports.cleanupExpiredAnnouncements = (0, scheduler_1.onSchedule)({
         logger.error("Error during cleanup", { error });
         throw error; // Re-throw to trigger retry
     }
-    // ... existing code ...
 });
 /**
  * Authentication Trigger: Set Admin Role
@@ -96,18 +96,38 @@ exports.setAdminRole = functions
     .region("europe-west1")
     .auth.user()
     .onCreate(async (user) => {
-    // Check if the user is the designated admin
-    // In production, this could check against a list of allowed admin emails or a domain
     if (user.email === "benevole@scba.fr") {
         try {
             await admin.auth().setCustomUserClaims(user.uid, {
                 admin: true,
             });
-            logger.info(`Admin claim set for user: ${user.email}`);
+            logger.info(`Admin claim set for new user: ${user.email}`);
         }
         catch (error) {
             logger.error("Error setting admin claim", error);
         }
     }
+});
+/**
+ * Callable Function: setAdminClaim
+ *
+ * Permet à l'utilisateur admin existant (non créé après la mise en place de setAdminRole)
+ * d'obtenir son custom claim 'admin' sans intervention manuelle.
+ * Accessible uniquement si l'email est 'benevole@scba.fr'.
+ */
+exports.setAdminClaim = (0, https_1.onCall)({ region: "europe-west1" }, async (request) => {
+    if (!request.auth) {
+        throw new https_1.HttpsError("unauthenticated", "Authentification requise.");
+    }
+    const { email } = request.auth.token;
+    if (email !== "benevole@scba.fr") {
+        throw new https_1.HttpsError("permission-denied", "Non autorisé.");
+    }
+    if (request.auth.token.admin === true) {
+        return { message: "Le claim admin est déjà défini." };
+    }
+    await admin.auth().setCustomUserClaims(request.auth.uid, { admin: true });
+    logger.info(`Admin claim défini pour l'utilisateur existant: ${email}`);
+    return { message: "Claim admin défini. Déconnectez-vous puis reconnectez-vous." };
 });
 //# sourceMappingURL=index.js.map

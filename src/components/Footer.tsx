@@ -1,8 +1,18 @@
 import React, { useState, memo } from 'react';
 
-const APP_VERSION = 'v2.6.0';
+const APP_VERSION = 'v2.6.1';
 // Changelog data
 const CHANGELOG = [
+    {
+        version: 'v2.6.1',
+        date: '30 Avril 2026',
+        changes: [
+            '🛡️ Security : Audits npm ajoutés et vulnérabilités critiques corrigées',
+            '✅ CI : Workflow GitHub Actions pour typecheck, tests, builds et audits',
+            '♿ Accessibilité : Toasts convertis en boutons focusables et utilisables au clavier',
+            '🧪 Tests : Scripts Vitest standardisés pour validation locale et CI',
+        ]
+    },
     {
         version: 'v2.6.0',
         date: '16 Avril 2026',

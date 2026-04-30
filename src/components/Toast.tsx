@@ -99,13 +99,13 @@ const ToastItem: React.FC<ToastItemProps> = memo(({ toast, onClose }) => {
     const currentStyle = styles[toast.type];
 
     return (
-        <div
-            role="status"
-            aria-live="polite"
+        <button
+            type="button"
+            aria-label={`Fermer la notification : ${toast.message}`}
             className={`
                 ${currentStyle.container} 
                 ${currentStyle.shadow}
-                pointer-events-auto cursor-pointer
+                pointer-events-auto cursor-pointer text-left
                 px-4 py-3 rounded-2xl shadow-xl
                 flex items-center gap-3
                 min-w-[280px] max-w-[400px] sm:max-w-[360px]
@@ -117,6 +117,7 @@ const ToastItem: React.FC<ToastItemProps> = memo(({ toast, onClose }) => {
                     : 'translate-y-2 opacity-0 scale-95'}
                 hover:scale-[1.02] hover:shadow-2xl
                 active:scale-[0.98]
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
             `}
             onClick={handleClose}
             style={{
@@ -124,7 +125,7 @@ const ToastItem: React.FC<ToastItemProps> = memo(({ toast, onClose }) => {
             }}
         >
             {/* Icon container with subtle background */}
-            <div className={`flex-shrink-0 p-1.5 rounded-full bg-white/20 ${currentStyle.icon}`}>
+            <div className={`flex-shrink-0 p-1.5 rounded-full bg-white/20 ${currentStyle.icon}`} aria-hidden="true">
                 {icons[toast.type]}
             </div>
 
@@ -134,12 +135,12 @@ const ToastItem: React.FC<ToastItemProps> = memo(({ toast, onClose }) => {
             </span>
 
             {/* Close hint on hover (desktop only) */}
-            <div className="hidden sm:flex flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity">
+            <span className="hidden sm:flex flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white/70">
                     <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                 </svg>
-            </div>
-        </div>
+            </span>
+        </button>
     );
 });
 

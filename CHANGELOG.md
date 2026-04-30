@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.6.1] - 2026-04-30
+
+### Security
+
+- Ajout des scripts d'audit npm pour le frontend et les Cloud Functions.
+- Correction des vulnérabilités critiques corrigeables sans downgrade cassant.
+- Ajout de Dependabot pour surveiller les dépendances npm et GitHub Actions.
+
+### CI
+
+- Ajout d'un workflow GitHub Actions pour typecheck, tests, builds frontend/functions et audits.
+
+### Accessibility
+
+- Conversion des toasts cliquables en boutons focusables et utilisables au clavier.
+
+---
+
 ## [2.6.0] - 2026-04-16
 
 ### Refactor

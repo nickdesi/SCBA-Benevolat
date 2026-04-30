@@ -58,7 +58,6 @@ export const cleanupExpiredAnnouncements = onSchedule(
             logger.error("Error during cleanup", { error });
             throw error; // Re-throw to trigger retry
         }
-        // ... existing code ...
     }
 );
 
