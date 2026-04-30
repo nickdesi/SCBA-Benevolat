@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import packageJson from './package.json' with { type: 'json' };
 
 const getBuildCommit = () => {
-  const envCommit = process.env.COOLIFY_GIT_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA;
+  const envCommit = process.env.COOLIFY_GIT_COMMIT_SHA || process.env.GITHUB_SHA;
   if (envCommit) return envCommit.slice(0, 7);
 
   try {
