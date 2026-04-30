@@ -19,7 +19,7 @@
         "firebase-functions": "^7.2.3"
     },
     "devDependencies": {
-        "typescript": "^6.0.2"
+        "typescript": "^6.0.3"
     },
     "overrides": {
         "@tootallnate/once": "^3.0.1"
