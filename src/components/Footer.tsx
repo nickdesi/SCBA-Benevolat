@@ -1,7 +1,7 @@
 import React, { useState, memo } from 'react';
 
 const APP_VERSION = `v${__APP_VERSION__}`;
-const BUILD_LABEL = __APP_BUILD_COMMIT__ === 'dev' ? 'dev' : `build ${__APP_BUILD_COMMIT__}`;
+const BUILD_LABEL = `build ${__APP_BUILD_COMMIT__}`;
 
 interface ChangelogEntry {
     version: string;
@@ -10,6 +10,13 @@ interface ChangelogEntry {
 }
 
 const CHANGELOG: ChangelogEntry[] = [
+    {
+        version: 'v2.6.3',
+        date: '30 Avril 2026',
+        changes: [
+            '🏷️ Build : Remplacement du label dev par le hash Git réel quand il est disponible'
+        ]
+    },
     {
         version: 'v2.6.2',
         date: '30 Avril 2026',

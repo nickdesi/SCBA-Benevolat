@@ -1,6 +1,27 @@
 # Changelog
 
+## [2.6.3] - 2026-04-30
+
+### Corrigé
+
+- Le pied de page n’affiche plus `dev` comme identifiant de build quand le hash Git local est disponible.
+- L’identifiant de build utilise maintenant les variables CI, puis le hash Git local, puis un timestamp en dernier recours.
+
+### Corrigé
+
+- Rafraîchissement PWA renforcé pour appliquer les nouvelles versions sans vider manuellement le cache navigateur.
+- Suppression de l’inscription redondante du service worker.
+
+### Ajouté
+
+- Affichage d’un identifiant de build dans le pied de page pour repérer immédiatement un bundle obsolète.
+
 ## [2.6.2] - 2026-04-30
+
+### Corrigé
+
+- Le pied de page n’affiche plus `dev` comme identifiant de build quand le hash Git local est disponible.
+- L’identifiant de build utilise maintenant les variables CI, puis le hash Git local, puis un timestamp en dernier recours.
 
 ### Corrigé
 

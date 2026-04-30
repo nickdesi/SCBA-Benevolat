@@ -1,16 +1,28 @@
 import path from 'path';
+import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import packageJson from './package.json' with { type: 'json' };
 
-const commitRef = process.env.COOLIFY_GIT_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || 'dev';
+const getBuildCommit = () => {
+  const envCommit = process.env.COOLIFY_GIT_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA;
+  if (envCommit) return envCommit.slice(0, 7);
+
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 12);
+  }
+};
+
+const buildCommit = getBuildCommit();
 const buildDate = new Date().toISOString();
 
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
-    __APP_BUILD_COMMIT__: JSON.stringify(commitRef.slice(0, 7)),
+    __APP_BUILD_COMMIT__: JSON.stringify(buildCommit),
     __APP_BUILD_DATE__: JSON.stringify(buildDate),
   },
   server: {
