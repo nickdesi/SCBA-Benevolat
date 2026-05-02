@@ -1,7 +1,7 @@
 {
   "name": "scba-benevoles",
   "private": true,
-  "version": "2.6.4",
+  "version": "2.6.5",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -20,24 +20,24 @@
     "@fontsource/inter": "^5.2.8",
     "@fontsource/oswald": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
-    "firebase": "^12.11.0",
+    "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
-    "lucide-react": "^1.7.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "lucide-react": "^1.14.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "react-fast-marquee": "^1.6.5"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^25.5.2",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
-    "autoprefixer": "^10.4.27",
+    "autoprefixer": "^10.5.0",
     "babel-plugin-react-compiler": "^1.0.0",
-    "postcss": "^8.5.8",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
+    "postcss": "^8.5.13",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3",
     "vite": "^7.3.2",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.16"

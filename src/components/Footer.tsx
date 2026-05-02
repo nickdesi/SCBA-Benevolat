@@ -11,6 +11,14 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
     {
+        version: 'v2.6.5',
+        date: '02 Mai 2026',
+        changes: [
+            '📦 Dépendances : Mise à jour patch/minor sans migration majeure',
+            '✅ Qualité : Typecheck, tests, build frontend et build functions validés'
+        ]
+    },
+    {
         version: 'v2.6.4',
         date: '30 Avril 2026',
         changes: [
