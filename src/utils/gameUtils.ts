@@ -17,23 +17,26 @@ const normalizeTime = (t: string): string => {
 
 /**
  * Pure function to sort games by Date then Time.
- * Uses getGameDateValue (ISO date) and normalizeTime for sorting.
+ * ⚡ Bolt Optimization: Uses Schwartzian transform (decorate-sort-undecorate) to
+ * evaluate getGameDateValue and normalizeTime exactly once per item instead of O(N log N)
+ * times during the sort comparator.
  */
 export const sortGames = (games: Game[]): Game[] => {
-    return [...games].sort((a, b) => {
-        // 1. Sort by Date
-        const dateA = getGameDateValue(a);
-        const dateB = getGameDateValue(b);
-        const dateDiff = dateA.localeCompare(dateB);
+    return games
+        .map(game => ({
+            game,
+            dateVal: getGameDateValue(game),
+            timeVal: normalizeTime(game.time)
+        }))
+        .sort((a, b) => {
+            // 1. Sort by Date
+            const dateDiff = a.dateVal.localeCompare(b.dateVal);
+            if (dateDiff !== 0) return dateDiff;
 
-        if (dateDiff !== 0) return dateDiff;
-
-        // 2. Sort by Time (if dates are equal)
-        const timeA = normalizeTime(a.time);
-        const timeB = normalizeTime(b.time);
-
-        return timeA.localeCompare(timeB);
-    });
+            // 2. Sort by Time (if dates are equal)
+            return a.timeVal.localeCompare(b.timeVal);
+        })
+        .map(item => item.game);
 };
 
 /**
