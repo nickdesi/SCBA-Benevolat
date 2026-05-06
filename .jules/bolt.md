@@ -28,3 +28,6 @@
 ## 2024-05-18 - [Optimization] O(N) single pass for multiple conditions
 **Learning:** Re-running `.filter().length` for multiple conditions (like `isHome` and `!isHome`) inside render loops creates multiple O(N) traversals per group.
 **Action:** Always compute derived states in a single pass O(N) utility function (`getHomeAwayCounts`) and memoize it, or pre-compute it during data grouping (`groupGamesByMonth` or `gamesByDay`) to minimize array iteration overhead, avoiding duplicate calls like `.filter(g => g.isHome).length` and `.filter(g => !g.isHome).length`.
+## 2026-05-06 - Schwartzian Transform for sortGames
+**Learning:** The `sortGames` function was repeatedly parsing dates and normalizing times inside its O(N log N) `Array.prototype.sort()` comparator, creating unnecessary CPU overhead for large datasets.
+**Action:** Replaced the simple sort with a Schwartzian transform (decorate-sort-undecorate) to pre-calculate the `dateVal` and `timeVal` in a single O(N) pass before sorting. This drastically reduces the number of string manipulation and parsing calls during the sort.
