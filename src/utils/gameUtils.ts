@@ -18,22 +18,25 @@ const normalizeTime = (t: string): string => {
 /**
  * Pure function to sort games by Date then Time.
  * Uses getGameDateValue (ISO date) and normalizeTime for sorting.
+ *
+ * ⚡ Bolt Optimization: Uses the Schwartzian transform (decorate-sort-undecorate)
+ * to precompute expensive string parsing/normalization operations (getGameDateValue, normalizeTime)
+ * in a single O(N) pass before running the O(N log N) sort operation, avoiding
+ * redundant calculations inside the comparator function.
  */
 export const sortGames = (games: Game[]): Game[] => {
-    return [...games].sort((a, b) => {
-        // 1. Sort by Date
-        const dateA = getGameDateValue(a);
-        const dateB = getGameDateValue(b);
-        const dateDiff = dateA.localeCompare(dateB);
-
-        if (dateDiff !== 0) return dateDiff;
-
-        // 2. Sort by Time (if dates are equal)
-        const timeA = normalizeTime(a.time);
-        const timeB = normalizeTime(b.time);
-
-        return timeA.localeCompare(timeB);
-    });
+    return games
+        .map(game => ({
+            game,
+            dateVal: getGameDateValue(game),
+            timeVal: normalizeTime(game.time)
+        }))
+        .sort((a, b) => {
+            const dateDiff = a.dateVal.localeCompare(b.dateVal);
+            if (dateDiff !== 0) return dateDiff;
+            return a.timeVal.localeCompare(b.timeVal);
+        })
+        .map(item => item.game);
 };
 
 /**
@@ -133,14 +136,19 @@ const getTeamPriority = (team: string): number => {
 
 /**
  * Sort a list of team names based on their category priority then alphabetical.
+ *
+ * ⚡ Bolt Optimization: Uses the Schwartzian transform (decorate-sort-undecorate)
+ * to precompute getTeamPriority in a single O(N) pass, preventing repeated string
+ * allocations and lookups inside the O(N log N) .sort() callback.
  */
 export const sortTeamNames = (teamList: string[]): string[] => {
-    return [...teamList].sort((a, b) => {
-        const prioA = getTeamPriority(a);
-        const prioB = getTeamPriority(b);
-        if (prioA !== prioB) return prioA - prioB;
-        return a.localeCompare(b);
-    });
+    return teamList
+        .map(team => ({ team, prio: getTeamPriority(team) }))
+        .sort((a, b) => {
+            if (a.prio !== b.prio) return a.prio - b.prio;
+            return a.team.localeCompare(b.team);
+        })
+        .map(item => item.team);
 };
 
 /**
