@@ -14,7 +14,8 @@ import {
     getFilledSlotsCount,
     getTotalCapacityCount,
     getMissingRoles,
-    getCarpoolStats
+    getCarpoolStats,
+    getGameRoleStats
 } from '../utils/gameUtils';
 
 // Lazy-loaded for code-splitting
@@ -82,12 +83,13 @@ const GameCard: React.FC<GameCardProps> = memo(({
     // Accordion state - Default expanded if urgent logic removed or kept? kept locally but simplified
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const isFullyStaffed = useMemo(() => isGameFullyStaffed(game), [game]);
-    const totalVolunteers = useMemo(() => game.roles.reduce((sum, r) => sum + r.volunteers.length, 0), [game.roles]);
+    const roleStats = useMemo(() => getGameRoleStats(game), [game]);
+    const isFullyStaffed = roleStats.isFullyStaffed;
+    const filledSlots = roleStats.filledSlots;
+    const totalCapacity = roleStats.totalCapacity;
+    const missingRolesNames = roleStats.missingRoles;
 
-    // Calculate "effective" filled slots (clamped to capacity) to avoid "7/6" situations
-    const filledSlots = useMemo(() => getFilledSlotsCount(game), [game]);
-    const totalCapacity = useMemo(() => getTotalCapacityCount(game), [game]);
+    const totalVolunteers = useMemo(() => game.roles.reduce((sum, r) => sum + r.volunteers.length, 0), [game.roles]);
 
     const carpoolStats = useMemo(() => getCarpoolStats(game.carpool), [game.carpool]);
     const totalCarpoolSeats = carpoolStats.totalSeats;
@@ -96,8 +98,6 @@ const GameCard: React.FC<GameCardProps> = memo(({
     const isHomeGame = game.isHome ?? true;
 
     const isUrgent = useMemo(() => isGameUrgent(game), [game]);
-
-    const missingRolesNames = useMemo(() => getMissingRoles(game), [game]);
 
     if (isEditing) {
         return (

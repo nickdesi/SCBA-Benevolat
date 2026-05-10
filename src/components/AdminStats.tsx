@@ -15,7 +15,8 @@ import {
     getFilledSlotsCount,
     isGameUrgent,
     getHoursUntilGame,
-    isGameFullyStaffed
+    isGameFullyStaffed,
+    getGameRoleStats
 } from '../utils/gameUtils';
 
 interface AdminStatsProps {
@@ -311,8 +312,9 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         let weekendFilled = 0;
 
         const gameStats = homeGames.map(game => {
-            const gameTotal = getTotalCapacityCount(game);
-            const gameFilled = getFilledSlotsCount(game);
+            const roleStats = getGameRoleStats(game);
+            const gameTotal = roleStats.totalCapacity;
+            const gameFilled = roleStats.filledSlots;
 
             totalSlots += gameTotal;
             filledSlots += gameFilled;
@@ -327,7 +329,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
             // Check if urgent (<48h and not complete)
             const isUrgent = isGameUrgent(game, now);
             const hoursUntil = getHoursUntilGame(game.dateISO, now);
-            const missingRoles = getMissingRoles(game);
+            const missingRoles = roleStats.missingRoles;
 
             return {
                 id: game.id,
@@ -342,7 +344,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 isUrgent,
                 hoursUntil,
                 missingRoles,
-                isComplete: isGameFullyStaffed(game)
+                isComplete: roleStats.isFullyStaffed
             };
         });
 
