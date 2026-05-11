@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { List, Calendar } from 'lucide-react';
 import { AnimatedBallIcon } from './Icons';
 
@@ -18,6 +18,8 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
     onPlanningClick,
     isAuthenticated
 }) => {
+    const prefersReducedMotion = useReducedMotion();
+
     const handleViewChange = useCallback((view: 'home' | 'calendar') => {
         if (currentView !== view) {
             triggerHaptic(6); // Short, sharp click for switching
@@ -42,7 +44,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                         className={`flex-1 relative z-10 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'home' ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
                     >
                         <motion.div
-                            animate={{
+                            animate={prefersReducedMotion ? undefined : {
                                 scale: currentView === 'home' ? 1.1 : 1,
                                 rotate: currentView === 'home' ? [0, -10, 0] : 0
                             }}
@@ -64,7 +66,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                         className={`flex-1 relative z-10 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'calendar' ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
                     >
                         <motion.div
-                            animate={{
+                            animate={prefersReducedMotion ? undefined : {
                                 scale: currentView === 'calendar' ? 1.1 : 1,
                                 rotate: currentView === 'calendar' ? [0, 10, 0] : 0
                             }}
@@ -93,8 +95,8 @@ const BottomNav: React.FC<BottomNavProps> = memo(({
                     >
                         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                            transition={prefersReducedMotion ? undefined : { duration: 20, repeat: Infinity, ease: "linear" }}
                         >
                             <AnimatedBallIcon className="w-6 h-6" />
                         </motion.div>

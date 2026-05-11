@@ -1,7 +1,8 @@
 import path from 'path';
 import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import { VitePWA } from 'vite-plugin-pwa';
 import packageJson from './package.json' with { type: 'json' };
 
@@ -30,11 +31,8 @@ export default defineConfig({
     host: '0.0.0.0',
   },
   plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler', {}]],
-      },
-    }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo-scba.webp', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.webp', 'apple-touch-icon.png'],
@@ -88,7 +86,7 @@ export default defineConfig({
         navigationPreload: false, // Disabled to prevent preload warnings - NetworkFirst is sufficient
         // Precache essential files for offline support
         globPatterns: ['**/*.{html,js,css,woff2}'],
-        // Use NetworkFirst for everything - always try network first
+        // Runtime caching: HTML/API stay fresh, hashed assets favor repeat-load speed
         runtimeCaching: [
           {
             // HTML pages - always fresh
@@ -104,16 +102,18 @@ export default defineConfig({
             }
           },
           {
-            // JS/CSS bundles - network first with short cache
+            // Versioned JS/CSS bundles - prefer local cache for hashed Vite assets
             urlPattern: /\.(js|css)$/,
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'assets-cache',
               expiration: {
                 maxEntries: 30,
-                maxAgeSeconds: 60 * 10 // 10 minutes
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               },
-              networkTimeoutSeconds: 3
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           },
           {
@@ -124,7 +124,10 @@ export default defineConfig({
               cacheName: 'static-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           },

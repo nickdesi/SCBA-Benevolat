@@ -11,8 +11,8 @@ try:
     print(f"Python executable: {sys.executable}")
     print(f"CWD: {os.getcwd()}")
     
-    from ffbb_api_client_v2 import FFBBAPIClientV2, TokenManager
-    from ffbb_api_client_v2.utils.cache_manager import CacheManager, CacheConfig
+    from ffbb_data_client import FFBBDataClient, TokenManager
+    from ffbb_data_client.utils.cache_manager import CacheManager, CacheConfig
 
     print("Imports successful.")
 
@@ -32,7 +32,7 @@ try:
     
     # Create client
     print("Creating client...")
-    client = FFBBAPIClientV2.create(
+    client = FFBBDataClient.create(
         api_bearer_token=tokens.api_token,
         meilisearch_bearer_token=tokens.meilisearch_token,
         cached_session=cache_manager.session

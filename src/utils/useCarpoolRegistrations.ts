@@ -48,7 +48,8 @@ const isCarpoolUpcoming = (gameDateISO: string, gameTime?: string): boolean => {
     if (!gameDateISO) return true;
 
     const now = new Date();
-    const todayISO = now.toLocaleDateString('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    // ⚡ Bolt: Use direct string building instead of slow toLocaleDateString inside loops
+    const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const currentHours = now.getHours();
     const currentMinutes = now.getMinutes();
 
