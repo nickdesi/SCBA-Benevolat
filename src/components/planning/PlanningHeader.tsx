@@ -2,6 +2,16 @@ import React from 'react';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { getDaysOfWeek } from '../../utils/dateUtils';
 
+// ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in render cycles
+const monthYearFormatter = new Intl.DateTimeFormat('fr-FR', {
+    month: 'long',
+    year: 'numeric'
+});
+const dayMonthFormatter = new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'short'
+});
+
 interface PlanningHeaderProps {
     currentDate: Date;
     onPrevWeek: () => void;
@@ -16,10 +26,7 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
     onToday
 }) => {
     // Format: "Janvier 2025"
-    const monthLabel = currentDate.toLocaleDateString('fr-FR', {
-        month: 'long',
-        year: 'numeric'
-    });
+    const monthLabel = monthYearFormatter.format(currentDate);
 
     // Capitalize first letter
     const formattedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
@@ -30,8 +37,7 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
         const start = weekDays[0];
         const end = weekDays[6];
 
-        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-        return `${start.toLocaleDateString('fr-FR', options)} - ${end.toLocaleDateString('fr-FR', options)}`;
+        return `${dayMonthFormatter.format(start)} - ${dayMonthFormatter.format(end)}`;
     };
 
     return (
