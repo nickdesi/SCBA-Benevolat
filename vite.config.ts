@@ -1,7 +1,8 @@
 import path from 'path';
 import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
 import { VitePWA } from 'vite-plugin-pwa';
 import packageJson from './package.json' with { type: 'json' };
 
@@ -30,11 +31,8 @@ export default defineConfig({
     host: '0.0.0.0',
   },
   plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler', {}]],
-      },
-    }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo-scba.webp', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.webp', 'apple-touch-icon.png'],
