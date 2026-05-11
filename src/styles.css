@@ -531,7 +531,7 @@ textarea::placeholder {
   position: absolute;
   inset: 0;
   /* Simple static noise pattern base64 (tiny 64x64 transparent noise) */
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVnbGceHh4fHx9qamrk5OT39/d8fHz///9lZWU8PDz////p6end3d2FhYV/f3+Hh4ePj49vb29xcXGTk5N0dHRugNsFAAAAF3RSTlMFBQYJCg0PEBcaGSIjKClVVVd5fpqkpK8y2+gAAAF2SURBVEjH7dZZDoMwDAPQdC7tvW/p/a9ow0Cggmr58wOex44dZ5S11s45X/f7/dbz5/19H/fH/bE/7o/9cX/sj/tjf9wP+3E/7Mf9sB/3w37cD/txP+zH/bAf98N+3A/7cT/sx/2wH/fDfvwf9uN+2I/7YT/uh/24H/bjftiP+2E/7of9uB/2437Yj/thP+6H/bgf9uN+2I/7YT/u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7/f4B8E5d0W1f6qsAAAAASUVORK5CYII=");
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVnbGceHh4fHx9qamrk5OT39/d8fHz///9lZWU8PDz////p6end3d2FhYV/f3+Hh4ePj49vb29xcXGTk5N0dHRugNsFAAAAF3RSTlMFBQYJCg0PEBcaGSIjKClVVVd5fpqkpK8y2+gAAAF2SURBVEjH7dZZDoMwDAPQdC7tvW/p/a9ow0Cggmr58wOex44dZ5S11s45X/f7/dbz5/19H/fH/bE/7o/9cX/sj/tjf9wP+3E/7Mf9sB/3w37cD/txP+zH/bAf98N+3A/7cT/sx/2wH/fDfvwf9uN+2I/7YT/uh/24H/bjftiP+2E/7of9uB/2437Yj/thP+6H/bgf9uN+2I/7YT/u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7uZ/v536+n/v5fu7n+7mf7+d+vp/7+X7u5/u5n+/nfr6f+/l+7uf7/f4B8E5d0W1f6qsAAAAASUVORK5CYII=");
   opacity: 0.05;
   pointer-events: none;
   mix-blend-mode: overlay;
@@ -647,10 +647,9 @@ textarea::placeholder {
 /* Reduced motion - respects user preference while keeping essential animations */
 @media (prefers-reduced-motion: reduce) {
 
-  /* Exclude marquee and shine from forced stop — they are informational, not decorative */
-  *:not(.rfm-marquee):not(.shine-badge),
-  *:not(.rfm-marquee):not(.shine-badge)::before,
-  *:not(.rfm-marquee):not(.shine-badge)::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

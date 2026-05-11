@@ -88,7 +88,7 @@ export default defineConfig({
         navigationPreload: false, // Disabled to prevent preload warnings - NetworkFirst is sufficient
         // Precache essential files for offline support
         globPatterns: ['**/*.{html,js,css,woff2}'],
-        // Use NetworkFirst for everything - always try network first
+        // Runtime caching: HTML/API stay fresh, hashed assets favor repeat-load speed
         runtimeCaching: [
           {
             // HTML pages - always fresh
@@ -104,16 +104,18 @@ export default defineConfig({
             }
           },
           {
-            // JS/CSS bundles - network first with short cache
+            // Versioned JS/CSS bundles - prefer local cache for hashed Vite assets
             urlPattern: /\.(js|css)$/,
-            handler: 'NetworkFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'assets-cache',
               expiration: {
                 maxEntries: 30,
-                maxAgeSeconds: 60 * 10 // 10 minutes
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               },
-              networkTimeoutSeconds: 3
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           },
           {
@@ -124,7 +126,10 @@ export default defineConfig({
               cacheName: 'static-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           },
