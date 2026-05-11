@@ -90,6 +90,42 @@ export const getTotalCapacityCount = (game: Game): number => {
 };
 
 /**
+ * Calculates filled slots, total capacity, staffing status, and missing roles
+ * in a single pass over the game's roles array.
+ *
+ * ⚡ Bolt Optimization: Replaces multiple separate loops (reduce, every, filter)
+ * with a single O(N) pass for better performance.
+ */
+export const getGameRoleStats = (game: Game) => {
+    let filledSlots = 0;
+    let totalCapacity = 0;
+    let isFullyStaffed = true;
+    const missingRoles: string[] = [];
+
+    for (let i = 0; i < game.roles.length; i++) {
+        const r = game.roles[i];
+        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
+        const capacity = isUnlimited ? 2 : r.capacity;
+
+        filledSlots += Math.min(r.volunteers.length, capacity);
+        totalCapacity += capacity;
+
+        const isComplete = isUnlimited ? r.volunteers.length >= 2 : r.volunteers.length >= r.capacity;
+        if (!isComplete) {
+            isFullyStaffed = false;
+            missingRoles.push(r.name);
+        }
+    }
+
+    return {
+        filledSlots,
+        totalCapacity,
+        isFullyStaffed,
+        missingRoles
+    };
+};
+
+/**
  * Check if a game is urgent (< 48h and incomplete).
  */
 export const isGameUrgent = (game: Game, now: Date = new Date()): boolean => {
