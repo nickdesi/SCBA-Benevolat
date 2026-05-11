@@ -1,8 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
-from ffbb_api_client_v2 import FFBBAPIClientV2, TokenManager
-from ffbb_api_client_v2.config import API_FFBB_BASE_URL, DEFAULT_USER_AGENT
-import requests
+from ffbb_data_client import FFBBDataClient, TokenManager
 import argparse
 import sys
 import os
@@ -36,9 +34,9 @@ def init_firebase():
 def init_ffbb():
     try:
         tokens = TokenManager.get_tokens(use_cache=False)
-        client = FFBBAPIClientV2.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
+        client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
         print("Initialized FFBB Client.")
-        return client, tokens.api_token
+        return client
     except Exception as e:
         print(f"Failed to init FFBB Client: {e}")
         sys.exit(1)
@@ -115,7 +113,7 @@ def extract_gender_local(team_str):
     
     return None
 
-def verify_times(db, ffbb_client, api_token, fix=False):
+def verify_times(db, ffbb_client, fix=False):
     matches_ref = db.collection("matches")
     docs = matches_ref.stream()
 
@@ -291,6 +289,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     db = init_firebase()
-    client, api_token = init_ffbb()
+    client = init_ffbb()
     
-    verify_times(db, client, api_token, fix=args.fix)
+    verify_times(db, client, fix=args.fix)

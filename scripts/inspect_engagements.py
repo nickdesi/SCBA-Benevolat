@@ -1,11 +1,11 @@
 
-from ffbb_api_client_v2 import FFBBAPIClientV2, TokenManager
+from ffbb_data_client import FFBBDataClient, TokenManager
 import sys
 
 def inspect_engagements():
     try:
         tokens = TokenManager.get_tokens(use_cache=False)
-        client = FFBBAPIClientV2.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
+        client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
         
         # SCBA
         org = client.get_organisme(9326)

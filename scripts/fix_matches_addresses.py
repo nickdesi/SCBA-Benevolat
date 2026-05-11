@@ -1,9 +1,7 @@
 
 import firebase_admin
 from firebase_admin import credentials, firestore
-from ffbb_api_client_v2 import FFBBAPIClientV2, TokenManager
-from ffbb_api_client_v2.config import API_FFBB_BASE_URL, DEFAULT_USER_AGENT
-import requests
+from ffbb_data_client import FFBBDataClient, TokenManager
 import argparse
 import sys
 import os
@@ -52,68 +50,57 @@ def init_firebase():
 def init_ffbb():
     try:
         tokens = TokenManager.get_tokens(use_cache=False)
-        client = FFBBAPIClientV2.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
+        client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
         print("Initialized FFBB Client.")
-        return client, tokens.api_token
+        return client
     except Exception as e:
         print(f"Failed to init FFBB Client: {e}")
         sys.exit(1)
 
-def get_salle_address(salle_id, api_token):
+def get_salle_address(salle_id, client):
     if not salle_id:
         return None
     if salle_id in SALLE_CACHE:
         return SALLE_CACHE[salle_id]
 
-    url = f"{API_FFBB_BASE_URL}items/ffbbserver_salles/{salle_id}"
-    headers = {"Authorization": f"Bearer {api_token}", "user-agent": DEFAULT_USER_AGENT}
-    
     try:
-        resp = requests.get(url, headers=headers)
-        if resp.status_code == 200:
-            data = resp.json().get("data", {})
-            nom = data.get("libelle")
-            adresse = data.get("adresse")
-            cp = ""
-            ville = ""
-            
-            carto = data.get("cartographie")
-            if isinstance(carto, dict):
-                cp = carto.get("code_postal", "")
-                ville = carto.get("ville", "")
-            
-            # Fallback if carto is ID or missing
-            if not cp and data.get("commune") and isinstance(data.get("commune"), dict):
-                cp = data.get("commune").get("code_postal", "")
-                ville = data.get("commune").get("libelle", "")
-            
-            full_addr = f"{adresse}"
+        salle = client.get_salle(str(salle_id))
+        if salle:
+            data = salle.model_dump() if hasattr(salle, 'model_dump') else vars(salle)
+            nom = data.get("libelle") or data.get("nom")
+            adresse = data.get("adresse") or data.get("adresse1")
+            cp = data.get("code_postal") or data.get("codePostal", "")
+            ville = data.get("ville") or data.get("commune", "")
+            if isinstance(ville, dict):
+                ville = ville.get("libelle", "")
+
+            full_addr = str(adresse) if adresse else ""
             if cp or ville:
-                full_addr += f", {cp} {ville}"
-            
+                full_addr += f", {cp} {ville}".rstrip()
+
             if nom and nom.lower() not in full_addr.lower():
-                 full_addr = f"{nom}, {full_addr}"
+                full_addr = f"{nom}, {full_addr}"
 
             SALLE_CACHE[salle_id] = full_addr
             return full_addr
     except Exception as e:
         print(f"Error fetching salle {salle_id}: {e}")
     return None
+    return None
 
-def get_match_details_address(match_id, api_token):
+def get_match_details_address(match_id, client):
     if match_id in MATCH_DETAILS_CACHE:
         return MATCH_DETAILS_CACHE[match_id]
 
-    url = f"{API_FFBB_BASE_URL}items/ffbbserver_rencontres/{match_id}"
-    headers = {"Authorization": f"Bearer {api_token}", "user-agent": DEFAULT_USER_AGENT}
-    
     try:
-        resp = requests.get(url, headers=headers)
-        if resp.status_code == 200:
-            data = resp.json().get("data", {})
+        rencontre = client.get_rencontre(str(match_id))
+        if rencontre:
+            data = rencontre.model_dump() if hasattr(rencontre, 'model_dump') else vars(rencontre)
             salle_id = data.get("salle")
+            if isinstance(salle_id, dict):
+                salle_id = salle_id.get("id")
             if salle_id:
-                address = get_salle_address(salle_id, api_token)
+                address = get_salle_address(salle_id, client)
                 MATCH_DETAILS_CACHE[match_id] = address
                 return address
     except Exception as e:
@@ -123,7 +110,7 @@ def get_match_details_address(match_id, api_token):
 def normalize_team_name(name):
     return name.lower().replace("-", " ").replace(" ", "")
 
-def fix_address(db, ffbb_client, api_token, dry_run=True):
+def fix_address(db, ffbb_client, dry_run=True):
     matches_ref = db.collection("matches")
     # Fetch all future matches or all matches? Let's do all for now or filter by date?
     # User likely cares about future. But let's check all to be safe.
@@ -249,7 +236,7 @@ def fix_address(db, ffbb_client, api_token, dry_run=True):
             if best_match:
                 # Fetch details
                 # best_match.id
-                addr = get_match_details_address(best_match.id, api_token)
+                addr = get_match_details_address(best_match.id, ffbb_client)
                 if addr:
                     new_location = addr
                     source = f"FFBB Match ID {best_match.id}"
@@ -311,6 +298,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     db = init_firebase()
-    client, api_token = init_ffbb()
+    client = init_ffbb()
     
-    fix_address(db, client, api_token, dry_run=args.dry_run)
+    fix_address(db, client, dry_run=args.dry_run)

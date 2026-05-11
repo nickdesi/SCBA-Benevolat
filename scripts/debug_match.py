@@ -1,7 +1,7 @@
 
 import firebase_admin
 from firebase_admin import credentials, firestore
-from ffbb_api_client_v2 import FFBBAPIClientV2, TokenManager
+from ffbb_data_client import FFBBDataClient, TokenManager
 from datetime import datetime
 import re
 import os
@@ -37,7 +37,7 @@ def debug_match():
 
     # Init FFBB
     tokens = TokenManager.get_tokens(use_cache=False)
-    client = FFBBAPIClientV2.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
+    client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
 
     # Specific Target: 2026-02-28, U11 M1 vs CLERMONT BASKET - 1
     # Firestore ID from previous logs: KlUeQK7SeKGtuyFJ9QWK (allegedly)
