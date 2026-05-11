@@ -310,6 +310,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
 
         let weekendTotal = 0;
         let weekendFilled = 0;
+        let urgentCount = 0;
+        let incompleteCount = 0;
 
         const gameStats = homeGames.map(game => {
             const roleStats = getGameRoleStats(game);
@@ -328,7 +330,12 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
 
             // Check if urgent (<48h and not complete)
             const isUrgent = isGameUrgent(game, now);
+            if (isUrgent) urgentCount++;
+
             const hoursUntil = getHoursUntilGame(game.dateISO, now);
+            const missingRoles = getMissingRoles(game);
+            const isComplete = isGameFullyStaffed(game);
+            if (!isComplete) incompleteCount++;
             const missingRoles = roleStats.missingRoles;
 
             return {
@@ -344,13 +351,12 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 isUrgent,
                 hoursUntil,
                 missingRoles,
+                isComplete
                 isComplete: roleStats.isFullyStaffed
             };
         });
 
-        // Count urgents and incompletes
-        const urgentCount = gameStats.filter(g => g.isUrgent).length;
-        const incompleteCount = gameStats.filter(g => !g.isComplete).length;
+        // Calculate weekend percent
         const weekendPercent = weekendTotal > 0 ? Math.round((weekendFilled / weekendTotal) * 100) : 0;
 
         return {
