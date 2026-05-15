@@ -10,6 +10,17 @@ const normalizeMonth = (str: string): string => {
         .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
 };
 
+// ⚡ Bolt Optimization: Pre-compute normalized lookup tables and extract regex patterns
+// to the module level to avoid redundant computation (e.g., O(N) searches) and
+// re-compilation during repeated calls.
+const NORMALIZED_MONTH_MAP: Record<string, number> = Object.fromEntries(
+    Object.entries(MONTH_MAP).map(([key, value]) => [normalizeMonth(key), value])
+);
+
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const FRENCH_DATE_REGEX = /(\d{1,2})\s+([a-zA-ZéèêëàâäùûüôöîïçÉÈÊËÀÂÄÙÛÜÔÖÎÏÇ]+)(?:\s+(\d{4}))?/i;
+const TIME_REGEX = /(\d{1,2})[hH:](\d{2})/;
+
 /**
  * Parse a French date string like "Samedi 14 décembre 2024" or ISO format
  * Returns null if parsing fails
@@ -19,7 +30,7 @@ export const parseFrenchDate = (dateStr: string, timeStr?: string): Date | null 
     let hours = 0, minutes = 0;
 
     // Format: ISO "YYYY-MM-DD"
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    if (ISO_DATE_REGEX.test(dateStr)) {
         const parts = dateStr.split('-');
         year = parseInt(parts[0], 10);
         month = parseInt(parts[1], 10) - 1;
@@ -34,13 +45,13 @@ export const parseFrenchDate = (dateStr: string, timeStr?: string): Date | null 
     }
     // Format: French "Jour XX mois YYYY" (e.g., "Samedi 14 décembre 2024")
     else {
-        const frenchMatch = dateStr.match(/(\d{1,2})\s+([a-zA-ZéèêëàâäùûüôöîïçÉÈÊËÀÂÄÙÛÜÔÖÎÏÇ]+)(?:\s+(\d{4}))?/i);
+        const frenchMatch = dateStr.match(FRENCH_DATE_REGEX);
         if (frenchMatch) {
             day = parseInt(frenchMatch[1], 10);
             const monthStr = normalizeMonth(frenchMatch[2]);
-            month = Object.entries(MONTH_MAP).find(([key]) =>
-                normalizeMonth(key) === monthStr
-            )?.[1] ?? -1;
+
+            // O(1) lookup instead of O(N) search
+            month = NORMALIZED_MONTH_MAP[monthStr] ?? -1;
 
             if (month === -1) return null;
             if (frenchMatch[3]) {
@@ -53,7 +64,7 @@ export const parseFrenchDate = (dateStr: string, timeStr?: string): Date | null 
 
     // Parse time if provided
     if (timeStr) {
-        const timeMatch = timeStr.match(/(\d{1,2})[hH:](\d{2})/);
+        const timeMatch = timeStr.match(TIME_REGEX);
         if (timeMatch) {
             hours = parseInt(timeMatch[1], 10);
             minutes = parseInt(timeMatch[2], 10);
