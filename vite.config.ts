@@ -11,7 +11,7 @@ const getBuildCommit = () => {
   if (envCommit) return envCommit.slice(0, 7);
 
   try {
-    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+    return execSync('git rev-parse --short HEAD 2>/dev/null', { encoding: 'utf8' }).trim();
   } catch {
     return new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 12);
   }
