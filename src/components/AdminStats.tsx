@@ -10,12 +10,6 @@ import useScrollLock from '../utils/useScrollLock';
 import { AdminBroadcastPanel } from './admin/AdminBroadcastPanel';
 import {
     isRoleComplete,
-    getMissingRoles,
-    getTotalCapacityCount,
-    getFilledSlotsCount,
-    isGameUrgent,
-    getHoursUntilGame,
-    isGameFullyStaffed,
     getGameRoleStats
 } from '../utils/gameUtils';
 
@@ -328,12 +322,20 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 weekendFilled += gameFilled;
             }
 
-            // Check if urgent (<48h and not complete)
-            const isUrgent = isGameUrgent(game, now);
+            // Fast paths for hours and urgency using already parsed date
+            let hoursUntil = Infinity;
+            if (!isNaN(gDate.getTime())) {
+                const diffMs = gDate.getTime() - now.getTime();
+                hoursUntil = diffMs / (1000 * 60 * 60);
+            }
+
+            const isComplete = roleStats.isFullyStaffed;
+            if (!isComplete) incompleteCount++;
+
+            const isUrgent = game.isHome && !isComplete && hoursUntil > 0 && hoursUntil < 48;
             if (isUrgent) urgentCount++;
 
-            const hoursUntil = getHoursUntilGame(game.dateISO, now);
-            if (!roleStats.isFullyStaffed) incompleteCount++;
+            const missingRoles = roleStats.missingRoles;
 
             return {
                 id: game.id,
