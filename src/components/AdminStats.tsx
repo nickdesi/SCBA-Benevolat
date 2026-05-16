@@ -333,10 +333,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
             if (isUrgent) urgentCount++;
 
             const hoursUntil = getHoursUntilGame(game.dateISO, now);
-            const missingRoles = getMissingRoles(game);
             const isComplete = isGameFullyStaffed(game);
             if (!isComplete) incompleteCount++;
-            const missingRoles = roleStats.missingRoles;
 
             return {
                 id: game.id,
@@ -350,9 +348,8 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 hasUnlimited: game.roles.some(r => !isFinite(r.capacity)),
                 isUrgent,
                 hoursUntil,
-                missingRoles,
+                missingRoles: roleStats.missingRoles,
                 isComplete
-                isComplete: roleStats.isFullyStaffed
             };
         });
 
