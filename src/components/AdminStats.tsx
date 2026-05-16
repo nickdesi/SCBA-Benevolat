@@ -336,6 +336,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
             if (isUrgent) urgentCount++;
 
             const missingRoles = roleStats.missingRoles;
+            if (!roleStats.isFullyStaffed) incompleteCount++;
 
             return {
                 id: game.id,
