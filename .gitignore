@@ -35,3 +35,6 @@ serviceAccountKey.json
 
 # Generated Firebase Functions output
 functions/lib/
+
+# MCP configs
+firebase-mcp.json
