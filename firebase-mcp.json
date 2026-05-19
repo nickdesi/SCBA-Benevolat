@@ -5,9 +5,7 @@
             "args": [
                 "mcp"
             ],
-            "env": {
-                "cwd": "/Volumes/HomeExt/Users/Nicolas/Documents/Repo GIT/SCBA-Benevolat"
-            }
+            "cwd": "/Volumes/HomeExt/Users/Nicolas/Documents/Repo GIT/SCBA-Benevolat"
         }
     }
 }
