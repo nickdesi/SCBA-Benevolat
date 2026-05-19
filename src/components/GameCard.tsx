@@ -89,8 +89,6 @@ const GameCard: React.FC<GameCardProps> = memo(({
     const totalCapacity = roleStats.totalCapacity;
     const missingRolesNames = roleStats.missingRoles;
 
-    const totalVolunteers = useMemo(() => game.roles.reduce((sum, r) => sum + r.volunteers.length, 0), [game.roles]);
-
     const carpoolStats = useMemo(() => getCarpoolStats(game.carpool), [game.carpool]);
     const totalCarpoolSeats = carpoolStats.totalSeats;
     const totalPassengerRequests = carpoolStats.passengers;

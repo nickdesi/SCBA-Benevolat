@@ -39,19 +39,6 @@ const VolunteerSection: React.FC<VolunteerSectionProps> = ({
         !(role.name === 'Goûter' && isSeniorTeam)
     );
 
-    const totalSlots = visibleRoles.reduce((acc, role) => {
-        return acc + (role.capacity === Infinity ? 0 : role.capacity);
-        // Note: unlimited roles don't contribute to "total slots" target for the bar, 
-        // or we could assign a virtual target (e.g. 1)
-    }, 0);
-
-    const filledSlots = visibleRoles.reduce((acc, role) => {
-        // For limited roles, cap at capacity. For unlimited, count all.
-        const count = role.volunteers.length;
-        if (role.capacity === Infinity) return acc; // Don't count unlimited fills if they don't have a target
-        return acc + Math.min(count, role.capacity);
-    }, 0);
-
     return (
         <div>
 
