@@ -1,22 +1,14 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { User } from 'firebase/auth';
 import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStore';
-import { GoogleIcon, LogoutIcon, UserIcon } from './Icons';
-import { UserRegistration, Game } from '../types';
+import { LogoutIcon, UserIcon } from './Icons';
 
 const UserAuthModal = lazy(() => import('./UserAuthModal'));
 
 interface UserProfileProps {
     onLogin?: (user: User) => void;
     onLogout?: () => void;
-    registrations: UserRegistration[];
-    games: Game[];
-    onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
-    onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
     onToast: (message: string, type: 'success' | 'error' | 'info') => void;
-    allTeams?: string[];
-    favoriteTeams?: string[];
-    onToggleFavorite?: (team: string) => Promise<void>;
     isAdmin?: boolean;
     onOpenAdminStats?: () => void;
     onOpenProfile: () => void;
@@ -25,14 +17,7 @@ interface UserProfileProps {
 const UserProfile: React.FC<UserProfileProps> = ({
     onLogin,
     onLogout,
-    registrations = [],
-    games = [],
-    onUnsubscribe = async () => { },
-    onRemoveCarpool = async () => { },
     onToast = () => { },
-    allTeams = [],
-    favoriteTeams = [],
-    onToggleFavorite = async () => { },
     isAdmin = false,
     onOpenAdminStats = () => { },
     onOpenProfile

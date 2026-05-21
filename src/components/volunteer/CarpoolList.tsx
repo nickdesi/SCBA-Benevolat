@@ -43,7 +43,7 @@ const isCarpoolUpcoming = (gameDateISO: string, gameTime?: string): boolean => {
     if (gameDateISO < todayISO) return false;
 
     if (gameDateISO === todayISO && gameTime) {
-        const [hStr, mStr] = gameTime.split(/[h:]/);
+        const [hStr] = gameTime.split(/[h:]/);
         const h = parseInt(hStr, 10);
         if (!isNaN(h) && now.getHours() > h + 3) return false;
     }

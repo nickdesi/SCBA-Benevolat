@@ -3,7 +3,7 @@ import type { Role } from '../types';
 import { CheckIcon } from 'lucide-react';
 import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
 import ConfirmModal from './ConfirmModal';
-import { saveMyRegistration, removeMyRegistration, isMyRegistration, mightBeMyRegistration } from '../utils/storage';
+import { saveMyRegistration, removeMyRegistration, isMyRegistration } from '../utils/storage';
 import { parseNames } from '../utils/textUtils';
 import VolunteerAvatar from './VolunteerAvatar';
 import EmptySlot from './EmptySlot';
@@ -26,7 +26,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     gameId,
     onVolunteer,
     onRemoveVolunteer,
-    onUpdateVolunteer,
+    onUpdateVolunteer: _onUpdateVolunteer,
     isAdmin,
     animationDelay = 0,
     myRegistrationNames = [], // Default to empty array
@@ -122,12 +122,8 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            if (editingVolunteer) {
-                // handleUpdate(); 
-            } else {
-                handleSignUpClick();
-            }
+        if (e.key === 'Enter' && !editingVolunteer) {
+            handleSignUpClick();
         }
         if (e.key === 'Escape') {
             setIsInputVisible(false);
@@ -186,9 +182,6 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(({
                     const isMine = isAuthenticated
                         ? myRegistrationNames.includes(volunteer) // Check if name exists in my list
                         : isMyRegistration(registrationKey, volunteer);
-
-                    // Check if it's potentially me for recovery
-                    const isLostAndFound = !isAdmin && !isMine && mightBeMyRegistration(volunteer);
 
                     return (
                         <VolunteerAvatar

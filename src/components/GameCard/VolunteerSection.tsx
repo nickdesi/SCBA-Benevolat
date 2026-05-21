@@ -14,8 +14,6 @@ interface VolunteerSectionProps {
     onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
 }
 
-import RosterProgressBar from '../RosterProgressBar';
-
 const VolunteerSection: React.FC<VolunteerSectionProps> = ({
     roles,
     gameId,
@@ -27,18 +25,6 @@ const VolunteerSection: React.FC<VolunteerSectionProps> = ({
     onRemoveVolunteer,
     onUpdateVolunteer
 }) => {
-    // Calculate stats for progress bar
-    // Exclude infinite roles from "total" calculation to avoid skewing, or cap them
-    // Business rule: Goûter is hidden for Seniors, so exclude from stats too?
-    // Let's filter roles first based on visibility logic
-    const isSeniorTeam = ['SENIOR M1', 'SENIOR M2', 'Seniors M1', 'Seniors M2'].some(t =>
-        teamName.toUpperCase().includes(t.toUpperCase())
-    );
-
-    const visibleRoles = roles.filter(role =>
-        !(role.name === 'Goûter' && isSeniorTeam)
-    );
-
     return (
         <div>
 

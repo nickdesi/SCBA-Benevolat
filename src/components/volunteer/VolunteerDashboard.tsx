@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User } from 'firebase/auth';
 import { UserRegistration, Game } from '../../types';
-import { X, LayoutDashboard, MessageCircle, Trophy, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardHome } from './DashboardHome';
 import { DashboardComm } from './DashboardCommunications';

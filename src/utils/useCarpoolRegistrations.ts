@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Game, CarpoolEntry } from '../types';
+import type { Game } from '../types';
 import { getStoredName } from './storage';
 
 /**

@@ -1,14 +1,14 @@
 import React, { useMemo, useCallback } from 'react';
 import { UserRegistration, Game } from '../../types';
 import { User } from 'firebase/auth';
-import { Briefcase, Star, Clock, Award, CalendarOff, Sparkles } from 'lucide-react';
+import { Briefcase, Star, Clock, Award, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { StatCard } from './StatCard';
 
 import { MissionList } from './MissionList';
 import { CarpoolList } from './CarpoolList';
 import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
-import { isGameUpcoming } from '../../utils/gameTimeUtils';
+
 import { triggerHaptic } from '../../utils/haptics';
 
 interface DashboardHomeProps {
@@ -25,7 +25,7 @@ interface DashboardHomeProps {
 
 export const DashboardHome: React.FC<DashboardHomeProps> = ({
     registrations,
-    games,
+    games: _games,
     userCarpools,
     onUnsubscribe,
     onRemoveCarpool,

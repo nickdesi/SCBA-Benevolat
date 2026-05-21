@@ -1,5 +1,5 @@
 import React, { memo, useState, Suspense, lazy, useMemo } from 'react';
-import { Car, CheckIcon } from 'lucide-react';
+import { CheckIcon } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,11 +9,7 @@ import VolunteerSection from './GameCard/VolunteerSection';
 import ActionButtons from './GameCard/ActionButtons';
 import CarpoolingSection from './GameCard/CarpoolingSection';
 import {
-    isGameFullyStaffed,
     isGameUrgent,
-    getFilledSlotsCount,
-    getTotalCapacityCount,
-    getMissingRoles,
     getCarpoolStats,
     getGameRoleStats
 } from '../utils/gameUtils';

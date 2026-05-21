@@ -86,13 +86,6 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
     setFormData(prev => ({ ...prev, date: capitalized, dateISO: isoDate }));
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawTime = e.target.value; // "14:30"
-    if (!rawTime) return;
-    const formatted = rawTime.replace(':', 'H'); // "14H30"
-    setFormData(prev => ({ ...prev, time: formatted }));
-  };
-
   // Helper to sync hidden inputs with formatted state
   const getISODate = (formattedDate: string): string => {
     if (!formattedDate) return '';
@@ -115,12 +108,6 @@ const GameForm: React.FC<GameFormProps> = ({ gameToEdit, onSave, onCancel, exist
     } catch (e) {
       return '';
     }
-  };
-
-  const getISOTime = (formattedTime: string): string => {
-    if (!formattedTime) return '';
-    // Expected: "14H30" -> "14:30"
-    return formattedTime.replace('H', ':');
   };
 
   return (

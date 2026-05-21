@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
+import { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
 import { List, Calendar, Trophy, Search, CalendarDays } from 'lucide-react';
 import Header from './components/Header';
@@ -9,7 +9,6 @@ import ReloadPrompt from './components/ReloadPrompt';
 import InstallPrompt from './components/InstallPrompt';
 import Footer from './components/Footer';
 import { ToastContainer, useToast } from './components/Toast';
-import type { Game, GameFormData } from './types';
 import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut, signInWithGoogle } from './utils/authStore';
 import { useGames } from './utils/useGames';
@@ -18,7 +17,6 @@ import { useUserProfile } from './utils/useUserProfile';
 import EventSchema from './components/EventSchema';
 
 // Lazy-loaded components (code-splitting for reduced initial bundle)
-// AdminAuthModal removed as per request
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
 const GameForm = lazy(() => import('./components/GameForm'));
 const ProfileModal = lazy(() => import('./components/ProfileModal'));
@@ -167,13 +165,6 @@ function App() {
           teams={teams}
           selectedTeam={selectedTeam}
           onSelectTeam={setSelectedTeam}
-          registrations={userRegistrations} // Pass registrations
-          games={games} // Pass ALL games for validity check
-          allTeams={allTeams}
-          favoriteTeams={favoriteTeams}
-          onToggleFavorite={toggleFavoriteTeam}
-          onUnsubscribe={removeVolunteerWithToast}
-          onRemoveCarpool={handleRemoveCarpool}
           onToast={addToast}
           onOpenAdminStats={() => setIsAdminStatsOpen(true)}
           onOpenProfile={() => setIsProfileModalOpen(true)}

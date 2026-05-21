@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from 'firebase/auth';
-import type { Game, UserRegistration, CarpoolEntry } from '../types';
+import type { Game, UserRegistration } from '../types';
 import { VolunteerDashboard } from './volunteer/VolunteerDashboard';
 import type { UserCarpoolRegistration } from '../utils/useCarpoolRegistrations';
 

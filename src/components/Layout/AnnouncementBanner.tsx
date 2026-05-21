@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Info, Megaphone, X } from 'lucide-react';
+import { AlertTriangle, Info, X } from 'lucide-react';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -10,8 +10,6 @@ export const AnnouncementBanner: React.FC = () => {
     // Get the highest priority announcement
     const activeAnnouncement = announcements[0];
 
-    // Local dismiss logic (per session or persistent?)
-    // Design decision: Local storage for "Info" and "Warning", but "Urgent" always shows until expired.
     useEffect(() => {
         if (activeAnnouncement) {
             const dismissedId = localStorage.getItem('dismissed_announcement');
@@ -26,12 +24,6 @@ export const AnnouncementBanner: React.FC = () => {
     if (loading || !activeAnnouncement || !visible) return null;
 
     const handleDismiss = () => {
-        // Urgent messages cannot be dismissed (or maybe just temporarily?)
-        // Let's allow dismiss for UX but it will reappear on refresh if urgent? 
-        // No, standard UX: allow dismiss, but saves to local storage so it doesn't pop back up immediately.
-        // BUT for Urgent, maybe we ignore local storage check on next load?
-        // Let's stick to simple: Dismiss = Hide for now, store ID in localStorage.
-
         if (activeAnnouncement.type !== 'urgent') {
             localStorage.setItem('dismissed_announcement', activeAnnouncement.id);
         }

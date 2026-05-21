@@ -2,14 +2,13 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
     BarChart3, Megaphone, Activity, Users, AlertTriangle,
-    AlertOctagon, CheckCircle2, X, TrendingUp, Calendar,
-    Clock, ChevronRight, Zap
+    AlertOctagon, CheckCircle2, X, Calendar,
+    Zap
 } from 'lucide-react';
-import type { Game, Role } from '../types';
+import type { Game } from '../types';
 import useScrollLock from '../utils/useScrollLock';
 import { AdminBroadcastPanel } from './admin/AdminBroadcastPanel';
 import {
-    isRoleComplete,
     getGameRoleStats
 } from '../utils/gameUtils';
 
@@ -42,14 +41,6 @@ const itemVariants: Variants = {
     }
 };
 
-const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 10 },
-    show: {
-        opacity: 1,
-        y: 0,
-        transition: { type: "tween", duration: 0.15, ease: "easeOut" }
-    }
-};
 
 const formatCapacity = (val: number) => {
     if (!isFinite(val)) return 'Illimité';
@@ -174,7 +165,7 @@ const KPICard = ({
 };
 
 // Game Card Component
-const GameCard = ({ game, index }: { game: any; index: number }) => {
+const GameCard = ({ game, index: _index }: { game: any; index: number }) => {
     const getProgressColor = (percent: number) => {
         if (percent === 100) return 'from-emerald-500 to-teal-500';
         if (percent >= 50) return 'from-blue-500 to-indigo-500';
@@ -334,9 +325,6 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
 
             const isUrgent = game.isHome && !isComplete && hoursUntil > 0 && hoursUntil < 48;
             if (isUrgent) urgentCount++;
-
-            const missingRoles = roleStats.missingRoles;
-            if (!roleStats.isFullyStaffed) incompleteCount++;
 
             return {
                 id: game.id,

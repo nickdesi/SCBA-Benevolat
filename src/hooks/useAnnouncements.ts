@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Announcement } from '../types';
 import { cleanupExpiredAnnouncements } from '../utils/cleanupExpiredAnnouncements';
@@ -9,22 +9,13 @@ export function useAnnouncements() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Déclencher le nettoyage des annonces expirées en background
-        // (throttled pour s'exécuter max 1x/24h)
         cleanupExpiredAnnouncements().catch((error) => {
             console.error('[useAnnouncements] Cleanup error:', error);
         });
 
-        // Query active announcements that haven't expired
-        // Note: In a real app with strict index requirements, we might need composite indexes.
-        // For now, client-side filtering of expiration is safer if indexes aren't ready,
-        // but let's try strict query first.
-
-        const now = Timestamp.now();
         const q = query(
             collection(db, 'announcements'),
             where('active', '==', true),
-            // where('expiresAt', '>', now), // Requires composite index usually
             orderBy('createdAt', 'desc')
         );
 

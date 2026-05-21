@@ -19,7 +19,6 @@ interface UseCarpoolReturn {
 /** Utility: calculate remaining seats for a driver */
 export const getRemainingSeats = (driver: CarpoolEntry, allEntries: CarpoolEntry[]): number => {
     const totalSeats = driver.seats || 1;
-    const matchedPassengers = driver.matchedWith?.length || 0;
     // Count total seats requested by matched passengers
     let seatsUsed = 0;
     if (driver.matchedWith) {
@@ -200,7 +199,7 @@ export const useCarpool = (): UseCarpoolReturn => {
         }
     }, []);
 
-    const handleRejectPassenger = useCallback(async (gameId: string, driverId: string, passengerId: string): Promise<void> => {
+    const handleRejectPassenger = useCallback(async (gameId: string, _driverId: string, passengerId: string): Promise<void> => {
         const gameRef = doc(db, "matches", gameId);
         try {
             await runTransaction(db, async (transaction) => {

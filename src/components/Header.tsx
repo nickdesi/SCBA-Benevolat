@@ -1,43 +1,26 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import UserProfile from './UserProfile';
-import { UserRegistration, Game } from '../types';
 import { ThemeToggle } from '../utils/ThemeContext';
 import { useDraggableScroll } from '../hooks/useDraggableScroll';
-import { BasketballIcon } from './Icons';
 
 interface HeaderProps {
   onLogout: () => void;
   teams?: string[];
   selectedTeam?: string | null;
   onSelectTeam?: (team: string | null) => void;
-  registrations?: UserRegistration[];
-  games?: Game[];
-  onUnsubscribe?: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
-  onRemoveCarpool?: (gameId: string, entryId: string) => Promise<void>;
   onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
   isAdmin: boolean;
-  allTeams?: string[];
-  favoriteTeams?: string[];
-  onToggleFavorite?: (team: string) => Promise<void>;
   onOpenAdminStats?: () => void;
   onOpenProfile: () => void;
 }
 
 const Header: React.FC<HeaderProps> = memo(({
   isAdmin,
-  onLogout,
   teams = [],
   selectedTeam = null,
   onSelectTeam = (_team: string | null) => { },
-  registrations = [],
-  games = [],
-  onUnsubscribe = async () => { },
-  onRemoveCarpool = async () => { },
   onToast = () => { },
-  allTeams = [],
-  favoriteTeams = [],
-  onToggleFavorite = async () => { },
   onOpenAdminStats = () => { },
   onOpenProfile
 }) => {
@@ -65,8 +48,7 @@ const Header: React.FC<HeaderProps> = memo(({
               className="relative w-10 h-12 sm:w-14 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300 ease-out"
               width="56"
               height="70"
-              // @ts-ignore
-              fetchPriority="high"
+              {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
             />
           </div>
 
@@ -88,14 +70,7 @@ const Header: React.FC<HeaderProps> = memo(({
           <div className="flex-shrink-0 flex items-center gap-1.5 sm:gap-3">
             <ThemeToggle />
             <UserProfile
-              registrations={registrations}
-              games={games}
-              onUnsubscribe={onUnsubscribe}
-              onRemoveCarpool={onRemoveCarpool}
               onToast={onToast}
-              allTeams={allTeams}
-              favoriteTeams={favoriteTeams}
-              onToggleFavorite={onToggleFavorite}
               isAdmin={isAdmin}
               onOpenAdminStats={onOpenAdminStats}
               onOpenProfile={onOpenProfile}

@@ -42,7 +42,7 @@ export const sortGames = (games: Game[]): Game[] => {
 /**
  * Check if a role is considered "complete" based on its capacity.
  */
-export const isRoleComplete = (role: Role | { capacity: number; volunteers: string[] }): boolean => {
+const isRoleComplete = (role: Role | { capacity: number; volunteers: string[] }): boolean => {
     const isUnlimited = role.capacity === Infinity || role.capacity === 0;
     if (isUnlimited) {
         return role.volunteers.length >= 2;
@@ -53,40 +53,8 @@ export const isRoleComplete = (role: Role | { capacity: number; volunteers: stri
 /**
  * Check if all roles in a game are complete.
  */
-export const isGameFullyStaffed = (game: Game): boolean => {
+const isGameFullyStaffed = (game: Game): boolean => {
     return game.roles.every(isRoleComplete);
-};
-
-/**
- * Get missing role names for a game.
- */
-export const getMissingRoles = (game: Game): string[] => {
-    return game.roles
-        .filter(r => !isRoleComplete(r))
-        .map(r => r.name);
-};
-
-/**
- * Calculate filled slots for a game, clamping to capacity for stats precision.
- * Unlimited roles are capped at 2 for progress calculation.
- */
-export const getFilledSlotsCount = (game: Game): number => {
-    return game.roles.reduce((sum, r) => {
-        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
-        const capacity = isUnlimited ? 2 : r.capacity;
-        return sum + Math.min(r.volunteers.length, capacity);
-    }, 0);
-};
-
-/**
- * Calculate total capacity for a game.
- * Unlimited roles contribute 2 to the target capacity.
- */
-export const getTotalCapacityCount = (game: Game): number => {
-    return game.roles.reduce((sum, r) => {
-        const isUnlimited = r.capacity === Infinity || r.capacity === 0;
-        return sum + (isUnlimited ? 2 : r.capacity);
-    }, 0);
 };
 
 /**
@@ -139,19 +107,6 @@ export const isGameUrgent = (game: Game, now: Date = new Date()): boolean => {
         return diffHours > 0 && diffHours < 48;
     } catch {
         return false;
-    }
-};
-
-/**
- * Calculate hours remaining until the game.
- */
-export const getHoursUntilGame = (dateISO: string, now: Date = new Date()): number => {
-    try {
-        const gameDate = new Date(dateISO);
-        const diffMs = gameDate.getTime() - now.getTime();
-        return diffMs / (1000 * 60 * 60);
-    } catch {
-        return Infinity;
     }
 };
 

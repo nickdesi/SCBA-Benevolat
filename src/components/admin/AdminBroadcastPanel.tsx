@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { addDoc, collection, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Announcement } from '../../types';
+
 import { useAnnouncements } from '../../hooks/useAnnouncements';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, X, List, CheckCircle2, Siren, Zap, ChevronRight } from 'lucide-react';
+import { AlertTriangle, Info, Megaphone, Trash2, Send, Clock, List, CheckCircle2, Siren } from 'lucide-react';
 import { CustomSelect } from '../ui/CustomSelect';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to avoid slow Date.toLocaleDateString inside the map loop

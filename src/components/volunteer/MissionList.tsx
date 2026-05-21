@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
-import { Calendar, Trash2, CheckCircle2, Clock, MapPin } from 'lucide-react';
+import { Trash2, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../ConfirmModal';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';

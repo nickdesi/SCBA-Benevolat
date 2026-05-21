@@ -10,7 +10,7 @@ interface ActionButtonsProps {
     isHomeGame: boolean;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ game, isHomeGame }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ game, isHomeGame: _isHomeGame }) => {
     const [showCalendarPicker, setShowCalendarPicker] = useState(false);
     const calendarPickerRef = useRef<HTMLDivElement>(null);
 
