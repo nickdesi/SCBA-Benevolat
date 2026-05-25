@@ -1,5 +1,40 @@
 # Changelog
 
+## [2.6.6] - 2026-05-25
+
+### Dépendances
+
+- Mise à jour groupée de l'ensemble des dépendances (Vite 8, React 19, Lucide, Vitest, Firebase, etc.).
+
+### Sécurité & Qualité
+
+- Audit et suppression du code mort et des exports inutilisés avec Knip (0 alerte).
+- Configuration complète de ESLint et Prettier pour un formatage et un linting unifiés.
+- Validation rigoureuse des variables d'environnement Firebase.
+- Ajout d'une balise méta Content-Security-Policy (CSP) pour une sécurité accrue.
+- Correction des types TypeScript et activation de l'option `noFallthroughCasesInSwitch` dans `tsconfig.json`.
+
+### Docker
+
+- Optimisation de la vitesse d'installation via BuildKit en utilisant un cache pour les paquets npm (`npm ci`).
+- Correction de la directive COPY du Dockerfile en retirant la référence au fichier `.npmrc` inexistant.
+
+### UI/UX
+
+- Dynamisation de l'année de copyright dans le pied de page (`new Date().getFullYear()`) pour éviter d'afficher une année obsolète.
+
+## [2.6.5] - 2026-05-02
+
+### Dépendances
+
+- Mise à jour patch/minor des dépendances sans migration majeure.
+
+### Qualité
+
+- Validation complète du typechecking, des tests unitaires, du build frontend et du build des Cloud Functions.
+
+---
+
 ## [2.6.4] - 2026-04-30
 
 ### Performance

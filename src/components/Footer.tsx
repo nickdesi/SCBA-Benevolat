@@ -11,6 +11,16 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
     {
+        version: 'v2.6.6',
+        date: '25 Mai 2026',
+        changes: [
+            '📦 Dépendances : Mise à jour groupée (Vite 8, React 19, Lucide, Vitest, Firebase)',
+            '🛡️ Sec/Qualité : ESLint/Prettier, audit & suppression de code mort (Knip), CSP et validation d\'env',
+            '🐳 Docker : Optimisation d\'installation npm ci via cache BuildKit et fix Dockerfile',
+            '🎨 UI/UX : Année de copyright dynamique dans le pied de page'
+        ]
+    },
+    {
         version: 'v2.6.5',
         date: '02 Mai 2026',
         changes: [
@@ -236,7 +246,7 @@ const Footer: React.FC = memo(() => {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                     {/* Left: Copyright */}
                     <p className="text-slate-500 text-sm flex items-center gap-1">
-                        Fait avec <span className="text-red-500 animate-pulse">❤️</span> pour le Stade Clermontois Basket Auvergne - 2025
+                        Fait avec <span className="text-red-500 animate-pulse">❤️</span> pour le Stade Clermontois Basket Auvergne - {new Date().getFullYear()}
                     </p>
 
                     {/* Right: Version & Links */}
