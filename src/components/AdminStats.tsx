@@ -271,8 +271,9 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
     const [filter, setFilter] = useState<FilterType>('all');
 
     const stats = useMemo(() => {
-        const homeGames = games.filter(g => g.isHome);
         const now = new Date();
+        const nowMs = now.getTime();
+
         // Helper to check if a date is in the upcoming weekend
         const getComingWeekend = () => {
             const d = new Date();
@@ -298,7 +299,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         let urgentCount = 0;
         let incompleteCount = 0;
 
-        const gameStats = homeGames.map(game => {
+        // ⚡ Bolt Optimization: Replace multiple passes (.filter -> .map) with single .reduce
+        const gameStats = games.reduce((acc, game) => {
+            if (!game.isHome) return acc;
+
             const roleStats = getGameRoleStats(game);
             const gameTotal = roleStats.totalCapacity;
             const gameFilled = roleStats.filledSlots;
@@ -316,7 +320,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
             // Fast paths for hours and urgency using already parsed date
             let hoursUntil = Infinity;
             if (!isNaN(gDate.getTime())) {
-                const diffMs = gDate.getTime() - now.getTime();
+                const diffMs = gDate.getTime() - nowMs;
                 hoursUntil = diffMs / (1000 * 60 * 60);
             }
 
@@ -326,7 +330,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
             const isUrgent = game.isHome && !isComplete && hoursUntil > 0 && hoursUntil < 48;
             if (isUrgent) urgentCount++;
 
-            return {
+            acc.push({
                 id: game.id,
                 team: game.team,
                 opponent: game.opponent,
@@ -340,14 +344,30 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 hoursUntil,
                 missingRoles: roleStats.missingRoles,
                 isComplete: roleStats.isFullyStaffed
-            };
-        });
+            });
+
+            return acc;
+        }, [] as Array<{
+            id: string;
+            team: string;
+            opponent: string;
+            date: string;
+            dateISO?: string;
+            percent: number;
+            filled: number;
+            total: number;
+            hasUnlimited: boolean;
+            isUrgent: boolean;
+            hoursUntil: number;
+            missingRoles: string[];
+            isComplete: boolean;
+        }>);
 
         // Calculate weekend percent
         const weekendPercent = weekendTotal > 0 ? Math.round((weekendFilled / weekendTotal) * 100) : 0;
 
         return {
-            totalGames: homeGames.length,
+            totalGames: gameStats.length,
             totalSlots,
             filledSlots,
             percent: totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0,
