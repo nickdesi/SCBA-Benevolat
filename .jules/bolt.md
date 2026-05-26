@@ -44,10 +44,11 @@
 ## 2026-05-19 - Remove Unused Derived State Calculations in Components
 **Learning:** In components like `GameCard` and `VolunteerSection`, derived state calculations using array methods like `.reduce()` are sometimes written but never actually consumed in the rendered output or passed as props. This causes unnecessary recalculations (and possible allocations) on every render cycle, even if wrapped in `useMemo` (which itself adds a small overhead).
 **Action:** Actively scan components for unused variables and dead code, particularly derived calculations using `.reduce()`, `.filter()`, or `.map()`, and remove them to cleanly improve render performance without changing functionality.
-## 2024-05-19 - Combine filter and map with single pass reduce and cache variables outside loops
+## 2026-05-25 - Combine filter and map with single pass reduce and cache variables outside loops
 **Learning:** In React components that iterate over an array via multiple passes (`.filter()` then `.map()`) to calculate aggregated statistics, the intermediate arrays created take up memory, and executing the iterations twice slows down rendering. Moreover, performing logic like instantiating the current time `new Date().getTime()` inside a `.map()` or `.reduce()` repeats an invariant calculation $O(N)$ times.
 **Action:** Replace `array.filter().map()` chains with a single `.reduce()` operation. Hoist invariant calculations like the current time or boundaries (e.g., weekend start and end dates) outside of the loop. This minimizes object allocations and reduces passes, significantly optimizing calculation-heavy components like `AdminStats`.
 
-## 2024-05-19 - Use Single-Pass Filtering to Prevent Intermediate O(N) Array Allocations
+## 2026-05-26 - Use Single-Pass Filtering to Prevent Intermediate O(N) Array Allocations
 **Learning:** Chaining multiple `.filter()` calls on an array conceptually works but creates an intermediate copy of the array for every filter function. In heavy React hooks like `useGameFilters` that compute derived state over hundreds or thousands of `Game` items, chaining `.filter()` three times forces $O(3N)$ traversals and introduces unnecessary garbage collection overhead that can slow down renders or filter interactions.
 **Action:** When applying multiple filtering criteria to a large collection, combine the logic into a single pass `.filter()` operation with well-defined early returns instead of chaining array methods.
+
