@@ -62,53 +62,54 @@ export const useGameFilters = ({
         ].join('-');
         const nowTimeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
 
-        let result = games.filter(game => {
-            try {
-                if (!game.dateISO) return true; // Keep games with missing dates (fallback)
+        // Optimization: Single pass filter for O(N) instead of multiple chained O(N) filters
+        const myName = !auth.currentUser && currentView === 'planning' ? getStoredName()?.toLowerCase() : null;
+        const myGameIds = auth.currentUser && currentView === 'planning'
+            ? new Set(userRegistrations.map(r => r.gameId))
+            : null;
 
-                // Compare dates first
-                if (game.dateISO > nowIso) return true;  // Future day
-                if (game.dateISO < nowIso) return false; // Past day
-
-                // Same day: compare times
-                const timeParts = game.time.split(/[h:]/i);
-                const h = (timeParts[0] || '0').padStart(2, '0');
-                const m = (timeParts[1] || '0').padStart(2, '0');
-                return `${h}${m}` > nowTimeStr; // Only show games that haven't started yet
-            } catch {
-                return true; // Keep games with invalid dates (fallback)
-            }
-        });
-
-        // Apply Team Filter
-        if (selectedTeam) {
-            result = result.filter(g => g.team === selectedTeam);
+        if (currentView === 'planning' && !auth.currentUser && !myName) {
+            return [];
         }
 
-        // Apply Planning View Filter
-        if (currentView === 'planning') {
-            if (auth.currentUser) {
-                // Connected User: Check registrations by Game ID
-                const myGameIds = new Set(userRegistrations.map(r => r.gameId));
-                result = result.filter(game => myGameIds.has(game.id));
-            } else {
-                // Public/Cookie User: Check name in volunteers or carpooling
-                const myName = getStoredName()?.toLowerCase();
-                if (!myName) return [];
+        return games.filter(game => {
+            // 1. Time Filter
+            try {
+                if (game.dateISO) {
+                    if (game.dateISO < nowIso) return false; // Past day
+                    if (game.dateISO === nowIso) {
+                        const timeParts = game.time.split(/[h:]/i);
+                        const h = (timeParts[0] || '0').padStart(2, '0');
+                        const m = (timeParts[1] || '0').padStart(2, '0');
+                        if (`${h}${m}` <= nowTimeStr) return false; // Started or past time
+                    }
+                }
+            } catch {
+                // Keep games with invalid dates (fallback)
+            }
 
-                result = result.filter(game => {
+            // 2. Team Filter
+            if (selectedTeam && game.team !== selectedTeam) {
+                return false;
+            }
+
+            // 3. Planning View Filter
+            if (currentView === 'planning') {
+                if (auth.currentUser) {
+                    if (!myGameIds?.has(game.id)) return false;
+                } else if (myName) {
                     const isVolunteer = game.roles.some(role =>
                         role.volunteers.some(v => v.toLowerCase() === myName)
                     );
                     const isCarpool = game.carpool?.some(entry =>
                         entry.name.toLowerCase() === myName
                     );
-                    return isVolunteer || isCarpool;
-                });
+                    if (!isVolunteer && !isCarpool) return false;
+                }
             }
-        }
 
-        return result;
+            return true;
+        });
     }, [games, selectedTeam, currentView, userRegistrations]);
 
     return {
