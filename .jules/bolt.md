@@ -65,3 +65,7 @@
 ## 2026-05-26 - Use Single-Pass Filtering to Prevent Intermediate O(N) Array Allocations
 **Learning:** Chaining multiple `.filter()` calls on an array conceptually works but creates an intermediate copy of the array for every filter function. In heavy React hooks like `useGameFilters` that compute derived state over hundreds or thousands of `Game` items, chaining `.filter()` three times forces $O(3N)$ traversals and introduces unnecessary garbage collection overhead that can slow down renders or filter interactions.
 **Action:** When applying multiple filtering criteria to a large collection, combine the logic into a single pass `.filter()` operation with well-defined early returns instead of chaining array methods.
+
+## 2026-05-27 - Use Single-Pass O(N) iteration instead of multiple .map() to extract unique Sets
+**Learning:** In React components and hooks, extracting multiple unique lists (e.g., teams, locations, opponents) from a large array of objects using multiple `.map(g => g.property)` calls creates unnecessary intermediate arrays and forces $O(M \times N)$ traversals over the same data.
+**Action:** Replace multiple `.map()` calls with a single `for` loop that iterates over the source array once, simultaneously populating all the target `Set` collections. This eliminates intermediate array allocations and reduces garbage collection overhead.
