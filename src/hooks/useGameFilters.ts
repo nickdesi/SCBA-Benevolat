@@ -22,32 +22,49 @@ export const useGameFilters = ({
     userRegistrations
 }: UseGameFiltersProps) => {
 
+    // ⚡ Bolt Optimization: Extract multiple unique property lists in a single O(N) pass
+    // instead of multiple O(N) Array.map() traversals and intermediate allocations.
+    const { uniqueTeamsSet, uniqueLocationsSet, uniqueOpponentsSet } = useMemo(() => {
+        const teamsSet = new Set<string>();
+        const locationsSet = new Set<string>();
+        const opponentsSet = new Set<string>();
+
+        for (let i = 0; i < games.length; i++) {
+            const game = games[i];
+            if (game.team) teamsSet.add(game.team);
+            if (game.location) locationsSet.add(game.location);
+            if (game.opponent) opponentsSet.add(game.opponent);
+        }
+
+        return {
+            uniqueTeamsSet: teamsSet,
+            uniqueLocationsSet: locationsSet,
+            uniqueOpponentsSet: opponentsSet
+        };
+    }, [games]);
+
     // 1. Extract unique teams for dropdown (restricted to favorites if set)
     const teams = useMemo(() => {
         if (favoriteTeams && favoriteTeams.length > 0) {
             return sortTeamNames([...favoriteTeams]);
         }
-        const uniqueTeams = new Set(games.map(g => g.team));
-        return sortTeamNames(Array.from(uniqueTeams));
-    }, [games, favoriteTeams]);
+        return sortTeamNames(Array.from(uniqueTeamsSet));
+    }, [uniqueTeamsSet, favoriteTeams]);
 
     // 2. Full list of teams regardless of favorites (for ProfileModal)
     const allTeams = useMemo(() => {
-        const uniqueAll = new Set(games.map(g => g.team));
-        return sortTeamNames(Array.from(uniqueAll));
-    }, [games]);
+        return sortTeamNames(Array.from(uniqueTeamsSet));
+    }, [uniqueTeamsSet]);
 
     // 3. Extract unique locations
     const uniqueLocations = useMemo(() => {
-        const locations = new Set(games.map(g => g.location));
-        return Array.from(locations).filter(Boolean).sort();
-    }, [games]);
+        return Array.from(uniqueLocationsSet).sort();
+    }, [uniqueLocationsSet]);
 
     // 4. Extract unique opponents
     const uniqueOpponents = useMemo(() => {
-        const opponents = new Set(games.map(g => g.opponent));
-        return Array.from(opponents).filter(Boolean).sort();
-    }, [games]);
+        return Array.from(uniqueOpponentsSet).sort();
+    }, [uniqueOpponentsSet]);
 
     // 5. Filtered games logic (Team Filter + Dashboard Views)
     const filteredGames = useMemo(() => {
