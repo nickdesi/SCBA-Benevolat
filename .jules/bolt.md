@@ -69,3 +69,7 @@
 ## 2026-05-27 - O(N) Single-Pass Extraction for Multiple Property Lists
 **Learning:** In a hook or component (like `useGameFilters`) that computes lists of unique properties from an array (e.g. `games.map(g => g.team)`, `games.map(g => g.location)`, etc.), using multiple separate `.map()` or `.reduce()` calls causes multiple $O(N)$ traversals and multiple intermediate array allocations.
 **Action:** When extracting multiple distinct unique sets or lists from a collection, use a single `useMemo` block with a single `for` loop to accumulate all sets simultaneously in a single $O(N)$ pass. This reduces iteration overhead and prevents creating several intermediate mapping arrays.
+
+## 2026-05-29 - [Optimization] Prevent redundant instantiation of \`new Date()\` in rendering loops
+**Learning:** Re-evaluating \`new Date()\` repeatedly inside render loops for lists (like mapping over days in \`DesktopGrid\` or \`MobileTimeline\`) creates substantial overhead by unnecessarily allocating Date objects during every React render pass.
+**Action:** Always hoist invariant calculations, such as computing the current day's ISO string (\`toISODateString(new Date())\` or \`getTodayISO()\`), outside of the \`.map()\` or \`.filter()\` loops using \`useMemo\` or by evaluating it once in the component body to prevent repeated allocations.

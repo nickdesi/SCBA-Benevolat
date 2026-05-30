@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
-import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
+import { toISODateString, getDaysOfWeek, getTodayISO } from '../../utils/dateUtils';
 import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to dramatically improve performance over Date.toLocaleDateString in loops
@@ -79,13 +79,17 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
         [days, gamesByDay]
     );
 
+    // ⚡ Bolt Optimization: Hoist new Date() calculation outside the loop to prevent O(N) redundant Date object allocations and formatting during render.
+    const todayISO = getTodayISO();
+
     return (
         <div className="hidden lg:block relative min-h-[600px] border-t border-slate-800/50 pt-6">
             {activeDays.length > 0 ? (
                 <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
                     {activeDays.map((day) => {
-                        const dayGames = gamesByDay.get(toISODateString(day)) || [];
-                        const isToday = toISODateString(day) === toISODateString(new Date());
+                        const dayStr = toISODateString(day);
+                        const dayGames = gamesByDay.get(dayStr) || [];
+                        const isToday = dayStr === todayISO;
                         const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
 
                         return (
