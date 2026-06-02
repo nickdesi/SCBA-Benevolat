@@ -69,3 +69,7 @@
 ## 2026-05-27 - O(N) Single-Pass Extraction for Multiple Property Lists
 **Learning:** In a hook or component (like `useGameFilters`) that computes lists of unique properties from an array (e.g. `games.map(g => g.team)`, `games.map(g => g.location)`, etc.), using multiple separate `.map()` or `.reduce()` calls causes multiple $O(N)$ traversals and multiple intermediate array allocations.
 **Action:** When extracting multiple distinct unique sets or lists from a collection, use a single `useMemo` block with a single `for` loop to accumulate all sets simultaneously in a single $O(N)$ pass. This reduces iteration overhead and prevents creating several intermediate mapping arrays.
+
+## 2026-06-02 - Use Single-Pass Loop to Prevent Multiple O(N) Iterations for Multiple Derived Statistics
+**Learning:** In React components or custom hooks (like `useCarpoolRegistrations`), computing multiple related statistics counts by chaining multiple `.filter().length` calls on the same array is highly inefficient. It iterates over the array multiple times, taking $O(K \times N)$ time for $K$ statistics, and creates unnecessary intermediate array allocations that require garbage collection.
+**Action:** Replace multiple `.filter().length` counts with a single `O(N)` loop (like a `for` loop or `.reduce()`) to calculate all derived statistics in one pass over the array, avoiding redundant iteration overhead and intermediate array creation.
