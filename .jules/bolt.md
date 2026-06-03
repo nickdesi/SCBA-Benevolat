@@ -69,3 +69,7 @@
 ## 2026-05-27 - O(N) Single-Pass Extraction for Multiple Property Lists
 **Learning:** In a hook or component (like `useGameFilters`) that computes lists of unique properties from an array (e.g. `games.map(g => g.team)`, `games.map(g => g.location)`, etc.), using multiple separate `.map()` or `.reduce()` calls causes multiple $O(N)$ traversals and multiple intermediate array allocations.
 **Action:** When extracting multiple distinct unique sets or lists from a collection, use a single `useMemo` block with a single `for` loop to accumulate all sets simultaneously in a single $O(N)$ pass. This reduces iteration overhead and prevents creating several intermediate mapping arrays.
+
+## 2026-06-03 - Prevent O(2N) Traversal in useCarpoolRegistrations.ts
+**Learning:** In `useCarpoolRegistrations.ts`, calculating stats required multiple passes over the array (`.filter(...).length`), which introduces unnecessary allocations and redundant iterations, especially given the history of user registrations.
+**Action:** Replaced chained array functions with a single `for` loop to increment multiple counter variables (`asDriver`, `asPassenger`) concurrently, resulting in a cleaner (N)$ execution time and fewer intermediate array allocations.
