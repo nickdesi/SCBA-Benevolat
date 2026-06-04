@@ -151,11 +151,26 @@ export const useCarpoolRegistrations = (
     const nextCarpool = upcomingCarpools[0];
 
     // Calculate stats
-    const stats = useMemo(() => ({
-        totalCarpools: userCarpools.length,
-        asDriver: userCarpools.filter(c => c.type === 'driver').length,
-        asPassenger: userCarpools.filter(c => c.type === 'passenger').length,
-    }), [userCarpools]);
+    // ⚡ Bolt Optimization: Replace multiple .filter().length passes with a single O(N) loop
+    // Why: Prevents redundant array traversals and intermediate array memory allocations when calculating derived stats.
+    const stats = useMemo(() => {
+        let asDriver = 0;
+        let asPassenger = 0;
+
+        for (let i = 0; i < userCarpools.length; i++) {
+            if (userCarpools[i].type === 'driver') {
+                asDriver++;
+            } else if (userCarpools[i].type === 'passenger') {
+                asPassenger++;
+            }
+        }
+
+        return {
+            totalCarpools: userCarpools.length,
+            asDriver,
+            asPassenger
+        };
+    }, [userCarpools]);
 
     return {
         userCarpools,
