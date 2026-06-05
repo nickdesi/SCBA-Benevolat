@@ -86,12 +86,14 @@ export const useCarpoolRegistrations = (
         if (!storedName) return [];
 
         const registrations: UserCarpoolRegistration[] = [];
+        // ⚡ Bolt Optimization: Hoist toLowerCase() outside the loop to avoid O(N) redundant string normalizations
+        const normalizedStoredName = storedName.toLowerCase();
 
         games.forEach(game => {
             if (!game.carpool || game.carpool.length === 0) return;
 
             const userEntry = game.carpool.find(
-                e => e.name.toLowerCase() === storedName.toLowerCase()
+                e => e.name.toLowerCase() === normalizedStoredName
             );
 
             if (!userEntry) return;
@@ -115,13 +117,15 @@ export const useCarpoolRegistrations = (
             // Add driver-specific info
             if (userEntry.type === 'driver') {
                 registration.matchedPassengersCount = userEntry.matchedWith?.length || 0;
-                // Count pending requests
-                const pendingRequests = game.carpool.filter(
-                    e => e.type === 'passenger' &&
-                        e.status === 'pending' &&
-                        e.requestedDriverId === userEntry.id
-                );
-                registration.pendingRequestsCount = pendingRequests.length;
+                // ⚡ Bolt Optimization: Use inline loop instead of .filter().length to prevent intermediate array creation
+                let pendingCount = 0;
+                for (let i = 0; i < game.carpool.length; i++) {
+                    const e = game.carpool[i];
+                    if (e.type === 'passenger' && e.status === 'pending' && e.requestedDriverId === userEntry.id) {
+                        pendingCount++;
+                    }
+                }
+                registration.pendingRequestsCount = pendingCount;
             }
 
             // Add passenger-specific info
@@ -151,11 +155,25 @@ export const useCarpoolRegistrations = (
     const nextCarpool = upcomingCarpools[0];
 
     // Calculate stats
-    const stats = useMemo(() => ({
-        totalCarpools: userCarpools.length,
-        asDriver: userCarpools.filter(c => c.type === 'driver').length,
-        asPassenger: userCarpools.filter(c => c.type === 'passenger').length,
-    }), [userCarpools]);
+    const stats = useMemo(() => {
+        // ⚡ Bolt Optimization: Combine multiple .filter().length passes into a single O(N) iteration
+        let driverCount = 0;
+        let passengerCount = 0;
+
+        for (let i = 0; i < userCarpools.length; i++) {
+            if (userCarpools[i].type === 'driver') {
+                driverCount++;
+            } else if (userCarpools[i].type === 'passenger') {
+                passengerCount++;
+            }
+        }
+
+        return {
+            totalCarpools: userCarpools.length,
+            asDriver: driverCount,
+            asPassenger: passengerCount,
+        };
+    }, [userCarpools]);
 
     return {
         userCarpools,
