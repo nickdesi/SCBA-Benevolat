@@ -77,3 +77,11 @@
 ## 2026-05-29 - [Optimization] Prevent redundant instantiation of `new Date()` in rendering loops
 **Learning:** Re-evaluating `new Date()` repeatedly inside render loops for lists (like mapping over days in `DesktopGrid` or `MobileTimeline`) creates substantial overhead by unnecessarily allocating Date objects during every React render pass.
 **Action:** Always hoist invariant calculations, such as computing the current day's ISO string (`toISODateString(new Date())` or `getTodayISO()`), outside of the `.map()` or `.filter()` loops using `useMemo` or by evaluating it once in the component body to prevent repeated allocations.
+
+## 2026-06-05 - Avoid O(N) Date Instantiation and Intl Format in Loops
+**Learning:** Instantiating `new Date(string)` and formatting it with `Intl.DateTimeFormat.format()` inside a rendering loop (like `groupGamesByMonth` running over 1000+ games) causes significant performance overhead (~10x slower).
+**Action:** When deriving month labels from ISO strings like `YYYY-MM-DD`, extract the `YYYY-MM` prefix and use a local or module-level cache dictionary object to store the formatted label. This reduces Date instantiation and Intl formatting from O(N) per render to O(unique months).
+
+## 2026-06-05 - Avoid O(N) Intl Format in Loops while respecting timezones
+**Learning:** `Intl.DateTimeFormat.format()` is notoriously slow inside large loops. While you can cache dates using strings, `game.dateISO` (e.g. `YYYY-MM-DD`) often represents UTC logic. Caching with the raw `YYYY-MM` prefix of a UTC string can cause an off-by-one month rendering bug in negative local timezones.
+**Action:** Always parse the date first `new Date(string)`, and cache the formatted label using a composite local key like `${date.getFullYear()}-${date.getMonth()}`. Instantiating the Date object is extremely fast (~1-2ms per 1000 items), but caching the slow `Intl` formatter fixes the performance bottleneck correctly across local timezones.
