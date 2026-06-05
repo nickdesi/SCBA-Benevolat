@@ -96,7 +96,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 
             {/* Middle: Teams & Versus */}
             <div className="relative z-10 mb-4 ">
-                <div className="flex items-baseline gap-2 mb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                    {game.teamLogo && (
+                        <img 
+                            src={game.teamLogo} 
+                            alt={game.team} 
+                            className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
+                        />
+                    )}
                     <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport">
                         {game.team}
                     </h3>
@@ -104,9 +111,16 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 </div>
 
                 <div className="group relative">
-                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight">
-                        <span className="text-slate-300 dark:text-slate-600 text-lg align-middle mr-2 italic">VS</span>
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-slate-300 dark:text-slate-600 text-lg align-middle italic mr-1">VS</span>
+                        {game.opponentLogo && (
+                            <img 
+                                src={game.opponentLogo} 
+                                alt={game.opponent} 
+                                className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 align-middle"
+                            />
+                        )}
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 align-middle">
                             {game.opponent}
                         </span>
                     </h2>

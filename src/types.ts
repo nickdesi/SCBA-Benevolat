@@ -33,6 +33,8 @@ export interface Game {
   roles: Role[];
   carpool?: CarpoolEntry[]; // Optional carpooling entries
   competition?: string;
+  teamLogo?: string;
+  opponentLogo?: string;
 }
 
 // Type for role configuration (used in constants)
@@ -67,6 +69,8 @@ export interface GameFormData {
   isHome: boolean;
   roleConfig?: RoleConfig[]; // Optional configuration for roles
   competition?: string;
+  teamLogo?: string;
+  opponentLogo?: string;
 }
 
 export interface Announcement {
