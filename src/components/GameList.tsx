@@ -43,15 +43,27 @@ const monthYearFormatter = new Intl.DateTimeFormat('fr-FR', { month: 'long', yea
 const groupGamesByMonth = (games: Game[]): GameGroup[] => {
     const groups: GameGroup[] = [];
 
+    // ⚡ Bolt Optimization: Cache the formatted month label using local Year-Month.
+    // Instantiating a Date is relatively fast, but calling Intl.DateTimeFormat.format()
+    // inside a loop over thousands of items is very slow. By caching on the local
+    // year and month, we avoid the heavy Intl formatting while handling timezone shifts correctly.
+    const monthLabelCache: Record<string, string> = {};
+
     games.forEach(game => {
         let label = "Date inconnue";
 
         if (game.dateISO) {
             const date = new Date(game.dateISO);
             if (!isNaN(date.getTime())) {
-                // Bolt optimization: use cached formatter
-                label = monthYearFormatter.format(date);
-                label = label.charAt(0).toUpperCase() + label.slice(1);
+                const cacheKey = `${date.getFullYear()}-${date.getMonth()}`;
+                if (monthLabelCache[cacheKey]) {
+                    label = monthLabelCache[cacheKey];
+                } else {
+                    let formattedLabel = monthYearFormatter.format(date);
+                    formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
+                    monthLabelCache[cacheKey] = formattedLabel;
+                    label = formattedLabel;
+                }
             }
         } else {
             const parts = game.date.split(' ');

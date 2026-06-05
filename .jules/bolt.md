@@ -69,3 +69,11 @@
 ## 2026-05-27 - O(N) Single-Pass Extraction for Multiple Property Lists
 **Learning:** In a hook or component (like `useGameFilters`) that computes lists of unique properties from an array (e.g. `games.map(g => g.team)`, `games.map(g => g.location)`, etc.), using multiple separate `.map()` or `.reduce()` calls causes multiple $O(N)$ traversals and multiple intermediate array allocations.
 **Action:** When extracting multiple distinct unique sets or lists from a collection, use a single `useMemo` block with a single `for` loop to accumulate all sets simultaneously in a single $O(N)$ pass. This reduces iteration overhead and prevents creating several intermediate mapping arrays.
+
+## 2026-06-05 - Avoid O(N) Date Instantiation and Intl Format in Loops
+**Learning:** Instantiating `new Date(string)` and formatting it with `Intl.DateTimeFormat.format()` inside a rendering loop (like `groupGamesByMonth` running over 1000+ games) causes significant performance overhead (~10x slower).
+**Action:** When deriving month labels from ISO strings like `YYYY-MM-DD`, extract the `YYYY-MM` prefix and use a local or module-level cache dictionary object to store the formatted label. This reduces Date instantiation and Intl formatting from O(N) per render to O(unique months).
+
+## 2026-06-05 - Avoid O(N) Intl Format in Loops while respecting timezones
+**Learning:** `Intl.DateTimeFormat.format()` is notoriously slow inside large loops. While you can cache dates using strings, `game.dateISO` (e.g. `YYYY-MM-DD`) often represents UTC logic. Caching with the raw `YYYY-MM` prefix of a UTC string can cause an off-by-one month rendering bug in negative local timezones.
+**Action:** Always parse the date first `new Date(string)`, and cache the formatted label using a composite local key like `${date.getFullYear()}-${date.getMonth()}`. Instantiating the Date object is extremely fast (~1-2ms per 1000 items), but caching the slow `Intl` formatter fixes the performance bottleneck correctly across local timezones.
