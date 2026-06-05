@@ -73,3 +73,7 @@
 ## 2026-05-28 - Replace inline array filters with single pass loops for derived counts
 **Learning:** Using multiple `array.filter(c => c.type === 'x').length` chains inside hooks to compute counts (`asDriver`, `asPassenger`) or counting items inside iterations causes redundant O(N) traversal and creates intermediate arrays which get garbage collected, slowing down execution for large lists.
 **Action:** Replace multiple `.filter().length` statements computing aggregate states with a single O(N) `for` loop iteration that simultaneously increments variables. Also hoist expensive operations like `.toLowerCase()` outside of `forEach` mapping loops to prevent $O(N)$ string reallocations.
+
+## 2026-05-29 - [Optimization] Prevent redundant instantiation of `new Date()` in rendering loops
+**Learning:** Re-evaluating `new Date()` repeatedly inside render loops for lists (like mapping over days in `DesktopGrid` or `MobileTimeline`) creates substantial overhead by unnecessarily allocating Date objects during every React render pass.
+**Action:** Always hoist invariant calculations, such as computing the current day's ISO string (`toISODateString(new Date())` or `getTodayISO()`), outside of the `.map()` or `.filter()` loops using `useMemo` or by evaluating it once in the component body to prevent repeated allocations.

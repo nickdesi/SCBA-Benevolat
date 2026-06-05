@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
-import { toISODateString, getDaysOfWeek } from '../../utils/dateUtils';
+import { toISODateString, getDaysOfWeek, getTodayISO } from '../../utils/dateUtils';
 import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in list rendering
@@ -126,6 +126,9 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     // Filter out days with no games using pre-computed map
     const activeDays = days.filter(day => getGamesForDay(day).length > 0);
 
+    // ⚡ Bolt Optimization: Hoist new Date() calculation outside the loop to prevent O(N) redundant Date object allocations and formatting during render.
+    const todayISO = getTodayISO();
+
     return (
         <motion.div
             className="lg:hidden flex flex-col gap-6"
@@ -136,8 +139,9 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
             <AnimatePresence mode="popLayout">
                 {activeDays.length > 0 ? (
                     activeDays.map((day) => {
+                        const dayStr = toISODateString(day);
                         const dayGames = getGamesForDay(day);
-                        const isToday = toISODateString(day) === toISODateString(new Date());
+                        const isToday = dayStr === todayISO;
                         const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
 
                         return (
