@@ -113,7 +113,28 @@ const KPICard = ({
         }
     };
 
-    const styles = colorStyles[color];
+    let styles;
+    switch (color) {
+        case 'blue':
+            styles = colorStyles.blue;
+            break;
+        case 'indigo':
+            styles = colorStyles.indigo;
+            break;
+        case 'emerald':
+            styles = colorStyles.emerald;
+            break;
+        case 'amber':
+            styles = colorStyles.amber;
+            break;
+        case 'red':
+            styles = colorStyles.red;
+            break;
+        case 'slate':
+        default:
+            styles = colorStyles.slate;
+            break;
+    }
 
     return (
         <motion.div
