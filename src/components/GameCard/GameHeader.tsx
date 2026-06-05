@@ -110,19 +110,17 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                     <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></span>
                 </div>
 
-                <div className="group relative">
-                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="text-slate-300 dark:text-slate-600 text-lg align-middle italic mr-1">VS</span>
-                        {game.opponentLogo && (
-                            <img 
-                                src={game.opponentLogo} 
-                                alt={game.opponent} 
-                                className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 align-middle"
-                            />
-                        )}
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 align-middle">
-                            {game.opponent}
-                        </span>
+                <div className="group relative flex items-start gap-2.5">
+                    <span className="text-slate-300 dark:text-slate-600 text-lg italic mt-1.5 flex-shrink-0">VS</span>
+                    {game.opponentLogo && (
+                        <img 
+                            src={game.opponentLogo} 
+                            alt={game.opponent} 
+                            className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-0.5"
+                        />
+                    )}
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">
+                        {game.opponent}
                     </h2>
                 </div>
             </div>
