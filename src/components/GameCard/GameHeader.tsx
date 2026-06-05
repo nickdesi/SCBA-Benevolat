@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Plane, Car, Flame, AlertTriangle, CheckIcon } from 'lucide-react';
+import { Home, Plane, Car, Flame, AlertTriangle, CheckIcon, Trophy } from 'lucide-react';
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from '../Icons';
@@ -31,21 +31,41 @@ const GameHeader: React.FC<GameHeaderProps> = ({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     return (
-        <div className={`relative p-5 overflow-hidden transition-colors duration-300 ${isHomeGame
-            ? 'bg-gradient-to-br from-emerald-200/80 via-emerald-100/60 to-white/80 dark:from-emerald-900/60 dark:via-emerald-900/20 dark:to-slate-900'
-            : 'bg-gradient-to-br from-blue-200/80 via-blue-100/60 to-white/80 dark:from-blue-900/60 dark:via-blue-900/20 dark:to-slate-900'
+        <div className={`relative p-5 overflow-hidden transition-colors duration-300 ${
+            game.competition
+                ? 'bg-gradient-to-br from-amber-200/80 via-yellow-100/50 to-white/80 dark:from-amber-900/40 dark:via-amber-950/20 dark:to-slate-900'
+                : isHomeGame
+                    ? 'bg-gradient-to-br from-emerald-200/80 via-emerald-100/60 to-white/80 dark:from-emerald-900/60 dark:via-emerald-900/20 dark:to-slate-900'
+                    : 'bg-gradient-to-br from-blue-200/80 via-blue-100/60 to-white/80 dark:from-blue-900/60 dark:via-blue-900/20 dark:to-slate-900'
             }`}>
 
             {/* Watermark Icon - Subtle & Elegant */}
-            <div className={`absolute -right-6 -top-6 pointer-events-none transform rotate-12 scale-150 transition-opacity duration-300 ${isHomeGame
-                ? 'text-emerald-500/20 dark:text-emerald-400/10'
-                : 'text-blue-500/20 dark:text-blue-400/10'
+            <div className={`absolute -right-6 -top-6 pointer-events-none transform rotate-12 scale-150 transition-opacity duration-300 ${
+                game.competition
+                    ? 'text-amber-500/15 dark:text-amber-400/10'
+                    : isHomeGame
+                        ? 'text-emerald-500/20 dark:text-emerald-400/10'
+                        : 'text-blue-500/20 dark:text-blue-400/10'
                 }`}>
-                {isHomeGame ? <Home className="w-48 h-48" /> : <Plane className="w-48 h-48" />}
+                {game.competition ? (
+                    <Trophy className="w-48 h-48" />
+                ) : isHomeGame ? (
+                    <Home className="w-48 h-48" />
+                ) : (
+                    <Plane className="w-48 h-48" />
+                )}
             </div>
 
             {/* Top Row: Status only (Date moved to info) */}
-            <div className={`relative flex items-center justify-end mb-2 z-10 ${isAdmin ? 'pr-16' : ''}`}>
+            <div className={`relative flex items-center justify-between mb-2 z-10 ${isAdmin ? 'pr-16' : ''}`}>
+                {game.competition ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider rounded-full shadow-sm bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse">
+                        <Trophy className="w-3.5 h-3.5 text-yellow-100" />
+                        {game.competition}
+                    </div>
+                ) : (
+                    <div />
+                )}
                 <div className="flex flex-col items-end gap-1.5">
                     {/* Urgency / Status Pills */}
                     <div className="flex items-center gap-1.5">

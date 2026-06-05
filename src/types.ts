@@ -32,6 +32,7 @@ export interface Game {
   isHome: boolean;              // true = domicile (bénévolat), false = extérieur (covoiturage)
   roles: Role[];
   carpool?: CarpoolEntry[]; // Optional carpooling entries
+  competition?: string;
 }
 
 // Type for role configuration (used in constants)
@@ -65,6 +66,7 @@ export interface GameFormData {
   location: string;
   isHome: boolean;
   roleConfig?: RoleConfig[]; // Optional configuration for roles
+  competition?: string;
 }
 
 export interface Announcement {

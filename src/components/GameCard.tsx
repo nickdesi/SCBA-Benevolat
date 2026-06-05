@@ -111,11 +111,13 @@ const GameCard: React.FC<GameCardProps> = memo(({
             relative rounded-3xl overflow-hidden transition-all duration-300 h-full
             bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
             border border-white/20 dark:border-slate-700/50
-            ${isFullyStaffed
-                    ? 'shadow-none border-emerald-500/20 dark:border-emerald-500/20 opacity-70 dark:opacity-50 grayscale-[30%] hover:opacity-100 hover:grayscale-0'
-                    : isUrgent
-                        ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
-                        : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
+            ${game.competition
+                    ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-amber-500/30 dark:border-amber-500/30 shadow-amber-500/5 ring-1 ring-amber-500/20'
+                    : isFullyStaffed
+                        ? 'shadow-none border-emerald-500/20 dark:border-emerald-500/20 opacity-70 dark:opacity-50 grayscale-[30%] hover:opacity-100 hover:grayscale-0'
+                        : isUrgent
+                            ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
+                            : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
                 }
         `}>
             {/* 1. Header Section */}
