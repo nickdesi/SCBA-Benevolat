@@ -85,3 +85,7 @@
 ## 2026-06-05 - Avoid O(N) Intl Format in Loops while respecting timezones
 **Learning:** `Intl.DateTimeFormat.format()` is notoriously slow inside large loops. While you can cache dates using strings, `game.dateISO` (e.g. `YYYY-MM-DD`) often represents UTC logic. Caching with the raw `YYYY-MM` prefix of a UTC string can cause an off-by-one month rendering bug in negative local timezones.
 **Action:** Always parse the date first `new Date(string)`, and cache the formatted label using a composite local key like `${date.getFullYear()}-${date.getMonth()}`. Instantiating the Date object is extremely fast (~1-2ms per 1000 items), but caching the slow `Intl` formatter fixes the performance bottleneck correctly across local timezones.
+
+## 2026-06-08 - Prevent O(N^2) Performance Bottlenecks from Utility Functions inside Render Loops
+**Learning:** In components that render arrays of items (like `CarpoolingSection` mapping over `drivers`), calling utility functions (like `getRemainingSeats` or `getPendingRequests`) inside the render loop causes severe $O(N^2)$ bottlenecks if those utility functions internally perform $O(N)$ operations like `.find()` or `.filter()` on the parent collection.
+**Action:** Always pre-compute these derived values into $O(1)$ HashMaps/Maps during a single $O(N)$ `useMemo` pass before the render cycle, and replace the utility function calls with fast Map lookups inside the React rendering loops.

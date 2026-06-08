@@ -54,16 +54,73 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
 
     const [confirmDelete, setConfirmDelete] = useState<{ id: string, name: string } | null>(null);
 
-    const drivers = useMemo(() => entries.filter(e => e.type === 'driver'), [entries]);
-    const passengers = useMemo(() => entries.filter(e => e.type === 'passenger'), [entries]);
-    const availableDrivers = useMemo(() => getAvailableDrivers(entries), [entries]);
-    const entriesById = useMemo(() => new Map(entries.map(entry => [entry.id, entry])), [entries]);
-
     const storedName = getStoredName();
-    const currentUserEntry = useMemo(() =>
-        entries.find(e => e.name.toLowerCase() === storedName.toLowerCase()),
-        [entries, storedName]
-    );
+
+    // ⚡ Bolt Optimization: Combine 5 separate useMemo passes and O(N^2) render-time utility calls
+    // into a single O(N) pass, eliminating intermediate array allocations and O(N) array finds in loops.
+    const {
+        drivers,
+        passengers,
+        availableDrivers,
+        entriesById,
+        currentUserEntry,
+        remainingSeatsByDriver,
+        pendingRequestsByDriver
+    } = useMemo(() => {
+        const _drivers: CarpoolEntry[] = [];
+        const _passengers: CarpoolEntry[] = [];
+        const _entriesById = new Map<string, CarpoolEntry>();
+        const _pendingRequestsByDriver = new Map<string, CarpoolEntry[]>();
+        const _remainingSeatsByDriver = new Map<string, number>();
+        let _currentUserEntry: CarpoolEntry | undefined;
+
+        const normalizedStoredName = storedName.toLowerCase();
+
+        // Pass 1: Categorize and build lookup map
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            _entriesById.set(entry.id, entry);
+
+            if (!_currentUserEntry && entry.name.toLowerCase() === normalizedStoredName) {
+                _currentUserEntry = entry;
+            }
+
+            if (entry.type === 'driver') {
+                _drivers.push(entry);
+                // Initialize maps for drivers
+                _pendingRequestsByDriver.set(entry.id, []);
+                _remainingSeatsByDriver.set(entry.id, entry.seats || 1);
+            } else if (entry.type === 'passenger') {
+                _passengers.push(entry);
+            }
+        }
+
+        // Pass 2: Calculate remaining seats and pending requests
+        for (let i = 0; i < _passengers.length; i++) {
+            const passenger = _passengers[i];
+            if (passenger.status === 'matched' && passenger.matchedWith?.[0]) {
+                const driverId = passenger.matchedWith[0];
+                const currentRemaining = _remainingSeatsByDriver.get(driverId) ?? 0;
+                _remainingSeatsByDriver.set(driverId, Math.max(0, currentRemaining - (passenger.seats || 1)));
+            } else if (passenger.status === 'pending' && passenger.requestedDriverId) {
+                const driverId = passenger.requestedDriverId;
+                const pendingArr = _pendingRequestsByDriver.get(driverId);
+                if (pendingArr) pendingArr.push(passenger);
+            }
+        }
+
+        const _availableDrivers = _drivers.filter(d => (_remainingSeatsByDriver.get(d.id) ?? 0) > 0);
+
+        return {
+            drivers: _drivers,
+            passengers: _passengers,
+            availableDrivers: _availableDrivers,
+            entriesById: _entriesById,
+            currentUserEntry: _currentUserEntry,
+            remainingSeatsByDriver: _remainingSeatsByDriver,
+            pendingRequestsByDriver: _pendingRequestsByDriver
+        };
+    }, [entries, storedName]);
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
@@ -144,8 +201,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                         </h5>
                         <div className="space-y-2">
                             {drivers.map((driver) => {
-                                const remainingSeats = getRemainingSeats(driver, entries);
-                                const pendingRequests = getPendingRequests(driver.id, entries);
+                                const remainingSeats = remainingSeatsByDriver.get(driver.id) ?? 0;
+                                const pendingRequests = pendingRequestsByDriver.get(driver.id) ?? [];
                                 const isCurrentUser = driver.name.toLowerCase() === storedName.toLowerCase();
 
                                 return (
@@ -470,7 +527,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                                                         {driver.name}
                                                                     </span>
                                                                     <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">
-                                                                        {getRemainingSeats(driver, entries)} pl.
+                                                                        {remainingSeatsByDriver.get(driver.id) ?? 0} pl.
                                                                     </span>
                                                                     {driver.departureLocation && (
                                                                         <span className="text-[11px] text-slate-400 truncate max-w-[100px]">
