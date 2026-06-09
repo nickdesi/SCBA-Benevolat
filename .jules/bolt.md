@@ -94,7 +94,7 @@
 **Learning:** Instantiating `new Date()` and re-evaluating derived metrics like `getTodayISO()` inside a `.filter` operation (`isGameUpcoming` inside `MissionList`) causes redundant Date object allocations and $O(N)$ string formatting overhead on every render.
 **Action:** Memoize lists with `useMemo` and use dependency injection in utility functions to evaluate the current date and derived ISO strings strictly once outside of the loop, reducing garbage collection pressure and accelerating list filtering.
 
-## 2026-06-12 - Prevent Removing Exported API Utilities
+## 2026-06-09 - Prevent Removing Exported API Utilities
 **Learning:** While refactoring a component (`CarpoolingSection.tsx`) to not use certain utility functions (like `getRemainingSeats`, `getAvailableDrivers`) for performance reasons, deleting these functions from the utility file (`src/utils/useCarpool.ts`) or un-exporting them constitutes a breaking API change. Even if unused in the current file, other modules may rely on them, and removing them violates the constraint against breaking public APIs. Furthermore, adding new dependencies/lockfiles (like `bun.lock` in a PNPM repository) is highly problematic.
 **Action:** Always verify if a function is used elsewhere before un-exporting or deleting it. When performing local component optimizations, leave the existing utility functions intact to maintain backward compatibility unless a codebase-wide audit confirms they are safe to remove. When using alternative package managers locally (like `bun`), immediately delete any generated lockfiles.
 
