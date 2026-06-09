@@ -86,6 +86,10 @@
 **Learning:** `Intl.DateTimeFormat.format()` is notoriously slow inside large loops. While you can cache dates using strings, `game.dateISO` (e.g. `YYYY-MM-DD`) often represents UTC logic. Caching with the raw `YYYY-MM` prefix of a UTC string can cause an off-by-one month rendering bug in negative local timezones.
 **Action:** Always parse the date first `new Date(string)`, and cache the formatted label using a composite local key like `${date.getFullYear()}-${date.getMonth()}`. Instantiating the Date object is extremely fast (~1-2ms per 1000 items), but caching the slow `Intl` formatter fixes the performance bottleneck correctly across local timezones.
 
+## 2026-06-05 - Avoid O(N log N) sorting for finding array mode
+**Learning:** Finding the most frequent element (mode) in an array using `.reduce()` to count frequencies, followed by `Object.entries().sort()` is inefficient (O(N + K log K)) and creates multiple intermediate objects.
+**Action:** Always use a single O(N) loop to simultaneously populate the frequency map and track the maximum count/element on the fly.
+
 ## 2026-06-06 - [Optimization] Hoist Date instantiation outside of filtering loop
 **Learning:** Instantiating `new Date()` and re-evaluating derived metrics like `getTodayISO()` inside a `.filter` operation (`isGameUpcoming` inside `MissionList`) causes redundant Date object allocations and $O(N)$ string formatting overhead on every render.
 **Action:** Memoize lists with `useMemo` and use dependency injection in utility functions to evaluate the current date and derived ISO strings strictly once outside of the loop, reducing garbage collection pressure and accelerating list filtering.
