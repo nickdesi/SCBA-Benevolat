@@ -1,13 +1,11 @@
 import { UserRegistration } from '../types';
 import { getTodayISO } from './dateUtils';
 
-export const isGameUpcoming = (
-    reg: UserRegistration,
-    now: Date = new Date(),
-    todayISO: string = getTodayISO()
-): boolean => {
+export const isGameUpcoming = (reg: UserRegistration): boolean => {
     if (!reg.gameDateISO) return true;
 
+    const now = new Date();
+    const todayISO = getTodayISO();
     const currentHours = now.getHours();
     const currentMinutes = now.getMinutes();
 

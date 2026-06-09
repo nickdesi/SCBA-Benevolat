@@ -39,22 +39,12 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
         const totalMissions = registrations.length;
         const totalHours = totalMissions * 2;
 
-        // ⚡ Bolt Optimization: Use a single pass O(N) loop to count and find the mode simultaneously.
-        // This avoids creating intermediate array objects and eliminates the O(N log N) sorting overhead.
-        let favoriteRole = 'Aucun';
-        let maxCount = 0;
-        const roleCounts: Record<string, number> = {};
+        const roleCounts = registrations.reduce((acc, curr) => {
+            acc[curr.roleName] = (acc[curr.roleName] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
 
-        for (let i = 0; i < registrations.length; i++) {
-            const roleName = registrations[i].roleName;
-            const count = (roleCounts[roleName] || 0) + 1;
-            roleCounts[roleName] = count;
-
-            if (count > maxCount) {
-                maxCount = count;
-                favoriteRole = roleName;
-            }
-        }
+        const favoriteRole = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Aucun';
 
         return { totalMissions, totalHours, favoriteRole };
     }, [registrations]);
