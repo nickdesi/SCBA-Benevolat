@@ -86,6 +86,15 @@
 **Learning:** `Intl.DateTimeFormat.format()` is notoriously slow inside large loops. While you can cache dates using strings, `game.dateISO` (e.g. `YYYY-MM-DD`) often represents UTC logic. Caching with the raw `YYYY-MM` prefix of a UTC string can cause an off-by-one month rendering bug in negative local timezones.
 **Action:** Always parse the date first `new Date(string)`, and cache the formatted label using a composite local key like `${date.getFullYear()}-${date.getMonth()}`. Instantiating the Date object is extremely fast (~1-2ms per 1000 items), but caching the slow `Intl` formatter fixes the performance bottleneck correctly across local timezones.
 
+## 2026-06-05 - Avoid O(N log N) sorting for finding array mode
+**Learning:** Finding the most frequent element (mode) in an array using `.reduce()` to count frequencies, followed by `Object.entries().sort()` is inefficient (O(N + K log K)) and creates multiple intermediate objects.
+**Action:** Always use a single O(N) loop to simultaneously populate the frequency map and track the maximum count/element on the fly.
+
+## 2026-06-06 - [Optimization] Hoist Date instantiation outside of filtering loop
+**Learning:** Instantiating `new Date()` and re-evaluating derived metrics like `getTodayISO()` inside a `.filter` operation (`isGameUpcoming` inside `MissionList`) causes redundant Date object allocations and $O(N)$ string formatting overhead on every render.
+**Action:** Memoize lists with `useMemo` and use dependency injection in utility functions to evaluate the current date and derived ISO strings strictly once outside of the loop, reducing garbage collection pressure and accelerating list filtering.
+
 ## 2026-06-12 - Prevent Removing Exported API Utilities
 **Learning:** While refactoring a component (`CarpoolingSection.tsx`) to not use certain utility functions (like `getRemainingSeats`, `getAvailableDrivers`) for performance reasons, deleting these functions from the utility file (`src/utils/useCarpool.ts`) or un-exporting them constitutes a breaking API change. Even if unused in the current file, other modules may rely on them, and removing them violates the constraint against breaking public APIs. Furthermore, adding new dependencies/lockfiles (like `bun.lock` in a PNPM repository) is highly problematic.
 **Action:** Always verify if a function is used elsewhere before un-exporting or deleting it. When performing local component optimizations, leave the existing utility functions intact to maintain backward compatibility unless a codebase-wide audit confirms they are safe to remove. When using alternative package managers locally (like `bun`), immediately delete any generated lockfiles.
+
