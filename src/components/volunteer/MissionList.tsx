@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { UserRegistration } from '../../types';
 import { User } from 'firebase/auth';
 import { Trash2, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../ConfirmModal';
 import { isGameUpcoming } from '../../utils/gameTimeUtils';
+import { getTodayISO } from '../../utils/dateUtils';
 import { triggerHaptic } from '../../utils/haptics';
 
 interface MissionListProps {
@@ -17,10 +18,16 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
     const [showHistory, setShowHistory] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
-    const filtered = registrations.filter(r => {
-        if (showHistory) return true;
-        return isGameUpcoming(r);
-    });
+    const filtered = useMemo(() => {
+        // ⚡ Bolt Optimization: Hoist new Date() and string format outside of the filter loop
+        const now = new Date();
+        const todayISO = getTodayISO();
+
+        return registrations.filter(r => {
+            if (showHistory) return true;
+            return isGameUpcoming(r, now, todayISO);
+        });
+    }, [registrations, showHistory]);
 
     const handleDeleteClick = useCallback((id: string) => {
         triggerHaptic('medium');
