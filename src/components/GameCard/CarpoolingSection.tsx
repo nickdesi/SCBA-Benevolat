@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Car, UserRoundPlus, MapPin, Check, X, Clock, Users, ChevronRight, ChevronDown, Sparkles } from 'lucide-react';
 import type { CarpoolEntry } from '../../types';
 import { getStoredName, setStoredName } from '../../utils/storage';
-import { getRemainingSeats, getAvailableDrivers, getPendingRequests } from '../../utils/useCarpool';
 import PhoneDisplay from '../PhoneDisplay';
 import { DeleteIcon } from '../Icons';
 import ConfirmModal from '../ConfirmModal';
@@ -54,10 +53,66 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
 
     const [confirmDelete, setConfirmDelete] = useState<{ id: string, name: string } | null>(null);
 
-    const drivers = useMemo(() => entries.filter(e => e.type === 'driver'), [entries]);
-    const passengers = useMemo(() => entries.filter(e => e.type === 'passenger'), [entries]);
-    const availableDrivers = useMemo(() => getAvailableDrivers(entries), [entries]);
-    const entriesById = useMemo(() => new Map(entries.map(entry => [entry.id, entry])), [entries]);
+    // ⚡ Bolt Optimization: Use single O(N) pass to calculate derived arrays and lookups
+    const {
+        drivers,
+        passengers,
+        entriesById,
+        pendingRequestsByDriver,
+        remainingSeatsByDriver,
+        availableDrivers
+    } = useMemo(() => {
+        const d: CarpoolEntry[] = [];
+        const p: CarpoolEntry[] = [];
+        const byId = new Map<string, CarpoolEntry>();
+        const pendingMap = new Map<string, CarpoolEntry[]>();
+        const remainingSeats = new Map<string, number>();
+        const available: CarpoolEntry[] = [];
+
+        // First pass: Populate byId and pendingMap quickly
+        for (let i = 0; i < entries.length; i++) {
+            const e = entries[i];
+            byId.set(e.id, e);
+            if (e.type === 'passenger' && e.status === 'pending' && e.requestedDriverId) {
+                const pending = pendingMap.get(e.requestedDriverId) || [];
+                pending.push(e);
+                pendingMap.set(e.requestedDriverId, pending);
+            }
+        }
+
+        // Second pass: Categorize and calculate remaining seats
+        for (let i = 0; i < entries.length; i++) {
+            const e = entries[i];
+            if (e.type === 'driver') {
+                d.push(e);
+
+                let used = 0;
+                if (e.matchedWith) {
+                    for (let j = 0; j < e.matchedWith.length; j++) {
+                        const pass = byId.get(e.matchedWith[j]);
+                        used += pass?.seats || 1;
+                    }
+                }
+                const rem = Math.max(0, (e.seats || 1) - used);
+                remainingSeats.set(e.id, rem);
+
+                if (rem > 0) {
+                    available.push(e);
+                }
+            } else {
+                p.push(e);
+            }
+        }
+
+        return {
+            drivers: d,
+            passengers: p,
+            entriesById: byId,
+            pendingRequestsByDriver: pendingMap,
+            remainingSeatsByDriver: remainingSeats,
+            availableDrivers: available
+        };
+    }, [entries]);
 
     const storedName = getStoredName();
     const currentUserEntry = useMemo(() =>
@@ -144,8 +199,8 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                         </h5>
                         <div className="space-y-2">
                             {drivers.map((driver) => {
-                                const remainingSeats = getRemainingSeats(driver, entries);
-                                const pendingRequests = getPendingRequests(driver.id, entries);
+                                const remainingSeats = remainingSeatsByDriver.get(driver.id) || 0;
+                                const pendingRequests = pendingRequestsByDriver.get(driver.id) || [];
                                 const isCurrentUser = driver.name.toLowerCase() === storedName.toLowerCase();
 
                                 return (
@@ -470,7 +525,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(({
                                                                         {driver.name}
                                                                     </span>
                                                                     <span className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">
-                                                                        {getRemainingSeats(driver, entries)} pl.
+                                                                        {remainingSeatsByDriver.get(driver.id) || 0} pl.
                                                                     </span>
                                                                     {driver.departureLocation && (
                                                                         <span className="text-[11px] text-slate-400 truncate max-w-[100px]">
