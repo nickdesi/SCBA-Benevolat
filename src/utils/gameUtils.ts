@@ -96,13 +96,27 @@ export const getGameRoleStats = (game: Game) => {
 /**
  * Check if a game is urgent (< 48h and incomplete).
  */
-export const isGameUrgent = (game: Game, now: Date = new Date()): boolean => {
+export const isGameUrgent = (
+    game: Game,
+    now: Date | number = Date.now(),
+    isFullyStaffedPrecomputed?: boolean
+): boolean => {
     if (!game.isHome) return false;
-    if (isGameFullyStaffed(game)) return false;
+
+    // ⚡ Bolt Optimization: Use precomputed complete status if provided to avoid redundant O(R) iteration over roles.
+    const isComplete = isFullyStaffedPrecomputed !== undefined
+        ? isFullyStaffedPrecomputed
+        : isGameFullyStaffed(game);
+
+    if (isComplete) return false;
 
     try {
-        const gameDate = new Date(game.dateISO);
-        const diffMs = gameDate.getTime() - now.getTime();
+        // ⚡ Bolt Optimization: Use Date.parse to avoid redundant object allocation for gameDate.
+        const nowMs = typeof now === 'number' ? now : now.getTime();
+        const gameDateMs = Date.parse(game.dateISO);
+        if (isNaN(gameDateMs)) return false;
+
+        const diffMs = gameDateMs - nowMs;
         const diffHours = diffMs / (1000 * 60 * 60);
         return diffHours > 0 && diffHours < 48;
     } catch {
