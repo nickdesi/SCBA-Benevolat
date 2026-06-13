@@ -91,7 +91,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     const isHomeGame = game.isHome ?? true;
 
-    const isUrgent = useMemo(() => isGameUrgent(game), [game]);
+    const isUrgent = useMemo(() => isGameUrgent(game, Date.now(), isFullyStaffed), [game, isFullyStaffed]);
 
     if (isEditing) {
         return (
