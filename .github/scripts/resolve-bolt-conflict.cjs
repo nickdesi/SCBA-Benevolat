@@ -1,5 +1,5 @@
-import fs from 'fs';
-import { execSync } from 'child_process';
+const fs = require('fs');
+const { execSync } = require('child_process');
 
 const BASE_BRANCH = process.env.BASE_BRANCH || 'main';
 const HEAD_BRANCH = process.env.HEAD_BRANCH;
