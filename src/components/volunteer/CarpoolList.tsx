@@ -33,11 +33,8 @@ const itemVariants = {
 };
 
 // Helper: check if carpool is upcoming
-const isCarpoolUpcoming = (gameDateISO: string, gameTime?: string): boolean => {
+const isCarpoolUpcoming = (gameDateISO: string, gameTime: string | undefined, todayISO: string, currentHours: number): boolean => {
     if (!gameDateISO) return true;
-    const now = new Date();
-    // ⚡ Bolt: Use direct string building instead of slow toLocaleDateString inside loops
-    const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     if (gameDateISO > todayISO) return true;
     if (gameDateISO < todayISO) return false;
@@ -45,7 +42,7 @@ const isCarpoolUpcoming = (gameDateISO: string, gameTime?: string): boolean => {
     if (gameDateISO === todayISO && gameTime) {
         const [hStr] = gameTime.split(/[h:]/);
         const h = parseInt(hStr, 10);
-        if (!isNaN(h) && now.getHours() > h + 3) return false;
+        if (!isNaN(h) && currentHours > h + 3) return false;
     }
     return true;
 };
@@ -54,18 +51,26 @@ export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemov
     const [showHistory, setShowHistory] = useState(false);
 
     // Split upcoming vs past
-    const { upcoming, past } = useMemo(() => {
+    const { upcoming, past, upcomingMap } = useMemo(() => {
         const result: { upcoming: UserCarpoolRegistration[], past: UserCarpoolRegistration[] } = { upcoming: [], past: [] };
-        if (!carpools || carpools.length === 0) return result;
+        const map = new Map<string, boolean>();
+        if (!carpools || carpools.length === 0) return { ...result, upcomingMap: map };
+
+        // ⚡ Bolt Optimization: Hoist Date instantiation out of O(N) array traversals
+        const now = new Date();
+        const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const currentHours = now.getHours();
 
         carpools.forEach(c => {
-            if (isCarpoolUpcoming(c.gameDateISO, c.gameTime)) {
+            const isUp = isCarpoolUpcoming(c.gameDateISO, c.gameTime, todayISO, currentHours);
+            map.set(c.id, isUp);
+            if (isUp) {
                 result.upcoming.push(c);
             } else {
                 result.past.push(c);
             }
         });
-        return result;
+        return { ...result, upcomingMap: map };
     }, [carpools]);
 
     const displayedCarpools = showHistory ? carpools : upcoming;
@@ -125,6 +130,7 @@ export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemov
                             <CarpoolCard
                                 key={carpool.id}
                                 carpool={carpool}
+                                isUpcoming={upcomingMap.get(carpool.id) ?? true}
                                 onRemove={() => onRemoveCarpool(carpool.gameId, carpool.id)}
                             />
                         ))}
@@ -147,14 +153,14 @@ export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemov
 // Individual Carpool Card
 interface CarpoolCardProps {
     carpool: UserCarpoolRegistration;
+    isUpcoming: boolean;
     onRemove: () => void;
 }
 
-const CarpoolCard: React.FC<CarpoolCardProps> = ({ carpool }) => {
+const CarpoolCard: React.FC<CarpoolCardProps> = ({ carpool, isUpcoming }) => {
     const isDriver = carpool.type === 'driver';
     const isMatched = carpool.status === 'matched';
     const isPending = carpool.status === 'pending';
-    const isUpcoming = isCarpoolUpcoming(carpool.gameDateISO, carpool.gameTime);
 
     return (
         <motion.div
