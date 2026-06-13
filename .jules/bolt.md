@@ -99,6 +99,9 @@
 **Action:** Always verify if a function is used elsewhere before un-exporting or deleting it. When performing local component optimizations, leave the existing utility functions intact to maintain backward compatibility unless a codebase-wide audit confirms they are safe to remove. When using alternative package managers locally (like `bun`), immediately delete any generated lockfiles.
 
 
+## 2026-06-10 - [Optimization] Hoist Date instantiation in component render loops
+**Learning:** Instantiating `new Date()` inside utility functions (like `isCarpoolUpcoming`) that are subsequently called repeatedly within React render loops or $O(N)$ filter operations creates a hidden performance bottleneck. Calling `new Date()` $N$ times (or $2N$ if called in both the hook and the child component render) causes excessive garbage collection pressure.
+**Action:** Extract the invariant `new Date()` and its derived formatting (like `todayISO`) out of the loop. Pass these pre-computed values as parameters to the utility function and explicitly pass the computed boolean directly to child components as a prop.
 ## 2026-06-13 - Avoid N+1 API Calls inside rendering/importing iterations
 **Learning:** During processes like importing and enriching CSV rows, looping over a large array and unconditionally making external API calls (e.g. `fetchNominatim`) for each individual item causes an N+1 query problem. This can hit rate limits rapidly, trigger unnecessary network overhead, and stall the application when many items share the exact same parameters (like `cityName`).
 **Action:** When performing external lookups on an array of items, always group them first by the unique lookup parameter (e.g., city name) into a Map. Make exactly one external API request per unique key, then apply the resulting data to all items grouped under that key simultaneously.
