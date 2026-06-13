@@ -58,20 +58,31 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
             .map((m, i) => ({ match: m, index: i }))
             .filter(({ match }) => !match.isHome && (match.location === 'Extérieur' || match.location.startsWith('Extérieur (')));
 
+        // ⚡ Bolt Optimization: Group matches by city to prevent N+1 API calls.
+        // Instead of fetching APIs for every single match, group them by unique city name.
+        // Fetch once per unique city and apply results to all matches sharing that city.
+        const cityGroups = new Map<string, { match: ParsedMatch; index: number }[]>();
+        matchesToEnrich.forEach(({ match, index }) => {
+            const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
+            if (cityMatch) {
+                const cityName = cityMatch[1];
+                if (cityName) {
+                    const normCityName = cityName.trim();
+                    if (!cityGroups.has(normCityName)) {
+                        cityGroups.set(normCityName, []);
+                    }
+                    cityGroups.get(normCityName)!.push({ match, index });
+                }
+            }
+        });
+
+        const uniqueCities = Array.from(cityGroups.keys());
         const CHUNK_SIZE = 3;
 
-        for (let i = 0; i < matchesToEnrich.length; i += CHUNK_SIZE) {
-            const chunk = matchesToEnrich.slice(i, i + CHUNK_SIZE);
+        for (let i = 0; i < uniqueCities.length; i += CHUNK_SIZE) {
+            const chunkCities = uniqueCities.slice(i, i + CHUNK_SIZE);
 
-            await Promise.all(chunk.map(async ({ match, index }) => {
-                let cityName = '';
-                const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
-
-                if (cityMatch) cityName = cityMatch[1];
-                else return;
-
-                if (!cityName) return;
-
+            await Promise.all(chunkCities.map(async (cityName) => {
                 const cityNameLower = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 // Parallel fetch from multiple sources
@@ -166,19 +177,26 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(({ isOpen, onClose, o
                 // Merge and dedup
                 const candidates = Array.from(new Set([...dataEsResults, ...nominatimResults]));
 
+                // Apply the fetched location candidates to all matches that share this city
+                const matchesForCity = cityGroups.get(cityName)!;
+
                 if (candidates.length > 0) {
-                    updatedMatches[index] = {
-                        ...match,
-                        location: candidates[0],
-                        candidates: candidates
-                    };
+                    matchesForCity.forEach(({ match, index }) => {
+                        updatedMatches[index] = {
+                            ...match,
+                            location: candidates[0],
+                            candidates: candidates
+                        };
+                    });
                 } else {
-                    updatedMatches[index] = { ...match, location: `À ${cityName} (adresse introuvable)` };
+                    matchesForCity.forEach(({ match, index }) => {
+                        updatedMatches[index] = { ...match, location: `À ${cityName} (adresse introuvable)` };
+                    });
                 }
             }));
 
             setParsedMatches([...updatedMatches]);
-            if (i + CHUNK_SIZE < matchesToEnrich.length) await new Promise(r => setTimeout(r, 600));
+            if (i + CHUNK_SIZE < uniqueCities.length) await new Promise(r => setTimeout(r, 600));
         }
 
         setIsEnriching(false);
