@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseFrenchDate, toISODateString, getTodayISO, getGameDateValue, getDaysOfWeek } from './dateUtils';
+import { parseFrenchDate, toISODateString, getTodayISO, getGameDateValue, getDaysOfWeek, isOffSeason, getSeasonInfo } from './dateUtils';
 import type { Game } from '../types';
 
 describe('dateUtils', () => {
@@ -194,4 +194,32 @@ describe('dateUtils', () => {
              expect(days[0].getDate()).toBe(9);
         });
     });
+
+    describe('isOffSeason', () => {
+        it('returns true for summer months (June, July, August)', () => {
+            expect(isOffSeason(new Date(2026, 5, 15))).toBe(true);  // June
+            expect(isOffSeason(new Date(2026, 6, 15))).toBe(true);  // July
+            expect(isOffSeason(new Date(2026, 7, 15))).toBe(true);  // August
+        });
+
+        it('returns false for non-summer months', () => {
+            expect(isOffSeason(new Date(2026, 0, 15))).toBe(false); // January
+            expect(isOffSeason(new Date(2026, 4, 15))).toBe(false); // May
+            expect(isOffSeason(new Date(2026, 8, 15))).toBe(false); // September
+            expect(isOffSeason(new Date(2026, 11, 15))).toBe(false); // December
+        });
+    });
+
+    describe('getSeasonInfo', () => {
+        it('calculates the correct season transitions', () => {
+            const info = getSeasonInfo(new Date(2026, 5, 15));
+            expect(info.endedSeason).toBe('2025-2026');
+            expect(info.nextSeason).toBe('2026-2027');
+
+            const infoNextYear = getSeasonInfo(new Date(2027, 6, 10));
+            expect(infoNextYear.endedSeason).toBe('2026-2027');
+            expect(infoNextYear.nextSeason).toBe('2027-2028');
+        });
+    });
 });
+

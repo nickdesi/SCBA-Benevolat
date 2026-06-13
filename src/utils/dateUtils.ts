@@ -127,3 +127,23 @@ export const getDaysOfWeek = (date: Date): Date[] => {
     }
     return days;
 };
+
+/**
+ * Checks if a given date falls within the summer off-season (June, July, August)
+ */
+export const isOffSeason = (date: Date): boolean => {
+    const month = date.getMonth();
+    return month >= 5 && month <= 7; // June is 5, August is 7
+};
+
+/**
+ * Returns the ended and next season strings based on a given off-season date
+ */
+export const getSeasonInfo = (date: Date): { endedSeason: string; nextSeason: string } => {
+    const year = date.getFullYear();
+    return {
+        endedSeason: `${year - 1}-${year}`,
+        nextSeason: `${year}-${year + 1}`
+    };
+};
+

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
-import { List, Calendar, Trophy, Search, CalendarDays } from 'lucide-react';
+import { List, Calendar, Trophy, Search, CalendarDays, Palmtree } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
@@ -15,6 +15,7 @@ import { useGames } from './utils/useGames';
 import { useCarpoolRegistrations } from './utils/useCarpoolRegistrations';
 import { useUserProfile } from './utils/useUserProfile';
 import EventSchema from './components/EventSchema';
+import { isOffSeason, getSeasonInfo } from './utils/dateUtils';
 
 // Lazy-loaded components (code-splitting for reduced initial bundle)
 const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
@@ -151,6 +152,28 @@ function App() {
       addToast('Erreur lors de la déconnexion', 'error');
     }
   }, [addToast]);
+
+  // Helper to determine empty state message based on date (off-season / summer vs regular season)
+  const getEmptyStateConfig = () => {
+    const now = new Date();
+
+    if (isOffSeason(now)) {
+      const { endedSeason, nextSeason } = getSeasonInfo(now);
+      return {
+        title: "Bel été & bonnes vacances !",
+        description: `La saison ${endedSeason} vient de se terminer. Le prochain rendez-vous sera pour la saison ${nextSeason} à partir de septembre. Merci à toutes et tous, il est temps de prendre des vacances !`,
+        icon: <Palmtree className="w-16 h-16 text-orange-500" strokeWidth={1.5} />
+      };
+    }
+
+    return {
+      title: "Aucun match prévu",
+      description: "Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !",
+      icon: <Trophy className="w-16 h-16 text-orange-500" strokeWidth={1.5} />
+    };
+  };
+
+  const emptyStateConfig = getEmptyStateConfig();
 
   // ---------------------------------------------------------------------------
   // Render
@@ -317,9 +340,9 @@ function App() {
               {!loading && games.length === 0 && !isAddingGame && (
                 <div className="animate-fade-in-up">
                   <EmptyState
-                    icon={<Trophy className="w-16 h-16 text-orange-500" strokeWidth={1.5} />}
-                    title="Aucun match prévu"
-                    description="Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !"
+                    icon={emptyStateConfig.icon}
+                    title={emptyStateConfig.title}
+                    description={emptyStateConfig.description}
                     variant="fun"
                     action={isAdmin ? {
                       label: "Ajouter un match",
