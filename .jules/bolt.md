@@ -99,6 +99,9 @@
 **Action:** Always verify if a function is used elsewhere before un-exporting or deleting it. When performing local component optimizations, leave the existing utility functions intact to maintain backward compatibility unless a codebase-wide audit confirms they are safe to remove. When using alternative package managers locally (like `bun`), immediately delete any generated lockfiles.
 
 
+## 2026-06-12 - [Optimization] Hoist Date parsing and Avoid Redundant Role Traversals
+**Learning:** Re-evaluating `isGameFullyStaffed(game)` inside `isGameUrgent(game)` repeatedly re-traverses the `game.roles` array (O(R)). Furthermore, calling `new Date(game.dateISO)` allocates memory inside a component render loop. `GameCard` computes `isFullyStaffed` beforehand but doesn't pass it down.
+**Action:** Always accept a pre-computed value like `isFullyStaffed` if available in the parent function context to avoid O(R) loops. Use `Date.parse()` and `Date.now()` instead of allocating `new Date()` objects repeatedly to avoid GC pressure.
 ## 2026-06-10 - [Optimization] Hoist Date instantiation in component render loops
 **Learning:** Instantiating `new Date()` inside utility functions (like `isCarpoolUpcoming`) that are subsequently called repeatedly within React render loops or $O(N)$ filter operations creates a hidden performance bottleneck. Calling `new Date()` $N$ times (or $2N$ if called in both the hook and the child component render) causes excessive garbage collection pressure.
 **Action:** Extract the invariant `new Date()` and its derived formatting (like `todayISO`) out of the loop. Pass these pre-computed values as parameters to the utility function and explicitly pass the computed boolean directly to child components as a prop.
