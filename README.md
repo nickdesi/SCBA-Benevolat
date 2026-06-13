@@ -38,25 +38,25 @@ Stack moderne orientée performance et maintenabilité.
 ```mermaid
 graph TD
     User((Utilisateur))
-    
+
     subgraph "Frontend (PWA)"
         UI[React 19 + Vite]
         Store[Context API]
         Router[Custom Router]
-        
+
         UI --> Store
         UI --> Router
     end
-    
+
     subgraph "Backend (Firebase)"
         Auth[Authentication]
         DB[(Firestore)]
         Functions[Cloud Functions]
-        
+
         Auth --> DB
         DB --> Functions
     end
-    
+
     User -->|HTTPS| UI
     UI -->|SDK| Auth
     UI -->|Realtime| DB

@@ -10,47 +10,47 @@ const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 heures
  * @returns Le nombre de documents supprimés, ou null si le cleanup a été throttled
  */
 export async function cleanupExpiredAnnouncements(): Promise<number | null> {
-    // Vérifier le throttle
-    const lastCleanup = localStorage.getItem(CLEANUP_THROTTLE_KEY);
-    const now = Date.now();
+  // Vérifier le throttle
+  const lastCleanup = localStorage.getItem(CLEANUP_THROTTLE_KEY);
+  const now = Date.now();
 
-    if (lastCleanup) {
-        const timeSinceLastCleanup = now - parseInt(lastCleanup, 10);
-        if (timeSinceLastCleanup < CLEANUP_INTERVAL_MS) {
-            return null;
-        }
+  if (lastCleanup) {
+    const timeSinceLastCleanup = now - parseInt(lastCleanup, 10);
+    if (timeSinceLastCleanup < CLEANUP_INTERVAL_MS) {
+      return null;
+    }
+  }
+
+  try {
+    // Query pour les annonces expirées
+    const expiredQuery = query(
+      collection(db, 'announcements'),
+      where('expiresAt', '<', Timestamp.now()),
+    );
+
+    const snapshot = await getDocs(expiredQuery);
+
+    if (snapshot.empty) {
+      localStorage.setItem(CLEANUP_THROTTLE_KEY, now.toString());
+      return 0;
     }
 
-    try {
-        // Query pour les annonces expirées
-        const expiredQuery = query(
-            collection(db, 'announcements'),
-            where('expiresAt', '<', Timestamp.now())
-        );
+    // Supprimer en batch (max 500 par batch)
+    const batch = writeBatch(db);
+    let count = 0;
 
-        const snapshot = await getDocs(expiredQuery);
+    snapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+      count++;
+    });
 
-        if (snapshot.empty) {
-            localStorage.setItem(CLEANUP_THROTTLE_KEY, now.toString());
-            return 0;
-        }
+    await batch.commit();
 
-        // Supprimer en batch (max 500 par batch)
-        const batch = writeBatch(db);
-        let count = 0;
+    localStorage.setItem(CLEANUP_THROTTLE_KEY, now.toString());
 
-        snapshot.forEach((doc) => {
-            batch.delete(doc.ref);
-            count++;
-        });
-
-        await batch.commit();
-
-        localStorage.setItem(CLEANUP_THROTTLE_KEY, now.toString());
-
-        return count;
-    } catch (error) {
-        console.error('[Cleanup] Error deleting expired announcements:', error);
-        return null;
-    }
+    return count;
+  } catch (error) {
+    console.error('[Cleanup] Error deleting expired announcements:', error);
+    return null;
+  }
 }

@@ -15,115 +15,116 @@ interface HeaderProps {
   onOpenProfile: () => void;
 }
 
-const Header: React.FC<HeaderProps> = memo(({
-  isAdmin,
-  teams = [],
-  selectedTeam = null,
-  onSelectTeam = (_team: string | null) => { },
-  onToast = () => { },
-  onOpenAdminStats = () => { },
-  onOpenProfile
-}) => {
-  const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
+const Header: React.FC<HeaderProps> = memo(
+  ({
+    isAdmin,
+    teams = [],
+    selectedTeam = null,
+    onSelectTeam = (_team: string | null) => {},
+    onToast = () => {},
+    onOpenAdminStats = () => {},
+    onOpenProfile,
+  }) => {
+    const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
 
-
-  return (
-    <header className="sticky top-0 z-40 bg-slate-900/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
-      {/* Dynamic Background Gradient */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
-      </div>
-
-      <div className="container mx-auto px-4 py-2 sm:py-3 relative z-30">
-        <div className="flex items-center justify-between gap-2">
-          {/* Logo - Animated & Glowing */}
-          <div
-            className="relative flex-shrink-0 group cursor-pointer"
-          >
-            <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full" />
-            <img
-              src="/logo-scba.webp"
-              alt="Logo SCBA"
-              className="relative w-10 h-12 sm:w-14 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300 ease-out"
-              width="56"
-              height="70"
-              {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
-            />
-          </div>
-
-          {/* Title - Exact Match: Full Width & Readable */}
-          <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1 min-h-[48px] sm:min-h-[72px]">
-            <h1 className="flex flex-col items-center justify-center leading-none w-full">
-              <span className="text-[10px] xs:text-xs sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport text-center leading-none w-full break-words max-w-full">
-                STADE CLERMONTOIS BASKET AUVERGNE
-              </span>
-              {/* Green Separator */}
-              <span className="w-1/2 sm:w-32 h-[2px] sm:h-[3px] bg-emerald-500 my-0.5 sm:my-1 rounded-full"></span>
-              <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-emerald-400 font-sport">
-                ESPACE BÉNÉVOLES
-              </span>
-            </h1>
-          </div>
-
-          {/* User Profile + Theme Toggle */}
-          <div className="flex-shrink-0 flex items-center gap-1.5 sm:gap-3">
-            <ThemeToggle />
-            <UserProfile
-              onToast={onToast}
-              isAdmin={isAdmin}
-              onOpenAdminStats={onOpenAdminStats}
-              onOpenProfile={onOpenProfile}
-            />
-          </div>
+    return (
+      <header className="sticky top-0 z-40 bg-slate-900/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
+        {/* Dynamic Background Gradient */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
         </div>
-      </div>
 
-      {/* Filter Bar - Floating Horizontal Scroll (always reserves height to prevent CLS) */}
-      <div className="relative pb-3 pt-1" style={{ minHeight: '60px' }}>
-        {teams.length > 0 && (
-          <div className="container mx-auto px-4">
-            <div
-              ref={scrollRef}
-              {...scrollEvents}
-              className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap px-1 py-1 snap-x"
-              style={{
-                ...scrollStyle,
-                maskImage: 'linear-gradient(to right, black 0%, black 95%, transparent)',
-                WebkitMaskImage: 'linear-gradient(to right, black 0%, black 95%, transparent)'
-              }}
-            >
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onSelectTeam(null)}
-                className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${selectedTeam === null
-                  ? 'bg-white text-slate-900 border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] ring-1 ring-white/50'
-                  : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
-                  }`}
-              >
-                Tous les matchs
-              </motion.button>
-              {teams.map((team) => (
-                <motion.button
-                  key={team}
-                  layoutId={`team-pill-${team}`}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => onSelectTeam(team)}
-                  className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${selectedTeam === team
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-1 ring-white/20'
-                    : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
-                    }`}
-                >
-                  {team}
-                </motion.button>
-              ))}
+        <div className="container mx-auto px-4 py-2 sm:py-3 relative z-30">
+          <div className="flex items-center justify-between gap-2">
+            {/* Logo - Animated & Glowing */}
+            <div className="relative flex-shrink-0 group cursor-pointer">
+              <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full" />
+              <img
+                src="/logo-scba.webp"
+                alt="Logo SCBA"
+                className="relative w-10 h-12 sm:w-14 sm:h-16 object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-300 ease-out"
+                width="56"
+                height="70"
+                {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
+              />
+            </div>
+
+            {/* Title - Exact Match: Full Width & Readable */}
+            <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1 min-h-[48px] sm:min-h-[72px]">
+              <h1 className="flex flex-col items-center justify-center leading-none w-full">
+                <span className="text-[10px] xs:text-xs sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport text-center leading-none w-full break-words max-w-full">
+                  STADE CLERMONTOIS BASKET AUVERGNE
+                </span>
+                {/* Green Separator */}
+                <span className="w-1/2 sm:w-32 h-[2px] sm:h-[3px] bg-emerald-500 my-0.5 sm:my-1 rounded-full"></span>
+                <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-emerald-400 font-sport">
+                  ESPACE BÉNÉVOLES
+                </span>
+              </h1>
+            </div>
+
+            {/* User Profile + Theme Toggle */}
+            <div className="flex-shrink-0 flex items-center gap-1.5 sm:gap-3">
+              <ThemeToggle />
+              <UserProfile
+                onToast={onToast}
+                isAdmin={isAdmin}
+                onOpenAdminStats={onOpenAdminStats}
+                onOpenProfile={onOpenProfile}
+              />
             </div>
           </div>
-        )}
-      </div>
-    </header>
-  );
-});
+        </div>
+
+        {/* Filter Bar - Floating Horizontal Scroll (always reserves height to prevent CLS) */}
+        <div className="relative pb-3 pt-1" style={{ minHeight: '60px' }}>
+          {teams.length > 0 && (
+            <div className="container mx-auto px-4">
+              <div
+                ref={scrollRef}
+                {...scrollEvents}
+                className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap px-1 py-1 snap-x"
+                style={{
+                  ...scrollStyle,
+                  maskImage: 'linear-gradient(to right, black 0%, black 95%, transparent)',
+                  WebkitMaskImage: 'linear-gradient(to right, black 0%, black 95%, transparent)',
+                }}
+              >
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onSelectTeam(null)}
+                  className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${
+                    selectedTeam === null
+                      ? 'bg-white text-slate-900 border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] ring-1 ring-white/50'
+                      : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
+                  }`}
+                >
+                  Tous les matchs
+                </motion.button>
+                {teams.map((team) => (
+                  <motion.button
+                    key={team}
+                    layoutId={`team-pill-${team}`}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => onSelectTeam(team)}
+                    className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${
+                      selectedTeam === team
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-1 ring-white/20'
+                        : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
+                    }`}
+                  >
+                    {team}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+    );
+  },
+);
 
 Header.displayName = 'Header';
 

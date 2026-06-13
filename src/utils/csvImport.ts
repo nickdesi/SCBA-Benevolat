@@ -1,10 +1,10 @@
 /**
  * CSV Import Utility for FFBB match schedules
- * 
+ *
  * Expected CSV format (copy-paste from FFBB website):
  * - Standard: Date;Heure;Domicile;Visiteur;Salle
  * - Block: Multi-line text copy from FFBB "A Venir" table
- * 
+ *
  * Example Block:
  * #123
  * J14
@@ -22,51 +22,57 @@ import { GYM_REGISTRY } from './gyms';
  * Normalise une chaîne pour la comparaison (minuscule, sans accents, trim)
  */
 const normalize = (str: string) => {
-    return str.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, ' ')
-        .trim();
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
 /**
  * Trouve un match correspondant dans la base existante
  */
-export const findMatchingGame = (newMatch: ParsedMatch, existingGames: Game[]): Game | undefined => {
-    return existingGames.find(existing => {
-        // 1. Comparaison Date et Heure (critère strict)
-        const sameDate = existing.dateISO === newMatch.dateISO;
-        const sameTime = existing.time === newMatch.time; // Format HH:MM ou HHhmm attendu identique via parseTime
+export const findMatchingGame = (
+  newMatch: ParsedMatch,
+  existingGames: Game[],
+): Game | undefined => {
+  return existingGames.find((existing) => {
+    // 1. Comparaison Date et Heure (critère strict)
+    const sameDate = existing.dateISO === newMatch.dateISO;
+    const sameTime = existing.time === newMatch.time; // Format HH:MM ou HHhmm attendu identique via parseTime
 
-        if (!sameDate || !sameTime) return false;
+    if (!sameDate || !sameTime) return false;
 
-        // 2. Comparaison Equipe (SCBA)
-        const sameTeam = normalize(existing.team) === normalize(newMatch.team);
+    // 2. Comparaison Equipe (SCBA)
+    const sameTeam = normalize(existing.team) === normalize(newMatch.team);
 
-        // 3. Comparaison Adversaire (plus souple car l'orthographe peut varier)
-        // On check si l'un est inclus dans l'autre
-        const normExistingOpp = normalize(existing.opponent);
-        const normNewOpp = normalize(newMatch.opponent);
-        const sameOpponent = normExistingOpp.includes(normNewOpp) || normNewOpp.includes(normExistingOpp);
+    // 3. Comparaison Adversaire (plus souple car l'orthographe peut varier)
+    // On check si l'un est inclus dans l'autre
+    const normExistingOpp = normalize(existing.opponent);
+    const normNewOpp = normalize(newMatch.opponent);
+    const sameOpponent =
+      normExistingOpp.includes(normNewOpp) || normNewOpp.includes(normExistingOpp);
 
-        return sameTeam && sameOpponent;
-    });
+    return sameTeam && sameOpponent;
+  });
 };
 
 export interface ParsedMatch {
-    date: string;           // Display format: "Samedi 14 Décembre 2024"
-    dateISO: string;        // ISO format: "2024-12-14"
-    time: string;           // "15H00"
-    team: string;           // "U11 - Équipe 1"
-    opponent: string;       // "Royat"
-    location: string;       // "Maison des Sports" or "Extérieur (Ville)"
-    isHome: boolean;        // true if SCBA is home team
-    candidates?: string[];  // List of potential addresses found
-    id?: string;            // ID of existing match if found (for update)
+  date: string; // Display format: "Samedi 14 Décembre 2024"
+  dateISO: string; // ISO format: "2024-12-14"
+  time: string; // "15H00"
+  team: string; // "U11 - Équipe 1"
+  opponent: string; // "Royat"
+  location: string; // "Maison des Sports" or "Extérieur (Ville)"
+  isHome: boolean; // true if SCBA is home team
+  candidates?: string[]; // List of potential addresses found
+  id?: string; // ID of existing match if found (for update)
 }
 
 interface ImportResult {
-    success: ParsedMatch[];
-    errors: { line: number; content: string; error: string }[];
+  success: ParsedMatch[];
+  errors: { line: number; content: string; error: string }[];
 }
 
 // French weekday names
@@ -74,8 +80,18 @@ const WEEKDAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi',
 
 // French month names
 const MONTHS = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  'Janvier',
+  'Février',
+  'Mars',
+  'Avril',
+  'Mai',
+  'Juin',
+  'Juillet',
+  'Août',
+  'Septembre',
+  'Octobre',
+  'Novembre',
+  'Décembre',
 ];
 
 /**
@@ -83,25 +99,25 @@ const MONTHS = [
  * Example: "SCBA U11-1" -> "U11 M1", "STADE CLERMONT SM2" -> "SENIOR M2"
  */
 const normalizeTeamName = (team: string): string => {
-    const upperTeam = team.toUpperCase();
+  const upperTeam = team.toUpperCase();
 
-    // Senior teams
-    if (upperTeam.includes('SENIOR') || upperTeam.includes('SM')) {
-        const numMatch = upperTeam.match(/(\d)/);
-        const num = numMatch ? numMatch[1] : '1';
-        return `SENIOR M${num}`;
-    }
+  // Senior teams
+  if (upperTeam.includes('SENIOR') || upperTeam.includes('SM')) {
+    const numMatch = upperTeam.match(/(\d)/);
+    const num = numMatch ? numMatch[1] : '1';
+    return `SENIOR M${num}`;
+  }
 
-    // Youth categories (U9, U11, U13, U15, U18)
-    const categoryMatch = upperTeam.match(/U(\d+)[-\s]?M?(\d)?/i);
-    if (categoryMatch) {
-        const category = categoryMatch[1];
-        const number = categoryMatch[2] || '1';
-        return `U${category} M${number}`;
-    }
+  // Youth categories (U9, U11, U13, U15, U18)
+  const categoryMatch = upperTeam.match(/U(\d+)[-\s]?M?(\d)?/i);
+  if (categoryMatch) {
+    const category = categoryMatch[1];
+    const number = categoryMatch[2] || '1';
+    return `U${category} M${number}`;
+  }
 
-    // Remove SCBA prefix if present and return cleaned name
-    return team.replace(/SCBA|STADE CLERMONT/gi, '').trim();
+  // Remove SCBA prefix if present and return cleaned name
+  return team.replace(/SCBA|STADE CLERMONT/gi, '').trim();
 };
 
 /**
@@ -110,105 +126,127 @@ const normalizeTeamName = (team: string): string => {
  * Example: "RIORGES BC" -> "RIORGES"
  */
 const inferCityFromTeam = (opponent: string): string => {
-    // 0. Specific mappings for known complex cases
-    const MAPPINGS: Record<string, string> = {
-        'TAIN TOURNON': 'Tain-l\'Hermitage', // or Tournon-sur-Rhône, but search usually works better with Tain
-        'GOLFE JUAN': 'Vallauris', // Golfe-Juan is a locality in Vallauris 
-        'LYON SO': 'Lyon', // Lyon Sud Ouest
-        'ROCHE VENDÉE': 'La Roche-sur-Yon',
-    };
+  // 0. Specific mappings for known complex cases
+  const MAPPINGS: Record<string, string> = {
+    'TAIN TOURNON': "Tain-l'Hermitage", // or Tournon-sur-Rhône, but search usually works better with Tain
+    'GOLFE JUAN': 'Vallauris', // Golfe-Juan is a locality in Vallauris
+    'LYON SO': 'Lyon', // Lyon Sud Ouest
+    'ROCHE VENDÉE': 'La Roche-sur-Yon',
+  };
 
-    // Check exact or partial matches in mappings
-    const upperOpp = opponent.toUpperCase();
-    for (const [key, value] of Object.entries(MAPPINGS)) {
-        if (upperOpp.includes(key)) return value;
-    }
+  // Check exact or partial matches in mappings
+  const upperOpp = opponent.toUpperCase();
+  for (const [key, value] of Object.entries(MAPPINGS)) {
+    if (upperOpp.includes(key)) return value;
+  }
 
-    // 1. Remove common prefixes
-    let cleanName = opponent.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*|ENTENTE\s*[-]?\s*|UNION\s*[-]?\s*)/i, '');
+  // 1. Remove common prefixes
+  let cleanName = opponent.replace(
+    /^(IE\s*[-]?\s*|CTC\s*[-]?\s*|ENTENTE\s*[-]?\s*|UNION\s*[-]?\s*)/i,
+    '',
+  );
 
-    // 2. Remove common suffixes/words
-    const noiseWords = [
-        'BASKET', 'BC', 'CLUB', 'CS', 'US', 'AL', 'AS', 'ES', 'BB',
-        'SPORT', 'SPORTS', 'ASSOCIATION', 'AMICALE', 'UMS', 'U.M.S',
-        'LOIRE', 'SUD', 'NORD', 'EST', 'OUEST',
-        'AG' // Avant-Garde (often in Tain Tournon AG)
-    ];
+  // 2. Remove common suffixes/words
+  const noiseWords = [
+    'BASKET',
+    'BC',
+    'CLUB',
+    'CS',
+    'US',
+    'AL',
+    'AS',
+    'ES',
+    'BB',
+    'SPORT',
+    'SPORTS',
+    'ASSOCIATION',
+    'AMICALE',
+    'UMS',
+    'U.M.S',
+    'LOIRE',
+    'SUD',
+    'NORD',
+    'EST',
+    'OUEST',
+    'AG', // Avant-Garde (often in Tain Tournon AG)
+  ];
 
-    cleanName = cleanName.replace(new RegExp(`\\b(${noiseWords.join('|')})\\b`, 'gi'), '');
+  cleanName = cleanName.replace(new RegExp(`\\b(${noiseWords.join('|')})\\b`, 'gi'), '');
 
-    // 3. Remove trailing numbers/characters
-    cleanName = cleanName.replace(/[-]?\s*\d+$/, '');
+  // 3. Remove trailing numbers/characters
+  cleanName = cleanName.replace(/[-]?\s*\d+$/, '');
 
-    // 4. Handle hyphenated names logic
-    // If name contains hyphen but no spaces around, keep it (Saint-Etienne)
-    // If name contains hyphen with spaces, replace with space (Saint - Etienne -> Saint Etienne)
-    cleanName = cleanName.replace(/\s+-\s+/g, ' ');
+  // 4. Handle hyphenated names logic
+  // If name contains hyphen but no spaces around, keep it (Saint-Etienne)
+  // If name contains hyphen with spaces, replace with space (Saint - Etienne -> Saint Etienne)
+  cleanName = cleanName.replace(/\s+-\s+/g, ' ');
 
-    cleanName = cleanName.replace(/\s+/g, ' ').trim();
+  cleanName = cleanName.replace(/\s+/g, ' ').trim();
 
-    // 5. Filter garbage
-    const parts = cleanName.split(' ').filter(p => p.length > 2 || ['le', 'la', 'les', 'du', 'de', 'sur'].includes(p.toLowerCase()));
+  // 5. Filter garbage
+  const parts = cleanName
+    .split(' ')
+    .filter(
+      (p) => p.length > 2 || ['le', 'la', 'les', 'du', 'de', 'sur'].includes(p.toLowerCase()),
+    );
 
-    return parts
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(' ');
+  return parts.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 };
 
 /**
  * Parse a date string to display and ISO formats
- * Supports: 
+ * Supports:
  * - DD/MM/YYYY
  * - DD MMM (e.g. "13 sept.") -> infers year based on current season (Sep-Dec = current year, Jan-Jul = next year)
  */
 const parseDate = (dateStr: string): { display: string; iso: string } | null => {
-    // Try DD/MM/YYYY
-    const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if (slashMatch) {
-        const day = parseInt(slashMatch[1], 10);
-        const month = parseInt(slashMatch[2], 10) - 1; // 0-indexed
-        const year = parseInt(slashMatch[3], 10);
+  // Try DD/MM/YYYY
+  const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (slashMatch) {
+    const day = parseInt(slashMatch[1], 10);
+    const month = parseInt(slashMatch[2], 10) - 1; // 0-indexed
+    const year = parseInt(slashMatch[3], 10);
 
-        const date = new Date(year, month, day);
-        const weekday = WEEKDAYS[date.getDay()];
-        const monthName = MONTHS[month];
+    const date = new Date(year, month, day);
+    const weekday = WEEKDAYS[date.getDay()];
+    const monthName = MONTHS[month];
 
-        return {
-            display: `${weekday} ${day} ${monthName} ${year}`,
-            iso: toISODateString(date)
-        };
-    }
+    return {
+      display: `${weekday} ${day} ${monthName} ${year}`,
+      iso: toISODateString(date),
+    };
+  }
 
-    // Try text format (Web copy paste): "13 sept." or "13 sept"
-    const textMatch = dateStr.toLowerCase().match(/(\d{1,2})\s+([a-zéû]+)/);
-    if (textMatch) {
-        const day = parseInt(textMatch[1], 10);
-        const monthStr = textMatch[2].replace('.', ''); // remove dot if present
+  // Try text format (Web copy paste): "13 sept." or "13 sept"
+  const textMatch = dateStr.toLowerCase().match(/(\d{1,2})\s+([a-zéû]+)/);
+  if (textMatch) {
+    const day = parseInt(textMatch[1], 10);
+    const monthStr = textMatch[2].replace('.', ''); // remove dot if present
 
-        // Find month index
-        const monthIndex = MONTHS.findIndex(m => m.toLowerCase().startsWith(monthStr));
-        if (monthIndex === -1) return null;
+    // Find month index
+    const monthIndex = MONTHS.findIndex((m) => m.toLowerCase().startsWith(monthStr));
+    if (monthIndex === -1) return null;
 
-        // Infer year logic:
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        const seasonStartYear = currentMonth >= 7 ? currentYear : currentYear - 1;
+    // Infer year logic:
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const seasonStartYear = currentMonth >= 7 ? currentYear : currentYear - 1;
 
-        const targetYear = (monthIndex >= 7) ? seasonStartYear : seasonStartYear + 1;
+    const targetYear = monthIndex >= 7 ? seasonStartYear : seasonStartYear + 1;
 
-        // Construct date
-        const date = new Date(targetYear, monthIndex, day);
-        const weekday = WEEKDAYS[date.getDay()];
-        const monthName = MONTHS[monthIndex];
+    // Construct date
+    const date = new Date(targetYear, monthIndex, day);
+    const weekday = WEEKDAYS[date.getDay()];
+    const monthName = MONTHS[monthIndex];
 
-        return {
-            display: `${weekday} ${day} ${monthName} ${targetYear}`,
-            iso: toISODateString(date)
-        };
-    }
+    return {
+      display: `${weekday} ${day} ${monthName} ${targetYear}`,
+      iso: toISODateString(date),
+    };
+  }
 
-    return null;
+  return null;
 };
 
 /**
@@ -216,15 +254,15 @@ const parseDate = (dateStr: string): { display: string; iso: string } | null => 
  * "15:00" -> "15H00"
  */
 const parseTime = (timeStr: string): string => {
-    return timeStr.replace(':', 'H');
+  return timeStr.replace(':', 'H');
 };
 
 /**
  * Detect if a team name belongs to SCBA
  */
 const isSCBATeam = (team: string): boolean => {
-    const scbaPatterns = ['SCBA', 'STADE CLERMONT', 'SC BASKET AUVERGNE'];
-    return scbaPatterns.some(pattern => team.toUpperCase().includes(pattern));
+  const scbaPatterns = ['SCBA', 'STADE CLERMONT', 'SC BASKET AUVERGNE'];
+  return scbaPatterns.some((pattern) => team.toUpperCase().includes(pattern));
 };
 
 /**
@@ -240,25 +278,25 @@ const isSCBATeam = (team: string): boolean => {
 const SORTED_GYM_REGISTRY_KEYS = Object.keys(GYM_REGISTRY).sort((a, b) => b.length - a.length);
 
 const findAddressForOpponent = (opponent: string): string => {
-    // 1. Check Registry (Exact or Partial Match)
-    const upperOpponent = opponent.toUpperCase();
+  // 1. Check Registry (Exact or Partial Match)
+  const upperOpponent = opponent.toUpperCase();
 
-    // Strategy A: Direct Lookup (Fast) using normalized keys
-    if (GYM_REGISTRY[upperOpponent]) {
-        return GYM_REGISTRY[upperOpponent];
+  // Strategy A: Direct Lookup (Fast) using normalized keys
+  if (GYM_REGISTRY[upperOpponent]) {
+    return GYM_REGISTRY[upperOpponent];
+  }
+
+  // Strategy B: Partial Match (Iterate registry keys)
+  // Priority to LONGEST keys to ensure specific matches (e.g. "CTC ... NOHANENT") are found before generic ones (e.g. "BÉDAT")
+  for (const key of SORTED_GYM_REGISTRY_KEYS) {
+    if (upperOpponent.includes(key)) {
+      return GYM_REGISTRY[key];
     }
+  }
 
-    // Strategy B: Partial Match (Iterate registry keys)
-    // Priority to LONGEST keys to ensure specific matches (e.g. "CTC ... NOHANENT") are found before generic ones (e.g. "BÉDAT")
-    for (const key of SORTED_GYM_REGISTRY_KEYS) {
-        if (upperOpponent.includes(key)) {
-            return GYM_REGISTRY[key];
-        }
-    }
-
-    // 2. Fallback to City inference
-    const city = inferCityFromTeam(opponent);
-    return city.length > 2 ? `Extérieur (${city})` : 'Extérieur';
+  // 2. Fallback to City inference
+  const city = inferCityFromTeam(opponent);
+  return city.length > 2 ? `Extérieur (${city})` : 'Extérieur';
 };
 
 /**
@@ -269,207 +307,240 @@ const findAddressForOpponent = (opponent: string): string => {
  * - Multi-line Block Format (FFBB "A Venir" table copy)
  */
 export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'): ImportResult => {
-    const lines = csvContent.trim().split('\n').map(l => l.trim()).filter(l => l);
-    const result: ImportResult = { success: [], errors: [] };
+  const lines = csvContent
+    .trim()
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l);
+  const result: ImportResult = { success: [], errors: [] };
 
-    // Detect format type
-    // If lines look like blocks (contain "#123", "J12", then date, then "Domicile"...)
-    const isBlockFormat = lines.some(l => l.startsWith('#') || l.match(/^J\d+/));
+  // Detect format type
+  // If lines look like blocks (contain "#123", "J12", then date, then "Domicile"...)
+  const isBlockFormat = lines.some((l) => l.startsWith('#') || l.match(/^J\d+/));
 
-    if (isBlockFormat) {
-        let currentMatch: Partial<ParsedMatch> = {};
+  if (isBlockFormat) {
+    let currentMatch: Partial<ParsedMatch> = {};
 
-        // We iterate line by line and build match objects
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
+    // We iterate line by line and build match objects
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
 
-            // 1. Skip match ID (#123) and Day (J13)
-            if (line.startsWith('#') || line.match(/^J\d+$/)) continue;
+      // 1. Skip match ID (#123) and Day (J13)
+      if (line.startsWith('#') || line.match(/^J\d+$/)) continue;
 
-            // 2. Try to find Date "10 janv. 20h00"
-            const dateMatch = line.match(/(\d{1,2}\s+[a-zéû]+\.?)\s+(\d{1,2}[h:]\d{2})/i);
-            if (dateMatch) {
-                // Start a new match
-                currentMatch = {};
+      // 2. Try to find Date "10 janv. 20h00"
+      const dateMatch = line.match(/(\d{1,2}\s+[a-zéû]+\.?)\s+(\d{1,2}[h:]\d{2})/i);
+      if (dateMatch) {
+        // Start a new match
+        currentMatch = {};
 
-                const dateStr = dateMatch[1];
-                const timeStr = dateMatch[2];
-                const parsedDate = parseDate(dateStr);
+        const dateStr = dateMatch[1];
+        const timeStr = dateMatch[2];
+        const parsedDate = parseDate(dateStr);
 
-                if (parsedDate) {
-                    currentMatch.date = parsedDate.display;
-                    currentMatch.dateISO = parsedDate.iso;
-                    currentMatch.time = parseTime(timeStr);
-                    continue;
-                }
-            }
-
-            // 3. Try to find Location (Domicile/Extérieur OR Explicit Address)
-            if (line.toLowerCase() === 'domicile') {
-                currentMatch.isHome = true;
-                currentMatch.team = normalizeTeamName(defaultTeam);
-                // Specific rule for SENIOR M1: Gymnase Fleury
-                currentMatch.location = currentMatch.team === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
-                continue;
-            } else if (line.toLowerCase() === 'extérieur' || line.toLowerCase() === 'exterieur') {
-                currentMatch.isHome = false;
-                currentMatch.team = normalizeTeamName(defaultTeam);
-                currentMatch.location = 'Extérieur'; // Will be refined when opponent is found
-                continue;
-            } else if (line.match(/(gymnase|salle|complexe|stade|palais|centre sportif)/i) || line.match(/\d{5}/)) {
-                // Explicit address detection (Gym type + zipcode usually)
-                currentMatch.location = line;
-                // If we found a specific address, we assume it's settled (could be home or away, but usually away if copying detail)
-                continue;
-            }
-
-            // 4. Try to find Opponent (Anything else that's not a score or empty or explicit keywords)
-            if (currentMatch.date && typeof currentMatch.isHome !== 'undefined' && !currentMatch.opponent) {
-                // Ignore scores "0" or "-"
-                if (line === '0' || line === '-') continue;
-
-                // If line is not a number and not "Lieu", it's the opponent
-                if (!line.match(/^\d+$/) && !line.match(/^Lieu$/i)) {
-                    currentMatch.opponent = line;
-
-                    // Refine location with Registry lookup if it's currently generic "Extérieur"
-                    if (!currentMatch.isHome && (currentMatch.location === 'Extérieur' || !currentMatch.location)) {
-                        currentMatch.location = findAddressForOpponent(line);
-                    }
-
-                    // Match is complete!
-                    result.success.push(currentMatch as ParsedMatch);
-                    currentMatch = {}; // Reset
-                }
-            }
+        if (parsedDate) {
+          currentMatch.date = parsedDate.display;
+          currentMatch.dateISO = parsedDate.iso;
+          currentMatch.time = parseTime(timeStr);
+          continue;
         }
+      }
 
-        return result;
-    }
+      // 3. Try to find Location (Domicile/Extérieur OR Explicit Address)
+      if (line.toLowerCase() === 'domicile') {
+        currentMatch.isHome = true;
+        currentMatch.team = normalizeTeamName(defaultTeam);
+        // Specific rule for SENIOR M1: Gymnase Fleury
+        currentMatch.location =
+          currentMatch.team === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
+        continue;
+      } else if (line.toLowerCase() === 'extérieur' || line.toLowerCase() === 'exterieur') {
+        currentMatch.isHome = false;
+        currentMatch.team = normalizeTeamName(defaultTeam);
+        currentMatch.location = 'Extérieur'; // Will be refined when opponent is found
+        continue;
+      } else if (
+        line.match(/(gymnase|salle|complexe|stade|palais|centre sportif)/i) ||
+        line.match(/\d{5}/)
+      ) {
+        // Explicit address detection (Gym type + zipcode usually)
+        currentMatch.location = line;
+        // If we found a specific address, we assume it's settled (could be home or away, but usually away if copying detail)
+        continue;
+      }
 
-    // fallback to Line-by-Line CSV/TSV parser
-    const headerLine = lines[0]?.toLowerCase();
-    const startIndex = (headerLine.includes('date') || headerLine.includes('rencontre')) ? 1 : 0;
+      // 4. Try to find Opponent (Anything else that's not a score or empty or explicit keywords)
+      if (
+        currentMatch.date &&
+        typeof currentMatch.isHome !== 'undefined' &&
+        !currentMatch.opponent
+      ) {
+        // Ignore scores "0" or "-"
+        if (line === '0' || line === '-') continue;
 
-    for (let i = startIndex; i < lines.length; i++) {
-        const line = lines[i];
+        // If line is not a number and not "Lieu", it's the opponent
+        if (!line.match(/^\d+$/) && !line.match(/^Lieu$/i)) {
+          currentMatch.opponent = line;
 
-        try {
-            let separator = ';';
-            if (line.includes('\t')) separator = '\t';
-            else if (line.includes(',')) separator = ',';
+          // Refine location with Registry lookup if it's currently generic "Extérieur"
+          if (
+            !currentMatch.isHome &&
+            (currentMatch.location === 'Extérieur' || !currentMatch.location)
+          ) {
+            currentMatch.location = findAddressForOpponent(line);
+          }
 
-            const parts = line.split(separator).map(p => p.trim()).filter(p => p !== '');
-
-            let dateStr = '', timeStr = '', homeTeam = '', awayTeam = '', location = '';
-
-            // Find explicit date format
-            const dateIdx = parts.findIndex(p => p.match(/\d{2}\/\d{2}/) || p.match(/\d{1,2}\s+[a-zéû]+/i));
-
-            if (dateIdx !== -1 && parts.length >= dateIdx + 2) {
-                dateStr = parts[dateIdx];
-                if (parts[dateIdx].match(/\d{2}:\d{2}/)) {
-                    timeStr = parts[dateIdx].split(' ')[1] || '00:00';
-                } else {
-                    timeStr = parts[dateIdx + 1];
-                }
-
-                if (parts.length >= dateIdx + 4) {
-                    homeTeam = parts[dateIdx + 2];
-                    awayTeam = parts[dateIdx + 3];
-                    location = parts[dateIdx + 4] || '';
-                } else {
-                    continue;
-                }
-            } else {
-                if (line.length > 5)
-                    result.errors.push({ line: i + 1, content: line, error: "Date introuvable" });
-                continue;
-            }
-
-            const parsedDate = parseDate(dateStr);
-            if (!parsedDate) continue;
-
-            const isHome = isSCBATeam(homeTeam);
-            let finalTeam = isHome ? homeTeam : awayTeam;
-            let finalOpponent = isHome ? awayTeam : homeTeam;
-            let finalIsHome = isHome;
-
-            // Fallback for detection
-            if (!isSCBATeam(homeTeam) && !isSCBATeam(awayTeam)) {
-                if (location.toLowerCase().includes('maison des sports') || location.toLowerCase().includes('clermont') || location.toLowerCase().includes('fleury')) {
-                    finalIsHome = true;
-                    finalTeam = defaultTeam;
-                    finalOpponent = awayTeam;
-                } else {
-                    const teamParts = defaultTeam.split(' ');
-                    const homeMatches = teamParts.some(p => homeTeam.toUpperCase().includes(p));
-                    const awayMatches = teamParts.some(p => awayTeam.toUpperCase().includes(p));
-
-                    if (homeMatches && !awayMatches) {
-                        finalIsHome = true;
-                        finalTeam = defaultTeam;
-                        finalOpponent = awayTeam;
-                    } else if (!homeMatches && awayMatches) {
-                        finalIsHome = false;
-                        finalTeam = defaultTeam;
-                        finalOpponent = homeTeam;
-                    } else {
-                        result.errors.push({ line: i + 1, content: line, error: "Impossible de déterminer Domicile/Extérieur (SCBA non détecté)" });
-                        continue;
-                    }
-                }
-            }
-
-            const normalizedTeam = normalizeTeamName(finalTeam);
-            let finalLocation = location;
-
-            // Location Logic
-            if (finalIsHome) {
-                // If location is missing or generic "Domicile", set default
-                if (!finalLocation || finalLocation.toLowerCase() === 'domicile') {
-                    finalLocation = normalizedTeam === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
-                }
-            } else {
-                // If location is missing or generic "Extérieur", try to retrieve from Registry or infer from Opponent
-                if (!finalLocation || finalLocation.toLowerCase() === 'extérieur' || finalLocation.toLowerCase() === 'exterieur') {
-                    finalLocation = findAddressForOpponent(finalOpponent);
-                }
-            }
-
-            result.success.push({
-                date: parsedDate.display,
-                dateISO: parsedDate.iso,
-                time: parseTime(timeStr),
-                team: normalizedTeam,
-                opponent: finalOpponent,
-                location: finalLocation,
-                isHome: finalIsHome
-            });
-
-        } catch (err) {
-            result.errors.push({
-                line: i + 1,
-                content: line,
-                error: `Erreur: ${err}`
-            });
+          // Match is complete!
+          result.success.push(currentMatch as ParsedMatch);
+          currentMatch = {}; // Reset
         }
+      }
     }
 
     return result;
+  }
+
+  // fallback to Line-by-Line CSV/TSV parser
+  const headerLine = lines[0]?.toLowerCase();
+  const startIndex = headerLine.includes('date') || headerLine.includes('rencontre') ? 1 : 0;
+
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i];
+
+    try {
+      let separator = ';';
+      if (line.includes('\t')) separator = '\t';
+      else if (line.includes(',')) separator = ',';
+
+      const parts = line
+        .split(separator)
+        .map((p) => p.trim())
+        .filter((p) => p !== '');
+
+      let dateStr = '',
+        timeStr = '',
+        homeTeam = '',
+        awayTeam = '',
+        location = '';
+
+      // Find explicit date format
+      const dateIdx = parts.findIndex(
+        (p) => p.match(/\d{2}\/\d{2}/) || p.match(/\d{1,2}\s+[a-zéû]+/i),
+      );
+
+      if (dateIdx !== -1 && parts.length >= dateIdx + 2) {
+        dateStr = parts[dateIdx];
+        if (parts[dateIdx].match(/\d{2}:\d{2}/)) {
+          timeStr = parts[dateIdx].split(' ')[1] || '00:00';
+        } else {
+          timeStr = parts[dateIdx + 1];
+        }
+
+        if (parts.length >= dateIdx + 4) {
+          homeTeam = parts[dateIdx + 2];
+          awayTeam = parts[dateIdx + 3];
+          location = parts[dateIdx + 4] || '';
+        } else {
+          continue;
+        }
+      } else {
+        if (line.length > 5)
+          result.errors.push({ line: i + 1, content: line, error: 'Date introuvable' });
+        continue;
+      }
+
+      const parsedDate = parseDate(dateStr);
+      if (!parsedDate) continue;
+
+      const isHome = isSCBATeam(homeTeam);
+      let finalTeam = isHome ? homeTeam : awayTeam;
+      let finalOpponent = isHome ? awayTeam : homeTeam;
+      let finalIsHome = isHome;
+
+      // Fallback for detection
+      if (!isSCBATeam(homeTeam) && !isSCBATeam(awayTeam)) {
+        if (
+          location.toLowerCase().includes('maison des sports') ||
+          location.toLowerCase().includes('clermont') ||
+          location.toLowerCase().includes('fleury')
+        ) {
+          finalIsHome = true;
+          finalTeam = defaultTeam;
+          finalOpponent = awayTeam;
+        } else {
+          const teamParts = defaultTeam.split(' ');
+          const homeMatches = teamParts.some((p) => homeTeam.toUpperCase().includes(p));
+          const awayMatches = teamParts.some((p) => awayTeam.toUpperCase().includes(p));
+
+          if (homeMatches && !awayMatches) {
+            finalIsHome = true;
+            finalTeam = defaultTeam;
+            finalOpponent = awayTeam;
+          } else if (!homeMatches && awayMatches) {
+            finalIsHome = false;
+            finalTeam = defaultTeam;
+            finalOpponent = homeTeam;
+          } else {
+            result.errors.push({
+              line: i + 1,
+              content: line,
+              error: 'Impossible de déterminer Domicile/Extérieur (SCBA non détecté)',
+            });
+            continue;
+          }
+        }
+      }
+
+      const normalizedTeam = normalizeTeamName(finalTeam);
+      let finalLocation = location;
+
+      // Location Logic
+      if (finalIsHome) {
+        // If location is missing or generic "Domicile", set default
+        if (!finalLocation || finalLocation.toLowerCase() === 'domicile') {
+          finalLocation = normalizedTeam === 'SENIOR M1' ? 'Gymnase Fleury' : 'Maison des Sports';
+        }
+      } else {
+        // If location is missing or generic "Extérieur", try to retrieve from Registry or infer from Opponent
+        if (
+          !finalLocation ||
+          finalLocation.toLowerCase() === 'extérieur' ||
+          finalLocation.toLowerCase() === 'exterieur'
+        ) {
+          finalLocation = findAddressForOpponent(finalOpponent);
+        }
+      }
+
+      result.success.push({
+        date: parsedDate.display,
+        dateISO: parsedDate.iso,
+        time: parseTime(timeStr),
+        team: normalizedTeam,
+        opponent: finalOpponent,
+        location: finalLocation,
+        isHome: finalIsHome,
+      });
+    } catch (err) {
+      result.errors.push({
+        line: i + 1,
+        content: line,
+        error: `Erreur: ${err}`,
+      });
+    }
+  }
+
+  return result;
 };
 
 /**
  * Convert parsed matches to GameFormData for saving
  */
 export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string } => ({
-    team: match.team,
-    opponent: match.opponent,
-    date: match.date,
-    time: match.time,
-    location: match.location,
-    isHome: match.isHome,
-    id: match.id
+  team: match.team,
+  opponent: match.opponent,
+  date: match.date,
+  time: match.time,
+  location: match.location,
+  isHome: match.isHome,
+  id: match.id,
 });
-
-

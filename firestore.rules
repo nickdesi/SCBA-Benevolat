@@ -2,14 +2,14 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // Fonction helper pour vérifier si l'utilisateur est admin
     // Utilise les Custom Claims définis par la Cloud Function 'setAdminRole'
     function isAdmin() {
       // Source de vérité : custom claim 'admin' défini par la Cloud Function setAdminRole/setAdminClaim.
       // Fallback email uniquement si l'email est vérifié — retiré dès que le claim est en place.
       return request.auth != null && (
-        (request.auth.token.keys().hasAny(['admin']) && request.auth.token.admin == true) || 
+        (request.auth.token.keys().hasAny(['admin']) && request.auth.token.admin == true) ||
         request.auth.token.email == 'benevole@scba.fr'
       );
     }
@@ -24,11 +24,11 @@ service cloud.firestore {
     match /announcements/{announcement} {
       allow read: if true;
       allow create, update: if isAdmin();
-      allow delete: if isAdmin() || 
+      allow delete: if isAdmin() ||
                       (resource.data.expiresAt != null && resource.data.expiresAt < request.time);
     }
 
-    // Matchs : 
+    // Matchs :
     // - Lecture publique (tout le monde doit voir les matchs)
     // - Création/Suppression : Admin seulement
     // - Mise à jour : Admin ou Utilisateur connecté (pour s'inscrire/désinscrire)
@@ -37,7 +37,7 @@ service cloud.firestore {
       allow create, delete: if isAdmin();
       // Allow update ONLY if authenticated AND only modifying the 'roles' field (for volunteer signup)
       // OR if the user is an admin (who can edit everything)
-      allow update: if isAdmin() || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles'])); 
+      allow update: if isAdmin() || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles']));
     }
 
     // Données Utilisateurs (Inscriptions, Profil...)

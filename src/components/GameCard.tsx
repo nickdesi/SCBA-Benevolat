@@ -8,53 +8,50 @@ import GameHeader from './GameCard/GameHeader';
 import VolunteerSection from './GameCard/VolunteerSection';
 import ActionButtons from './GameCard/ActionButtons';
 import CarpoolingSection from './GameCard/CarpoolingSection';
-import {
-    isGameUrgent,
-    getCarpoolStats,
-    getGameRoleStats
-} from '../utils/gameUtils';
+import { isGameUrgent, getCarpoolStats, getGameRoleStats } from '../utils/gameUtils';
 
 // Lazy-loaded for code-splitting
 const GameForm = lazy(() => import('./GameForm'));
 
 interface GameCardProps {
-    game: Game;
-    onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
-    onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
-    onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
-    onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
-    onRemoveCarpool: (gameId: string, entryId: string) => void;
-    onRequestSeat?: (gameId: string, passengerId: string, driverId: string) => void;
-    onAcceptPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
-    onRejectPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
-    onCancelRequest?: (gameId: string, passengerId: string) => void;
-    onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
-    isAdmin: boolean;
-    isEditing: boolean;
-    onEditRequest: (gameId: string) => void;
-    onCancelEdit: () => void;
-    onDeleteRequest: (gameId: string) => void;
-    onUpdateRequest: (game: Game) => void;
-    userRegistrations?: Map<string, string[]>;
-    isAuthenticated?: boolean;
-    index?: number;
+  game: Game;
+  onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
+  onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
+  onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
+  onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
+  onRemoveCarpool: (gameId: string, entryId: string) => void;
+  onRequestSeat?: (gameId: string, passengerId: string, driverId: string) => void;
+  onAcceptPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+  onRejectPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+  onCancelRequest?: (gameId: string, passengerId: string) => void;
+  onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
+  isAdmin: boolean;
+  isEditing: boolean;
+  onEditRequest: (gameId: string) => void;
+  onCancelEdit: () => void;
+  onDeleteRequest: (gameId: string) => void;
+  onUpdateRequest: (game: Game) => void;
+  userRegistrations?: Map<string, string[]>;
+  isAuthenticated?: boolean;
+  index?: number;
 }
 
 // Chevron Icon for Accordion
 const ChevronIcon: React.FC<{ className?: string; isOpen: boolean }> = ({ className, isOpen }) => (
-    <motion.svg
-        animate={{ rotate: isOpen ? 180 : 0 }}
-        className={className}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-    >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-    </motion.svg>
+  <motion.svg
+    animate={{ rotate: isOpen ? 180 : 0 }}
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  </motion.svg>
 );
 
-const GameCard: React.FC<GameCardProps> = memo(({
+const GameCard: React.FC<GameCardProps> = memo(
+  ({
     game,
     onVolunteer,
     onRemoveVolunteer,
@@ -75,7 +72,7 @@ const GameCard: React.FC<GameCardProps> = memo(({
     userRegistrations,
     isAuthenticated,
     index = 0,
-}) => {
+  }) => {
     // Accordion state - Default expanded if urgent logic removed or kept? kept locally but simplified
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -91,192 +88,245 @@ const GameCard: React.FC<GameCardProps> = memo(({
 
     const isHomeGame = game.isHome ?? true;
 
-    const isUrgent = useMemo(() => isGameUrgent(game, Date.now(), isFullyStaffed), [game, isFullyStaffed]);
+    const isUrgent = useMemo(
+      () => isGameUrgent(game, Date.now(), isFullyStaffed),
+      [game, isFullyStaffed],
+    );
 
     if (isEditing) {
-        return (
-            <Suspense fallback={<div className="p-8 bg-white rounded-2xl shadow-sm animate-pulse"><div className="h-64 bg-slate-100 rounded-xl"></div></div>}>
-                <GameForm gameToEdit={game} onSave={(data) => onUpdateRequest(data as Game)} onCancel={onCancelEdit} />
-            </Suspense>
-        );
+      return (
+        <Suspense
+          fallback={
+            <div className="p-8 bg-white rounded-2xl shadow-sm animate-pulse">
+              <div className="h-64 bg-slate-100 rounded-xl"></div>
+            </div>
+          }
+        >
+          <GameForm
+            gameToEdit={game}
+            onSave={(data) => onUpdateRequest(data as Game)}
+            onCancel={onCancelEdit}
+          />
+        </Suspense>
+      );
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.05 }}
-            className={`
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-50px' }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.05 }}
+        className={`
             relative rounded-3xl overflow-hidden transition-all duration-300 h-full
             bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
             border border-white/20 dark:border-slate-700/50
-            ${game.competition
-                    ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-amber-500/30 dark:border-amber-500/30 shadow-amber-500/5 ring-1 ring-amber-500/20'
-                    : isFullyStaffed
-                        ? 'shadow-none border-emerald-500/20 dark:border-emerald-500/20 opacity-70 dark:opacity-50 grayscale-[30%] hover:opacity-100 hover:grayscale-0'
-                        : isUrgent
-                            ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
-                            : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
-                }
-        `}>
-            {/* 1. Header Section */}
-            <div className="relative z-10">
-                <GameHeader
-                    game={game}
-                    isHomeGame={isHomeGame}
-                    isFullyStaffed={isFullyStaffed}
-                    totalCarpoolSeats={totalCarpoolSeats}
-                    totalPassengerRequests={totalPassengerRequests}
-                    isUrgent={isUrgent}
-                    isAdmin={isAdmin}
-                    onEditRequest={() => onEditRequest(game.id)}
-                    onDeleteRequest={() => onDeleteRequest(game.id)}
-                />
-            </div>
+            ${
+              game.competition
+                ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-amber-500/30 dark:border-amber-500/30 shadow-amber-500/5 ring-1 ring-amber-500/20'
+                : isFullyStaffed
+                  ? 'shadow-none border-emerald-500/20 dark:border-emerald-500/20 opacity-70 dark:opacity-50 grayscale-[30%] hover:opacity-100 hover:grayscale-0'
+                  : isUrgent
+                    ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
+                    : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
+            }
+        `}
+      >
+        {/* 1. Header Section */}
+        <div className="relative z-10">
+          <GameHeader
+            game={game}
+            isHomeGame={isHomeGame}
+            isFullyStaffed={isFullyStaffed}
+            totalCarpoolSeats={totalCarpoolSeats}
+            totalPassengerRequests={totalPassengerRequests}
+            isUrgent={isUrgent}
+            isAdmin={isAdmin}
+            onEditRequest={() => onEditRequest(game.id)}
+            onDeleteRequest={() => onDeleteRequest(game.id)}
+          />
+        </div>
 
-            {/* 2. Accordion Trigger */}
-            <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className={`
+        {/* 2. Accordion Trigger */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`
                     w-full px-4 py-3 flex items-center justify-between cursor-pointer
-                    bg-slate-50/50 dark:bg-slate-900/30 
+                    bg-slate-50/50 dark:bg-slate-900/30
                     border-t border-slate-200/60 dark:border-slate-800/60
                     hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors relative group
                 `}
-            >
-                {/* Progress Bar Background - Modern Gradient */}
-                {isHomeGame && (
-                    <div className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-1000 ease-out
-                        ${isFullyStaffed
+        >
+          {/* Progress Bar Background - Modern Gradient */}
+          {isHomeGame && (
+            <div
+              className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-1000 ease-out
+                        ${
+                          isFullyStaffed
                             ? 'bg-gradient-to-r from-emerald-500/10 via-emerald-500/20 to-emerald-500/30 dark:from-emerald-900/30 dark:to-emerald-900/50'
                             : 'bg-gradient-to-r from-emerald-500/5 via-emerald-500/10 to-emerald-500/15 dark:from-emerald-900/10 dark:to-emerald-900/20 border-r border-emerald-500/10'
                         }`}
-                        style={{ width: isFullyStaffed ? '100%' : `${(filledSlots / totalCapacity) * 100}%` }}
-                    />
-                )}
+              style={{ width: isFullyStaffed ? '100%' : `${(filledSlots / totalCapacity) * 100}%` }}
+            />
+          )}
 
-                {/* Status Content */}
-                {isHomeGame && (
-                    <div className="flex items-center gap-3 relative z-10 pl-1">
-                        {isFullyStaffed ? (
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
-                            >
-                                <motion.span
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ delay: 0.1, type: "spring", stiffness: 500, damping: 20 }}
-                                    className="relative z-10 p-0.5 rounded-full bg-emerald-500 text-white"
-                                >
-                                    <CheckIcon className="w-3 h-3" strokeWidth={3} />
-                                </motion.span>
-                                <span className="relative z-10 font-bold text-emerald-800 dark:text-emerald-200 text-sm">Équipe au complet</span>
-                            </motion.div>
-                        ) : (
-                            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                                <div className="flex items-baseline gap-1">
-                                    <span className="font-black text-xl text-slate-800 dark:text-slate-100">{filledSlots}</span>
-                                    <span className="text-slate-400 font-light text-lg">/</span>
-                                    <span className="font-bold text-slate-500 dark:text-slate-400 text-lg">{totalCapacity}</span>
-                                </div>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">Bénévoles</span>
-
-                                {missingRolesNames.length > 0 && (
-                                    <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
-                                        Manque : {missingRolesNames[0]} {missingRolesNames.length > 1 ? `+${missingRolesNames.length - 1}` : ''}
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                )}
-                {!isHomeGame && (
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 relative z-10 pl-1">
-                        {(() => {
-                            const drivers = carpoolStats.drivers;
-                            const passengers = carpoolStats.passengers;
-
-                            if (drivers === 0 && passengers === 0) return <span className="opacity-60">Aucun covoiturage</span>;
-
-                            return (
-                                <>
-                                    {drivers > 0 && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-bold">{drivers} cond.</span>}
-                                    {passengers > 0 && <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-xs font-bold">{passengers} pass.</span>}
-                                </>
-                            );
-                        })()}
+          {/* Status Content */}
+          {isHomeGame && (
+            <div className="flex items-center gap-3 relative z-10 pl-1">
+              {isFullyStaffed ? (
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
+                >
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.1, type: 'spring', stiffness: 500, damping: 20 }}
+                    className="relative z-10 p-0.5 rounded-full bg-emerald-500 text-white"
+                  >
+                    <CheckIcon className="w-3 h-3" strokeWidth={3} />
+                  </motion.span>
+                  <span className="relative z-10 font-bold text-emerald-800 dark:text-emerald-200 text-sm">
+                    Équipe au complet
+                  </span>
+                </motion.div>
+              ) : (
+                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-black text-xl text-slate-800 dark:text-slate-100">
+                      {filledSlots}
                     </span>
-                )}
+                    <span className="text-slate-400 font-light text-lg">/</span>
+                    <span className="font-bold text-slate-500 dark:text-slate-400 text-lg">
+                      {totalCapacity}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">
+                    Bénévoles
+                  </span>
 
-                <div className={`
-                        w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
-                        ${isExpanded
-                        ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
-                        : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
-                    }
-                    `}>
-                    <ChevronIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" isOpen={false} />
+                  {missingRolesNames.length > 0 && (
+                    <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
+                      Manque : {missingRolesNames[0]}{' '}
+                      {missingRolesNames.length > 1 ? `+${missingRolesNames.length - 1}` : ''}
+                    </span>
+                  )}
                 </div>
-            </button>
+              )}
+            </div>
+          )}
+          {!isHomeGame && (
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 relative z-10 pl-1">
+              {(() => {
+                const drivers = carpoolStats.drivers;
+                const passengers = carpoolStats.passengers;
 
-            {/* 3. Dropdown Content */}
-            <AnimatePresence initial={false}>
-                {isExpanded && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
-                        className="overflow-hidden relative z-20"
-                    >
-                        <div className="p-4 pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                if (drivers === 0 && passengers === 0)
+                  return <span className="opacity-60">Aucun covoiturage</span>;
 
-                            {/* Actions (Calendrier, Trajet) */}
-                            <ActionButtons
-                                game={game}
-                                isHomeGame={isHomeGame}
-                            />
+                return (
+                  <>
+                    {drivers > 0 && (
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-bold">
+                        {drivers} cond.
+                      </span>
+                    )}
+                    {passengers > 0 && (
+                      <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-xs font-bold">
+                        {passengers} pass.
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
+            </span>
+          )}
 
-                            {/* Volunteer Slots */}
-                            {isHomeGame && (
-                                <VolunteerSection
-                                    roles={game.roles}
-                                    gameId={game.id}
-                                    teamName={game.team}
-                                    isAdmin={isAdmin}
-                                    userRegistrations={userRegistrations}
-                                    isAuthenticated={isAuthenticated}
-                                    onVolunteer={onVolunteer}
-                                    onRemoveVolunteer={onRemoveVolunteer}
-                                    onUpdateVolunteer={onUpdateVolunteer}
-                                />
-                            )}
+          <div
+            className={`
+                        w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+                        ${
+                          isExpanded
+                            ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
+                            : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
+                        }
+                    `}
+          >
+            <ChevronIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" isOpen={false} />
+          </div>
+        </button>
 
-                            {/* Carpooling */}
-                            {!isHomeGame && (
-                                <CarpoolingSection
-                                    gameId={game.id}
-                                    entries={game.carpool || []}
-                                    isAdmin={isAdmin}
-                                    onAddEntry={(entry) => onAddCarpool(game.id, entry)}
-                                    onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
-                                    onRequestSeat={onRequestSeat ? (passengerId, driverId) => onRequestSeat(game.id, passengerId, driverId) : undefined}
-                                    onAcceptPassenger={onAcceptPassenger ? (driverId, passengerId) => onAcceptPassenger(game.id, driverId, passengerId) : undefined}
-                                    onRejectPassenger={onRejectPassenger ? (driverId, passengerId) => onRejectPassenger(game.id, driverId, passengerId) : undefined}
-                                    onCancelRequest={onCancelRequest ? (passengerId) => onCancelRequest(game.id, passengerId) : undefined}
-                                />
-                            )}
-                        </div>
-                    </motion.div>
+        {/* 3. Dropdown Content */}
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+              className="overflow-hidden relative z-20"
+            >
+              <div className="p-4 pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                {/* Actions (Calendrier, Trajet) */}
+                <ActionButtons game={game} isHomeGame={isHomeGame} />
+
+                {/* Volunteer Slots */}
+                {isHomeGame && (
+                  <VolunteerSection
+                    roles={game.roles}
+                    gameId={game.id}
+                    teamName={game.team}
+                    isAdmin={isAdmin}
+                    userRegistrations={userRegistrations}
+                    isAuthenticated={isAuthenticated}
+                    onVolunteer={onVolunteer}
+                    onRemoveVolunteer={onRemoveVolunteer}
+                    onUpdateVolunteer={onUpdateVolunteer}
+                  />
                 )}
-            </AnimatePresence>
-        </motion.div >
+
+                {/* Carpooling */}
+                {!isHomeGame && (
+                  <CarpoolingSection
+                    gameId={game.id}
+                    entries={game.carpool || []}
+                    isAdmin={isAdmin}
+                    onAddEntry={(entry) => onAddCarpool(game.id, entry)}
+                    onRemoveEntry={(entryId) => onRemoveCarpool(game.id, entryId)}
+                    onRequestSeat={
+                      onRequestSeat
+                        ? (passengerId, driverId) => onRequestSeat(game.id, passengerId, driverId)
+                        : undefined
+                    }
+                    onAcceptPassenger={
+                      onAcceptPassenger
+                        ? (driverId, passengerId) =>
+                            onAcceptPassenger(game.id, driverId, passengerId)
+                        : undefined
+                    }
+                    onRejectPassenger={
+                      onRejectPassenger
+                        ? (driverId, passengerId) =>
+                            onRejectPassenger(game.id, driverId, passengerId)
+                        : undefined
+                    }
+                    onCancelRequest={
+                      onCancelRequest
+                        ? (passengerId) => onCancelRequest(game.id, passengerId)
+                        : undefined
+                    }
+                  />
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     );
-});
+  },
+);
 
 GameCard.displayName = 'GameCard';
 

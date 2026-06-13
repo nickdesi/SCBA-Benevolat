@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 try:
     print(f"Python executable: {sys.executable}")
     print(f"CWD: {os.getcwd()}")
-    
+
     from ffbb_data_client import FFBBDataClient, TokenManager
     from ffbb_data_client.utils.cache_manager import CacheManager, CacheConfig
 
@@ -18,18 +18,18 @@ try:
 
     # Reset
     CacheManager.reset_instance()
-    
+
     # Init memory cache
     cache_config = CacheConfig(backend="memory", expire_after=3600)
     cache_manager = CacheManager(config=cache_config)
-    
+
     print(f"CacheManager initialized. Backend: {cache_manager.config.backend}")
-    
+
     # Get tokens
     print("Getting tokens...")
     tokens = TokenManager.get_tokens(use_cache=False)
     print(f"Tokens obtained: {tokens.api_token[:5]}... {tokens.meilisearch_token[:5]}...")
-    
+
     # Create client
     print("Creating client...")
     client = FFBBDataClient.create(
@@ -38,7 +38,7 @@ try:
         cached_session=cache_manager.session
     )
     print("Client created.")
-    
+
     # Search
     print("Searching...")
     results = client.search_organismes("Stade Clermontois")

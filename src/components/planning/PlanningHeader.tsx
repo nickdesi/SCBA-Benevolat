@@ -4,84 +4,82 @@ import { getDaysOfWeek } from '../../utils/dateUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in render cycles
 const monthYearFormatter = new Intl.DateTimeFormat('fr-FR', {
-    month: 'long',
-    year: 'numeric'
+  month: 'long',
+  year: 'numeric',
 });
 const dayMonthFormatter = new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'short'
+  day: 'numeric',
+  month: 'short',
 });
 
 interface PlanningHeaderProps {
-    currentDate: Date;
-    onPrevWeek: () => void;
-    onNextWeek: () => void;
-    onToday: () => void;
+  currentDate: Date;
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
+  onToday: () => void;
 }
 
 const PlanningHeader: React.FC<PlanningHeaderProps> = ({
-    currentDate,
-    onPrevWeek,
-    onNextWeek,
-    onToday
+  currentDate,
+  onPrevWeek,
+  onNextWeek,
+  onToday,
 }) => {
-    // Format: "Janvier 2025"
-    const monthLabel = monthYearFormatter.format(currentDate);
+  // Format: "Janvier 2025"
+  const monthLabel = monthYearFormatter.format(currentDate);
 
-    // Capitalize first letter
-    const formattedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+  // Capitalize first letter
+  const formattedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
-    // Get week range using shared utility
-    const getWeekRange = (date: Date) => {
-        const weekDays = getDaysOfWeek(date);
-        const start = weekDays[0];
-        const end = weekDays[6];
+  // Get week range using shared utility
+  const getWeekRange = (date: Date) => {
+    const weekDays = getDaysOfWeek(date);
+    const start = weekDays[0];
+    const end = weekDays[6];
 
-        return `${dayMonthFormatter.format(start)} - ${dayMonthFormatter.format(end)}`;
-    };
+    return `${dayMonthFormatter.format(start)} - ${dayMonthFormatter.format(end)}`;
+  };
 
-    return (
-        <div className="flex flex-col md:flex-row items-center md:justify-center gap-3 sm:gap-5 mb-8 select-none">
+  return (
+    <div className="flex flex-col md:flex-row items-center md:justify-center gap-3 sm:gap-5 mb-8 select-none">
+      {/* Navigation Pill (Center on Desktop, Top on Mobile) */}
+      <div className="flex items-center gap-2 sm:gap-4 bg-white/70 dark:bg-slate-900/60 p-1.5 sm:p-2 rounded-full border border-white/50 dark:border-slate-700 shadow-xl shadow-indigo-500/10 w-full md:w-auto justify-between md:justify-center backdrop-blur-xl transition-all hover:shadow-indigo-500/20 hover:border-indigo-500/30">
+        <button
+          onClick={onPrevWeek}
+          className="p-3 sm:p-4 hover:bg-white dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all active:scale-95 shadow-sm hover:shadow-md"
+          aria-label="Semaine précédente"
+        >
+          <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
+        </button>
 
-            {/* Navigation Pill (Center on Desktop, Top on Mobile) */}
-            <div className="flex items-center gap-2 sm:gap-4 bg-white/70 dark:bg-slate-900/60 p-1.5 sm:p-2 rounded-full border border-white/50 dark:border-slate-700 shadow-xl shadow-indigo-500/10 w-full md:w-auto justify-between md:justify-center backdrop-blur-xl transition-all hover:shadow-indigo-500/20 hover:border-indigo-500/30">
-                <button
-                    onClick={onPrevWeek}
-                    className="p-3 sm:p-4 hover:bg-white dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all active:scale-95 shadow-sm hover:shadow-md"
-                    aria-label="Semaine précédente"
-                >
-                    <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
-                </button>
-
-                <div className="flex flex-col items-center min-w-[140px] px-2">
-                    <h2 className="text-slate-600 dark:text-slate-300 font-semibold text-base md:text-lg leading-none mb-1 tracking-tight capitalize">
-                        {formattedMonth}
-                    </h2>
-                    <span className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-500/20">
-                        {getWeekRange(currentDate)}
-                    </span>
-                </div>
-
-                <button
-                    onClick={onNextWeek}
-                    className="p-3 sm:p-4 hover:bg-white dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all active:scale-95 shadow-sm hover:shadow-md"
-                    aria-label="Semaine suivante"
-                >
-                    <ChevronRight size={20} className="sm:w-6 sm:h-6" />
-                </button>
-            </div>
-
-            {/* Actions (Bottom on mobile, Right on desktop) */}
-            <button
-                onClick={onToday}
-                className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:scale-95 border border-white/20"
-            >
-                <Calendar size={18} />
-                <span className="text-sm uppercase tracking-wide">Aujourd'hui</span>
-            </button>
-
+        <div className="flex flex-col items-center min-w-[140px] px-2">
+          <h2 className="text-slate-600 dark:text-slate-300 font-semibold text-base md:text-lg leading-none mb-1 tracking-tight capitalize">
+            {formattedMonth}
+          </h2>
+          <span className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-500/20">
+            {getWeekRange(currentDate)}
+          </span>
         </div>
-    );
+
+        <button
+          onClick={onNextWeek}
+          className="p-3 sm:p-4 hover:bg-white dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all active:scale-95 shadow-sm hover:shadow-md"
+          aria-label="Semaine suivante"
+        >
+          <ChevronRight size={20} className="sm:w-6 sm:h-6" />
+        </button>
+      </div>
+
+      {/* Actions (Bottom on mobile, Right on desktop) */}
+      <button
+        onClick={onToday}
+        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:scale-95 border border-white/20"
+      >
+        <Calendar size={18} />
+        <span className="text-sm uppercase tracking-wide">Aujourd'hui</span>
+      </button>
+    </div>
+  );
 };
 
 export default PlanningHeader;

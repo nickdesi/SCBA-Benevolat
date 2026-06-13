@@ -6,5 +6,5 @@ declare const __APP_BUILD_COMMIT__: string;
 declare const __APP_BUILD_DATE__: string;
 
 interface ImportMeta {
-    readonly env: ImportMetaEnv;
+  readonly env: ImportMetaEnv;
 }

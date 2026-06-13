@@ -83,7 +83,7 @@ function App() {
     handleCancelRequest,
     userRegistrations,
     userRegistrationsMap,
-    allTeams // Use allTeams from useGames for the most up-to-date list
+    allTeams, // Use allTeams from useGames for the most up-to-date list
   } = useGames({ selectedTeam, currentView, favoriteTeams });
 
   // User carpools from games data
@@ -125,7 +125,7 @@ function App() {
     requestSeatWithToast,
     acceptPassengerWithToast,
     rejectPassengerWithToast,
-    cancelRequestWithToast
+    cancelRequestWithToast,
   } = useAppActions({
     isAuthenticated,
     setIsAuthModalOpen,
@@ -141,7 +141,7 @@ function App() {
     handleRequestSeat,
     handleAcceptPassenger,
     handleRejectPassenger,
-    handleCancelRequest
+    handleCancelRequest,
   });
 
   const handleLogout = useCallback(async () => {
@@ -160,16 +160,17 @@ function App() {
     if (isOffSeason(now)) {
       const { endedSeason, nextSeason } = getSeasonInfo(now);
       return {
-        title: "Bel été & bonnes vacances !",
+        title: 'Bel été & bonnes vacances !',
         description: `La saison ${endedSeason} vient de se terminer. Le prochain rendez-vous sera pour la saison ${nextSeason} à partir de septembre. Merci à toutes et tous, il est temps de prendre des vacances !`,
-        icon: <Palmtree className="w-16 h-16 text-orange-500" strokeWidth={1.5} />
+        icon: <Palmtree className="w-16 h-16 text-orange-500" strokeWidth={1.5} />,
       };
     }
 
     return {
-      title: "Aucun match prévu",
-      description: "Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !",
-      icon: <Trophy className="w-16 h-16 text-orange-500" strokeWidth={1.5} />
+      title: 'Aucun match prévu',
+      description:
+        'Le calendrier est vide pour le moment. Revenez bientôt pour découvrir les prochains matchs !',
+      icon: <Trophy className="w-16 h-16 text-orange-500" strokeWidth={1.5} />,
     };
   };
 
@@ -224,19 +225,33 @@ function App() {
       modals={
         <>
           {/* CSV Import Modal */}
-          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }
+          >
             {isImportModalOpen && (
               <ImportCSVModal
                 isOpen={isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
-                onImport={async (d) => { if (await importCSVWithToast(d)) setIsImportModalOpen(false); }}
+                onImport={async (d) => {
+                  if (await importCSVWithToast(d)) setIsImportModalOpen(false);
+                }}
                 existingGames={sortedGames}
               />
             )}
           </Suspense>
 
           {/* Admin Stats Dashboard */}
-          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }
+          >
             {isAdminStatsOpen && (
               <AdminStats
                 games={games}
@@ -247,7 +262,13 @@ function App() {
           </Suspense>
 
           {/* Profile Modal - Triggered by Planning button on mobile */}
-          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }
+          >
             {currentUser && isProfileModalOpen && (
               <ProfileModal
                 isOpen={isProfileModalOpen}
@@ -267,12 +288,22 @@ function App() {
           </Suspense>
 
           {/* Auth Modal - Triggered when guest tries to volunteer */}
-          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            }
+          >
             {isAuthModalOpen && (
               <UserAuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
-                onGoogleLogin={async () => { await signInWithGoogle(); setIsAuthModalOpen(false); addToast('Connexion !', 'success'); }}
+                onGoogleLogin={async () => {
+                  await signInWithGoogle();
+                  setIsAuthModalOpen(false);
+                  addToast('Connexion !', 'success');
+                }}
                 onToast={addToast}
               />
             )}
@@ -281,11 +312,13 @@ function App() {
       }
     >
       <main className="container mx-auto px-4 relative z-20 pt-4">
-        <PullToRefresh onRefresh={async () => {
-          // Simulate network check (Firestore is real-time, but this gives feedback)
-          await new Promise(resolve => setTimeout(resolve, 800));
-          addToast('Données synchronisées', 'success');
-        }}>
+        <PullToRefresh
+          onRefresh={async () => {
+            // Simulate network check (Firestore is real-time, but this gives feedback)
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            addToast('Données synchronisées', 'success');
+          }}
+        >
           {/* Grid Stack Container for stable layout transition */}
           <div className="grid grid-cols-1 min-h-[400px]">
             {/* Skeleton Layer - Maintains height contribution to grid */}
@@ -297,7 +330,9 @@ function App() {
             </div>
 
             {/* Content Layer - Superimposed in same grid cell */}
-            <div className={`col-start-1 row-start-1 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100 z-30'}`}>
+            <div
+              className={`col-start-1 row-start-1 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100 z-30'}`}
+            >
               {/* Desktop View Toggle - always rendered, visibility controlled by parent opacity */}
               <div className="flex justify-center mb-8 hidden md:flex">
                 <div className="bg-white/70 dark:bg-slate-900/60 p-1.5 rounded-2xl shadow-lg border border-white/50 dark:border-slate-700 backdrop-blur-xl inline-flex relative">
@@ -307,7 +342,7 @@ function App() {
                     style={{
                       left: currentView === 'home' ? '6px' : '50%',
                       width: 'calc(50% - 6px)',
-                      transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)'
+                      transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)',
                     }}
                   />
 
@@ -344,23 +379,48 @@ function App() {
                     title={emptyStateConfig.title}
                     description={emptyStateConfig.description}
                     variant="fun"
-                    action={isAdmin ? {
-                      label: "Ajouter un match",
-                      onClick: () => setIsAddingGame(true),
-                      icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    } : undefined}
+                    action={
+                      isAdmin
+                        ? {
+                            label: 'Ajouter un match',
+                            onClick: () => setIsAddingGame(true),
+                            icon: (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2.5}
+                                stroke="currentColor"
+                                className="w-5 h-5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 4.5v15m7.5-7.5h-15"
+                                />
+                              </svg>
+                            ),
+                          }
+                        : undefined
+                    }
                   />
                 </div>
               )}
 
               {/* Add Game Form */}
               {isAddingGame && (
-                <Suspense fallback={<div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse"><div className="h-64 bg-slate-200 rounded-xl"></div></div>}>
+                <Suspense
+                  fallback={
+                    <div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse">
+                      <div className="h-64 bg-slate-200 rounded-xl"></div>
+                    </div>
+                  }
+                >
                   <div className="mb-8">
                     <GameForm
-                      onSave={async (d) => { if (await addGameWithToast(d)) setIsAddingGame(false); }}
+                      onSave={async (d) => {
+                        if (await addGameWithToast(d)) setIsAddingGame(false);
+                      }}
                       onCancel={() => setIsAddingGame(false)}
                       existingLocations={uniqueLocations}
                       existingOpponents={uniqueOpponents}
@@ -391,7 +451,9 @@ function App() {
                     onEditRequest={setEditingGameId}
                     onCancelEdit={() => setEditingGameId(null)}
                     onDeleteRequest={deleteGameWithToast}
-                    onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
+                    onUpdateRequest={async (g) => {
+                      if (await updateGameWithToast(g)) setEditingGameId(null);
+                    }}
                   />
                 </Suspense>
               )}
@@ -419,10 +481,13 @@ function App() {
                       onEditRequest={setEditingGameId}
                       onCancelEdit={() => setEditingGameId(null)}
                       onDeleteRequest={deleteGameWithToast}
-                      onUpdateRequest={async (g) => { if (await updateGameWithToast(g)) setEditingGameId(null); }}
+                      onUpdateRequest={async (g) => {
+                        if (await updateGameWithToast(g)) setEditingGameId(null);
+                      }}
                     />
                   ) : (
-                    !loading && games.length > 0 && (
+                    !loading &&
+                    games.length > 0 && (
                       <EmptyState
                         icon={<Search className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
                         title="Aucun résultat"
@@ -430,32 +495,47 @@ function App() {
                         variant="simple"
                         className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
                         action={{
-                          label: "Effacer les filtres",
+                          label: 'Effacer les filtres',
                           onClick: () => setSelectedTeam(null),
-                          icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                          icon: (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="currentColor"
+                              className="w-4 h-4"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          ),
                         }}
                       />
                     )
                   )}
                 </>
               )}
-              {
-                !loading && currentView === 'planning' && filteredGames.length === 0 && (
-                  <EmptyState
-                    icon={<CalendarDays className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
-                    title="Planning vide"
-                    description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
-                    variant="simple"
-                    className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
-                    action={{
-                      label: "Voir tous les matchs",
-                      onClick: () => handleViewChange('home')
-                    }}
-                  />
-                )
-              }
-            </div>{/* End content layer */}
-          </div>{/* End grid container */}
+              {!loading && currentView === 'planning' && filteredGames.length === 0 && (
+                <EmptyState
+                  icon={<CalendarDays className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
+                  title="Planning vide"
+                  description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
+                  variant="simple"
+                  className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                  action={{
+                    label: 'Voir tous les matchs',
+                    onClick: () => handleViewChange('home'),
+                  }}
+                />
+              )}
+            </div>
+            {/* End content layer */}
+          </div>
+          {/* End grid container */}
         </PullToRefresh>
       </main>
     </AppLayout>

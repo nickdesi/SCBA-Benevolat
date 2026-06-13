@@ -6,78 +6,83 @@ import { toISODateString, getDaysOfWeek, getTodayISO } from '../../utils/dateUti
 import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in list rendering
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+});
 
 interface MobileTimelineProps {
-    games: Game[];
-    currentDate: Date;
-    isAdmin: boolean;
-    editingGameId: string | null;
-    onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
-    onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
-    onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
-    onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
-    onRemoveCarpool: (gameId: string, entryId: string) => void;
-    onRequestSeat?: (gameId: string, passengerId: string, driverId: string) => void;
-    onAcceptPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
-    onRejectPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
-    onCancelRequest?: (gameId: string, passengerId: string) => void;
-    onToast: (message: string, type: 'success' | 'error' | 'info') => void;
-    onEditRequest: (gameId: string) => void;
-    onCancelEdit: () => void;
-    onDeleteRequest: (gameId: string) => void;
-    onUpdateRequest: (game: Game) => void;
-    userRegistrations?: Map<string, string[]>;
-    isAuthenticated?: boolean;
+  games: Game[];
+  currentDate: Date;
+  isAdmin: boolean;
+  editingGameId: string | null;
+  onVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => void;
+  onRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => void;
+  onUpdateVolunteer: (gameId: string, roleId: string, oldName: string, newName: string) => void;
+  onAddCarpool: (gameId: string, entry: Omit<CarpoolEntry, 'id'>) => void;
+  onRemoveCarpool: (gameId: string, entryId: string) => void;
+  onRequestSeat?: (gameId: string, passengerId: string, driverId: string) => void;
+  onAcceptPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+  onRejectPassenger?: (gameId: string, driverId: string, passengerId: string) => void;
+  onCancelRequest?: (gameId: string, passengerId: string) => void;
+  onToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  onEditRequest: (gameId: string) => void;
+  onCancelEdit: () => void;
+  onDeleteRequest: (gameId: string) => void;
+  onUpdateRequest: (game: Game) => void;
+  userRegistrations?: Map<string, string[]>;
+  isAuthenticated?: boolean;
 }
 
 // Optimized animation variants - snappy feel
 const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.05
-        }
-    }
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 const dayVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            type: 'spring' as const,
-            stiffness: 500,
-            damping: 30
-        }
-    }
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 500,
+      damping: 30,
+    },
+  },
 };
 
 const gameVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: {
-        opacity: 1,
-        x: 0,
-        transition: {
-            type: 'spring' as const,
-            stiffness: 600,
-            damping: 35
-        }
-    }
+  hidden: { opacity: 0, x: -10 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 600,
+      damping: 35,
+    },
+  },
 };
 
 const emptyVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: {
-        opacity: 0.6,
-        scale: 1,
-        transition: { duration: 0.4 }
-    }
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 0.6,
+    scale: 1,
+    transition: { duration: 0.4 },
+  },
 };
 
-const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
+const MobileTimeline: React.FC<MobileTimelineProps> = memo(
+  ({
     games,
     currentDate,
     isAdmin,
@@ -98,150 +103,153 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(({
     onUpdateRequest,
     userRegistrations,
     isAuthenticated,
-}) => {
+  }) => {
     // Memoized week calculation using shared utility
-    const days = useMemo(() => getDaysOfWeek(currentDate),
-        [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()]
+    const days = useMemo(
+      () => getDaysOfWeek(currentDate),
+      [currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()],
     );
 
     // Pre-compute games grouped by day to avoid O(N) filtering inside map
     const gamesByDay = useMemo(() => {
-        const map = new Map<string, Game[]>();
-        for (const game of games) {
-            const existing = map.get(game.dateISO) || [];
-            existing.push(game);
-            map.set(game.dateISO, existing);
-        }
-        // Sort each day's games by time
-        for (const [key, dayGames] of map) {
-            map.set(key, dayGames.sort((a, b) => a.time.localeCompare(b.time)));
-        }
-        return map;
+      const map = new Map<string, Game[]>();
+      for (const game of games) {
+        const existing = map.get(game.dateISO) || [];
+        existing.push(game);
+        map.set(game.dateISO, existing);
+      }
+      // Sort each day's games by time
+      for (const [key, dayGames] of map) {
+        map.set(
+          key,
+          dayGames.sort((a, b) => a.time.localeCompare(b.time)),
+        );
+      }
+      return map;
     }, [games]);
 
     const getGamesForDay = (date: Date) => {
-        return gamesByDay.get(toISODateString(date)) || [];
+      return gamesByDay.get(toISODateString(date)) || [];
     };
 
     // Filter out days with no games using pre-computed map
-    const activeDays = days.filter(day => getGamesForDay(day).length > 0);
+    const activeDays = days.filter((day) => getGamesForDay(day).length > 0);
 
     // ⚡ Bolt Optimization: Hoist new Date() calculation outside the loop to prevent O(N) redundant Date object allocations and formatting during render.
     const todayISO = getTodayISO();
 
     return (
-        <motion.div
-            className="lg:hidden flex flex-col gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-        >
-            <AnimatePresence mode="popLayout">
-                {activeDays.length > 0 ? (
-                    activeDays.map((day) => {
-                        const dayStr = toISODateString(day);
-                        const dayGames = getGamesForDay(day);
-                        const isToday = dayStr === todayISO;
-                        const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
+      <motion.div
+        className="lg:hidden flex flex-col gap-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <AnimatePresence mode="popLayout">
+          {activeDays.length > 0 ? (
+            activeDays.map((day) => {
+              const dayStr = toISODateString(day);
+              const dayGames = getGamesForDay(day);
+              const isToday = dayStr === todayISO;
+              const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
 
-                        return (
-                            <motion.div
-                                key={day.toISOString()}
-                                className="relative"
-                                variants={dayVariants}
-                                initial="hidden"
-                                animate="visible"
-                                exit="hidden"
-                                layout
-                            >
-                                {/* Date Header - Pill Style with Stats */}
-                                <motion.div
-                                    className="mb-4"
-                                    variants={dayVariants} // Use same variants to sync opacity
-                                >
-                                    <div className={`
+              return (
+                <motion.div
+                  key={day.toISOString()}
+                  className="relative"
+                  variants={dayVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  layout
+                >
+                  {/* Date Header - Pill Style with Stats */}
+                  <motion.div
+                    className="mb-4"
+                    variants={dayVariants} // Use same variants to sync opacity
+                  >
+                    <div
+                      className={`
                                         inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg z-10 relative
-                                        ${isToday
+                                        ${
+                                          isToday
                                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-blue-500/30'
-                                            : 'bg-gradient-to-r from-slate-800 to-slate-700 shadow-slate-900/20'}
-                                    `}>
-                                        <span className="text-lg sm:text-2xl">{isToday ? '🔥' : '📅'}</span>
-                                        <div className="flex flex-col items-start leading-tight">
-                                            <span className="text-sm sm:text-lg font-black text-white tracking-wide capitalize">
-                                                {isToday ? "Aujourd'hui" : dateFormatter.format(day)}
-                                            </span>
-                                            <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
-                                                <span className="text-emerald-400">{homeCount} Dom</span>
-                                                <span className="text-slate-500">•</span>
-                                                <span className="text-blue-400">{awayCount} Ext</span>
-                                            </span>
-                                        </div>
-                                        <span className="self-center flex flex-col items-center text-center font-bold px-2 sm:px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-1 sm:ml-2">
-                                            <span className="text-base leading-tight">{dayGames.length}</span>
-                                            <span className="text-[10px] leading-tight">matchs</span>
-                                        </span>
-                                    </div>
-                                </motion.div>
-
-                                {/* Games using FULL GameCard with stagger */}
-                                <motion.div
-                                    className="flex flex-col gap-4"
-                                    variants={containerVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                >
-                                    {dayGames.map((game) => (
-                                        <motion.div
-                                            key={game.id}
-                                            variants={gameVariants}
-                                            layout
-                                        >
-                                            <GameCard
-                                                game={game}
-                                                isAdmin={isAdmin}
-                                                isEditing={editingGameId === game.id}
-                                                onVolunteer={onVolunteer}
-                                                onRemoveVolunteer={onRemoveVolunteer}
-                                                onUpdateVolunteer={onUpdateVolunteer}
-                                                onAddCarpool={onAddCarpool}
-                                                onRemoveCarpool={onRemoveCarpool}
-                                                onRequestSeat={onRequestSeat}
-                                                onAcceptPassenger={onAcceptPassenger}
-                                                onRejectPassenger={onRejectPassenger}
-                                                onCancelRequest={onCancelRequest}
-                                                onToast={onToast}
-                                                onEditRequest={() => onEditRequest(game.id)}
-                                                onCancelEdit={onCancelEdit}
-                                                onDeleteRequest={() => onDeleteRequest(game.id)}
-                                                onUpdateRequest={onUpdateRequest}
-                                                userRegistrations={userRegistrations}
-                                                isAuthenticated={isAuthenticated}
-                                            />
-                                        </motion.div>
-                                    ))}
-                                </motion.div>
-
-                            </motion.div>
-                        );
-                    })
-                ) : (
-                    <motion.div
-                        className="py-12 flex flex-col items-center justify-center text-center"
-                        variants={emptyVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
+                                            : 'bg-gradient-to-r from-slate-800 to-slate-700 shadow-slate-900/20'
+                                        }
+                                    `}
                     >
-                        <span className="text-4xl mb-2">💤</span>
-                        <p className="text-slate-500 text-sm">Pas de matchs cette semaine</p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div >
+                      <span className="text-lg sm:text-2xl">{isToday ? '🔥' : '📅'}</span>
+                      <div className="flex flex-col items-start leading-tight">
+                        <span className="text-sm sm:text-lg font-black text-white tracking-wide capitalize">
+                          {isToday ? "Aujourd'hui" : dateFormatter.format(day)}
+                        </span>
+                        <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
+                          <span className="text-emerald-400">{homeCount} Dom</span>
+                          <span className="text-slate-500">•</span>
+                          <span className="text-blue-400">{awayCount} Ext</span>
+                        </span>
+                      </div>
+                      <span className="self-center flex flex-col items-center text-center font-bold px-2 sm:px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-1 sm:ml-2">
+                        <span className="text-base leading-tight">{dayGames.length}</span>
+                        <span className="text-[10px] leading-tight">matchs</span>
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {/* Games using FULL GameCard with stagger */}
+                  <motion.div
+                    className="flex flex-col gap-4"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {dayGames.map((game) => (
+                      <motion.div key={game.id} variants={gameVariants} layout>
+                        <GameCard
+                          game={game}
+                          isAdmin={isAdmin}
+                          isEditing={editingGameId === game.id}
+                          onVolunteer={onVolunteer}
+                          onRemoveVolunteer={onRemoveVolunteer}
+                          onUpdateVolunteer={onUpdateVolunteer}
+                          onAddCarpool={onAddCarpool}
+                          onRemoveCarpool={onRemoveCarpool}
+                          onRequestSeat={onRequestSeat}
+                          onAcceptPassenger={onAcceptPassenger}
+                          onRejectPassenger={onRejectPassenger}
+                          onCancelRequest={onCancelRequest}
+                          onToast={onToast}
+                          onEditRequest={() => onEditRequest(game.id)}
+                          onCancelEdit={onCancelEdit}
+                          onDeleteRequest={() => onDeleteRequest(game.id)}
+                          onUpdateRequest={onUpdateRequest}
+                          userRegistrations={userRegistrations}
+                          isAuthenticated={isAuthenticated}
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <motion.div
+              className="py-12 flex flex-col items-center justify-center text-center"
+              variants={emptyVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <span className="text-4xl mb-2">💤</span>
+              <p className="text-slate-500 text-sm">Pas de matchs cette semaine</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     );
-});
+  },
+);
 
 MobileTimeline.displayName = 'MobileTimeline';
-
 
 export default MobileTimeline;

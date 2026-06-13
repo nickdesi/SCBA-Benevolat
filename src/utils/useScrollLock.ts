@@ -5,17 +5,17 @@ import { useEffect } from 'react';
  * @param isOpen - Boolean indicating if the scroll should be locked.
  */
 const useScrollLock = (isOpen: boolean) => {
-    useEffect(() => {
-        if (isOpen) {
-            // Store the original overflow style to restore it later
-            const originalStyle = window.getComputedStyle(document.body).overflow;
-            document.body.style.overflow = 'hidden';
+  useEffect(() => {
+    if (isOpen) {
+      // Store the original overflow style to restore it later
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
 
-            return () => {
-                document.body.style.overflow = originalStyle;
-            };
-        }
-    }, [isOpen]);
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
 };
 
 export default useScrollLock;

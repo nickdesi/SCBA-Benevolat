@@ -6,7 +6,7 @@ def inspect_engagements():
     try:
         tokens = TokenManager.get_tokens(use_cache=False)
         client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
-        
+
         # SCBA
         org = client.get_organisme(9326)
         if org and org.engagements:

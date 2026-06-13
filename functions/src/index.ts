@@ -63,7 +63,7 @@ export const cleanupExpiredAnnouncements = onSchedule(
 
 /**
  * Authentication Trigger: Set Admin Role
- * 
+ *
  * Automatically assigns the 'admin' custom claim to specific users upon creation.
  * This replaces client-side email checks for better security.
  */

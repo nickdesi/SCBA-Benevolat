@@ -17,7 +17,7 @@ CLUB_MAPPING = {
     "Stade Clermontois Basket Auvergne": 9326,
     "SCBA": 9326,
     "STADE CLERMONTOIS BASKET AUVERGNE": 9326,
-    
+
     # Common Opponents (If we want to search their club for away games)
     # "Clermont Basket": 9283,
 }
@@ -27,7 +27,7 @@ KNOWN_VENUES = {
     "Gymnase Fleury": "Gymnase Fleury, Rue Pierre de Coubertin, 63000 Clermont-Ferrand",
     "Gymnase Granouillet": "Gymnase Granouillet, 45 Rue de Châteaudun, 63000 Clermont-Ferrand",
     "Gymnase Autun": "Gymnase Autun, Rue d'Autun, 63000 Clermont-Ferrand",
-    "Gymnase Thevenet": "Gymnase Thevenet, Rue de la Grande Tour, 63000 Clermont-Ferrand", 
+    "Gymnase Thevenet": "Gymnase Thevenet, Rue de la Grande Tour, 63000 Clermont-Ferrand",
     "Complexe Sportif Paul Bourissou": "Complexe Sportif Paul Bourissou, Rue du stade, 63960 Veyre-Monton",
 }
 
@@ -117,7 +117,7 @@ def fix_address(db, ffbb_client, dry_run=True):
     docs = matches_ref.stream()
 
     print(f"\n--- {'DRY RUN' if dry_run else 'LIVE UPDATE'} MODE ---\n")
-    
+
     # Pre-fetch Club Engagements
     # Assuming most matches are from SCBA
     club_id = CLUB_MAPPING.get("SCBA", 9326)
@@ -135,21 +135,21 @@ def fix_address(db, ffbb_client, dry_run=True):
     # We only care about poules referenced in engagements
     # To optimize, we can fetch poules lazily or pre-fetch all.
     # Given the number of engagements (31), pre-fetching might be slow but robust.
-    # Let's do lazy: Fetch poule only if we haven't seen it. 
-    # But we need to match by DATE. So we need to index. 
+    # Let's do lazy: Fetch poule only if we haven't seen it.
+    # But we need to match by DATE. So we need to index.
     # Let's iterate engagements, fetch poules, and index matches.
-    
+
     total_engagements = len(org.engagements)
     print(f"Found {total_engagements} engagements. Scanning poules...")
-    
+
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
     def fetch_poule_matches(engagement):
         poule_id_obj = getattr(engagement, 'idPoule', None)
         if not poule_id_obj: return []
-        
+
         poule_id = poule_id_obj.id if hasattr(poule_id_obj, 'id') else str(poule_id_obj)
-        
+
         if poule_id in POULE_CACHE:
             return POULE_CACHE[poule_id]
 
@@ -176,7 +176,7 @@ def fix_address(db, ffbb_client, dry_run=True):
                         date_str = d.strftime("%Y-%m-%d")
                     else:
                         date_str = str(d).split("T")[0]
-                        
+
                     if date_str not in ffbb_matches_by_date:
                         ffbb_matches_by_date[date_str] = []
                     ffbb_matches_by_date[date_str].append(m)
@@ -186,7 +186,7 @@ def fix_address(db, ffbb_client, dry_run=True):
     # Process Firestore Docs
     updated_count = 0
     skipped_count = 0
-    
+
     for doc in docs:
         data = doc.to_dict()
         match_id = doc.id
@@ -194,45 +194,45 @@ def fix_address(db, ffbb_client, dry_run=True):
         team_name = data.get("team", "") # e.g. "U18 M1" or "SCBA U18"
         opponent_name = data.get("opponent", "")
         match_date = data.get("dateISO", "") # e.g. "2024-11-23"
-        
+
         # Check if update is needed
         is_incomplete = len(location) < 15 or not any(char.isdigit() for char in location)
-       
+
         new_location = None
         source = ""
 
         # Strategy 1: Known Venues
         for key, val in KNOWN_VENUES.items():
-            if key.lower() in location.lower(): 
+            if key.lower() in location.lower():
                 new_location = val
                 source = "Known Venue Map"
                 break
-        
+
         # Strategy 2: FFBB Match Lookup
         if not new_location and is_incomplete:
             # Look for match in ffbb_matches_by_date
             candidates = ffbb_matches_by_date.get(match_date, [])
-            
+
             # Filter by Opponent Name (fuzzy match)
             # Firestore: "CLERMONT BASKET" vs FFBB: "CLERMONT BASKET - 2"
-            
+
             best_match = None
-            
+
             for m in candidates:
                 # m properties: nomEquipe1, nomEquipe2
                 n1 = normalize_team_name(m.nomEquipe1)
                 n2 = normalize_team_name(m.nomEquipe2)
-                
+
                 opp_norm = normalize_team_name(opponent_name)
-                
+
                 # Check if opponent is in n1 or n2
                 # Also check if Club ("Stade Clermontois") is in the OTHER team roughly
                 # Or just opponent match is enough if unique on that date.
-                
+
                 if (opp_norm in n1) or (opp_norm in n2):
                     best_match = m
                     break
-            
+
             if best_match:
                 # Fetch details
                 # best_match.id
@@ -264,7 +264,7 @@ def fix_address(db, ffbb_client, dry_run=True):
             print(f"    Current: {location}")
             print(f"    New    : {new_location}")
             print(f"    Source : {source}")
-            
+
             if not dry_run:
                 matches_ref.document(match_id).update({"location": new_location})
                 print(f"    -> APPLIED")
@@ -294,10 +294,10 @@ if __name__ == "__main__":
     parser.add_argument("--dry-run", action="store_true", help="Preview changes without applying them.")
     parser.add_argument("--no-dry-run", action="store_false", dest="dry_run", help="Apply changes permanently.")
     parser.set_defaults(dry_run=True)
-    
+
     args = parser.parse_args()
 
     db = init_firebase()
     client = init_ffbb()
-    
+
     fix_address(db, client, dry_run=args.dry_run)

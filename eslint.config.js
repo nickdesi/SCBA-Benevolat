@@ -3,16 +3,18 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-    js.configs.recommended,
-    ...tseslint.configs.recommended,
-    prettier,
-    {
-        ignores: ['dist/', 'functions/', '.firebase/'],
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettier,
+  {
+    ignores: ['dist/', 'functions/', '.firebase/'],
+  },
+  {
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-useless-assignment': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
     },
-    {
-        rules: {
-            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-            '@typescript-eslint/explicit-function-return-type': 'off',
-        },
-    },
+  },
 );

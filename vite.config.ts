@@ -13,7 +13,10 @@ const getBuildCommit = () => {
   try {
     return execSync('git rev-parse --short HEAD 2>/dev/null', { encoding: 'utf8' }).trim();
   } catch {
-    return new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 12);
+    return new Date()
+      .toISOString()
+      .replace(/[-:T.Z]/g, '')
+      .slice(0, 12);
   }
 };
 
@@ -35,9 +38,15 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo-scba.webp', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.webp', 'apple-touch-icon.png'],
+      includeAssets: [
+        'logo-scba.webp',
+        'favicon-16x16.png',
+        'favicon-32x32.png',
+        'apple-touch-icon.webp',
+        'apple-touch-icon.png',
+      ],
       devOptions: {
-        enabled: false
+        enabled: false,
       },
       manifest: {
         name: 'SCBA Bénévoles',
@@ -53,31 +62,31 @@ export default defineConfig({
           {
             src: 'pwa-192x192.webp',
             sizes: '192x192',
-            type: 'image/webp'
-          },
-          {
-            src: 'pwa-512x512.webp',
-            sizes: '512x512',
-            type: 'image/webp'
+            type: 'image/webp',
           },
           {
             src: 'pwa-512x512.webp',
             sizes: '512x512',
             type: 'image/webp',
-            purpose: 'maskable'
+          },
+          {
+            src: 'pwa-512x512.webp',
+            sizes: '512x512',
+            type: 'image/webp',
+            purpose: 'maskable',
           },
           // PNG fallbacks for older browsers
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+            type: 'image/png',
+          },
+        ],
       },
       workbox: {
         skipWaiting: true,
@@ -96,10 +105,10 @@ export default defineConfig({
               cacheName: 'html-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 5 // 5 minutes only
+                maxAgeSeconds: 60 * 5, // 5 minutes only
               },
-              networkTimeoutSeconds: 3
-            }
+              networkTimeoutSeconds: 3,
+            },
           },
           {
             // Versioned JS/CSS bundles - prefer local cache for hashed Vite assets
@@ -109,12 +118,12 @@ export default defineConfig({
               cacheName: 'assets-cache',
               expiration: {
                 maxEntries: 30,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
               cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+                statuses: [0, 200],
+              },
+            },
           },
           {
             // Images/fonts - can be cached longer
@@ -124,12 +133,12 @@ export default defineConfig({
               cacheName: 'static-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
               cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+                statuses: [0, 200],
+              },
+            },
           },
           {
             // Firebase/API - always network first
@@ -139,44 +148,57 @@ export default defineConfig({
               cacheName: 'firebase-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
+                maxAgeSeconds: 60 * 5, // 5 minutes
               },
-              networkTimeoutSeconds: 5
-            }
-          }
-        ]
-      }
-    })
+              networkTimeoutSeconds: 5,
+            },
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-    }
+    },
   },
   build: {
     cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/scheduler')) {
+          if (
+            id.includes('node_modules/react') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/scheduler')
+          ) {
             return 'vendor-react';
           }
           // Split Firebase into sub-chunks: auth (rarely changes) vs firestore/storage
           // so a Firestore SDK update doesn't bust the auth chunk cache.
-          if (id.includes('node_modules/firebase/auth') || id.includes('node_modules/@firebase/auth')) {
+          if (
+            id.includes('node_modules/firebase/auth') ||
+            id.includes('node_modules/@firebase/auth')
+          ) {
             return 'vendor-firebase-auth';
           }
-          if (id.includes('node_modules/firebase/storage') || id.includes('node_modules/@firebase/storage')) {
+          if (
+            id.includes('node_modules/firebase/storage') ||
+            id.includes('node_modules/@firebase/storage')
+          ) {
             return 'vendor-firebase-storage';
           }
           if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
             return 'vendor-firebase-core';
           }
-          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/lucide-react')) {
+          if (
+            id.includes('node_modules/framer-motion') ||
+            id.includes('node_modules/lucide-react')
+          ) {
             return 'vendor-ui';
           }
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 });
