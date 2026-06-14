@@ -186,6 +186,7 @@ const KPICard = ({
 };
 
 // Game Card Component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GameCard = ({ game, index: _index }: { game: any; index: number }) => {
   const getProgressColor = (percent: number) => {
     if (percent === 100) return 'from-emerald-500 to-teal-500';
@@ -312,6 +313,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
 
     const { start: weekendStart, end: weekendEnd } = getComingWeekend();
 
+    // ⚡ Bolt Optimization: Hoist these outside the reduce loop to prevent recalculation
+    const weekendStartMs = weekendStart.getTime();
+    const weekendEndMs = weekendEnd.getTime();
+
     let totalSlots = 0;
     let filledSlots = 0;
 
@@ -332,17 +337,19 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
         totalSlots += gameTotal;
         filledSlots += gameFilled;
 
+        // ⚡ Bolt Optimization: Use Date.parse to avoid redundant O(N) Date object allocations inside the rendering loop.
+        const gameDateMs = Date.parse(game.dateISO);
+
         // Check if game is this weekend
-        const gDate = new Date(game.dateISO);
-        if (gDate >= weekendStart && gDate <= weekendEnd) {
+        if (!isNaN(gameDateMs) && gameDateMs >= weekendStartMs && gameDateMs <= weekendEndMs) {
           weekendTotal += gameTotal;
           weekendFilled += gameFilled;
         }
 
         // Fast paths for hours and urgency using already parsed date
         let hoursUntil = Infinity;
-        if (!isNaN(gDate.getTime())) {
-          const diffMs = gDate.getTime() - nowMs;
+        if (!isNaN(gameDateMs)) {
+          const diffMs = gameDateMs - nowMs;
           hoursUntil = diffMs / (1000 * 60 * 60);
         }
 

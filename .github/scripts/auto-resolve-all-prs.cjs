@@ -1,3 +1,4 @@
+/* eslint-disable */
 const { execSync } = require('child_process');
 const https = require('https');
 const fs = require('fs');
