@@ -186,6 +186,7 @@ const KPICard = ({
 };
 
 // Game Card Component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GameCard = ({ game, index: _index }: { game: any; index: number }) => {
   const getProgressColor = (percent: number) => {
     if (percent === 100) return 'from-emerald-500 to-teal-500';
