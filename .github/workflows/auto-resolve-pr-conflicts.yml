@@ -22,12 +22,11 @@ jobs:
         with:
           fetch-depth: 0 # Nécessaire pour avoir l'historique complet des branches
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-
-      - name: Resolve Conflicts on Open PRs
+      - name: Update Open PRs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node .github/scripts/auto-resolve-all-prs.cjs
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for pr in $(gh pr list --json number --jq '.[].number'); do
+            echo "Updating PR #$pr..."
+            gh pr update-branch $pr || echo "Failed to update PR #$pr"
+          done
