@@ -7,12 +7,14 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import * as admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore, Timestamp, QueryDocumentSnapshot } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 
 // Initialize Firebase Admin SDK
-admin.initializeApp();
+initializeApp();
 
-const db = admin.firestore();
+const db = getFirestore();
 
 /**
  * Scheduled function: Clean up expired announcements
@@ -32,7 +34,7 @@ export const cleanupExpiredAnnouncements = onSchedule(
             scheduleTime: event.scheduleTime,
         });
 
-        const now = admin.firestore.Timestamp.now();
+        const now = Timestamp.now();
 
         try {
             // Query for expired announcements
@@ -48,7 +50,7 @@ export const cleanupExpiredAnnouncements = onSchedule(
 
             // Batch delete (max 500 per batch)
             const batch = db.batch();
-            expiredSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+            expiredSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => batch.delete(doc.ref));
             await batch.commit();
 
             logger.info("Cleanup completed successfully", {
@@ -75,7 +77,7 @@ export const setAdminRole = functions
     .onCreate(async (user) => {
         if (user.email === "benevole@scba.fr") {
             try {
-                await admin.auth().setCustomUserClaims(user.uid, {
+                await getAuth().setCustomUserClaims(user.uid, {
                     admin: true,
                 });
                 logger.info(`Admin claim set for new user: ${user.email}`);
@@ -105,7 +107,7 @@ export const setAdminClaim = onCall(
         if (request.auth.token.admin === true) {
             return { message: "Le claim admin est déjà défini." };
         }
-        await admin.auth().setCustomUserClaims(request.auth.uid, { admin: true });
+        await getAuth().setCustomUserClaims(request.auth.uid, { admin: true });
         logger.info(`Admin claim défini pour l'utilisateur existant: ${email}`);
         return { message: "Claim admin défini. Déconnectez-vous puis reconnectez-vous." };
     }
