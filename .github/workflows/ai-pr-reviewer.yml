@@ -42,11 +42,6 @@ jobs:
         with:
           node-version: 24
 
-      - name: Resolve bolt.md Merge Conflicts
-        env:
-          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
-          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: node .github/scripts/resolve-bolt-conflict.cjs
 
       - name: Run AI Reviewer
         if: env.GEMINI_API_KEY != ''
