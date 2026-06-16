@@ -44,14 +44,14 @@ interface UseCarpoolRegistrationsReturn {
 /**
  * Check if a carpool registration is for an upcoming game
  */
-const isCarpoolUpcoming = (gameDateISO: string, gameTime?: string): boolean => {
+const isCarpoolUpcoming = (
+  gameDateISO: string,
+  gameTime: string | undefined,
+  todayISO: string,
+  currentHours: number,
+  currentMinutes: number,
+): boolean => {
   if (!gameDateISO) return true;
-
-  const now = new Date();
-  // ⚡ Bolt: Use direct string building instead of slow toLocaleDateString inside loops
-  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const currentHours = now.getHours();
-  const currentMinutes = now.getMinutes();
 
   if (gameDateISO > todayISO) return true;
   if (gameDateISO < todayISO) return false;
@@ -152,7 +152,15 @@ export const useCarpoolRegistrations = (
 
   // Filter upcoming carpools
   const upcomingCarpools = useMemo(() => {
-    return userCarpools.filter((c) => isCarpoolUpcoming(c.gameDateISO, c.gameTime));
+    // ⚡ Bolt Optimization: Hoist Date instantiation out of O(N) filter traversal
+    const now = new Date();
+    const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+
+    return userCarpools.filter((c) =>
+      isCarpoolUpcoming(c.gameDateISO, c.gameTime, todayISO, currentHours, currentMinutes),
+    );
   }, [userCarpools]);
 
   // Get next carpool
