@@ -326,10 +326,7 @@ export const AppleCalendarIcon: React.FC<{ className?: string }> = ({ className 
         fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
         className="uppercase tracking-widest"
       >
-        {appleWeekdayFormatter
-          .format(now)
-          .toUpperCase()
-          .replace('.', '')}
+        {appleWeekdayFormatter.format(now).toUpperCase().replace('.', '')}
       </text>
     </svg>
   );

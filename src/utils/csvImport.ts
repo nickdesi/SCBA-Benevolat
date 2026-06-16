@@ -201,7 +201,7 @@ const inferCityFromTeam = (opponent: string): string => {
  */
 const parseDate = (
   dateStr: string,
-  importSeasonStartYear: number
+  importSeasonStartYear: number,
 ): { display: string; iso: string } | null => {
   // Try DD/MM/YYYY
   const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
@@ -309,7 +309,8 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
   const _importNow = new Date();
   const _importCurrentMonth = _importNow.getMonth();
   const _importCurrentYear = _importNow.getFullYear();
-  const importSeasonStartYear = _importCurrentMonth >= 7 ? _importCurrentYear : _importCurrentYear - 1;
+  const importSeasonStartYear =
+    _importCurrentMonth >= 7 ? _importCurrentYear : _importCurrentYear - 1;
 
   const lines = csvContent
     .trim()

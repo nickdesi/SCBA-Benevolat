@@ -49,7 +49,7 @@ const isCarpoolUpcoming = (
   gameTime: string | undefined,
   todayISO: string,
   currentHours: number,
-  currentMinutes: number
+  currentMinutes: number,
 ): boolean => {
   if (!gameDateISO) return true;
 
@@ -159,7 +159,7 @@ export const useCarpoolRegistrations = (
     const currentMinutes = now.getMinutes();
 
     return userCarpools.filter((c) =>
-      isCarpoolUpcoming(c.gameDateISO, c.gameTime, todayISO, currentHours, currentMinutes)
+      isCarpoolUpcoming(c.gameDateISO, c.gameTime, todayISO, currentHours, currentMinutes),
     );
   }, [userCarpools]);
 
