@@ -199,7 +199,10 @@ const inferCityFromTeam = (opponent: string): string => {
  * - DD/MM/YYYY
  * - DD MMM (e.g. "13 sept.") -> infers year based on current season (Sep-Dec = current year, Jan-Jul = next year)
  */
-const parseDate = (dateStr: string): { display: string; iso: string } | null => {
+const parseDate = (
+  dateStr: string,
+  importSeasonStartYear: number
+): { display: string; iso: string } | null => {
   // Try DD/MM/YYYY
   const slashMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if (slashMatch) {
@@ -227,13 +230,8 @@ const parseDate = (dateStr: string): { display: string; iso: string } | null => 
     const monthIndex = MONTHS.findIndex((m) => m.toLowerCase().startsWith(monthStr));
     if (monthIndex === -1) return null;
 
-    // Infer year logic:
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const seasonStartYear = currentMonth >= 7 ? currentYear : currentYear - 1;
-
-    const targetYear = monthIndex >= 7 ? seasonStartYear : seasonStartYear + 1;
+    // Infer year logic using pre-computed values:
+    const targetYear = monthIndex >= 7 ? importSeasonStartYear : importSeasonStartYear + 1;
 
     // Construct date
     const date = new Date(targetYear, monthIndex, day);
@@ -307,6 +305,12 @@ const findAddressForOpponent = (opponent: string): string => {
  * - Multi-line Block Format (FFBB "A Venir" table copy)
  */
 export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'): ImportResult => {
+  // ⚡ Bolt Optimization: Hoist Date logic outside of the parsing loop to avoid stale cache bugs while optimizing speed
+  const _importNow = new Date();
+  const _importCurrentMonth = _importNow.getMonth();
+  const _importCurrentYear = _importNow.getFullYear();
+  const importSeasonStartYear = _importCurrentMonth >= 7 ? _importCurrentYear : _importCurrentYear - 1;
+
   const lines = csvContent
     .trim()
     .split('\n')
@@ -336,7 +340,7 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
 
         const dateStr = dateMatch[1];
         const timeStr = dateMatch[2];
-        const parsedDate = parseDate(dateStr);
+        const parsedDate = parseDate(dateStr, importSeasonStartYear);
 
         if (parsedDate) {
           currentMatch.date = parsedDate.display;
@@ -449,7 +453,7 @@ export const parseCSV = (csvContent: string, defaultTeam: string = 'SENIOR M1'):
         continue;
       }
 
-      const parsedDate = parseDate(dateStr);
+      const parsedDate = parseDate(dateStr, importSeasonStartYear);
       if (!parsedDate) continue;
 
       const isHome = isSCBATeam(homeTeam);

@@ -292,42 +292,48 @@ export const OutlookCalendarIcon: React.FC<{ className?: string }> = ({ classNam
   </svg>
 );
 
+// ⚡ Bolt Optimization: Cache Intl.DateTimeFormat at module level
+const appleWeekdayFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
+
 // Apple Calendar Icon (Official Style)
-export const AppleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
-    <rect fill="#fff" x="4" y="4" width="40" height="40" rx="9" ry="9" />
-    <path
-      fill="#FF3B30"
-      d="M44 13C44 8.02944 39.9706 4 35 4H13C8.02944 4 4 8.02944 4 13V16H44V13Z"
-    />
-    <text
-      x="50%"
-      y="65%"
-      textAnchor="middle"
-      fill="#1C1C1E"
-      fontSize="22"
-      fontWeight="500"
-      fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-    >
-      {new Date().getDate()}
-    </text>
-    <text
-      x="50%"
-      y="35%"
-      textAnchor="middle"
-      fill="#FF3B30"
-      fontSize="9"
-      fontWeight="600"
-      fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-      className="uppercase tracking-widest"
-    >
-      {new Intl.DateTimeFormat('fr-FR', { weekday: 'short' })
-        .format(new Date())
-        .toUpperCase()
-        .replace('.', '')}
-    </text>
-  </svg>
-);
+export const AppleCalendarIcon: React.FC<{ className?: string }> = ({ className }) => {
+  const now = new Date();
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className={className}>
+      <rect fill="#fff" x="4" y="4" width="40" height="40" rx="9" ry="9" />
+      <path
+        fill="#FF3B30"
+        d="M44 13C44 8.02944 39.9706 4 35 4H13C8.02944 4 4 8.02944 4 13V16H44V13Z"
+      />
+      <text
+        x="50%"
+        y="65%"
+        textAnchor="middle"
+        fill="#1C1C1E"
+        fontSize="22"
+        fontWeight="500"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+      >
+        {now.getDate()}
+      </text>
+      <text
+        x="50%"
+        y="35%"
+        textAnchor="middle"
+        fill="#FF3B30"
+        fontSize="9"
+        fontWeight="600"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        className="uppercase tracking-widest"
+      >
+        {appleWeekdayFormatter
+          .format(now)
+          .toUpperCase()
+          .replace('.', '')}
+      </text>
+    </svg>
+  );
+};
 
 export const LogoutIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
