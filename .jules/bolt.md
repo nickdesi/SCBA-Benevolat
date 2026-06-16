@@ -108,3 +108,7 @@
 ## 2026-06-13 - Avoid N+1 API Calls inside rendering/importing iterations
 **Learning:** During processes like importing and enriching CSV rows, looping over a large array and unconditionally making external API calls (e.g. `fetchNominatim`) for each individual item causes an N+1 query problem. This can hit rate limits rapidly, trigger unnecessary network overhead, and stall the application when many items share the exact same parameters (like `cityName`).
 **Action:** When performing external lookups on an array of items, always group them first by the unique lookup parameter (e.g., city name) into a Map. Make exactly one external API request per unique key, then apply the resulting data to all items grouped under that key simultaneously.
+
+## 2026-06-15 - [Optimization] Avoid O(N) Date object instantiation in array loops
+**Learning:** Instantiating `new Date(game.dateISO)` inside an `Array.prototype.reduce` loop in a heavily rendered component (like `AdminStats.tsx`) forces O(N) unnecessary Date object allocations, causing GC pressure and CPU overhead on every render.
+**Action:** Use `Date.parse()` to get the numeric timestamp scalar and hoist `.getTime()` calculations on reference dates (like `weekendStart.getTime()`) outside the loop. Comparing primitive numbers is significantly faster and prevents memory bloat in render loops.
