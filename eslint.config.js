@@ -7,7 +7,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ['dist/', 'functions/', '.firebase/'],
+    ignores: ['dist/', 'functions/', '.firebase/', '.github/'],
   },
   {
     rules: {
