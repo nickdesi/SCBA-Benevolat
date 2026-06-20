@@ -33,14 +33,14 @@ const BottomNav: React.FC<BottomNavProps> = memo(
 
     return (
       <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
-        <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/20 dark:border-slate-700/50" />
+        <div className="absolute inset-0 rounded-2xl border border-white/35 bg-white/78 shadow-[0_12px_30px_rgba(18,31,47,0.18)] backdrop-blur-xl dark:border-slate-700/45 dark:bg-slate-900/78 dark:shadow-[0_12px_36px_rgba(0,0,0,0.42)]" />
 
         <div className="flex justify-between items-center p-2 gap-3 relative z-10">
           {/* View Switcher (Floating Pill) */}
-          <div className="flex-1 h-14 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl flex relative overflow-hidden p-1 border border-white/10 dark:border-white/5">
+          <div className="relative flex h-14 flex-1 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100/70 p-1 dark:border-slate-700/55 dark:bg-slate-800/55">
             <button
               onClick={() => handleViewChange('home')}
-              className={`flex-1 relative z-10 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'home' ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
+              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'home' ? 'text-slate-50' : 'text-slate-500 dark:text-slate-400'}`}
             >
               <motion.div
                 animate={
@@ -59,14 +59,14 @@ const BottomNav: React.FC<BottomNavProps> = memo(
               {currentView === 'home' && (
                 <motion.div
                   layoutId="nav-pill"
-                  className="absolute inset-0 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-black/5 dark:border-white/10 -z-10"
+                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#0f766e] to-[#c4492d] shadow-sm dark:border-white/10"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
             </button>
             <button
               onClick={() => handleViewChange('calendar')}
-              className={`flex-1 relative z-10 flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'calendar' ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
+              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'calendar' ? 'text-slate-50' : 'text-slate-500 dark:text-slate-400'}`}
             >
               <motion.div
                 animate={
@@ -85,7 +85,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
               {currentView === 'calendar' && (
                 <motion.div
                   layoutId="nav-pill"
-                  className="absolute inset-0 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-black/5 dark:border-white/10 -z-10"
+                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#0f766e] to-[#c4492d] shadow-sm dark:border-white/10"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -98,7 +98,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handlePlanningClick}
-              className="h-14 aspect-square bg-gradient-to-br from-slate-900 to-slate-800 dark:from-indigo-600 dark:to-indigo-500 text-white rounded-xl flex flex-col items-center justify-center gap-0.5 shadow-lg shadow-slate-900/20 dark:shadow-indigo-500/30 border border-white/10 relative overflow-hidden group"
+              className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-[#c4492d] to-[#c59a3a] text-white shadow-lg shadow-[#c4492d]/30 dark:border-white/15 dark:from-[#0f766e] dark:to-[#c4492d] dark:shadow-[#0f766e]/30"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <motion.div

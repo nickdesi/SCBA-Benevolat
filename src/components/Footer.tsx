@@ -11,6 +11,14 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.6.7',
+    date: '20 Juin 2026',
+    changes: [
+      '🎨 UI/UX : Refonte visuelle moderne (palette teal/terracotta, header, navigation mobile/desktop, ambiance de fond)',
+      '♿ Accessibilité : Focus et contrastes harmonisés sur le thème clair/sombre',
+    ],
+  },
+  {
     version: 'v2.6.6',
     date: '25 Mai 2026',
     changes: [

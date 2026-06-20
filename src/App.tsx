@@ -335,10 +335,10 @@ function App() {
             >
               {/* Desktop View Toggle - always rendered, visibility controlled by parent opacity */}
               <div className="flex justify-center mb-8 hidden md:flex">
-                <div className="bg-white/70 dark:bg-slate-900/60 p-1.5 rounded-2xl shadow-lg border border-white/50 dark:border-slate-700 backdrop-blur-xl inline-flex relative">
+                <div className="relative inline-flex rounded-2xl border border-white/60 bg-white/72 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/62">
                   {/* Active Indicator Background */}
                   <div
-                    className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 shadow-md transition-all duration-300 ease-out`}
+                    className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-[#0f766e] via-[#1b8579] to-[#c4492d] shadow-md transition-all duration-300 ease-out`}
                     style={{
                       left: currentView === 'home' ? '6px' : '50%',
                       width: 'calc(50% - 6px)',
@@ -348,13 +348,13 @@ function App() {
 
                   <button
                     onClick={() => handleViewChange('home')}
-                    className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                    className={`relative z-10 flex min-w-[120px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-colors duration-200 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                   >
                     <List className="w-4 h-4" /> Liste
                   </button>
                   <button
                     onClick={() => handleViewChange('calendar')}
-                    className={`relative z-10 px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 min-w-[120px] flex items-center justify-center gap-2 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                    className={`relative z-10 flex min-w-[120px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-colors duration-200 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                   >
                     <Calendar className="w-4 h-4" /> Calendrier
                   </button>
@@ -493,7 +493,7 @@ function App() {
                         title="Aucun résultat"
                         description="Aucun match ne correspond à vos filtres actuels."
                         variant="simple"
-                        className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                        className="mt-8 mb-20 animate-fade-in-up rounded-3xl border border-white/60 bg-white/78 shadow-[0_16px_35px_rgba(17,24,39,0.12)] dark:border-slate-700/60 dark:bg-slate-900/62"
                         action={{
                           label: 'Effacer les filtres',
                           onClick: () => setSelectedTeam(null),

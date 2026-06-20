@@ -28,18 +28,18 @@ const Header: React.FC<HeaderProps> = memo(
     const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
 
     return (
-      <header className="sticky top-0 z-40 bg-slate-900/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 transition-all duration-300 supports-[backdrop-filter]:bg-slate-900/60">
+      <header className="sticky top-0 z-40 border-b border-white/35 bg-white/70 backdrop-blur-2xl transition-all duration-300 dark:border-slate-700/40 dark:bg-slate-950/65">
         {/* Dynamic Background Gradient */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 opacity-50 dark:opacity-30 mix-blend-screen" />
+          <div className="absolute -top-28 left-1/4 h-72 w-72 rounded-full bg-[#c4492d]/20 blur-3xl" />
+          <div className="absolute -top-24 right-1/4 h-80 w-80 rounded-full bg-[#0f766e]/20 blur-3xl" />
         </div>
 
         <div className="container mx-auto px-4 py-2 sm:py-3 relative z-30">
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Animated & Glowing */}
             <div className="relative flex-shrink-0 group cursor-pointer">
-              <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full" />
+              <div className="absolute inset-0 rounded-full bg-[#c4492d] blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-30" />
               <img
                 src="/logo-scba.webp"
                 alt="Logo SCBA"
@@ -53,12 +53,12 @@ const Header: React.FC<HeaderProps> = memo(
             {/* Title - Exact Match: Full Width & Readable */}
             <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1 min-h-[48px] sm:min-h-[72px]">
               <h1 className="flex flex-col items-center justify-center leading-none w-full">
-                <span className="text-[10px] xs:text-xs sm:text-3xl font-black italic tracking-tighter text-white drop-shadow-sm font-sport text-center leading-none w-full break-words max-w-full">
+                <span className="w-full max-w-full break-words text-center font-sport text-[10px] xs:text-xs sm:text-3xl font-black italic leading-none tracking-tighter text-slate-900 drop-shadow-sm dark:text-slate-100">
                   STADE CLERMONTOIS BASKET AUVERGNE
                 </span>
                 {/* Green Separator */}
-                <span className="w-1/2 sm:w-32 h-[2px] sm:h-[3px] bg-emerald-500 my-0.5 sm:my-1 rounded-full"></span>
-                <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase text-emerald-400 font-sport">
+                <span className="my-0.5 h-[2px] w-1/2 rounded-full bg-gradient-to-r from-[#0f766e] via-[#c59a3a] to-[#c4492d] sm:my-1 sm:h-[3px] sm:w-36"></span>
+                <span className="font-sport text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#0f766e] dark:text-teal-300">
                   ESPACE BÉNÉVOLES
                 </span>
               </h1>
@@ -94,10 +94,10 @@ const Header: React.FC<HeaderProps> = memo(
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onSelectTeam(null)}
-                  className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${
+                  className={`snap-center flex min-h-[44px] items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-300 backdrop-blur-md ${
                     selectedTeam === null
-                      ? 'bg-white text-slate-900 border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] ring-1 ring-white/50'
-                      : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
+                      ? 'border-[#0f766e]/20 bg-white text-slate-900 shadow-[0_10px_24px_rgba(15,118,110,0.2)] ring-1 ring-[#0f766e]/20 dark:border-teal-500/30 dark:bg-slate-800 dark:text-slate-100'
+                      : 'border-slate-300/60 bg-white/60 text-slate-600 hover:border-[#0f766e]/30 hover:bg-white hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-teal-400/40 dark:hover:text-slate-100'
                   }`}
                 >
                   Tous les matchs
@@ -108,10 +108,10 @@ const Header: React.FC<HeaderProps> = memo(
                     layoutId={`team-pill-${team}`}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onSelectTeam(team)}
-                    className={`snap-center px-4 py-2 min-h-[44px] rounded-full text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center justify-center ${
+                    className={`snap-center flex min-h-[44px] items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-300 backdrop-blur-md ${
                       selectedTeam === team
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-[0_0_20px_rgba(59,130,246,0.4)] ring-1 ring-white/20'
-                        : 'bg-slate-800/40 text-slate-400 border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-200'
+                        ? 'border-transparent bg-gradient-to-r from-[#0f766e] via-[#178075] to-[#c4492d] text-white shadow-[0_10px_28px_rgba(15,118,110,0.35)] ring-1 ring-white/20'
+                        : 'border-slate-300/60 bg-white/60 text-slate-600 hover:border-[#0f766e]/30 hover:bg-white hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-teal-400/40 dark:hover:text-slate-100'
                     }`}
                   >
                     {team}
