@@ -68,13 +68,10 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
         existing.push(game);
         map.set(game.dateISO, existing);
       }
-      // Sort each day's games by time
-      for (const [key, dayGames] of map) {
-        map.set(
-          key,
-          dayGames.sort((a, b) => a.time.localeCompare(b.time)),
-        );
-      }
+      // ⚡ Bolt Optimization: Removed redundant O(N log N) sorting loop here.
+      // The `games` prop is already strictly sorted by date and time via `sortGames()`.
+      // Iterating sequentially and pushing to the map naturally preserves this exact optimal order,
+      // avoiding redundant rendering overhead and preventing lexical string comparison bugs (e.g., "9h00" > "10h00").
       return map;
     }, [games]);
 
