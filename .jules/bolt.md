@@ -119,3 +119,7 @@
 ## 2026-06-25 - Avoid O(N log N) sorting on already-sorted arrays when grouping
 **Learning:** In components that group items (like `gamesByDay` in `MobileTimeline` and `DesktopGrid`), if the incoming list (`games`) is already optimally sorted (via `sortGames` Schwartzian transform), pushing items sequentially into map groups naturally preserves the optimal sort order. Applying a nested `dayGames.sort((a, b) => a.time.localeCompare(b.time))` after pushing is completely redundant, adds $O(N \log N)$ computational overhead during React's render cycle, and introduces lexical sorting bugs (e.g. placing "9h00" after "10h00").
 **Action:** When grouping a pre-sorted array into a Map or nested lists, iterate sequentially and append directly without invoking `.sort()` inside the grouping loop.
+
+## 2026-06-25 - Avoid redundant sorting and use O(K) extraction on pre-sorted arrays
+**Learning:** In components like `MatchTicker`, computing a subset of upcoming items using chained `.filter().sort().slice()` on an array that is already globally pre-sorted causes redundant $O(N \log N)$ sorting overhead and creates intermediate arrays that pressure the garbage collector.
+**Action:** When extracting a small top-N subset from a globally pre-sorted array based on a threshold condition (like `dateISO >= nowISO`), use a sequential `for` loop with an early-exit `break` condition to reduce time complexity to $O(K)$ and avoid intermediate array garbage collection.

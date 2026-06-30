@@ -14,19 +14,22 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const prefersReducedMotion = useReducedMotion();
 
-  // ⚡ Bolt: Memoized the O(N log N) sorting and O(N) filtering to prevent expensive recalculations.
-  // Performance impact: Avoids recomputing `upcomingGames` on every render (e.g., when users navigate or interact with unrelated UI).
+  // ⚡ Bolt: Use a sequential O(K) extraction with early exit instead of chained O(N) traversals
+  // and O(N log N) sorting. The `games` array is already globally sorted.
+  // Performance impact: Reduces time complexity and eliminates intermediate array allocations.
   const upcomingGames = useMemo(() => {
     const nowISO = new Date().toISOString().split('T')[0];
+    const result: Game[] = [];
 
-    return games
-      .filter((g) => {
-        const d = g.dateISO;
-        // Keep only future or today's games
-        return d && d >= nowISO;
-      })
-      .sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))
-      .slice(0, 10); // Take next 10 games
+    for (let i = 0; i < games.length; i++) {
+      const g = games[i];
+      if (g.dateISO && g.dateISO >= nowISO) {
+        result.push(g);
+        if (result.length >= 10) break;
+      }
+    }
+
+    return result;
   }, [games]);
 
   // Reserve space even when empty to prevent CLS (layout shift)
