@@ -126,10 +126,13 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
     }, [entries]);
 
     const storedName = getStoredName();
-    const currentUserEntry = useMemo(
-      () => entries.find((e) => e.name.toLowerCase() === storedName.toLowerCase()),
-      [entries, storedName],
-    );
+    const currentUserEntry = useMemo(() => {
+      // ⚡ Bolt Optimization: Hoist storedName.toLowerCase() outside the iteration loop
+      // to prevent redundant O(N) string reallocations during array traversal.
+      if (!storedName) return undefined;
+      const normalizedStoredName = storedName.toLowerCase();
+      return entries.find((e) => e.name.toLowerCase() === normalizedStoredName);
+    }, [entries, storedName]);
 
     const handleSubmit = useCallback(
       (e: React.FormEvent) => {
