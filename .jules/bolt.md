@@ -123,3 +123,6 @@
 ## 2026-06-25 - Avoid redundant sorting and use O(K) extraction on pre-sorted arrays
 **Learning:** In components like `MatchTicker`, computing a subset of upcoming items using chained `.filter().sort().slice()` on an array that is already globally pre-sorted causes redundant $O(N \log N)$ sorting overhead and creates intermediate arrays that pressure the garbage collector.
 **Action:** When extracting a small top-N subset from a globally pre-sorted array based on a threshold condition (like `dateISO >= nowISO`), use a sequential `for` loop with an early-exit `break` condition to reduce time complexity to $O(K)$ and avoid intermediate array garbage collection.
+## 2026-06-28 - [Optimization] Hoist expensive string operations outside of iteration loops
+**Learning:** Re-evaluating `storedName.toLowerCase()` inside `entries.find()` or `entries.map()` causes redundant O(N) string memory allocations, leading to garbage collection pressure and CPU drag.
+**Action:** Always hoist expensive operations like `.toLowerCase()` outside of iteration loops and array traversal methods to reduce unnecessary reallocations.
