@@ -19,14 +19,18 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const upcomingGames = useMemo(() => {
     const nowISO = new Date().toISOString().split('T')[0];
 
-    return games
-      .filter((g) => {
-        const d = g.dateISO;
-        // Keep only future or today's games
-        return d && d >= nowISO;
-      })
-      .sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))
-      .slice(0, 10); // Take next 10 games
+    // ⚡ Bolt Optimization: Use a sequential 'for' loop with an early-exit break condition
+    // instead of chained '.filter().sort().slice()' on a globally pre-sorted array.
+    // This reduces time complexity to O(K) and avoids intermediate array garbage collection.
+    const result: Game[] = [];
+    for (let i = 0; i < games.length; i++) {
+      const g = games[i];
+      if (g.dateISO && g.dateISO >= nowISO) {
+        result.push(g);
+        if (result.length >= 10) break;
+      }
+    }
+    return result;
   }, [games]);
 
   // Reserve space even when empty to prevent CLS (layout shift)
