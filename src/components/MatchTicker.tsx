@@ -2,6 +2,7 @@ import React, { memo, useMemo } from 'react';
 import Marquee from 'react-fast-marquee';
 import { useReducedMotion } from 'framer-motion';
 import type { Game } from '../types';
+import { getTodayISO } from '../utils/dateUtils';
 
 interface MatchTickerProps {
   games: Game[];
@@ -14,19 +15,22 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const prefersReducedMotion = useReducedMotion();
 
-  // ⚡ Bolt: Memoized the O(N log N) sorting and O(N) filtering to prevent expensive recalculations.
-  // Performance impact: Avoids recomputing `upcomingGames` on every render (e.g., when users navigate or interact with unrelated UI).
+  // ⚡ Bolt: Use an early-exit O(K) loop instead of O(N log N) filter/sort/slice chain.
+  // Performance impact: The `games` array is already globally sorted by `sortGames` (Date + Time).
+  // We avoid iterating over all past games and avoid a redundant sorting pass. We stop exactly after finding 10 matches.
   const upcomingGames = useMemo(() => {
-    const nowISO = new Date().toISOString().split('T')[0];
+    const todayISO = getTodayISO();
+    const upcoming: Game[] = [];
 
-    return games
-      .filter((g) => {
-        const d = g.dateISO;
-        // Keep only future or today's games
-        return d && d >= nowISO;
-      })
-      .sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))
-      .slice(0, 10); // Take next 10 games
+    for (let i = 0; i < games.length; i++) {
+      const g = games[i];
+      if (g.dateISO && g.dateISO >= todayISO) {
+        upcoming.push(g);
+        if (upcoming.length === 10) break;
+      }
+    }
+
+    return upcoming;
   }, [games]);
 
   // Reserve space even when empty to prevent CLS (layout shift)
