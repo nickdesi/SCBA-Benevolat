@@ -1,0 +1,13 @@
+<scratchpad>
+Bottleneck identified: In `src/components/MatchTicker.tsx`, the `upcomingGames` useMemo hook performs a redundant `.sort((a, b) => (a.dateISO || '').localeCompare(b.dateISO || ''))` over the filtered games array. Since the `games` array passed to `MatchTicker` (from `App.tsx`) is already globally sorted by `sortGames` (which sorts by both Date and Time optimally), the additional sorting pass is redundant and wastes O(N log N) compute time. Furthermore, the combination of `.filter().sort().slice(0, 10)` processes the entire array of thousands of games just to find the next 10. It also uses `new Date().toISOString().split('T')[0]` which creates string array garbage on every render.
+
+Proposed solution:
+1. Import `getTodayISO` from `../utils/dateUtils`.
+2. Replace the `.filter().sort().slice()` chain with a single `for` loop that iterates sequentially over the already-sorted `games` array.
+3. For each game, if the date is `>= todayISO`, push it to an `upcoming` array.
+4. Break out of the loop early as soon as `upcoming.length === 10`.
+
+Expected measurable impact: Reduces time complexity from O(N log N) down to O(K) where K is the number of past games + 10. For a dataset of 1000 games, this prevents 1000 iterations, a full sort pass, and intermediate array allocations, reducing garbage collection pressure and speeding up renders.
+
+Risk assessment: Extremely low. The input array is guaranteed to be sorted by Date + Time via `sortGames`. Replacing the filter+sort with an early-exit loop strictly preserves the same resulting 10 games while maintaining the superior Date+Time sort order instead of just Date.
+</scratchpad>
