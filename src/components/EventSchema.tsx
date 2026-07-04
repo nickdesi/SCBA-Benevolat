@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Game } from '../types';
+import { getTodayISO } from '../utils/dateUtils';
 
 interface EventSchemaProps {
   games: Game[];
@@ -13,7 +14,7 @@ const EventSchema: React.FC<EventSchemaProps> = ({ games }) => {
   const schemaData = useMemo(() => {
     // Take only the next 10 upcoming matches to keep the header light
     // ⚡ Bolt: Use YYYY-MM-DD string comparison to match game.dateISO format.
-    const todayISO = new Date().toISOString().split('T')[0];
+    const todayISO = getTodayISO();
 
     // ⚡ Bolt: Use early exit sequential loop on pre-sorted array to extract subset in O(K) instead of O(N log N)
     const upcomingGames: Game[] = [];
