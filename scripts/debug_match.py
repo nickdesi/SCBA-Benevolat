@@ -1,43 +1,10 @@
 
-import firebase_admin
-from firebase_admin import credentials, firestore
-from ffbb_data_client import FFBBDataClient, TokenManager
-from datetime import datetime
-import re
-import os
-import sys
-
-# Copy logic from verify_match_times.py
-def normalize_team_name(name):
-    return name.lower().replace("-", " ").replace(" ", "")
-
-def extract_team_number_local(team_str):
-    match = re.search(r'[MF](\d+)', team_str)
-    if match: return match.group(1)
-    match = re.search(r' (\d+)$', team_str)
-    if match: return match.group(1)
-    if " 1" in team_str: return "1"
-    return "1"
-
-def extract_team_number_ffbb(team_name):
-    if clean_match := re.search(r' - (\d+)$', team_name):
-        return clean_match.group(1)
-    if clean_match := re.search(r' (\d+)$', team_name):
-        return clean_match.group(1)
-    return "1"
+from shared import init_firebase, init_ffbb, normalize_team_name, extract_team_number_local, extract_team_number_ffbb
 
 def debug_match():
-    # Init Firebase
-    try:
-        key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'serviceAccountKey.json')
-        cred = credentials.Certificate(key_path)
-        firebase_admin.initialize_app(cred)
-    except: pass
-    db = firestore.client()
-
-    # Init FFBB
-    tokens = TokenManager.get_tokens(use_cache=False)
-    client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
+    # Init Firebase and FFBB
+    db = init_firebase()
+    client = init_ffbb()
 
     # Specific Target: 2026-02-28, U11 M1 vs CLERMONT BASKET - 1
     # Firestore ID from previous logs: KlUeQK7SeKGtuyFJ9QWK (allegedly)

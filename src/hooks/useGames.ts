@@ -15,11 +15,11 @@ import {
 import { db } from '../firebase';
 import { DEFAULT_ROLES } from '../constants';
 import type { Game, GameFormData, CarpoolEntry, UserRegistration } from '../types';
-import { getTodayISO } from './dateUtils';
+import { getTodayISO } from '../utils/dateUtils';
 import { useVolunteers } from './useVolunteers';
 import { useCarpool } from './useCarpool';
-import { sortGames } from './gameUtils';
-import { useGameFilters } from '../hooks/useGameFilters';
+import { sortGames } from '../utils/gameUtils';
+import { useGameFilters } from './useGameFilters';
 
 interface UseGamesReturn {
   games: Game[];

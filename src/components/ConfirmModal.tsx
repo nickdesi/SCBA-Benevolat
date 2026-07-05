@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import useScrollLock from '../utils/useScrollLock';
+import useScrollLock from '../hooks/useScrollLock';
 
 interface ConfirmModalProps {
   isOpen: boolean;

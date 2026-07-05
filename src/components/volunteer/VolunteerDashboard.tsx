@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardHome } from './DashboardHome';
 import { DashboardComm } from './DashboardCommunications';
 import { DashboardHeader } from './DashboardHeader';
-import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
+import type { UserCarpoolRegistration } from '../../hooks/useCarpoolRegistrations';
 
 interface VolunteerDashboardProps {
   user: User;

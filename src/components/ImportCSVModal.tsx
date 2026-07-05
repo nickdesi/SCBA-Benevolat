@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo } from 'react';
 import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
-import useScrollLock from '../utils/useScrollLock';
+import useScrollLock from '../hooks/useScrollLock';
 import { CustomSelect } from './ui/CustomSelect';
 
 interface ImportCSVModalProps {

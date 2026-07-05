@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User } from 'firebase/auth';
 import type { Game, UserRegistration } from '../types';
 import { VolunteerDashboard } from './volunteer/VolunteerDashboard';
-import type { UserCarpoolRegistration } from '../utils/useCarpoolRegistrations';
+import type { UserCarpoolRegistration } from '../hooks/useCarpoolRegistrations';
 
 interface ProfileModalProps {
   isOpen: boolean;

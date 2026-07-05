@@ -7,7 +7,7 @@ import { StatCard } from './StatCard';
 
 import { MissionList } from './MissionList';
 import { CarpoolList } from './CarpoolList';
-import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
+import type { UserCarpoolRegistration } from '../../hooks/useCarpoolRegistrations';
 
 import { triggerHaptic } from '../../utils/haptics';
 import { getSeasonStartISO } from '../../utils/dateUtils';

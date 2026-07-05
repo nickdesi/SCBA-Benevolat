@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Game } from '../types';
-import { getStoredName } from './storage';
+import { getStoredName } from '../utils/storage';
+import { isCarpoolUpcoming } from '../utils/gameTimeUtils';
 
 /**
  * Represents a user's carpool participation for display in the dashboard
@@ -40,37 +41,6 @@ interface UseCarpoolRegistrationsReturn {
     asPassenger: number;
   };
 }
-
-/**
- * Check if a carpool registration is for an upcoming game
- */
-const isCarpoolUpcoming = (
-  gameDateISO: string,
-  gameTime: string | undefined,
-  todayISO: string,
-  currentHours: number,
-  currentMinutes: number,
-): boolean => {
-  if (!gameDateISO) return true;
-
-  if (gameDateISO > todayISO) return true;
-  if (gameDateISO < todayISO) return false;
-
-  // Today: check time
-  if (gameDateISO === todayISO && gameTime) {
-    const [hStr, mStr] = gameTime.split(/[h:]/);
-    const h = parseInt(hStr, 10);
-    const m = parseInt(mStr || '0', 10);
-
-    if (!isNaN(h)) {
-      const endHour = h + 3;
-      if (currentHours > endHour) return false;
-      if (currentHours === endHour && currentMinutes > m) return false;
-    }
-  }
-
-  return true;
-};
 
 /**
  * Hook to extract and format user's carpool participations from games

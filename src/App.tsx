@@ -11,9 +11,9 @@ import Footer from './components/Footer';
 import { ToastContainer, useToast } from './components/Toast';
 import BottomNav from './components/BottomNav';
 import { onAuthStateChanged, signOut, signInWithGoogle } from './utils/authStore';
-import { useGames } from './utils/useGames';
-import { useCarpoolRegistrations } from './utils/useCarpoolRegistrations';
-import { useUserProfile } from './utils/useUserProfile';
+import { useGames } from './hooks/useGames';
+import { useCarpoolRegistrations } from './hooks/useCarpoolRegistrations';
+import { useUserProfile } from './hooks/useUserProfile';
 import EventSchema from './components/EventSchema';
 import { isOffSeason, getSeasonInfo } from './utils/dateUtils';
 

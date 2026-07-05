@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, UserRoundPlus, MapPin, Check, Clock, Calendar, Users, Phone } from 'lucide-react';
-import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
+import type { UserCarpoolRegistration } from '../../hooks/useCarpoolRegistrations';
 import { triggerHaptic } from '../../utils/haptics';
+import { isCarpoolUpcoming } from '../../utils/gameTimeUtils';
 
 interface CarpoolListProps {
   carpools: UserCarpoolRegistration[];
@@ -32,26 +33,6 @@ const itemVariants = {
   },
 };
 
-// Helper: check if carpool is upcoming
-const isCarpoolUpcoming = (
-  gameDateISO: string,
-  gameTime: string | undefined,
-  todayISO: string,
-  currentHours: number,
-): boolean => {
-  if (!gameDateISO) return true;
-
-  if (gameDateISO > todayISO) return true;
-  if (gameDateISO < todayISO) return false;
-
-  if (gameDateISO === todayISO && gameTime) {
-    const [hStr] = gameTime.split(/[h:]/);
-    const h = parseInt(hStr, 10);
-    if (!isNaN(h) && currentHours > h + 3) return false;
-  }
-  return true;
-};
-
 export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemoveCarpool }) => {
   const [showHistory, setShowHistory] = useState(false);
 
@@ -68,9 +49,16 @@ export const CarpoolList: React.FC<CarpoolListProps> = ({ carpools = [], onRemov
     const now = new Date();
     const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
 
     carpools.forEach((c) => {
-      const isUp = isCarpoolUpcoming(c.gameDateISO, c.gameTime, todayISO, currentHours);
+      const isUp = isCarpoolUpcoming(
+        c.gameDateISO,
+        c.gameTime,
+        todayISO,
+        currentHours,
+        currentMinutes,
+      );
       map.set(c.id, isUp);
       if (isUp) {
         result.upcoming.push(c);

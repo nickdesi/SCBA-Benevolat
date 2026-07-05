@@ -1,26 +1,8 @@
 
-import firebase_admin
-from firebase_admin import credentials, firestore
-from ffbb_data_client import FFBBDataClient, TokenManager
+from shared import CLUB_MAPPING, init_firebase, init_ffbb, normalize_team_name
 import argparse
-import sys
-import os
-import time
 from datetime import datetime
-
-# --- Configuration ---
-
-# Map Team Name (in Firestore) -> FFBB Club ID
-# You might need to expand this list based on data
-CLUB_MAPPING = {
-    # Main Club
-    "Stade Clermontois Basket Auvergne": 9326,
-    "SCBA": 9326,
-    "STADE CLERMONTOIS BASKET AUVERGNE": 9326,
-
-    # Common Opponents (If we want to search their club for away games)
-    # "Clermont Basket": 9283,
-}
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 KNOWN_VENUES = {
     "Maison des Sports": "Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand",
@@ -35,27 +17,6 @@ KNOWN_VENUES = {
 POULE_CACHE = {} # poule_id -> list of matches
 SALLE_CACHE = {} # salle_id -> address string
 MATCH_DETAILS_CACHE = {} # match_id -> details
-
-def init_firebase():
-    try:
-        key_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'serviceAccountKey.json')
-        cred = credentials.Certificate(key_path)
-        firebase_admin.initialize_app(cred)
-        print(f"Initialized Firebase with {key_path}.")
-    except Exception as e:
-        print(f"Failed to init Firebase: {e}")
-        sys.exit(1)
-    return firestore.client()
-
-def init_ffbb():
-    try:
-        tokens = TokenManager.get_tokens(use_cache=False)
-        client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
-        print("Initialized FFBB Client.")
-        return client
-    except Exception as e:
-        print(f"Failed to init FFBB Client: {e}")
-        sys.exit(1)
 
 def get_salle_address(salle_id, client):
     if not salle_id:
@@ -106,9 +67,6 @@ def get_match_details_address(match_id, client):
     except Exception as e:
         print(f"Error fetching match {match_id}: {e}")
     return None
-
-def normalize_team_name(name):
-    return name.lower().replace("-", " ").replace(" ", "")
 
 def fix_address(db, ffbb_client, dry_run=True):
     matches_ref = db.collection("matches")

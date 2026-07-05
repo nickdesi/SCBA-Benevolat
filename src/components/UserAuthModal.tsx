@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Mail, Lock, User, X, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
 import { GoogleIcon } from './Icons';
 import { signIn, signUp, resetUserPassword } from '../utils/authStore';
-import useScrollLock from '../utils/useScrollLock';
+import useScrollLock from '../hooks/useScrollLock';
 
 interface UserAuthModalProps {
   isOpen: boolean;

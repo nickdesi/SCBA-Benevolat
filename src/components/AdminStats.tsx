@@ -13,7 +13,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { Game } from '../types';
-import useScrollLock from '../utils/useScrollLock';
+import useScrollLock from '../hooks/useScrollLock';
 import { AdminBroadcastPanel } from './admin/AdminBroadcastPanel';
 import { getGameRoleStats } from '../utils/gameUtils';
 

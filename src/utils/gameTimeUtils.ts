@@ -1,6 +1,9 @@
 import { UserRegistration } from '../types';
 import { getTodayISO } from './dateUtils';
 
+/**
+ * Check if a game registration is upcoming (for volunteer registrations)
+ */
 export const isGameUpcoming = (
   reg: UserRegistration,
   now: Date = new Date(),
@@ -33,6 +36,38 @@ export const isGameUpcoming = (
       const endHour = h + 3;
 
       // If current time is past the end timestamp
+      if (currentHours > endHour) return false;
+      if (currentHours === endHour && currentMinutes > m) return false;
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Check if a carpool registration is upcoming
+ * Simplified version of isGameUpcoming for carpool display
+ */
+export const isCarpoolUpcoming = (
+  gameDateISO: string,
+  gameTime: string | undefined,
+  todayISO: string,
+  currentHours: number,
+  currentMinutes: number,
+): boolean => {
+  if (!gameDateISO) return true;
+
+  if (gameDateISO > todayISO) return true;
+  if (gameDateISO < todayISO) return false;
+
+  // Today: check time
+  if (gameDateISO === todayISO && gameTime) {
+    const [hStr, mStr] = gameTime.split(/[h:]/);
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr || '0', 10);
+
+    if (!isNaN(h)) {
+      const endHour = h + 3;
       if (currentHours > endHour) return false;
       if (currentHours === endHour && currentMinutes > m) return false;
     }
