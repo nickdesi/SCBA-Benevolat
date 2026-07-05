@@ -126,3 +126,7 @@
 ## 2026-06-28 - [Optimization] Hoist expensive string operations outside of iteration loops
 **Learning:** Re-evaluating `storedName.toLowerCase()` inside `entries.find()` or `entries.map()` causes redundant O(N) string memory allocations, leading to garbage collection pressure and CPU drag.
 **Action:** Always hoist expensive operations like `.toLowerCase()` outside of iteration loops and array traversal methods to reduce unnecessary reallocations.
+
+## 2026-07-29 - O(K) subset extraction using for loops instead of O(N log N) chained methods
+**Learning:** Extracting a small subset of upcoming matches in `EventSchema.tsx` using `[...games].filter(...).sort(...).slice(0, 10)` creates multiple intermediate array copies and incurs an O(N log N) sorting cost, even though the original `games` array is already globally sorted in the parent component.
+**Action:** When extracting top N matching elements from a pre-sorted array, always pass down the pre-sorted array and use a sequential `for` loop with an early-exit break condition to achieve O(K) complexity, avoiding redundant array object allocation and sorting overhead.

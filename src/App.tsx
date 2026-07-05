@@ -197,7 +197,7 @@ function App() {
       topElements={
         <>
           <AnnouncementBanner />
-          <EventSchema games={games} />
+          <EventSchema games={sortedGames} />
           {/* Ticker restored */}
           <MatchTicker games={sortedGames} />
         </>
