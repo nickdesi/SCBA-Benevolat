@@ -75,7 +75,7 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }
                     ? 'bg-slate-700 text-yellow-400 hover:bg-slate-600'
                     : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
                 }`}
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      aria-label={`Activer le mode ${theme === 'dark' ? 'clair' : 'sombre'}`}
       title={`Mode ${theme === 'dark' ? 'clair' : 'sombre'}`}
     >
       {theme === 'dark' ? (

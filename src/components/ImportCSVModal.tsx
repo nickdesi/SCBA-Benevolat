@@ -287,6 +287,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                     Équipe concernée
                   </label>
                   <CustomSelect
+                    label="Équipe concernée"
                     value={selectedTeam}
                     onChange={(val) => setSelectedTeam(val as string)}
                     options={teams.map((team) => ({ value: team, label: team }))}
@@ -389,7 +390,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                         </div>
                         <div className="mt-2 flex flex-col gap-1">
                           <div className="text-xs text-slate-500 dark:text-slate-400">
-                            📅 {match.date} à {match.time}
+                            <span aria-hidden="true">📅</span> {match.date} à {match.time}
                           </div>
 
                           <div className="flex items-center gap-2 mt-1">

@@ -150,6 +150,9 @@ const GameCard: React.FC<GameCardProps> = memo(
         {/* 2. Accordion Trigger */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
+          aria-controls={`game-card-panel-${game.id}`}
+          aria-label={`${isExpanded ? 'Masquer' : 'Afficher'} les détails du match ${game.team} contre ${game.opponent}`}
           className={`
                     w-full px-4 py-3 flex items-center justify-between cursor-pointer
                     bg-slate-50/50 dark:bg-slate-900/30
@@ -254,7 +257,10 @@ const GameCard: React.FC<GameCardProps> = memo(
                         }
                     `}
           >
-            <ChevronIcon className="w-4 h-4 text-slate-600 dark:text-slate-400" isOpen={false} />
+            <ChevronIcon
+              className="w-4 h-4 text-slate-600 dark:text-slate-400"
+              isOpen={isExpanded}
+            />
           </div>
         </button>
 
@@ -262,6 +268,9 @@ const GameCard: React.FC<GameCardProps> = memo(
         <AnimatePresence initial={false}>
           {isExpanded && (
             <motion.div
+              id={`game-card-panel-${game.id}`}
+              role="region"
+              aria-label={`Détails du match ${game.team} contre ${game.opponent}`}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}

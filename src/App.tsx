@@ -314,8 +314,6 @@ function App() {
       <main className="container mx-auto px-4 relative z-20 pt-4">
         <PullToRefresh
           onRefresh={async () => {
-            // Simulate network check (Firestore is real-time, but this gives feedback)
-            await new Promise((resolve) => setTimeout(resolve, 800));
             addToast('Données synchronisées', 'success');
           }}
         >

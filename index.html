@@ -2,14 +2,25 @@
 <html lang="fr">
 
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LR1RRC54CT"></script>
+  <!-- Google tag (gtag.js) — lazy-loaded after idle to avoid blocking initial render -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
     gtag('config', 'G-LR1RRC54CT');
+    (function () {
+      var loadGtag = function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-LR1RRC54CT';
+        document.head.appendChild(s);
+      };
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(loadGtag, { timeout: 3000 });
+      } else {
+        window.addEventListener('load', function () { setTimeout(loadGtag, 1500); });
+      }
+    })();
   </script>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com https://*.googleapis.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.firebaseapp.com;" />
@@ -34,8 +45,8 @@
 
   <!-- PWA Icons -->
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.png" />
-  <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.webp" />
+  <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.webp" />
 
   <title>SCBA Bénévoles</title>
 

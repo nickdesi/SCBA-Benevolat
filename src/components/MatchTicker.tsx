@@ -92,7 +92,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
                     }
                 `}
         >
-          {game.isHome ? '🏠' : '✈️'}
+          <span aria-hidden="true">{game.isHome ? '🏠' : '✈️'}</span>
         </div>
       </div>
     );

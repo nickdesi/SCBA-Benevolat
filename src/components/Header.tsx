@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = memo(
             {/* Title - Exact Match: Full Width & Readable */}
             <div className="flex-1 text-center min-w-0 flex flex-col justify-center px-1 min-h-[48px] sm:min-h-[72px]">
               <h1 className="flex flex-col items-center justify-center leading-none w-full">
-                <span className="w-full max-w-full break-words text-center font-sport text-[10px] xs:text-xs sm:text-3xl font-black italic leading-none tracking-tighter text-slate-900 drop-shadow-sm dark:text-slate-100">
+                <span className="w-full max-w-full break-words text-center font-sport text-xs xs:text-sm sm:text-3xl font-black italic leading-none tracking-tighter text-slate-900 drop-shadow-sm dark:text-slate-100">
                   STADE CLERMONTOIS BASKET AUVERGNE
                 </span>
                 {/* Green Separator */}

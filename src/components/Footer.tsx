@@ -372,8 +372,11 @@ const Footer: React.FC = memo(() => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Left: Copyright */}
           <p className="text-slate-500 text-sm flex items-center gap-1">
-            Fait avec <span className="text-red-500 animate-pulse">❤️</span> pour le Stade
-            Clermontois Basket Auvergne - {new Date().getFullYear()}
+            Fait avec{' '}
+            <span className="text-red-500 animate-pulse" aria-hidden="true">
+              ❤️
+            </span>{' '}
+            pour le Stade Clermontois Basket Auvergne - {new Date().getFullYear()}
           </p>
 
           {/* Right: Version & Links */}

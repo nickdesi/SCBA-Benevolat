@@ -57,8 +57,38 @@ const GameForm: React.FC<GameFormProps> = ({
     setRoleCapacities((prev) => ({ ...prev, [roleName]: Math.max(0, numValue) }));
   };
 
+  const [timeError, setTimeError] = useState('');
+  const [dateError, setDateError] = useState('');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate time format (HHhMM with valid ranges)
+    const timeMatch = formData.time.match(/^(\d{1,2})H(\d{2})$/i);
+    if (!timeMatch) {
+      setTimeError('Format attendu : HHhMM (ex : 15h30).');
+      return;
+    }
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      setTimeError('Heure invalide (heures 0-23, minutes 00-59).');
+      return;
+    }
+    setTimeError('');
+
+    // Validate date not in the past
+    if (formData.dateISO) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const gameDate = new Date(formData.dateISO + 'T00:00:00');
+      if (gameDate < today) {
+        setDateError('La date ne peut pas être dans le passé.');
+        return;
+      }
+    }
+    setDateError('');
+
     if (gameToEdit) {
       // Update existing game with new capacities
       const updatedRoles: Role[] = gameToEdit.roles.map((role) => ({
@@ -124,7 +154,7 @@ const GameForm: React.FC<GameFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl shadow-lg">
+          <div className="p-3 bg-gradient-to-br from-[#0f766e] to-[#c4492d] rounded-xl shadow-lg">
             {gameToEdit ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -162,9 +192,11 @@ const GameForm: React.FC<GameFormProps> = ({
               htmlFor="team"
               className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
             >
-              <span>🏀</span> Équipe
+              <span aria-hidden="true">🏀</span> Équipe
             </label>
             <CustomSelect
+              id="team"
+              label="Équipe"
               value={formData.team}
               onChange={(val) => setFormData((prev) => ({ ...prev, team: val as string }))}
               options={[
@@ -180,7 +212,7 @@ const GameForm: React.FC<GameFormProps> = ({
               htmlFor="opponent"
               className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
             >
-              <span>⚔️</span> Adversaire
+              <span aria-hidden="true">⚔️</span> Adversaire
             </label>
             <input
               type="text"
@@ -192,7 +224,7 @@ const GameForm: React.FC<GameFormProps> = ({
               list="opponents-list"
               required
               className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                       focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
                        bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             />
             <datalist id="opponents-list">
@@ -210,22 +242,34 @@ const GameForm: React.FC<GameFormProps> = ({
               htmlFor="date-picker"
               className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
             >
-              <span>📅</span> Date
+              <span aria-hidden="true">📅</span> Date
             </label>
             <div className="relative">
               <input
                 type="date"
                 id="date-picker"
                 value={getISODate(formData.date)}
+                min={new Date().toISOString().split('T')[0]}
                 onChange={handleDateChange}
                 onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                 onKeyDown={(e) => e.preventDefault()}
                 required
+                aria-invalid={!!dateError}
+                aria-describedby={dateError ? 'date-error' : undefined}
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                         focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                         focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
                          bg-white dark:bg-slate-700 text-slate-900 dark:text-white cursor-pointer"
                 style={{ colorScheme: 'dark light' }}
               />
+              {dateError && (
+                <p
+                  id="date-error"
+                  role="alert"
+                  className="text-xs text-red-600 dark:text-red-400 mt-1"
+                >
+                  {dateError}
+                </p>
+              )}
             </div>
           </div>
 
@@ -235,7 +279,7 @@ const GameForm: React.FC<GameFormProps> = ({
               htmlFor="time-picker"
               className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
             >
-              <span>⏰</span> Heure
+              <span aria-hidden="true">⏰</span> Heure
             </label>
             <input
               type="text"
@@ -258,7 +302,7 @@ const GameForm: React.FC<GameFormProps> = ({
               }}
               required
               className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+                       focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
                        bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             />
           </div>
@@ -269,11 +313,13 @@ const GameForm: React.FC<GameFormProps> = ({
               htmlFor="location"
               className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
             >
-              <span>📍</span> Lieu
+              <span aria-hidden="true">📍</span> Lieu
             </label>
 
             {formData.isHome ? (
               <CustomSelect
+                id="location"
+                label="Lieu"
                 value={formData.location}
                 onChange={(val) => setFormData((prev) => ({ ...prev, location: val as string }))}
                 options={[
@@ -292,10 +338,25 @@ const GameForm: React.FC<GameFormProps> = ({
                   placeholder="Ex: Gymnase Chirac, Rue des Anémones, 34170 Castelnau"
                   list="locations-list"
                   required
+                  aria-invalid={!!timeError}
+                  aria-describedby={timeError ? 'time-error' : 'time-help'}
                   className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                           bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                       focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
+                       bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 />
+                {timeError ? (
+                  <p
+                    id="time-error"
+                    role="alert"
+                    className="text-xs text-red-600 dark:text-red-400 mt-1"
+                  >
+                    {timeError}
+                  </p>
+                ) : (
+                  <p id="time-help" className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Format : HHhMM (ex : 15h30)
+                  </p>
+                )}
                 <datalist id="locations-list">
                   {Array.from(new Set([...COMMON_LOCATIONS, ...existingLocations]))
                     .sort()
@@ -304,7 +365,7 @@ const GameForm: React.FC<GameFormProps> = ({
                     ))}
                 </datalist>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
-                  <span>🗺️</span>
+                  <span aria-hidden="true">🗺️</span>
                   Adresse complète recommandée (nom + rue + ville) pour la navigation Waze
                 </p>
               </>
@@ -315,7 +376,7 @@ const GameForm: React.FC<GameFormProps> = ({
         {/* Home/Away Toggle - Modern Segmented Control */}
         <div className="pt-4">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-            <span>📍</span>
+            <span aria-hidden="true">📍</span>
             Type de match
           </label>
           <div className="flex bg-slate-100 dark:bg-slate-700 rounded-xl p-1 border border-slate-200 dark:border-slate-600">
@@ -330,11 +391,13 @@ const GameForm: React.FC<GameFormProps> = ({
               }
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${
                 formData.isHome
-                  ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30'
+                  ? 'bg-gradient-to-r from-[#0f766e] to-[#1b8579] text-white shadow-lg shadow-[#0f766e]/30'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600'
               }`}
             >
-              <span className="text-lg">🏠</span>
+              <span className="text-lg" aria-hidden="true">
+                🏠
+              </span>
               Domicile
             </button>
             <button
@@ -348,16 +411,18 @@ const GameForm: React.FC<GameFormProps> = ({
               }
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${
                 !formData.isHome
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-gradient-to-r from-[#c4492d] to-[#d97757] text-white shadow-lg shadow-[#c4492d]/30'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600'
               }`}
             >
-              <span className="text-lg">🚗</span>
+              <span className="text-lg" aria-hidden="true">
+                🚗
+              </span>
               Extérieur
             </button>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
-            <span>💡</span>
+            <span aria-hidden="true">💡</span>
             {formData.isHome
               ? 'Match à domicile : Bénévolat (Buvette, Chrono, Table, Goûter)'
               : "Match à l'extérieur : Covoiturage uniquement"}
@@ -368,7 +433,9 @@ const GameForm: React.FC<GameFormProps> = ({
         {gameToEdit && formData.isHome && (
           <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
             <h4 className="flex items-center gap-2 text-base font-bold text-slate-800 dark:text-white mb-4">
-              <span className="text-xl">👥</span>
+              <span className="text-xl" aria-hidden="true">
+                👥
+              </span>
               Nombre de bénévoles par poste
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -392,7 +459,7 @@ const GameForm: React.FC<GameFormProps> = ({
                       value={roleCapacities[role.name] || 0}
                       onChange={(e) => handleCapacityChange(role.name, e.target.value)}
                       className="w-full px-3 py-2 text-center text-base font-bold border-2 border-slate-200 dark:border-slate-600 rounded-lg
-                               bg-white dark:bg-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                               bg-white dark:bg-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent"
                     />
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-center">
@@ -404,7 +471,7 @@ const GameForm: React.FC<GameFormProps> = ({
               ))}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
-              <span>💡</span>
+              <span aria-hidden="true">💡</span>
               Mettez 0 pour un nombre illimité de bénévoles
             </p>
           </div>
@@ -423,9 +490,9 @@ const GameForm: React.FC<GameFormProps> = ({
           <button
             type="submit"
             className="px-6 py-3 text-base font-bold text-white rounded-xl
-                     bg-gradient-to-r from-red-500 to-orange-500
-                     hover:from-red-600 hover:to-orange-600
-                     shadow-lg shadow-red-500/30 hover:shadow-red-500/50
+                     bg-gradient-to-r from-[#0f766e] to-[#c4492d]
+                     hover:opacity-90
+                     shadow-lg shadow-[#0f766e]/30 hover:shadow-[#0f766e]/50
                      transition-all flex items-center justify-center gap-2 order-1 sm:order-2"
           >
             <CheckIcon className="w-5 h-5" />

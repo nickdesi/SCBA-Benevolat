@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserProfile } from '../utils/userStore';
 
@@ -11,7 +11,9 @@ let unsubscribeFirestore: (() => void) | null = null;
 const subscribeToFirestore = () => {
   if (unsubscribeFirestore) return; // Already subscribed
 
-  const q = query(collection(db, 'users'));
+  // Only fetch users that have both a displayName and a photoURL, to avoid
+  // downloading the entire `users` collection on every change.
+  const q = query(collection(db, 'users'), where('photoURL', '!=', null), limit(200));
   unsubscribeFirestore = onSnapshot(q, (snapshot) => {
     const newAvatars: Record<string, string> = {};
     snapshot.forEach((doc) => {

@@ -175,7 +175,9 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
                                         }
                                     `}
                     >
-                      <span className="text-lg sm:text-2xl">{isToday ? '🔥' : '📅'}</span>
+                      <span className="text-lg sm:text-2xl" aria-hidden="true">
+                        {isToday ? '🔥' : '📅'}
+                      </span>
                       <div className="flex flex-col items-start leading-tight">
                         <span className="text-sm sm:text-lg font-black text-white tracking-wide capitalize">
                           {isToday ? "Aujourd'hui" : dateFormatter.format(day)}

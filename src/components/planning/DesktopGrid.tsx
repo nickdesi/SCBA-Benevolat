@@ -190,7 +190,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
         ) : (
           <div className="h-[400px] rounded-3xl border border-dashed border-slate-800/50 bg-slate-900/10 flex flex-col items-center justify-center text-center p-8 animate-fade-in">
             <div className="w-20 h-20 bg-slate-800/30 rounded-full flex items-center justify-center mb-4 text-4xl grayscale opacity-50">
-              😴
+              <span aria-hidden="true">😴</span>
             </div>
             <h3 className="text-xl font-bold text-slate-300 mb-2">Aucun match cette semaine</h3>
             <p className="text-slate-500 max-w-sm">

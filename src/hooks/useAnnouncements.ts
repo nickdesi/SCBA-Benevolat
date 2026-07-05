@@ -1,22 +1,21 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Announcement } from '../types';
-import { cleanupExpiredAnnouncements } from '../utils/cleanupExpiredAnnouncements';
 
 export function useAnnouncements() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    cleanupExpiredAnnouncements().catch((error) => {
-      console.error('[useAnnouncements] Cleanup error:', error);
-    });
-
+    // Server-side expiration filter: only active announcements not yet expired.
+    // The expired-announcements cleanup is handled by the Cloud Function cron
+    // (cleanupExpiredAnnouncements), no need to run it client-side.
     const q = query(
       collection(db, 'announcements'),
       where('active', '==', true),
-      orderBy('createdAt', 'desc'),
+      where('expiresAt', '>', Timestamp.now()),
+      orderBy('expiresAt', 'asc'),
     );
 
     const unsubscribe = onSnapshot(
@@ -25,10 +24,7 @@ export function useAnnouncements() {
         const items: Announcement[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data() as Omit<Announcement, 'id'>;
-          // Client-side expiration check to be safe and avoid index issues for now
-          if (data.expiresAt?.toMillis() > Date.now()) {
-            items.push({ id: doc.id, ...data });
-          }
+          items.push({ id: doc.id, ...data });
         });
 
         // Sort: Urgent first, then Warning, then Info
@@ -36,7 +32,6 @@ export function useAnnouncements() {
           const priority = { urgent: 3, warning: 2, info: 1 };
           const diff = priority[b.type] - priority[a.type];
           if (diff !== 0) return diff;
-          // If same priority, newest first (already sorted by query or fallback)
           return b.createdAt.toMillis() - a.createdAt.toMillis();
         });
 

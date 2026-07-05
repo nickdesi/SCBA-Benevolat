@@ -176,6 +176,7 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
               </label>
               <div className="relative z-20">
                 <CustomSelect
+                  label="Durée"
                   value={daysDuration}
                   onChange={(val) => setDaysDuration(Number(val))}
                   options={[
