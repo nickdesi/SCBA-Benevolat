@@ -11,6 +11,21 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.7.0',
+    date: '05 Juillet 2026',
+    changes: [
+      '🏀 Saison 2026-2027 : préparation du site (logique de saison dynamique, intersaison gérée automatiquement)',
+      '♿ Accessibilité : CustomSelect refait en combobox ARIA navigable au clavier (flèches, Home/End, Escape, type-ahead)',
+      '♿ Accessibilité : accordéon GameCard corrigé (chevron + aria-expanded/controls), emojis masqués aux lecteurs d’écran, skip-link « Aller au contenu »',
+      '♿ Accessibilité : validation des formulaires (heure HHhMM, date non passée) avec messages d’erreur traduits',
+      '🔐 Auth : Google Sign-In débloqué (CSP élargie pour apis.google.com), messages d’erreur Firebase traduits (~40 codes)',
+      '⚡ Perf : indexes Firestore déclarés, gtag lazy-loadé, PNG PWA doublons supprimés (~380 Ko), annonces filtrées côté serveur',
+      '🔒 Règles Firestore : lecture authentifiée de la collection users (avatars), cleanup des annonces par cron Cloud Function',
+      '🎨 UI : charte couleur harmonisée (teal/terracotta), ErrorBoundary sans fuite d’info technique',
+      '🌐 i18n : aria-label ThemeToggle et messages d’erreur traduits en français',
+    ],
+  },
+  {
     version: 'v2.6.7',
     date: '20 Juin 2026',
     changes: [
