@@ -144,7 +144,7 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
 
                   {/* Delete Button Elite */}
                   <motion.button
-                    whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.15)' }}
+                    whileHover={{ scale: 1.1, backgroundColor: 'rgba(170, 46, 15, 0.15)' }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleDeleteClick(reg.id)}
                     className="p-3 text-red-500 dark:text-red-400/60 hover:text-red-600 rounded-full transition-all relative z-10"

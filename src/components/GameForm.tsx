@@ -154,7 +154,7 @@ const GameForm: React.FC<GameFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-gradient-to-br from-[#0f766e] to-[#c4492d] rounded-xl shadow-lg">
+          <div className="p-3 bg-gradient-to-br from-[#3629e1] to-[#aa2e0f] rounded-xl shadow-lg">
             {gameToEdit ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -224,7 +224,7 @@ const GameForm: React.FC<GameFormProps> = ({
               list="opponents-list"
               required
               className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                       focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
+                       focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent
                        bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             />
             <datalist id="opponents-list">
@@ -257,7 +257,7 @@ const GameForm: React.FC<GameFormProps> = ({
                 aria-invalid={!!dateError}
                 aria-describedby={dateError ? 'date-error' : undefined}
                 className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                         focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
+                         focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent
                          bg-white dark:bg-slate-700 text-slate-900 dark:text-white cursor-pointer"
                 style={{ colorScheme: 'dark light' }}
               />
@@ -302,7 +302,7 @@ const GameForm: React.FC<GameFormProps> = ({
               }}
               required
               className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                       focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
+                       focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent
                        bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             />
           </div>
@@ -341,7 +341,7 @@ const GameForm: React.FC<GameFormProps> = ({
                   aria-invalid={!!timeError}
                   aria-describedby={timeError ? 'time-error' : 'time-help'}
                   className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
-                       focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent
+                       focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent
                        bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 />
                 {timeError ? (
@@ -391,7 +391,7 @@ const GameForm: React.FC<GameFormProps> = ({
               }
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${
                 formData.isHome
-                  ? 'bg-gradient-to-r from-[#0f766e] to-[#1b8579] text-white shadow-lg shadow-[#0f766e]/30'
+                  ? 'bg-gradient-to-r from-[#3629e1] to-[#272890] text-white shadow-lg shadow-[#3629e1]/30'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600'
               }`}
             >
@@ -411,7 +411,7 @@ const GameForm: React.FC<GameFormProps> = ({
               }
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${
                 !formData.isHome
-                  ? 'bg-gradient-to-r from-[#c4492d] to-[#d97757] text-white shadow-lg shadow-[#c4492d]/30'
+                  ? 'bg-gradient-to-r from-[#aa2e0f] to-[#aa2e0f] text-white shadow-lg shadow-[#aa2e0f]/30'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600'
               }`}
             >
@@ -459,7 +459,7 @@ const GameForm: React.FC<GameFormProps> = ({
                       value={roleCapacities[role.name] || 0}
                       onChange={(e) => handleCapacityChange(role.name, e.target.value)}
                       className="w-full px-3 py-2 text-center text-base font-bold border-2 border-slate-200 dark:border-slate-600 rounded-lg
-                               bg-white dark:bg-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0f766e] focus:border-transparent"
+                               bg-white dark:bg-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent"
                     />
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-center">
@@ -490,9 +490,9 @@ const GameForm: React.FC<GameFormProps> = ({
           <button
             type="submit"
             className="px-6 py-3 text-base font-bold text-white rounded-xl
-                     bg-gradient-to-r from-[#0f766e] to-[#c4492d]
+                     bg-gradient-to-r from-[#3629e1] to-[#aa2e0f]
                      hover:opacity-90
-                     shadow-lg shadow-[#0f766e]/30 hover:shadow-[#0f766e]/50
+                     shadow-lg shadow-[#3629e1]/30 hover:shadow-[#3629e1]/50
                      transition-all flex items-center justify-center gap-2 order-1 sm:order-2"
           >
             <CheckIcon className="w-5 h-5" />

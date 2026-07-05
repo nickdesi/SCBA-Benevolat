@@ -289,7 +289,7 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
                     </div>
                   </div>
                   <motion.button
-                    whileHover={{ scale: 1.1, color: '#ef4444' }}
+                    whileHover={{ scale: 1.1, color: '#aa2e0f' }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleDelete(item.id)}
                     className="p-2 text-slate-300 dark:text-slate-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"

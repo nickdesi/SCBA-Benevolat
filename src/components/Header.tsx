@@ -31,15 +31,15 @@ const Header: React.FC<HeaderProps> = memo(
       <header className="sticky top-0 z-40 border-b border-white/35 bg-white/70 backdrop-blur-2xl transition-all duration-300 dark:border-slate-700/40 dark:bg-slate-950/65">
         {/* Dynamic Background Gradient */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-28 left-1/4 h-72 w-72 rounded-full bg-[#c4492d]/20 blur-3xl" />
-          <div className="absolute -top-24 right-1/4 h-80 w-80 rounded-full bg-[#0f766e]/20 blur-3xl" />
+          <div className="absolute -top-28 left-1/4 h-72 w-72 rounded-full bg-[#aa2e0f]/20 blur-3xl" />
+          <div className="absolute -top-24 right-1/4 h-80 w-80 rounded-full bg-[#3629e1]/20 blur-3xl" />
         </div>
 
         <div className="container mx-auto px-4 py-2 sm:py-3 relative z-30">
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Animated & Glowing */}
             <div className="relative flex-shrink-0 group cursor-pointer">
-              <div className="absolute inset-0 rounded-full bg-[#c4492d] blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-30" />
+              <div className="absolute inset-0 rounded-full bg-[#aa2e0f] blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-30" />
               <img
                 src="/logo-scba.webp"
                 alt="Logo SCBA"
@@ -57,8 +57,8 @@ const Header: React.FC<HeaderProps> = memo(
                   STADE CLERMONTOIS BASKET AUVERGNE
                 </span>
                 {/* Green Separator */}
-                <span className="my-0.5 h-[2px] w-1/2 rounded-full bg-gradient-to-r from-[#0f766e] via-[#c59a3a] to-[#c4492d] sm:my-1 sm:h-[3px] sm:w-36"></span>
-                <span className="font-sport text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#0f766e] dark:text-teal-300">
+                <span className="my-0.5 h-[2px] w-1/2 rounded-full bg-gradient-to-r from-[#3629e1] via-[#c2988f] to-[#aa2e0f] sm:my-1 sm:h-[3px] sm:w-36"></span>
+                <span className="font-sport text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#3629e1] dark:text-indigo-300">
                   ESPACE BÉNÉVOLES
                 </span>
               </h1>
@@ -96,8 +96,8 @@ const Header: React.FC<HeaderProps> = memo(
                   onClick={() => onSelectTeam(null)}
                   className={`snap-center flex min-h-[44px] items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-300 backdrop-blur-md ${
                     selectedTeam === null
-                      ? 'border-[#0f766e]/20 bg-white text-slate-900 shadow-[0_10px_24px_rgba(15,118,110,0.2)] ring-1 ring-[#0f766e]/20 dark:border-teal-500/30 dark:bg-slate-800 dark:text-slate-100'
-                      : 'border-slate-300/60 bg-white/60 text-slate-600 hover:border-[#0f766e]/30 hover:bg-white hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-teal-400/40 dark:hover:text-slate-100'
+                      ? 'border-[#3629e1]/20 bg-white text-slate-900 shadow-[0_10px_24px_rgba(54,41,225,0.2)] ring-1 ring-[#3629e1]/20 dark:border-indigo-500/30 dark:bg-slate-800 dark:text-slate-100'
+                      : 'border-slate-300/60 bg-white/60 text-slate-600 hover:border-[#3629e1]/30 hover:bg-white hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-indigo-400/40 dark:hover:text-slate-100'
                   }`}
                 >
                   Tous les matchs
@@ -110,8 +110,8 @@ const Header: React.FC<HeaderProps> = memo(
                     onClick={() => onSelectTeam(team)}
                     className={`snap-center flex min-h-[44px] items-center justify-center rounded-full border px-4 py-2 text-xs font-bold transition-all duration-300 backdrop-blur-md ${
                       selectedTeam === team
-                        ? 'border-transparent bg-gradient-to-r from-[#0f766e] via-[#178075] to-[#c4492d] text-white shadow-[0_10px_28px_rgba(15,118,110,0.35)] ring-1 ring-white/20'
-                        : 'border-slate-300/60 bg-white/60 text-slate-600 hover:border-[#0f766e]/30 hover:bg-white hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-teal-400/40 dark:hover:text-slate-100'
+                        ? 'border-transparent bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] text-white shadow-[0_10px_28px_rgba(54,41,225,0.35)] ring-1 ring-white/20'
+                        : 'border-slate-300/60 bg-white/60 text-slate-600 hover:border-[#3629e1]/30 hover:bg-white hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-indigo-400/40 dark:hover:text-slate-100'
                     }`}
                   >
                     {team}

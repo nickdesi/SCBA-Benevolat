@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Veuillez réessayer. Si le problème persiste, rechargez l'application.
             </p>
             <button
-              className="px-5 py-2.5 bg-[#0f766e] hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-colors"
+              className="px-5 py-2.5 bg-[#3629e1] hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-colors"
               onClick={() => window.location.reload()}
             >
               Recharger l'application

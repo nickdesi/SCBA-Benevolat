@@ -343,7 +343,7 @@ function App() {
                 <div className="relative inline-flex rounded-2xl border border-white/60 bg-white/72 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/62">
                   {/* Active Indicator Background */}
                   <div
-                    className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-[#0f766e] via-[#1b8579] to-[#c4492d] shadow-md transition-all duration-300 ease-out`}
+                    className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] shadow-md transition-all duration-300 ease-out`}
                     style={{
                       left: currentView === 'home' ? '6px' : '50%',
                       width: 'calc(50% - 6px)',

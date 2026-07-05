@@ -174,12 +174,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                     text-left transition-all duration-200
                     ${
                       isOpen
-                        ? 'border-[#0f766e] ring-2 ring-[#0f766e]/20'
-                        : 'border-slate-200 dark:border-slate-600 hover:border-[#0f766e] dark:hover:border-[#0f766e]'
+                        ? 'border-[#3629e1] ring-2 ring-[#3629e1]/20'
+                        : 'border-slate-200 dark:border-slate-600 hover:border-[#3629e1] dark:hover:border-[#3629e1]'
                     }
                     bg-slate-50 dark:bg-slate-800
                     text-slate-900 dark:text-white
-                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f766e]/40
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3629e1]/40
                     ${className}
                 `}
       >
@@ -233,7 +233,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                                         w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer
                                         ${
                                           isSelected
-                                            ? 'bg-[#0f766e]/10 text-[#0f766e] dark:text-[#5eead4]'
+                                            ? 'bg-[#3629e1]/10 text-[#3629e1] dark:text-[#a5b4fc]'
                                             : isActive
                                               ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
                                               : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'

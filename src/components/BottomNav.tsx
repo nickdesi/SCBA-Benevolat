@@ -59,7 +59,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
               {currentView === 'home' && (
                 <motion.div
                   layoutId="nav-pill"
-                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#0f766e] to-[#c4492d] shadow-sm dark:border-white/10"
+                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#3629e1] to-[#aa2e0f] shadow-sm dark:border-white/10"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -85,7 +85,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
               {currentView === 'calendar' && (
                 <motion.div
                   layoutId="nav-pill"
-                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#0f766e] to-[#c4492d] shadow-sm dark:border-white/10"
+                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#3629e1] to-[#aa2e0f] shadow-sm dark:border-white/10"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -98,7 +98,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handlePlanningClick}
-              className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-[#c4492d] to-[#c59a3a] text-white shadow-lg shadow-[#c4492d]/30 dark:border-white/15 dark:from-[#0f766e] dark:to-[#c4492d] dark:shadow-[#0f766e]/30"
+              className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-[#aa2e0f] to-[#c2988f] text-white shadow-lg shadow-[#aa2e0f]/30 dark:border-white/15 dark:from-[#3629e1] dark:to-[#aa2e0f] dark:shadow-[#3629e1]/30"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <motion.div
