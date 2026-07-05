@@ -42,9 +42,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
       await signInWithGoogle();
       setIsAuthModalOpen(false); // Close modal on success
       onToast('Connexion réussie !', 'success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed', error);
-      onToast('Erreur de connexion Google', 'error');
+      onToast(error?.message || 'Erreur de connexion Google. Veuillez réessayer.', 'error');
     }
   };
 

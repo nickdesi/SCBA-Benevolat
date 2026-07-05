@@ -300,9 +300,16 @@ function App() {
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
                 onGoogleLogin={async () => {
-                  await signInWithGoogle();
-                  setIsAuthModalOpen(false);
-                  addToast('Connexion !', 'success');
+                  try {
+                    await signInWithGoogle();
+                    setIsAuthModalOpen(false);
+                    addToast('Connexion !', 'success');
+                  } catch (error: any) {
+                    addToast(
+                      error?.message || 'Erreur de connexion Google. Veuillez réessayer.',
+                      'error',
+                    );
+                  }
                 }}
                 onToast={addToast}
               />
