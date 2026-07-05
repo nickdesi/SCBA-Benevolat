@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Announcement } from '../types';
 
@@ -8,23 +8,27 @@ export function useAnnouncements() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Server-side expiration filter: only active announcements not yet expired.
-    // The expired-announcements cleanup is handled by the Cloud Function cron
-    // (cleanupExpiredAnnouncements), no need to run it client-side.
+    // Query on `active == true` only: no composite index required (the
+    // (active, createdAt) index already exists). Expired announcements are
+    // filtered client-side; their physical deletion is handled by the
+    // Cloud Function cron `cleanupExpiredAnnouncements`.
     const q = query(
       collection(db, 'announcements'),
       where('active', '==', true),
-      where('expiresAt', '>', Timestamp.now()),
-      orderBy('expiresAt', 'asc'),
+      orderBy('createdAt', 'desc'),
     );
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        const now = Date.now();
         const items: Announcement[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data() as Omit<Announcement, 'id'>;
-          items.push({ id: doc.id, ...data });
+          // Client-side expiration check (server-side would require an extra index)
+          if (data.expiresAt?.toMillis() > now) {
+            items.push({ id: doc.id, ...data });
+          }
         });
 
         // Sort: Urgent first, then Warning, then Info

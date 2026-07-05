@@ -41,9 +41,12 @@ service cloud.firestore {
     }
 
     // Données Utilisateurs (Inscriptions, Profil...)
-    // - Accès strict au propriétaire du compte OU Admin
+    // - Lecture : tout utilisateur authentifié (pour afficher les avatars/prénoms
+    //   des bénévoles sur le planning) OU Admin.
+    // - Écriture : propriétaire du compte OU Admin.
     match /users/{userId}/{document=**} {
-      allow read, write: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow read: if isAuth();
+      allow write: if isAuth() && (request.auth.uid == userId || isAdmin());
     }
   }
 }
