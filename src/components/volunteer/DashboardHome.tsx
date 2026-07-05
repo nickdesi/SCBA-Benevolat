@@ -10,6 +10,7 @@ import { CarpoolList } from './CarpoolList';
 import type { UserCarpoolRegistration } from '../../utils/useCarpoolRegistrations';
 
 import { triggerHaptic } from '../../utils/haptics';
+import { getSeasonStartISO } from '../../utils/dateUtils';
 
 interface DashboardHomeProps {
   registrations: UserRegistration[];
@@ -34,9 +35,15 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
   onToggleFavorite,
   user,
 }) => {
-  // Optimized Stats Calculation
+  // Optimized Stats Calculation — scoped to the current/upcoming season so
+  // that past-season registrations don't inflate the new season's counters.
   const stats = useMemo(() => {
-    const totalMissions = registrations.length;
+    const seasonStartISO = getSeasonStartISO();
+    const seasonRegistrations = registrations.filter(
+      (r) => !r.gameDateISO || r.gameDateISO >= seasonStartISO,
+    );
+
+    const totalMissions = seasonRegistrations.length;
     const totalHours = totalMissions * 2;
 
     // ⚡ Bolt Optimization: Use a single pass O(N) loop to count and find the mode simultaneously.
@@ -45,8 +52,8 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
     let maxCount = 0;
     const roleCounts: Record<string, number> = {};
 
-    for (let i = 0; i < registrations.length; i++) {
-      const roleName = registrations[i].roleName;
+    for (let i = 0; i < seasonRegistrations.length; i++) {
+      const roleName = seasonRegistrations[i].roleName;
       const count = (roleCounts[roleName] || 0) + 1;
       roleCounts[roleName] = count;
 

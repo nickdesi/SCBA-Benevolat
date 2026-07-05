@@ -7,6 +7,7 @@ import {
   getDaysOfWeek,
   isOffSeason,
   getSeasonInfo,
+  getSeasonStartISO,
 } from './dateUtils';
 import type { Game } from '../types';
 
@@ -226,6 +227,24 @@ describe('dateUtils', () => {
       const infoNextYear = getSeasonInfo(new Date(2027, 6, 10));
       expect(infoNextYear.endedSeason).toBe('2026-2027');
       expect(infoNextYear.nextSeason).toBe('2027-2028');
+    });
+  });
+
+  describe('getSeasonStartISO', () => {
+    it('returns Sep 1 of current year during off-season (Jun–Aug)', () => {
+      expect(getSeasonStartISO(new Date(2026, 6, 5))).toBe('2026-09-01'); // July
+      expect(getSeasonStartISO(new Date(2026, 5, 15))).toBe('2026-09-01'); // June
+      expect(getSeasonStartISO(new Date(2026, 7, 31))).toBe('2026-09-01'); // August
+    });
+
+    it('returns Sep 1 of current year during Sep–Dec', () => {
+      expect(getSeasonStartISO(new Date(2026, 8, 1))).toBe('2026-09-01'); // September
+      expect(getSeasonStartISO(new Date(2026, 11, 15))).toBe('2026-09-01'); // December
+    });
+
+    it('returns Sep 1 of previous year during Jan–May', () => {
+      expect(getSeasonStartISO(new Date(2027, 0, 10))).toBe('2026-09-01'); // January
+      expect(getSeasonStartISO(new Date(2027, 4, 1))).toBe('2026-09-01'); // May
     });
   });
 });

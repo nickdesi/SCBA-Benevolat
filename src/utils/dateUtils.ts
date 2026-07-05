@@ -150,3 +150,33 @@ export const getSeasonInfo = (date: Date): { endedSeason: string; nextSeason: st
     nextSeason: `${year}-${year + 1}`,
   };
 };
+
+/**
+ * Returns the ISO date (YYYY-MM-DD) of the start of the active season for a given date.
+ *
+ * Season logic (basketball):
+ * - Sep–Dec → season started Sep 1 of the current year
+ * - Jan–May  → season started Sep 1 of the previous year (season still ongoing)
+ * - Jun–Aug (off-season) → the UPCOMING season starts Sep 1 of the current year
+ *
+ * Used to scope volunteer stats to the current season so that past-season
+ * registrations don't inflate the new season's counters.
+ */
+export const getSeasonStartISO = (date: Date = new Date()): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0-indexed
+  let seasonStartYear: number;
+  if (month >= 8) {
+    // Sep–Dec: current season started this Sep
+    seasonStartYear = year;
+  } else if (month <= 4) {
+    // Jan–May: current season started last Sep
+    seasonStartYear = year - 1;
+  } else {
+    // Jun–Aug (off-season): upcoming season starts this Sep
+    seasonStartYear = year;
+  }
+  const m = (9).toString().padStart(2, '0');
+  const d = (1).toString().padStart(2, '0');
+  return `${seasonStartYear}-${m}-${d}`;
+};
