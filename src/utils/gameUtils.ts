@@ -68,11 +68,17 @@ export const getGameRoleStats = (game: Game) => {
   let filledSlots = 0;
   let totalCapacity = 0;
   let isFullyStaffed = true;
+  // ⚡ Bolt Optimization: Track hasUnlimited during this O(N) role pass
+  // to avoid redundant iterations later.
+  let hasUnlimited = false;
   const missingRoles: string[] = [];
 
   for (let i = 0; i < game.roles.length; i++) {
     const r = game.roles[i];
     const isUnlimited = r.capacity === Infinity || r.capacity === 0;
+    if (!isFinite(r.capacity)) {
+      hasUnlimited = true;
+    }
     const capacity = isUnlimited ? 2 : r.capacity;
 
     filledSlots += Math.min(r.volunteers.length, capacity);
@@ -90,6 +96,7 @@ export const getGameRoleStats = (game: Game) => {
     totalCapacity,
     isFullyStaffed,
     missingRoles,
+    hasUnlimited,
   };
 };
 
