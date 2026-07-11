@@ -368,7 +368,9 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
           percent: gameTotal > 0 ? Math.round((gameFilled / gameTotal) * 100) : 0,
           filled: gameFilled,
           total: gameTotal,
-          hasUnlimited: game.roles.some((r) => !isFinite(r.capacity)),
+          // ⚡ Bolt Optimization: Use precomputed hasUnlimited from roleStats
+          // to prevent a redundant O(R) .some() array traversal per game.
+          hasUnlimited: roleStats.hasUnlimited,
           isUrgent,
           hoursUntil,
           missingRoles: roleStats.missingRoles,

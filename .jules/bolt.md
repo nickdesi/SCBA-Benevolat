@@ -130,3 +130,7 @@
 ## 2026-07-29 - O(K) subset extraction using for loops instead of O(N log N) chained methods
 **Learning:** Extracting a small subset of upcoming matches in `EventSchema.tsx` using `[...games].filter(...).sort(...).slice(0, 10)` creates multiple intermediate array copies and incurs an O(N log N) sorting cost, even though the original `games` array is already globally sorted in the parent component.
 **Action:** When extracting top N matching elements from a pre-sorted array, always pass down the pre-sorted array and use a sequential `for` loop with an early-exit break condition to achieve O(K) complexity, avoiding redundant array object allocation and sorting overhead.
+
+## 2026-07-10 - Prevent Redundant Inner Loops in React Component Data Transformation
+**Learning:** In components like `AdminStats.tsx` that iterate over a large array of games to derive statistics, using an outer O(N) loop and then calling `game.roles.some(...)` inside that loop creates a redundant inner O(R) traversal, especially if another function (`getGameRoleStats`) was already traversing `game.roles` within the same outer loop. This causes unnecessary computation and garbage collection of anonymous functions.
+**Action:** When tracking boolean flags (like `hasUnlimited`) for an array property, integrate the check into an existing utility function's O(R) single pass (like `getGameRoleStats`) and use the precomputed boolean property in the component instead of chaining array methods.
