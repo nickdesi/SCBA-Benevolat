@@ -1,9 +1,9 @@
-import React, { useState, memo, useOptimistic, startTransition } from 'react';
+import React, { useState, memo, useOptimistic, startTransition, useMemo } from 'react';
 import type { Role } from '../types';
 import { CheckIcon } from 'lucide-react';
 import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
 import ConfirmModal from './ConfirmModal';
-import { saveMyRegistration, removeMyRegistration, isMyRegistration } from '../utils/storage';
+import { saveMyRegistration, removeMyRegistration, getMyRegistrations } from '../utils/storage';
 import { parseNames } from '../utils/textUtils';
 import VolunteerAvatar from './VolunteerAvatar';
 import EmptySlot from './EmptySlot';
@@ -35,9 +35,14 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
     teamName = '',
   }) => {
     // Business Rule: Hide "Goûter" role for Senior M1 and Senior M2
-    const isSeniorTeam = ['SENIOR M1', 'SENIOR M2', 'Seniors M1', 'Seniors M2'].some((t) =>
-      teamName.toUpperCase().includes(t.toUpperCase()),
-    );
+    // ⚡ Bolt Optimization: Use useMemo to prevent allocating array and calling .toUpperCase() repeatedly on every keystroke
+    const isSeniorTeam = useMemo(() => {
+      const upper = teamName.toUpperCase();
+      return ['SENIOR M1', 'SENIOR M2', 'SENIORS M1', 'SENIORS M2'].some((t) =>
+        upper.includes(t),
+      );
+    }, [teamName]);
+
     if (role.name === 'Goûter' && isSeniorTeam) {
       return null; // Do not render this slot
     }
@@ -76,6 +81,15 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
     const currentCount = optimisticVolunteers.length;
     const isFull = !isUnlimited && currentCount >= role.capacity;
     const registrationKey = `${gameId}-${role.id}`;
+
+    // ⚡ Bolt Optimization: Hoist synchronous I/O and JSON parsing out of the mapping loop.
+    // Instead of calling `isMyRegistration` (which reads from localStorage and parses JSON) for EVERY volunteer
+    // on EVERY render (e.g., on every keystroke), we evaluate it strictly once when the volunteer list changes.
+    const localRegistrationNames = useMemo(() => {
+      if (isAuthenticated) return myRegistrationNames;
+      const regs = getMyRegistrations();
+      return regs[registrationKey] || [];
+    }, [isAuthenticated, myRegistrationNames, registrationKey, optimisticVolunteers]);
 
     const handleSignUpClick = () => {
       if (newName.trim()) {
@@ -184,9 +198,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
         <div className="p-4 grid grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-6 justify-items-center">
           {/* 1. Filled Slots */}
           {optimisticVolunteers.map((volunteer) => {
-            const isMine = isAuthenticated
-              ? myRegistrationNames.includes(volunteer) // Check if name exists in my list
-              : isMyRegistration(registrationKey, volunteer);
+            const isMine = localRegistrationNames.includes(volunteer);
 
             return (
               <VolunteerAvatar
