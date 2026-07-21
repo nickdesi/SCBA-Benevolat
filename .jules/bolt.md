@@ -134,3 +134,7 @@
 ## 2026-07-10 - Prevent Redundant Inner Loops in React Component Data Transformation
 **Learning:** In components like `AdminStats.tsx` that iterate over a large array of games to derive statistics, using an outer O(N) loop and then calling `game.roles.some(...)` inside that loop creates a redundant inner O(R) traversal, especially if another function (`getGameRoleStats`) was already traversing `game.roles` within the same outer loop. This causes unnecessary computation and garbage collection of anonymous functions.
 **Action:** When tracking boolean flags (like `hasUnlimited`) for an array property, integrate the check into an existing utility function's O(R) single pass (like `getGameRoleStats`) and use the precomputed boolean property in the component instead of chaining array methods.
+
+## 2024-06-25 - Avoid redundant string operations and loops across unapplicable components
+**Learning:** Re-evaluating `teamName.toUpperCase().includes(...)` on every render cycle for *all* game roles (like Arbitre, Table) when the condition is strictly only applicable to the 'Goûter' role causes redundant garbage collection and CPU drain during list rendering.
+**Action:** Always place expensive string allocations and list iterations inside targeted `if` blocks to ensure they only execute when functionally required.

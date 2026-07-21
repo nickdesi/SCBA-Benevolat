@@ -21,6 +21,8 @@ interface VolunteerSlotProps {
   teamName?: string;
 }
 
+const SENIOR_TEAM_PATTERNS = ['SENIOR M1', 'SENIOR M2', 'SENIORS M1', 'SENIORS M2'];
+
 const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
   ({
     role,
@@ -35,11 +37,15 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
     teamName = '',
   }) => {
     // Business Rule: Hide "Goûter" role for Senior M1 and Senior M2
-    const isSeniorTeam = ['SENIOR M1', 'SENIOR M2', 'Seniors M1', 'Seniors M2'].some((t) =>
-      teamName.toUpperCase().includes(t.toUpperCase()),
-    );
-    if (role.name === 'Goûter' && isSeniorTeam) {
-      return null; // Do not render this slot
+    // ⚡ Bolt Optimization: Only compute expensive string allocations and array traversals
+    // when the role is actually 'Goûter', preventing redundant O(1) rendering bottlenecks
+    // on all other roles (e.g. Arbitre, Table) during the GameCard component's render cycle.
+    if (role.name === 'Goûter') {
+      const upperTeam = teamName.toUpperCase();
+      const isSeniorTeam = SENIOR_TEAM_PATTERNS.some((t) => upperTeam.includes(t));
+      if (isSeniorTeam) {
+        return null; // Do not render this slot
+      }
     }
 
     const [newName, setNewName] = useState('');
