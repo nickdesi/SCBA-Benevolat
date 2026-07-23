@@ -3,7 +3,7 @@
  */
 
 // Track which registrations belong to this browser
-const getMyRegistrations = (): Record<string, string[]> => {
+export const getMyRegistrations = (): Record<string, string[]> => {
   try {
     const data = localStorage.getItem('scba-my-registrations');
     return data ? JSON.parse(data) : {};
