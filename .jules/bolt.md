@@ -1,3 +1,10 @@
+# Jules Guidelines & Learning Journal
+
+> **MANDATORY RULES BEFORE COMMITTING:**
+> 1. Always run `npm run format` to auto-format all modified code with Prettier before committing.
+> 2. Ensure `npx eslint .` and `npm run typecheck` pass cleanly.
+> 3. Do NOT alter existing formatting of surrounding files or TypeScript type unions.
+
 ## 2026-04-17 - String Comparison vs Date Parsing in Filter Loops
 **Learning:** Instantiating `new Date()` and calling `setHours()` inside an `Array.prototype.filter` block for a large array is surprisingly expensive and can block the main thread.
 **Action:** When filtering future/past dates, use pre-calculated `YYYY-MM-DD` and `HHMM` string comparison instead of parsing and manipulating dates on each iteration. In benchmarks, this yielded a 20x performance speedup.
