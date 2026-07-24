@@ -1,0 +1,17 @@
+I will fix the performance bottleneck caused by synchronous `localStorage` reads in `VolunteerSlot.tsx` and `CarpoolingSection.tsx`.
+
+1. In `VolunteerSlot.tsx`, `getMyRegistrations()` is called directly in the component body. Since `VolunteerSlot` is rendered for every role of every game (e.g. 5 roles * 20 games = 100 times), this triggers 100 `localStorage.getItem` and `JSON.parse` operations on every render, stalling the main thread.
+2. In `CarpoolingSection.tsx`, `getStoredName()` is called in `useState(getStoredName())` AND as `const storedName = getStoredName()`. This means on every keystroke in the form inputs, `localStorage.getItem` is hit twice, causing severe input lag.
+
+I will optimize this by:
+1. Using `useMemo` in `VolunteerSlot.tsx` to cache the `localRegistrations` result, depending on `isAuthenticated`, `registrationKey`, and `currentCount` (so it updates when a volunteer is added/removed).
+2. Using `useMemo` in `CarpoolingSection.tsx` for `storedName`, depending on `entries` (to update when a carpool submission succeeds and entries refresh).
+3. Passing a memoized `initialName` to `useState` in `CarpoolingSection.tsx` to prevent evaluating `getStoredName()` on every keystroke.
+4. Implementing an in-memory cache in `src/utils/storage.ts` to reduce `localStorage` reads from O(N) to O(1) for any remaining calls.
+
+This aligns perfectly with the learning:
+"Action: Always hoist expensive synchronous operations out of `.map()` iteration loops. To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+
+Wait, one more check:
+Are there any other `useState(getStoredName())` calls?
+Let's check:

@@ -1,0 +1,114 @@
+Bottleneck identified:
+Calling `useState(getStoredName())` directly in the initializer inside `CarpoolingSection.tsx` causes a stale state bug. If the parent component (e.g. `GameCard`) is re-used (like with a different game ID), React might reuse the `CarpoolingSection` instance. Since `useState` initializer only runs *once* when the component mounts, if `getStoredName()` returned one value previously, and then `name` state is updated, it stays updated for that component instance, even if the props changed. Wait, `name` is a state that user modifies *in the form*.
+Actually, `getStoredName()` is synchronous `localStorage.getItem`. In the prompt `## 2026-08-01 - Avoid synchronous blocking operations inside React .map() rendering loops` it says:
+
+"Calling synchronous blocking methods like `localStorage.getItem` and `JSON.parse` inside a `.map()` loop during the render phase of a frequently re-rendered component (like `VolunteerSlot`) causes a severe N+1 performance bottleneck. It stalls the main thread and introduces scroll jank. However, replacing this with a `useState` lazy initializer to read once per component mount creates a functional bug: if the parent component re-uses the component instance with different props, the state does not automatically re-initialize, leading to stale data being displayed.
+**Action:** Always hoist expensive synchronous operations out of `.map()` iteration loops. To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+
+Wait, `VolunteerSlot.tsx` has this issue:
+```tsx
+    // ⚡ Bolt Optimization: Hoist localStorage parsing outside of the map loop to read exactly once per render.
+    // This prevents N+1 synchronous blocking reads inside the rendering loop while automatically staying
+    // up to date when the component re-renders (e.g. after confirming sign up or removing volunteer).
+    const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
+```
+Wait, `getMyRegistrations()` calls `localStorage.getItem` inside `VolunteerSlot`!
+`VolunteerSlot` is rendered multiple times per game, and inside `.map()` in `VolunteerSection.tsx`!
+```tsx
+        {roles.map((role, index) => (
+          <VolunteerSlot
+```
+And `GameCard` is rendered in `.map` in `DesktopGrid`, `MobileTimeline`, etc.
+So `getMyRegistrations()` is called for *every* role of *every* game on *every* render! This is a massive N+1 `localStorage.getItem('scba-my-registrations')` bottleneck.
+`getMyRegistrations()` reads and parses JSON. `JSON.parse` is slow!
+Ah, but the action says: "To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`." Wait, if it's in the main body of `VolunteerSlot`, it's still called N times.
+The prompt says: "Always hoist expensive synchronous operations out of `.map()` iteration loops."
+Wait, `VolunteerSlot` is *inside* a `.map()` loop (it's called by `VolunteerSection`, which maps over `roles`).
+But `VolunteerSlot` is a component. If it's a component, React calls its render function N times. So it shouldn't call `getMyRegistrations()` in `VolunteerSlot`. It should call it in the parent component, or even higher, and pass it down.
+Wait, `localRegistrations` is actually `useMemo`? No, it's:
+`const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];`
+This is called directly in the component body of `VolunteerSlot`. Since `VolunteerSlot` is rendered for each role, `getMyRegistrations()` (which does `localStorage.getItem` and `JSON.parse`) is called R * G times per render!
+
+Wait, let's read the 2026-08-01 learning carefully:
+"Calling synchronous blocking methods like `localStorage.getItem` and `JSON.parse` inside a `.map()` loop during the render phase of a frequently re-rendered component (like `VolunteerSlot`) causes a severe N+1 performance bottleneck. It stalls the main thread and introduces scroll jank. However, replacing this with a `useState` lazy initializer to read once per component mount creates a functional bug: if the parent component re-uses the component instance with different props, the state does not automatically re-initialize, leading to stale data being displayed."
+"Action: Always hoist expensive synchronous operations out of `.map()` iteration loops. To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+Wait, "calculate the value once per render in the main body of the component" - this means in the parent component!
+If we hoist it to `DesktopGrid` or `GameCard`?
+Wait, if we use `useMemo` in `VolunteerSlot`:
+```tsx
+const allRegistrations = useMemo(() => getMyRegistrations(), []);
+```
+No, `getMyRegistrations` doesn't change props, but if we do it in `useMemo` inside `VolunteerSlot`, it still computes once per `VolunteerSlot` component mount (so R*G times on mount).
+If we hoist it to `VolunteerSection`:
+```tsx
+const VolunteerSection = ({ roles, gameId ... }) => {
+   const myRegistrations = useMemo(() => getMyRegistrations(), []);
+   ...
+          <VolunteerSlot
+            myRegistrationNames={userRegistrations?.get(`${gameId}_${role.id}`) || myRegistrations[`${gameId}-${role.id}`]}
+```
+Wait, `userRegistrations` is already a Map passed down to `VolunteerSection`!
+Wait! `GameCard` receives `userRegistrations`, which is passed to `VolunteerSection`.
+Let's trace `userRegistrations` in `DesktopGrid.tsx`.
+```tsx
+  userRegistrations?: Map<string, string[]>;
+```
+Is `myRegistrations` (localStorage) already passed down? No, `userRegistrations` is from Firebase (the `useVolunteers` hook).
+Ah! The `DesktopGrid` (and `MobileTimeline`) receives `userRegistrations`, which is for *authenticated* users. Unauthenticated users use `localStorage`.
+Where is `localStorage` used? In `VolunteerSlot`:
+```tsx
+const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
+```
+So for unauthenticated users, `getMyRegistrations()` is called in *every* `VolunteerSlot` render.
+
+To fix this:
+1. In `VolunteerSection.tsx`? Wait, `VolunteerSection` is also rendered per game. So calling it in `VolunteerSection` is still N times (once per game).
+2. What if we hoist it to the very top (e.g., `PlanningView`, `DesktopGrid`, `MobileTimeline`, or `useVolunteers`)?
+But we can also just use `useMemo(() => getMyRegistrations(), [])` in `GameCard` or `DesktopGrid`.
+Wait, the learning says: "To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+This sounds like if the component is `VolunteerSlot`, we shouldn't use `useState(() => getMyRegistrations())`, we should use `useMemo`.
+Wait! Is it currently using `useState` in `VolunteerSlot`? No, it was using `useState` before, but someone changed it to `const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];`
+Wait, did someone change it recently? Let's check git history or just the current file.
+Current file:
+```tsx
+    // ⚡ Bolt Optimization: Hoist localStorage parsing outside of the map loop to read exactly once per render.
+    // This prevents N+1 synchronous blocking reads inside the rendering loop while automatically staying
+    // up to date when the component re-renders (e.g. after confirming sign up or removing volunteer).
+    const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
+```
+Ah! The current code *is* calling `getMyRegistrations()` in the main body of `VolunteerSlot`. But `VolunteerSlot` *is* called inside a `.map()` loop in `VolunteerSection.tsx`! So the "hoist" comment is wrong, it didn't hoist it out of the `.map()` loop of the parent, it just hoisted it out of... wait, there is no `.map()` loop inside `VolunteerSlot` that it could have been hoisted from, except `optimisticVolunteers.map`.
+So calling it in the main body of `VolunteerSlot` STILL executes it N times per game!
+Because `VolunteerSlot` is rendered for each role, so React calls `VolunteerSlot` function for each role.
+Actually, wait. If we hoist `getMyRegistrations()` to `GameList` or `DesktopGrid`? No, what if we just use `useMemo` inside `VolunteerSlot`?
+```tsx
+const localRegistrations = useMemo(() => isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [], [isAuthenticated, registrationKey]);
+```
+Wait, if `localStorage` changes, `useMemo` won't update unless a dependency changes. But `VolunteerSlot` relies on re-rendering to get the latest `localStorage`?
+When a user signs up, `saveMyRegistration` is called, which updates `localStorage`. Then it calls `onVolunteer`, which updates Firebase, which eventually triggers a re-render from the snapshot. When the re-render happens, `useMemo` with no dependencies (other than `isAuthenticated` and `registrationKey`) would return the *stale* `localStorage` value!
+That's exactly what the learning says: "replacing this with a `useState` lazy initializer to read once per component mount creates a functional bug... calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+Wait, if it's computed *once per render* in the main body of `VolunteerSlot`, it runs R*G times.
+How can we run it *once* for all games?
+We can fetch `myRegistrations` once in `useGames` or `PlanningView` or `App.tsx` and pass it down.
+But wait, `CarpoolingSection.tsx` also has a `useState(getStoredName())`.
+```tsx
+    const [name, setName] = useState(getStoredName());
+```
+Wait! `CarpoolingSection` uses `useState(getStoredName())`.
+If `GameCard` is recycled (e.g., in a virtualized list, or when filters change, causing `CarpoolingSection` to mount with different props? No, `GameCard` uses `key={game.id}`).
+Wait, the prompt says:
+"Calling synchronous blocking methods like `localStorage.getItem` and `JSON.parse` inside a `.map()` loop during the render phase of a frequently re-rendered component (like `VolunteerSlot`) causes a severe N+1 performance bottleneck. It stalls the main thread and introduces scroll jank. However, replacing this with a `useState` lazy initializer to read once per component mount creates a functional bug: if the parent component re-uses the component instance with different props, the state does not automatically re-initialize, leading to stale data being displayed.
+**Action:** Always hoist expensive synchronous operations out of `.map()` iteration loops. To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+
+Wait, this learning mentions a `.map()` loop inside the render phase.
+If a component has a `.map()` loop in its render phase, and inside that `.map()` loop it calls `localStorage.getItem`.
+Does `VolunteerSection` have a `.map()` loop?
+Yes:
+```tsx
+        {roles.map((role, index) => (
+          <VolunteerSlot
+            key={role.id}
+```
+But `VolunteerSlot` is a component.
+Wait! What if `VolunteerSlot` wasn't a component, but a function? No, it's a component.
+Is there any other `.map()` loop?
+Let's check `VolunteerSlot.tsx` again.

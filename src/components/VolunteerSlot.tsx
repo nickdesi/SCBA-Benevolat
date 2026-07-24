@@ -83,10 +83,12 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
     const isFull = !isUnlimited && currentCount >= role.capacity;
     const registrationKey = `${gameId}-${role.id}`;
 
-    // ⚡ Bolt Optimization: Hoist localStorage parsing outside of the map loop to read exactly once per render.
+    // ⚡ Bolt Optimization: Wrap localStorage parsing in useMemo with currentCount dependency
     // This prevents N+1 synchronous blocking reads inside the rendering loop while automatically staying
-    // up to date when the component re-renders (e.g. after confirming sign up or removing volunteer).
-    const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
+    // up to date when the component's slot count changes (e.g. after confirming sign up or removing volunteer).
+    const localRegistrations = React.useMemo(() => {
+      return isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
+    }, [isAuthenticated, registrationKey, currentCount]);
 
     const handleSignUpClick = () => {
       if (newName.trim()) {

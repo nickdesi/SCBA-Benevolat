@@ -1,0 +1,65 @@
+Looking closely at the learning: "When optimizing React components by hoisting expensive operations (e.g., synchronous `localStorage` reads) out of rendering loops, avoid using `useState` lazy initializers (`useState(() => ... )`) for state derived from props (like `registrationKey`). This introduces a stale state bug if the component is reused with different props. Instead, read the value once per render in the function body or use `useMemo` with the proper dependency array."
+
+Ah, the learning explicitly calls out:
+1. Hoisting synchronous operations out of rendering loops.
+2. Avoiding `useState` lazy initializers for state derived from props (like `registrationKey`).
+3. Reading the value once per render in the function body OR using `useMemo` with the proper dependency array.
+
+In `VolunteerSlot.tsx`, it currently reads:
+`const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];`
+This is read once per render in the function body! But it's read by EACH `VolunteerSlot` instance, which means if there are 20 games * 5 roles, `getMyRegistrations()` is called 100 times per render! `getMyRegistrations()` calls `localStorage.getItem` and `JSON.parse`.
+
+We need to avoid calling it 100 times. How can we hoist it OUT of `VolunteerSlot` entirely, so it's only called ONCE for the entire list of games, but still passed down correctly to each `VolunteerSlot`?
+
+Actually, `userRegistrations` is a Map passed down to `VolunteerSection` and then `VolunteerSlot`.
+Wait, in `useVolunteers.ts`, `userRegistrationsMap` is built from Firebase data.
+If we could build a similar map for `localRegistrations` at the very top (e.g., `useVolunteers` or `PlanningView`) and pass it down?
+No, the easiest way is to use `useMemo` to memoize the result of `getMyRegistrations()`! But where?
+If we use `useMemo` in `VolunteerSlot`, it still computes once per `VolunteerSlot` instance, meaning 100 times.
+If we hoist it to `App.tsx` or `PlanningView`?
+
+Wait! If we look at the prompt again:
+"To properly handle derived state and maintain reactivity when props change without causing a stale state bug, calculate the value *once per render* in the main body of the component, or use a `useMemo` hook with the correct dependency array instead of `useState`."
+
+Let's look at `CarpoolingSection.tsx`:
+```tsx
+    const [name, setName] = useState(getStoredName());
+```
+Here, `getStoredName()` is called synchronously on every render of `CarpoolingSection`!
+No, wait. `useState(getStoredName())` calls `getStoredName()` ON EVERY RENDER.
+Wait! `useState(getStoredName())` evaluates `getStoredName()` on every render and passes the result to `useState`. `useState` ignores the argument on subsequent renders, but the function `getStoredName()` is still executed on every render!
+And `getStoredName()` calls `localStorage.getItem` which is synchronous and blocking.
+To fix this, one normally uses a lazy initializer: `useState(() => getStoredName())`.
+BUT the learning says: "avoid using `useState` lazy initializers (`useState(() => ... )`) for state derived from props (like `registrationKey`). This introduces a stale state bug if the component is reused with different props."
+Wait, `name` is NOT derived from props in `CarpoolingSection.tsx`! It's just a user preference.
+Wait, let's re-read the learning from the memory:
+"When optimizing React components by hoisting expensive operations (e.g., synchronous `localStorage` reads) out of rendering loops, avoid using `useState` lazy initializers (`useState(() => ... )`) for state derived from props (like `registrationKey`). This introduces a stale state bug if the component is reused with different props. Instead, read the value once per render in the function body or use `useMemo` with the proper dependency array."
+
+Is there any place where `useState(() => ...)` is currently used for state derived from props?
+Let's check `VolunteerSlot.tsx` git blame or history. No, we only see the current state.
+What about `GameCard` or `AdminStats` or `VolunteerSection`?
+
+Wait! Look at `VolunteerSlot.tsx` again.
+```tsx
+const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
+```
+This is calculated once per render in the function body, as the learning suggests. BUT it calls `getMyRegistrations()` which parses JSON every time!
+If we optimize `getMyRegistrations` itself?
+We can cache the parsed object in memory inside `storage.ts`!
+```ts
+let cachedRegistrations: Record<string, string[]> | null = null;
+
+export const getMyRegistrations = (): Record<string, string[]> => {
+  if (cachedRegistrations) return cachedRegistrations;
+  try {
+    const data = localStorage.getItem('scba-my-registrations');
+    cachedRegistrations = data ? JSON.parse(data) : {};
+    return cachedRegistrations;
+  } catch {
+    return {};
+  }
+};
+// And in saveMyRegistration / removeMyRegistration we update the cache.
+```
+This would make `getMyRegistrations()` extremely fast (O(1) memory lookup) instead of O(N) JSON parse and DOM storage read every time it's called.
+Let's check `src/utils/storage.ts` again!
