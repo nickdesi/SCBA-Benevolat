@@ -3,12 +3,7 @@ import type { Role } from '../types';
 import { CheckIcon } from 'lucide-react';
 import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
 import ConfirmModal from './ConfirmModal';
-import {
-  saveMyRegistration,
-  removeMyRegistration,
-  isMyRegistration,
-  getMyRegistrations,
-} from '../utils/storage';
+import { saveMyRegistration, removeMyRegistration, getMyRegistrations } from '../utils/storage';
 import { parseNames } from '../utils/textUtils';
 import VolunteerAvatar from './VolunteerAvatar';
 import EmptySlot from './EmptySlot';

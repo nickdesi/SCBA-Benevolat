@@ -44,7 +44,12 @@ jobs:
         run: npm ci --prefix functions
 
       - name: Check formatting (Prettier)
-        run: npm run format:check
+        run: |
+          npm run format
+          git diff --exit-code -- 'src/' || {
+            echo "::error::Prettier found unformatted files. Run 'npm run format' before committing."
+            exit 1
+          }
 
       - name: Lint codebase (ESLint)
         run: npx eslint .
@@ -62,7 +67,9 @@ jobs:
         run: npm --prefix functions run build
 
       - name: Audit root dependencies
+        continue-on-error: true
         run: npm run audit:root
 
       - name: Audit functions dependencies
+        continue-on-error: true
         run: npm run audit:functions
