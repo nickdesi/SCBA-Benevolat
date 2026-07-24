@@ -3,7 +3,12 @@ import type { Role } from '../types';
 import { CheckIcon } from 'lucide-react';
 import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
 import ConfirmModal from './ConfirmModal';
-import { saveMyRegistration, removeMyRegistration, isMyRegistration, getMyRegistrations } from '../utils/storage';
+import {
+  saveMyRegistration,
+  removeMyRegistration,
+  isMyRegistration,
+  getMyRegistrations,
+} from '../utils/storage';
 import { parseNames } from '../utils/textUtils';
 import VolunteerAvatar from './VolunteerAvatar';
 import EmptySlot from './EmptySlot';
@@ -86,7 +91,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
     // ⚡ Bolt Optimization: Hoist localStorage parsing outside of the map loop to read exactly once per render.
     // This prevents N+1 synchronous blocking reads inside the rendering loop while automatically staying
     // up to date when the component re-renders (e.g. after confirming sign up or removing volunteer).
-    const localRegistrations = isAuthenticated ? [] : (getMyRegistrations()[registrationKey] || []);
+    const localRegistrations = isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
 
     const handleSignUpClick = () => {
       if (newName.trim()) {
