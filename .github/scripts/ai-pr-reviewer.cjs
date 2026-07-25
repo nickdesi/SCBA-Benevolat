@@ -8,19 +8,44 @@ const PR_NUMBER = process.env.GITHUB_PR_NUMBER;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 if (!GITHUB_TOKEN || !GEMINI_API_KEY || !GITHUB_REPOSITORY || !PR_NUMBER) {
-  console.error("Missing env vars: GITHUB_TOKEN, GEMINI_API_KEY, GITHUB_REPOSITORY, GITHUB_PR_NUMBER");
+  console.error(
+    'Missing env vars: GITHUB_TOKEN, GEMINI_API_KEY, GITHUB_REPOSITORY, GITHUB_PR_NUMBER',
+  );
   process.exit(1);
 }
 
 const SUPPORTED_EXTENSIONS = [
-  '.js', '.ts', '.jsx', '.tsx', '.py', '.sh', '.yml', '.yaml',
-  '.json', '.css', '.html', '.go', '.rs', '.c', '.cpp', '.h',
-  '.conf', '.ini', '.md', '.toml'
+  '.js',
+  '.ts',
+  '.jsx',
+  '.tsx',
+  '.py',
+  '.sh',
+  '.yml',
+  '.yaml',
+  '.json',
+  '.css',
+  '.html',
+  '.go',
+  '.rs',
+  '.c',
+  '.cpp',
+  '.h',
+  '.conf',
+  '.ini',
+  '.md',
+  '.toml',
 ];
 
 const IGNORED_FILES = [
-  'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'composer.lock',
-  'AGENTS.md', 'task.md', 'implementation_plan.md', 'walkthrough.md'
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'yarn.lock',
+  'composer.lock',
+  'AGENTS.md',
+  'task.md',
+  'implementation_plan.md',
+  'walkthrough.md',
 ];
 
 const MAX_RETRIES = 3;
@@ -31,7 +56,9 @@ function makeRequest(options, postData = null, retries = MAX_RETRIES) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve({ data, headers: res.headers });
@@ -39,13 +66,17 @@ function makeRequest(options, postData = null, retries = MAX_RETRIES) {
           const delay = BASE_DELAY_MS * Math.pow(2, MAX_RETRIES - retries);
           console.warn(`Rate limited. Retrying in ${delay}ms...`);
           setTimeout(() => {
-            makeRequest(options, postData, retries - 1).then(resolve).catch(reject);
+            makeRequest(options, postData, retries - 1)
+              .then(resolve)
+              .catch(reject);
           }, delay);
         } else if (res.statusCode >= 500 && retries > 0) {
           const delay = BASE_DELAY_MS * Math.pow(2, MAX_RETRIES - retries);
           console.warn(`Server error ${res.statusCode}. Retrying in ${delay}ms...`);
           setTimeout(() => {
-            makeRequest(options, postData, retries - 1).then(resolve).catch(reject);
+            makeRequest(options, postData, retries - 1)
+              .then(resolve)
+              .catch(reject);
           }, delay);
         } else {
           reject(new Error(`Status ${res.statusCode}: ${data}`));
@@ -56,7 +87,9 @@ function makeRequest(options, postData = null, retries = MAX_RETRIES) {
       if (retries > 0) {
         const delay = BASE_DELAY_MS * Math.pow(2, MAX_RETRIES - retries);
         setTimeout(() => {
-          makeRequest(options, postData, retries - 1).then(resolve).catch(reject);
+          makeRequest(options, postData, retries - 1)
+            .then(resolve)
+            .catch(reject);
         }, delay);
       } else {
         reject(err);
@@ -80,10 +113,10 @@ async function fetchAllPRFiles() {
       path: `/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100&page=${page}`,
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'AI-PR-Reviewer-Action'
-      }
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'AI-PR-Reviewer-Action',
+      },
     };
 
     const { data } = await makeRequest(options);
@@ -135,10 +168,10 @@ async function run() {
       path: `/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}`,
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'AI-PR-Reviewer-Action'
-      }
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'AI-PR-Reviewer-Action',
+      },
     };
     const { data: prDetailsRaw } = await makeRequest(prDetailsOptions);
     const prDetails = JSON.parse(prDetailsRaw);
@@ -148,23 +181,23 @@ async function run() {
     // 2. Fetch all modified files (paginated)
     const files = await fetchAllPRFiles();
 
-    const filesToAnalyze = files.filter(file => {
-      if (IGNORED_FILES.some(ignored => file.filename.endsWith(ignored))) return false;
-      return SUPPORTED_EXTENSIONS.some(ext => file.filename.endsWith(ext)) && !!file.patch;
+    const filesToAnalyze = files.filter((file) => {
+      if (IGNORED_FILES.some((ignored) => file.filename.endsWith(ignored))) return false;
+      return SUPPORTED_EXTENSIONS.some((ext) => file.filename.endsWith(ext)) && !!file.patch;
     });
 
     if (filesToAnalyze.length === 0) {
-      console.log("No analyzable code files found.");
+      console.log('No analyzable code files found.');
       return;
     }
 
     console.log(`${filesToAnalyze.length} files retained for analysis.`);
 
     // 3. Prepare diff data for Gemini
-    const fileDiffData = filesToAnalyze.map(file => ({
+    const fileDiffData = filesToAnalyze.map((file) => ({
       filename: file.filename,
       patch: file.patch,
-      validLinesForComments: getAddedLines(file.patch)
+      validLinesForComments: getAddedLines(file.patch),
     }));
 
     // 4. Call Gemini API
@@ -197,18 +230,18 @@ ${JSON.stringify(fileDiffData, null, 2)}`;
     const geminiPayload = {
       contents: [{ parts: [{ text: promptUser }] }],
       systemInstruction: { parts: [{ text: systemInstruction }] },
-      generationConfig: { responseMimeType: "application/json" }
+      generationConfig: { responseMimeType: 'application/json' },
     };
 
     const geminiUrl = new URL(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
     );
 
     const geminiOptions = {
       hostname: geminiUrl.hostname,
       path: geminiUrl.pathname + geminiUrl.search,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     };
 
     console.log(`Sending to Gemini (${GEMINI_MODEL})...`);
@@ -226,13 +259,13 @@ ${JSON.stringify(fileDiffData, null, 2)}`;
     const validComments = [];
     if (reviewResult.comments && Array.isArray(reviewResult.comments)) {
       for (const comment of reviewResult.comments) {
-        const fileData = fileDiffData.find(f => f.filename === comment.path);
+        const fileData = fileDiffData.find((f) => f.filename === comment.path);
         if (fileData && fileData.validLinesForComments.includes(Number(comment.line))) {
           validComments.push({
             path: comment.path,
             line: Number(comment.line),
             side: 'RIGHT',
-            body: comment.body
+            body: comment.body,
           });
         } else {
           console.warn(`Skipped invalid comment: ${comment.path}:${comment.line} (not in diff)`);
@@ -251,7 +284,7 @@ ${reviewResult.summary}
 
 _Revue générée automatiquement._`,
       event: reviewResult.verdict,
-      comments: validComments
+      comments: validComments,
     };
 
     const submitReviewOptions = {
@@ -259,18 +292,17 @@ _Revue générée automatiquement._`,
       path: `/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews`,
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3+json',
         'User-Agent': 'AI-PR-Reviewer-Action',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     };
 
     await makeRequest(submitReviewOptions, reviewPayload);
-    console.log("Review published successfully.");
-
+    console.log('Review published successfully.');
   } catch (error) {
-    console.error("AI review failed:", error);
+    console.error('AI review failed:', error);
     process.exit(1);
   }
 }

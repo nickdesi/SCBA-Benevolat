@@ -55,9 +55,13 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
     onRejectPassenger,
     onCancelRequest,
   }) => {
+    // ⚡ Bolt Optimization: Use useMemo for synchronous localStorage read to prevent blocking
+    // the main thread on every keystroke in the controlled form inputs.
+    const initialName = useMemo(() => getStoredName(), []);
+
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [formType, setFormType] = useState<'driver' | 'passenger'>('driver');
-    const [name, setName] = useState(getStoredName());
+    const [name, setName] = useState(initialName);
     const [phone, setPhone] = useState('');
     const [seats, setSeats] = useState(3);
     const [departureLocation, setDepartureLocation] = useState('');
@@ -125,7 +129,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
       };
     }, [entries]);
 
-    const storedName = getStoredName();
+    const storedName = useMemo(() => getStoredName(), [entries]);
     const currentUserEntry = useMemo(() => {
       // ⚡ Bolt Optimization: Hoist storedName.toLowerCase() outside the iteration loop
       // to prevent redundant O(N) string reallocations during array traversal.

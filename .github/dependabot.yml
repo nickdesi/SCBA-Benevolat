@@ -5,32 +5,32 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: "06:00"
+      time: '06:00'
       timezone: Europe/Paris
     open-pull-requests-limit: 5
     groups:
       frontend-dependencies:
         patterns:
-          - "*"
+          - '*'
 
   - package-ecosystem: npm
     directory: /functions
     schedule:
       interval: weekly
       day: monday
-      time: "06:15"
+      time: '06:15'
       timezone: Europe/Paris
     open-pull-requests-limit: 5
     groups:
       firebase-functions-dependencies:
         patterns:
-          - "*"
+          - '*'
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
       day: monday
-      time: "06:30"
+      time: '06:30'
       timezone: Europe/Paris
     open-pull-requests-limit: 5
