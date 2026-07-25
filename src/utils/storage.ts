@@ -34,11 +34,6 @@ export const removeMyRegistration = (key: string, name: string): void => {
   localStorage.setItem('scba-my-registrations', JSON.stringify(registrations));
 };
 
-export const isMyRegistration = (key: string, name: string): boolean => {
-  const registrations = getMyRegistrations();
-  return registrations[key]?.includes(name) || false;
-};
-
 // User name storage (for carpooling)
 export const getStoredName = (): string => {
   try {

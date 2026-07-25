@@ -4,8 +4,7 @@
   "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
-      "project": ["src/**/*.{ts,tsx}", "*.{ts,tsx}"],
-      "ignore": ["src/utils/useCarpool.ts"]
+      "project": ["src/**/*.{ts,tsx}", "*.{ts,tsx}"]
     },
     "functions": {
       "project": ["src/**/*.ts"]

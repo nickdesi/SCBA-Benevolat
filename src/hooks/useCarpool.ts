@@ -27,22 +27,6 @@ export const getRemainingSeats = (driver: CarpoolEntry, allEntries: CarpoolEntry
   return Math.max(0, totalSeats - seatsUsed);
 };
 
-/** Utility: get available drivers (with remaining seats) */
-export const getAvailableDrivers = (entries: CarpoolEntry[]): CarpoolEntry[] => {
-  return entries.filter((e) => {
-    if (e.type !== 'driver') return false;
-    const remaining = getRemainingSeats(e, entries);
-    return remaining > 0;
-  });
-};
-
-/** Utility: get pending requests for a driver */
-export const getPendingRequests = (driverId: string, entries: CarpoolEntry[]): CarpoolEntry[] => {
-  return entries.filter(
-    (e) => e.type === 'passenger' && e.status === 'pending' && e.requestedDriverId === driverId,
-  );
-};
-
 export const useCarpool = (): UseCarpoolReturn => {
   const handleAddCarpool = useCallback(
     async (gameId: string, entry: Omit<CarpoolEntry, 'id'>): Promise<void> => {

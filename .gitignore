@@ -38,3 +38,6 @@ functions/lib/
 
 # MCP configs
 firebase-mcp.json
+
+__pycache__/
+*.pyc
