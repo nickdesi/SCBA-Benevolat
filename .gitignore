@@ -41,3 +41,6 @@ firebase-mcp.json
 
 __pycache__/
 *.pyc
+
+# Local Agent Customizations
+.agents/
