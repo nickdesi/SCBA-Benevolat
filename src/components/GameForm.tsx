@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Game, Role, GameFormData } from '../types';
 import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS, MONTH_MAP } from '../constants';
 import { PlusIcon, CheckIcon } from './Icons';
@@ -19,6 +19,16 @@ const GameForm: React.FC<GameFormProps> = ({
   existingLocations = [],
   existingOpponents = [],
 }) => {
+  // ⚡ Bolt Optimization: Memoize sorted datalist options to prevent O(N log N) sorting
+  // and redundant array allocations on every keystroke in this controlled form.
+  const uniqueOpponents = useMemo(() => {
+    return Array.from(new Set(existingOpponents)).sort();
+  }, [existingOpponents]);
+
+  const uniqueLocations = useMemo(() => {
+    return Array.from(new Set([...COMMON_LOCATIONS, ...existingLocations])).sort();
+  }, [existingLocations]);
+
   const [formData, setFormData] = useState({
     team: gameToEdit?.team || '',
     opponent: gameToEdit?.opponent || '',
@@ -228,11 +238,9 @@ const GameForm: React.FC<GameFormProps> = ({
                        bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
             />
             <datalist id="opponents-list">
-              {Array.from(new Set(existingOpponents))
-                .sort()
-                .map((opp) => (
-                  <option key={opp} value={opp} />
-                ))}
+              {uniqueOpponents.map((opp) => (
+                <option key={opp} value={opp} />
+              ))}
             </datalist>
           </div>
 
@@ -358,11 +366,9 @@ const GameForm: React.FC<GameFormProps> = ({
                   </p>
                 )}
                 <datalist id="locations-list">
-                  {Array.from(new Set([...COMMON_LOCATIONS, ...existingLocations]))
-                    .sort()
-                    .map((loc) => (
-                      <option key={loc} value={loc} />
-                    ))}
+                  {uniqueLocations.map((loc) => (
+                    <option key={loc} value={loc} />
+                  ))}
                 </datalist>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
                   <span aria-hidden="true">🗺️</span>
