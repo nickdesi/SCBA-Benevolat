@@ -26,23 +26,28 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
     // ⚡ Bolt Optimization: Combine filter and string parsing into a single O(N) reduce pass.
     // This prevents expensive regex (.match) and string operations (.split, .substring)
     // from running on every single render cycle for every item in the list.
-    return registrations.reduce((acc, r) => {
-      // ⚡ Bolt Optimization: Short-circuit the upcoming check if we're showing all history
-      if (!showHistory && !isGameUpcoming(r, now, todayISO)) return acc;
+    return registrations.reduce(
+      (acc, r) => {
+        // ⚡ Bolt Optimization: Short-circuit the upcoming check if we're showing all history
+        if (!showHistory && !isGameUpcoming(r, now, todayISO)) return acc;
 
-      const parts = r.gameDate ? r.gameDate.split(' ') : [];
-      const dayName = parts[0] ? parts[0].substring(0, 3) : '';
-      const dayNumMatch = r.gameDate ? r.gameDate.match(/\d+/) : null;
-      const dayNum = dayNumMatch ? dayNumMatch[0] : '';
-      const monthName = parts[2] ? parts[2].substring(0, 3).toUpperCase() : '';
+        const parts = r.gameDate ? r.gameDate.split(' ') : [];
+        const dayName = parts[0] ? parts[0].substring(0, 3) : '';
+        const dayNumMatch = r.gameDate ? r.gameDate.match(/\d+/) : null;
+        const dayNum = dayNumMatch ? dayNumMatch[0] : '';
+        const monthName = parts[2] ? parts[2].substring(0, 3).toUpperCase() : '';
 
-      acc.push({
-        ...r,
-        _parsedDate: { dayName, dayNum, monthName },
-      });
+        acc.push({
+          ...r,
+          _parsedDate: { dayName, dayNum, monthName },
+        });
 
-      return acc;
-    }, [] as (UserRegistration & { _parsedDate?: { dayName: string; dayNum: string; monthName: string } })[]);
+        return acc;
+      },
+      [] as (UserRegistration & {
+        _parsedDate?: { dayName: string; dayNum: string; monthName: string };
+      })[],
+    );
   }, [registrations, showHistory]);
 
   const handleDeleteClick = useCallback((id: string) => {
