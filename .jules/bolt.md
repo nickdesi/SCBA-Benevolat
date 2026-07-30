@@ -148,3 +148,7 @@
 ## 2026-08-01 - Avoid synchronous sorting inside controlled components JSX
 **Learning:** Performing array deduplication `Array.from(new Set(...))` and `.sort()` operations directly within the JSX render block of a controlled component (like `GameForm.tsx`) causes severe input lag. The component re-renders on every single keystroke, forcing the browser to redundantly allocate memory and re-sort lists (like opponents or locations) constantly.
 **Action:** Always wrap expensive list derivations and sorting in a `useMemo` hook, ensuring it only recalculates when the underlying raw data (e.g., `existingOpponents`) actually changes, completely decoupling it from the controlled input's frequent state updates.
+
+## 2026-09-10 - Avoid regex and string parsing inside JSX list rendering loops
+**Learning:** Performing expensive string manipulations (`.split`, `.substring`) and regex executions (`.match`) directly inside a JSX `.map()` render loop (like in `MissionList.tsx`) causes these operations to run repeatedly on every React render cycle. When components re-render frequently due to state changes (like opening a confirmation modal), this creates significant, redundant CPU overhead and slows down list rendering.
+**Action:** Always extract and pre-compute complex string formatting and regex matching into a `useMemo` block *before* rendering. Combine the data mapping and filtering using a single `.reduce()` pass, attaching the pre-parsed display strings to the data object so the JSX simply renders primitive string properties.

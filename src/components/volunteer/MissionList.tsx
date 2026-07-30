@@ -23,10 +23,26 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
     const now = new Date();
     const todayISO = getTodayISO();
 
-    return registrations.filter((r) => {
-      if (showHistory) return true;
-      return isGameUpcoming(r, now, todayISO);
-    });
+    // ⚡ Bolt Optimization: Combine filter and string parsing into a single O(N) reduce pass.
+    // This prevents expensive regex (.match) and string operations (.split, .substring)
+    // from running on every single render cycle for every item in the list.
+    return registrations.reduce((acc, r) => {
+      // ⚡ Bolt Optimization: Short-circuit the upcoming check if we're showing all history
+      if (!showHistory && !isGameUpcoming(r, now, todayISO)) return acc;
+
+      const parts = r.gameDate ? r.gameDate.split(' ') : [];
+      const dayName = parts[0] ? parts[0].substring(0, 3) : '';
+      const dayNumMatch = r.gameDate ? r.gameDate.match(/\d+/) : null;
+      const dayNum = dayNumMatch ? dayNumMatch[0] : '';
+      const monthName = parts[2] ? parts[2].substring(0, 3).toUpperCase() : '';
+
+      acc.push({
+        ...r,
+        _parsedDate: { dayName, dayNum, monthName },
+      });
+
+      return acc;
+    }, [] as (UserRegistration & { _parsedDate?: { dayName: string; dayNum: string; monthName: string } })[]);
   }, [registrations, showHistory]);
 
   const handleDeleteClick = useCallback((id: string) => {
@@ -105,13 +121,13 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
                   {/* Date Badge Elite */}
                   <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-slate-50 to-indigo-50/50 dark:from-slate-700 dark:to-slate-800 text-indigo-600 dark:text-indigo-400 rounded-2xl flex flex-col items-center justify-center font-black text-xs uppercase shadow-premium border border-white/50 dark:border-white/5 relative z-10 transition-transform group-hover:scale-105 group-hover:-rotate-3 leading-tight p-1">
                     <span className="text-[9px] opacity-60 tracking-tighter">
-                      {reg.gameDate?.split(' ')[0].substring(0, 3)}
+                      {reg._parsedDate?.dayName}
                     </span>
                     <span className="text-2xl tracking-tighter my-[-2px]">
-                      {reg.gameDate?.match(/\d+/)?.[0]}
+                      {reg._parsedDate?.dayNum}
                     </span>
                     <span className="text-[9px] opacity-60 tracking-widest">
-                      {reg.gameDate?.split(' ')[2]?.substring(0, 3).toUpperCase()}
+                      {reg._parsedDate?.monthName}
                     </span>
                   </div>
 
