@@ -152,3 +152,7 @@
 ## 2026-09-10 - Avoid regex and string parsing inside JSX list rendering loops
 **Learning:** Performing expensive string manipulations (`.split`, `.substring`) and regex executions (`.match`) directly inside a JSX `.map()` render loop (like in `MissionList.tsx`) causes these operations to run repeatedly on every React render cycle. When components re-render frequently due to state changes (like opening a confirmation modal), this creates significant, redundant CPU overhead and slows down list rendering.
 **Action:** Always extract and pre-compute complex string formatting and regex matching into a `useMemo` block *before* rendering. Combine the data mapping and filtering using a single `.reduce()` pass, attaching the pre-parsed display strings to the data object so the JSX simply renders primitive string properties.
+
+## 2026-08-01 - Pre-compute date formatting to prevent Date instantiations during render
+**Learning:** Instantiating `new Date()` and calling `Intl.DateTimeFormat.format()` inside a React render loop (like `.map` in `MatchTicker.tsx`) causes unnecessary garbage collection and performance degradation on every render cycle.
+**Action:** Hoist these operations out of the render loop into a `useMemo` block that pre-computes the formatted string, storing it as a derived property to be simply rendered in the JSX.

@@ -8,6 +8,10 @@ interface MatchTickerProps {
   games: Game[];
 }
 
+interface TickerGame extends Game {
+  _formattedDate?: string;
+}
+
 // ⚡ Bolt: Cache Intl.DateTimeFormat outside component to avoid extremely slow Date.toLocaleDateString in render loops
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
 
@@ -20,12 +24,18 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   // We avoid iterating over all past games and avoid a redundant sorting pass. We stop exactly after finding 10 matches.
   const upcomingGames = useMemo(() => {
     const todayISO = getTodayISO();
-    const upcoming: Game[] = [];
+    const upcoming: TickerGame[] = [];
 
     for (let i = 0; i < games.length; i++) {
       const g = games[i];
       if (g.dateISO && g.dateISO >= todayISO) {
-        upcoming.push(g);
+        // ⚡ Bolt Optimization: Pre-compute formatted date strings during the memoized phase
+        // Why: Avoids O(K) redundant Date object allocations and Intl string formatting on every render cycle.
+        // Impact: Reduces garbage collection pressure and CPU overhead for smoother UI performance.
+        upcoming.push({
+          ...g,
+          _formattedDate: dateFormatter.format(new Date(g.dateISO)),
+        });
         if (upcoming.length === 10) break;
       }
     }
@@ -51,7 +61,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         {/* Date & Time Group */}
         <div className="flex flex-col items-end leading-none min-w-[50px]">
           <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">
-            {game.dateISO ? dateFormatter.format(new Date(game.dateISO)) : ''}
+            {game._formattedDate || ''}
           </span>
           <span className="text-xs font-bold text-white font-mono">{game.time}</span>
         </div>
