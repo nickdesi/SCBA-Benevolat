@@ -75,17 +75,17 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
     const lastGroup = groups[groups.length - 1];
     if (lastGroup && lastGroup.label === label) {
       lastGroup.games.push(game);
+      if (game.isHome) lastGroup.homeCount++;
+      else lastGroup.awayCount++;
     } else {
-      groups.push({ label, games: [game], homeCount: 0, awayCount: 0 });
+      groups.push({
+        label,
+        games: [game],
+        homeCount: game.isHome ? 1 : 0,
+        awayCount: game.isHome ? 0 : 1
+      });
     }
   });
-
-  // Calculate home and away counts for each group in a single pass
-  for (let i = 0; i < groups.length; i++) {
-    const counts = getHomeAwayCounts(groups[i].games);
-    groups[i].homeCount = counts.homeCount;
-    groups[i].awayCount = counts.awayCount;
-  }
 
   return groups;
 };

@@ -156,3 +156,7 @@
 ## 2026-08-01 - Pre-compute date formatting to prevent Date instantiations during render
 **Learning:** Instantiating `new Date()` and calling `Intl.DateTimeFormat.format()` inside a React render loop (like `.map` in `MatchTicker.tsx`) causes unnecessary garbage collection and performance degradation on every render cycle.
 **Action:** Hoist these operations out of the render loop into a `useMemo` block that pre-computes the formatted string, storing it as a derived property to be simply rendered in the JSX.
+
+## 2026-10-15 - Avoid redundant array traversals and component re-render calculations during grouping
+**Learning:** In components that render grouped data (`MobileTimeline`, `DesktopGrid`, `GameList`), deriving aggregate stats (like `homeCount` and `awayCount` using `getHomeAwayCounts(dayGames)`) directly inside the render loop causes O(N) array traversals to execute on every single React render pass. Even if wrapped in a `useMemo` at the component level, iterating over the arrays a second time to compute stats creates redundant loops and unnecessary CPU overhead.
+**Action:** Always pre-compute derived group statistics inline during the initial O(N) data grouping pass (e.g. inside `games.forEach` or `for...of` loops that construct the map). Store the computed stats directly on the group objects/Map values so that rendering loops can access them via simple O(1) property lookups without re-traversing the arrays.
