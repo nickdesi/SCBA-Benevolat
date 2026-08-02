@@ -94,7 +94,11 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
           <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
             {activeDays.map((day) => {
               const dayStr = toISODateString(day);
-              const { games: dayGames, homeCount, awayCount } = gamesByDay.get(dayStr) || { games: [], homeCount: 0, awayCount: 0 };
+              const {
+                games: dayGames,
+                homeCount,
+                awayCount,
+              } = gamesByDay.get(dayStr) || { games: [], homeCount: 0, awayCount: 0 };
               const isToday = dayStr === todayISO;
 
               return (

@@ -82,7 +82,7 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
         label,
         games: [game],
         homeCount: game.isHome ? 1 : 0,
-        awayCount: game.isHome ? 0 : 1
+        awayCount: game.isHome ? 0 : 1,
       });
     }
   });
