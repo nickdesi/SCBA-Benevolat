@@ -2,7 +2,6 @@ import React, { memo, useMemo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek, getTodayISO } from '../../utils/dateUtils';
-import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to dramatically improve performance over Date.toLocaleDateString in loops
 const weekdayFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' });
@@ -62,10 +61,15 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
 
     // Pre-compute games grouped by day to avoid double filtering
     const gamesByDay = useMemo(() => {
-      const map = new Map<string, Game[]>();
+      const map = new Map<string, { games: Game[]; homeCount: number; awayCount: number }>();
       for (const game of games) {
-        const existing = map.get(game.dateISO) || [];
-        existing.push(game);
+        const existing = map.get(game.dateISO) || { games: [], homeCount: 0, awayCount: 0 };
+        existing.games.push(game);
+        if (game.isHome) {
+          existing.homeCount++;
+        } else {
+          existing.awayCount++;
+        }
         map.set(game.dateISO, existing);
       }
       // ⚡ Bolt Optimization: Removed redundant O(N log N) sorting loop here.
@@ -77,7 +81,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
 
     // Filter out days with no games using pre-computed map
     const activeDays = useMemo(
-      () => days.filter((day) => (gamesByDay.get(toISODateString(day))?.length ?? 0) > 0),
+      () => days.filter((day) => (gamesByDay.get(toISODateString(day))?.games.length ?? 0) > 0),
       [days, gamesByDay],
     );
 
@@ -90,9 +94,12 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
           <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
             {activeDays.map((day) => {
               const dayStr = toISODateString(day);
-              const dayGames = gamesByDay.get(dayStr) || [];
+              const {
+                games: dayGames,
+                homeCount,
+                awayCount,
+              } = gamesByDay.get(dayStr) || { games: [], homeCount: 0, awayCount: 0 };
               const isToday = dayStr === todayISO;
-              const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
 
               return (
                 <div
