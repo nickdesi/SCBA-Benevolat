@@ -15,7 +15,8 @@ import {
 // Centralized icon mapping for consistent iconography across the app
 // Replaces emoji usage with professional SVG icons
 
-type IconId = 'beer' | 'timer' | 'clipboard' | 'cookie' | 'home' | 'plane' | 'car' | 'calendar' | 'default';
+type IconId =
+  'beer' | 'timer' | 'clipboard' | 'cookie' | 'home' | 'plane' | 'car' | 'calendar' | 'default';
 
 const iconMap: Record<IconId, LucideIcon> = {
   beer: Beer,
