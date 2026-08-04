@@ -25,8 +25,6 @@ interface GameListProps {
   isAuthenticated?: boolean;
 }
 
-import { getHomeAwayCounts } from '../utils/gameUtils';
-
 interface GameGroup {
   label: string;
   games: Game[];
