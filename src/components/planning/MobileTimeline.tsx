@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek, getTodayISO } from '../../utils/dateUtils';
-import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to avoid performance hit of Date.toLocaleDateString in list rendering
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
@@ -112,11 +111,23 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
 
     // Pre-compute games grouped by day to avoid O(N) filtering inside map
     const gamesByDay = useMemo(() => {
-      const map = new Map<string, Game[]>();
-      for (const game of games) {
-        const existing = map.get(game.dateISO) || [];
-        existing.push(game);
-        map.set(game.dateISO, existing);
+      // ⚡ Bolt Optimization: Compute aggregate stats (home/away counts) during the initial O(N)
+      // data grouping pass and store them on the grouped object to avoid redundant O(N) Traversals
+      // on every React render inside the activeDays.map loop.
+      const map = new Map<string, { games: Game[]; homeCount: number; awayCount: number }>();
+      for (let i = 0; i < games.length; i++) {
+        const game = games[i];
+        let existing = map.get(game.dateISO);
+        if (!existing) {
+          existing = { games: [], homeCount: 0, awayCount: 0 };
+          map.set(game.dateISO, existing);
+        }
+        existing.games.push(game);
+        if (game.isHome ?? true) {
+          existing.homeCount++;
+        } else {
+          existing.awayCount++;
+        }
       }
       // ⚡ Bolt Optimization: Removed redundant O(N log N) sorting loop here.
       // The `games` prop is already strictly sorted by date and time via `sortGames()`.
@@ -126,7 +137,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
     }, [games]);
 
     const getGamesForDay = (date: Date) => {
-      return gamesByDay.get(toISODateString(date)) || [];
+      return gamesByDay.get(toISODateString(date))?.games || [];
     };
 
     // Filter out days with no games using pre-computed map
@@ -146,9 +157,11 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
           {activeDays.length > 0 ? (
             activeDays.map((day) => {
               const dayStr = toISODateString(day);
-              const dayGames = getGamesForDay(day);
+              const dayData = gamesByDay.get(dayStr);
+              const dayGames = dayData?.games || [];
               const isToday = dayStr === todayISO;
-              const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
+              const homeCount = dayData?.homeCount || 0;
+              const awayCount = dayData?.awayCount || 0;
 
               return (
                 <motion.div

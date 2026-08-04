@@ -2,7 +2,6 @@ import React, { memo, useMemo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
 import { toISODateString, getDaysOfWeek, getTodayISO } from '../../utils/dateUtils';
-import { getHomeAwayCounts } from '../../utils/gameUtils';
 
 // ⚡ Bolt: Cache Intl.DateTimeFormat to dramatically improve performance over Date.toLocaleDateString in loops
 const weekdayFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' });
@@ -62,11 +61,23 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
 
     // Pre-compute games grouped by day to avoid double filtering
     const gamesByDay = useMemo(() => {
-      const map = new Map<string, Game[]>();
-      for (const game of games) {
-        const existing = map.get(game.dateISO) || [];
-        existing.push(game);
-        map.set(game.dateISO, existing);
+      // ⚡ Bolt Optimization: Compute aggregate stats (home/away counts) during the initial O(N)
+      // data grouping pass and store them on the grouped object to avoid redundant O(N) Traversals
+      // on every React render inside the activeDays.map loop.
+      const map = new Map<string, { games: Game[]; homeCount: number; awayCount: number }>();
+      for (let i = 0; i < games.length; i++) {
+        const game = games[i];
+        let existing = map.get(game.dateISO);
+        if (!existing) {
+          existing = { games: [], homeCount: 0, awayCount: 0 };
+          map.set(game.dateISO, existing);
+        }
+        existing.games.push(game);
+        if (game.isHome ?? true) {
+          existing.homeCount++;
+        } else {
+          existing.awayCount++;
+        }
       }
       // ⚡ Bolt Optimization: Removed redundant O(N log N) sorting loop here.
       // The `games` prop is already strictly sorted by date and time via `sortGames()`.
@@ -77,7 +88,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
 
     // Filter out days with no games using pre-computed map
     const activeDays = useMemo(
-      () => days.filter((day) => (gamesByDay.get(toISODateString(day))?.length ?? 0) > 0),
+      () => days.filter((day) => (gamesByDay.get(toISODateString(day))?.games.length ?? 0) > 0),
       [days, gamesByDay],
     );
 
@@ -90,9 +101,11 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
           <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
             {activeDays.map((day) => {
               const dayStr = toISODateString(day);
-              const dayGames = gamesByDay.get(dayStr) || [];
+              const dayData = gamesByDay.get(dayStr);
+              const dayGames = dayData?.games || [];
               const isToday = dayStr === todayISO;
-              const { homeCount, awayCount } = getHomeAwayCounts(dayGames);
+              const homeCount = dayData?.homeCount || 0;
+              const awayCount = dayData?.awayCount || 0;
 
               return (
                 <div
