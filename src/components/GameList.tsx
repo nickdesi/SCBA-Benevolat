@@ -51,16 +51,24 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
     let label = 'Date inconnue';
 
     if (game.dateISO) {
-      const date = new Date(game.dateISO);
-      if (!isNaN(date.getTime())) {
-        const cacheKey = `${date.getFullYear()}-${date.getMonth()}`;
-        if (monthLabelCache[cacheKey]) {
-          label = monthLabelCache[cacheKey];
-        } else {
-          let formattedLabel = monthYearFormatter.format(date);
-          formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
-          monthLabelCache[cacheKey] = formattedLabel;
-          label = formattedLabel;
+      // ⚡ Bolt Optimization: Use string splitting to extract year and month directly from the ISO string
+      // avoiding O(N) Date object instantiation and a timezone bug when parsing "YYYY-MM-DD".
+      const parts = game.dateISO.split('-');
+      if (parts.length >= 2) {
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+        if (!isNaN(year) && !isNaN(month)) {
+          const cacheKey = `${year}-${month}`;
+          if (monthLabelCache[cacheKey]) {
+            label = monthLabelCache[cacheKey];
+          } else {
+            // Create the Date object only on cache miss for formatting
+            const date = new Date(year, month - 1, 1);
+            let formattedLabel = monthYearFormatter.format(date);
+            formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
+            monthLabelCache[cacheKey] = formattedLabel;
+            label = formattedLabel;
+          }
         }
       }
     } else {
