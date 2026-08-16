@@ -51,12 +51,16 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
     let label = 'Date inconnue';
 
     if (game.dateISO) {
-      const date = new Date(game.dateISO);
-      if (!isNaN(date.getTime())) {
-        const cacheKey = `${date.getFullYear()}-${date.getMonth()}`;
-        if (monthLabelCache[cacheKey]) {
-          label = monthLabelCache[cacheKey];
-        } else {
+      // ⚡ Bolt Optimization: Use fast string slicing instead of new Date() to generate the cache key.
+      // This reduces Date object allocations from O(N) to O(K) where K is unique months,
+      // significantly reducing garbage collection overhead during list grouping.
+      const cacheKey = game.dateISO.substring(0, 7); // e.g., "2025-10"
+
+      if (monthLabelCache[cacheKey]) {
+        label = monthLabelCache[cacheKey];
+      } else {
+        const date = new Date(game.dateISO);
+        if (!isNaN(date.getTime())) {
           let formattedLabel = monthYearFormatter.format(date);
           formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
           monthLabelCache[cacheKey] = formattedLabel;
