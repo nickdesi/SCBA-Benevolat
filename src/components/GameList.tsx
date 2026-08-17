@@ -51,16 +51,24 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
     let label = 'Date inconnue';
 
     if (game.dateISO) {
-      const date = new Date(game.dateISO);
-      if (!isNaN(date.getTime())) {
-        const cacheKey = `${date.getFullYear()}-${date.getMonth()}`;
-        if (monthLabelCache[cacheKey]) {
-          label = monthLabelCache[cacheKey];
-        } else {
-          let formattedLabel = monthYearFormatter.format(date);
-          formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
-          monthLabelCache[cacheKey] = formattedLabel;
-          label = formattedLabel;
+      // ⚡ Bolt Optimization: Use fast string slicing to construct local cache keys safely.
+      // This avoids O(N) Date allocations and prevents the off-by-one timezone bug caused
+      // by new Date('YYYY-MM-DD') parsing as UTC midnight.
+      const cacheKey = game.dateISO.substring(0, 7); // 'YYYY-MM'
+
+      if (monthLabelCache[cacheKey]) {
+        label = monthLabelCache[cacheKey];
+      } else {
+        const parts = game.dateISO.split('-');
+        if (parts.length >= 2) {
+          // Construct local date safely avoiding boundaries
+          const safeDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 15);
+          if (!isNaN(safeDate.getTime())) {
+            let formattedLabel = monthYearFormatter.format(safeDate);
+            formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
+            monthLabelCache[cacheKey] = formattedLabel;
+            label = formattedLabel;
+          }
         }
       }
     } else {
