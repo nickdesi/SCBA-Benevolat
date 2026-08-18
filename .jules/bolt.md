@@ -160,3 +160,7 @@
 ## 2026-10-15 - Avoid redundant array traversals and component re-render calculations during grouping
 **Learning:** In components that render grouped data (`MobileTimeline`, `DesktopGrid`, `GameList`), deriving aggregate stats (like `homeCount` and `awayCount` using `getHomeAwayCounts(dayGames)`) directly inside the render loop causes O(N) array traversals to execute on every single React render pass. Even if wrapped in a `useMemo` at the component level, iterating over the arrays a second time to compute stats creates redundant loops and unnecessary CPU overhead.
 **Action:** Always pre-compute derived group statistics inline during the initial O(N) data grouping pass (e.g. inside `games.forEach` or `for...of` loops that construct the map). Store the computed stats directly on the group objects/Map values so that rendering loops can access them via simple O(1) property lookups without re-traversing the arrays.
+
+## 2026-10-20 - Avoid redundant Date allocations when generating cache keys in loops
+**Learning:** Instantiating `new Date(game.dateISO)` inside a rendering loop (like in `GameList.tsx`) just to extract the year and month for a cache key causes O(N) redundant Date object allocations and unnecessary garbage collection.
+**Action:** When grouping an array of objects by month or year using strictly formatted strings (like 'YYYY-MM-DD' ISO dates), use fast string slicing (e.g. `dateISO.substring(0, 7)`) to construct the cache key directly. Only instantiate the `Date` object on a cache miss to compute localized values.

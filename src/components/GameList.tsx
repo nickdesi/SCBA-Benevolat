@@ -51,12 +51,20 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
     let label = 'Date inconnue';
 
     if (game.dateISO) {
-      const date = new Date(game.dateISO);
-      if (!isNaN(date.getTime())) {
-        const cacheKey = `${date.getFullYear()}-${date.getMonth()}`;
-        if (monthLabelCache[cacheKey]) {
-          label = monthLabelCache[cacheKey];
-        } else {
+      // ⚡ Bolt Optimization: Use fast string slicing on the ISO date format (YYYY-MM-DD)
+      // to generate the cache key without allocating a new Date object.
+      // This prevents O(N) Date allocations and garbage collection overhead during React renders.
+      const cacheKey = game.dateISO.substring(0, 7);
+
+      if (monthLabelCache[cacheKey]) {
+        label = monthLabelCache[cacheKey];
+      } else {
+        // Construct a safe local date using the 15th of the month to avoid timezone boundaries
+        // where new Date('YYYY-MM-DD') parses as UTC midnight and shifts to the previous day locally.
+        const [year, month] = cacheKey.split('-').map(Number);
+        const date = new Date(year, month - 1, 15);
+
+        if (!isNaN(date.getTime())) {
           let formattedLabel = monthYearFormatter.format(date);
           formattedLabel = formattedLabel.charAt(0).toUpperCase() + formattedLabel.slice(1);
           monthLabelCache[cacheKey] = formattedLabel;
