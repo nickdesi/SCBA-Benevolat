@@ -1,5 +1,5 @@
 import React, { memo, useState, Suspense, lazy, useMemo } from 'react';
-import { CheckIcon } from 'lucide-react';
+import { CheckIcon, Car } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -223,30 +223,37 @@ const GameCard: React.FC<GameCardProps> = memo(
             </div>
           )}
           {!isHomeGame && (
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 relative z-10 pl-1">
+            <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300 relative z-10 pl-1">
+              <div className="p-1 rounded-lg bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400">
+                <Car className="w-4 h-4" />
+              </div>
               {(() => {
                 const drivers = carpoolStats.drivers;
                 const passengers = carpoolStats.passengers;
 
                 if (drivers === 0 && passengers === 0)
-                  return <span className="opacity-60">Aucun covoiturage</span>;
+                  return (
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Covoiturage disponible
+                    </span>
+                  );
 
                 return (
-                  <>
+                  <div className="flex items-center gap-1.5">
                     {drivers > 0 && (
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded text-xs font-bold">
-                        {drivers} cond.
+                      <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">
+                        {drivers} conducteur{drivers > 1 ? 's' : ''}
                       </span>
                     )}
                     {passengers > 0 && (
-                      <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-xs font-bold">
-                        {passengers} pass.
+                      <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
+                        {passengers} passager{passengers > 1 ? 's' : ''}
                       </span>
                     )}
-                  </>
+                  </div>
                 );
               })()}
-            </span>
+            </div>
           )}
 
           <div

@@ -608,43 +608,49 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-6"
+            className="text-center py-6 px-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-3">
-              <Car className="w-6 h-6 text-slate-400" />
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#3629e1]/10 dark:bg-[#3629e1]/20 mb-3 border border-[#3629e1]/20 text-[#3629e1] dark:text-indigo-400">
+              <Car className="w-6 h-6" />
             </div>
-            <p className="text-slate-400 dark:text-slate-500 text-sm">Aucun covoiturage proposé</p>
-            <p className="text-slate-300 dark:text-slate-600 text-xs mt-1">
-              Soyez le premier à proposer ou chercher une place !
+            <p className="text-slate-800 dark:text-slate-200 text-sm font-bold">
+              Aucun covoiturage pour l'instant
+            </p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-1 max-w-xs mx-auto">
+              Proposez vos places libres ou cherchez un conducteur pour ce déplacement !
             </p>
           </motion.div>
         )}
 
         {/* Action Buttons */}
         {!isFormOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2 pt-2">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex gap-2.5 pt-1"
+          >
             <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => openForm('driver')}
               className="flex-1 py-3 px-4 flex items-center justify-center gap-2
-                            text-sm font-semibold text-white
-                            bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl
-                            shadow-lg shadow-blue-500/25 dark:shadow-blue-900/30
-                            hover:from-blue-600 hover:to-indigo-700 transition-all cursor-pointer"
+                            text-xs font-sport font-black uppercase tracking-wider text-white
+                            bg-gradient-to-r from-[#3629e1] to-[#272890] rounded-2xl
+                            shadow-md shadow-indigo-500/25 dark:shadow-indigo-900/30
+                            hover:from-[#2a21b4] hover:to-[#1a1a5e] transition-all cursor-pointer border border-white/10"
             >
               <Car className="w-4 h-4" />
               <span>Je propose</span>
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => openForm('passenger')}
               className="flex-1 py-3 px-4 flex items-center justify-center gap-2
-                            text-sm font-semibold text-white
-                            bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl
-                            shadow-lg shadow-amber-500/25 dark:shadow-amber-900/30
-                            hover:from-amber-500 hover:to-orange-600 transition-all cursor-pointer"
+                            text-xs font-sport font-black uppercase tracking-wider text-white
+                            bg-gradient-to-r from-[#aa2e0f] to-[#f97316] rounded-2xl
+                            shadow-md shadow-orange-500/25 dark:shadow-orange-900/30
+                            hover:from-[#8f250b] hover:to-[#ea580c] transition-all cursor-pointer border border-white/10"
             >
               <UserRoundPlus className="w-4 h-4" />
               <span>Je cherche</span>
@@ -762,14 +768,14 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
                     whileTap={{ scale: 0.99 }}
                     type="submit"
                     className={`
-                                        flex-1 py-3 px-4 text-sm font-bold text-white rounded-xl
-                                        shadow-lg transition-all cursor-pointer
-                                        ${
-                                          formType === 'driver'
-                                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-blue-500/25'
-                                            : 'bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 shadow-amber-500/25'
-                                        }
-                                    `}
+                      flex-1 py-3 px-4 text-xs font-sport font-black uppercase tracking-wider text-white rounded-xl
+                      shadow-md transition-all cursor-pointer border border-white/10
+                      ${
+                        formType === 'driver'
+                          ? 'bg-gradient-to-r from-[#3629e1] to-[#272890] hover:from-[#2a21b4] hover:to-[#1a1a5e] shadow-indigo-500/25'
+                          : 'bg-gradient-to-r from-[#aa2e0f] to-[#f97316] hover:from-[#8f250b] hover:to-[#ea580c] shadow-orange-500/25'
+                      }
+                    `}
                   >
                     Confirmer
                   </motion.button>
