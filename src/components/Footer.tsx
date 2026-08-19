@@ -11,6 +11,18 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.8.0',
+    date: '19 Août 2026',
+    changes: [
+      '🎨 Refonte Design & Identité SCBA : Hero header centré, typographie athlétique, badge de club et capsules glassmorphism',
+      '⭕ Jauge Circulaire Dynamique : Cercle de complétion SVG en temps réel sur les cartes de match avec support mobile intégral',
+      '🚗 Covoiturage Pro : Actions conducteurs/passagers modernisées aux couleurs SCBA, bandeau replié et formulaires intuitifs',
+      '📱 Micro-interactions & Ergonomie : Animations fluides sur EmptySlot (pulse d’urgence, survol réactif, haptique)',
+      '🛡️ Fiabilité Bénévolat : Désinscription résiliente depuis "Mon Espace" même sur les matchs supprimés côté base',
+      '✨ Accessibilité & Dark Mode : Correction du contraste au survol des filtres et fermeture automatique du menu profil (clic extérieur/Escape)',
+    ],
+  },
+  {
     version: 'v2.7.2',
     date: '19 Août 2026',
     changes: [

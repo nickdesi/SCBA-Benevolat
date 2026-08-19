@@ -1,6 +1,23 @@
 # Changelog
 
-## [2.6.6] - 2026-05-25
+## [2.8.0] - 2026-08-19
+
+### UI/UX & Design System
+
+- **Hero & Header Modernisé** : Layout équilibré et centré sur grand écran (`max-w-7xl`), badge de club « ESPACE BÉNÉVOLES » encadré aux couleurs SCBA, et capsule glassmorphism réunissant le commutateur de thème et le profil utilisateur.
+- **Jauge Circulaire de Complétion (GameCard)** : Intégration d'un anneau de progression SVG dynamique indiquant le ratio de postes pourvus avec couleurs dynamiques (orange < 50%, bleu électrique >= 50%, vert émeraude 100%) et compatibilité mobile totale.
+- **Module Covoiturage Rehaussé** : Carte d'état initial avec conteneur frosted glass, boutons d'action « Je propose » et « Je cherche » aux dégradés de marque SCBA, et bandeau replié avec icône et badge de statut.
+- **Micro-interactions sur les Créneaux (EmptySlot)** : Animation pulsante sur créneaux urgents, effets tactiles `whileHover`/`whileTap`, et haptique mobile.
+- **Planning & Admin Dashboard** : Modernisation visuelle du planning de matchs (Timeline mobile et Grille desktop) et du panneau d'administration des statistiques.
+
+### Correctifs & Stabilité
+
+- **Bénévolat & Désinscription résiliente** : Résolution du crash lors de la désinscription d'un bénévole depuis son espace personnel dans le cas où le match associé avait été préalablement supprimé en base.
+- **Menu Profil Utilisateur** : Fermeture automatique et fluide du menu déroulant lors d'un clic ou toucher à l'extérieur ou à l'appui sur la touche `Escape`.
+- **Mode Sombre & Accessibilité** : Correction du contraste au survol (`hover`) des pastilles de filtre d'équipes dans l'en-tête en thème sombre.
+- **Compatibilité Mobile Marquee** : Résolution du warning de composant défilant sur Safari iOS / Chrome Mobile.
+
+## [2.7.2] - 2026-08-19
 
 ### Dépendances
 
