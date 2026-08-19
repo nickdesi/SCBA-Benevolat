@@ -97,10 +97,10 @@ const Header: React.FC<HeaderProps> = memo(
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onSelectTeam(null)}
-                  className={`snap-center flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-300 backdrop-blur-md cursor-pointer ${
+                  className={`snap-center flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 backdrop-blur-md cursor-pointer ${
                     selectedTeam === null
-                      ? 'border-[#3629e1]/30 bg-gradient-to-r from-[#3629e1] to-[#272890] text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20'
-                      : 'border-slate-200/80 bg-white/80 text-slate-700 hover:border-[#3629e1]/40 hover:bg-white hover:text-slate-900 dark:border-slate-700/80 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-indigo-400/50 dark:hover:text-white'
+                      ? 'border-[#3629e1]/40 bg-gradient-to-r from-[#3629e1] to-[#272890] text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20'
+                      : 'border-slate-200/90 bg-white/70 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-700/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-indigo-500/40'
                   }`}
                 >
                   Tous les matchs
@@ -111,10 +111,10 @@ const Header: React.FC<HeaderProps> = memo(
                     layoutId={`team-pill-${team}`}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onSelectTeam(team)}
-                    className={`snap-center flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-300 backdrop-blur-md cursor-pointer ${
+                    className={`snap-center flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 backdrop-blur-md cursor-pointer ${
                       selectedTeam === team
                         ? 'border-transparent bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] text-white shadow-md shadow-indigo-500/30 ring-1 ring-white/20'
-                        : 'border-slate-200/80 bg-white/80 text-slate-700 hover:border-[#3629e1]/40 hover:bg-white hover:text-slate-900 dark:border-slate-700/80 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:border-indigo-400/50 dark:hover:text-white'
+                        : 'border-slate-200/90 bg-white/70 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-700/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-indigo-500/40'
                     }`}
                   >
                     {team}
