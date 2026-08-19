@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { getDaysOfWeek } from '../../utils/dateUtils';
 
@@ -41,43 +42,49 @@ const PlanningHeader: React.FC<PlanningHeaderProps> = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center md:justify-center gap-3 sm:gap-5 mb-8 select-none">
-      {/* Navigation Pill (Center on Desktop, Top on Mobile) */}
-      <div className="flex items-center gap-2 sm:gap-4 bg-white/70 dark:bg-slate-900/60 p-1.5 sm:p-2 rounded-full border border-white/50 dark:border-slate-700 shadow-xl shadow-indigo-500/10 w-full md:w-auto justify-between md:justify-center backdrop-blur-xl transition-all hover:shadow-indigo-500/20 hover:border-indigo-500/30">
-        <button
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6 select-none">
+      {/* Navigation Pill */}
+      <div className="flex items-center gap-2 sm:gap-3 bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-full border border-slate-200/80 dark:border-slate-700/80 shadow-lg shadow-indigo-500/5 w-full sm:w-auto justify-between sm:justify-center backdrop-blur-xl transition-all">
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
           onClick={onPrevWeek}
-          className="p-3 sm:p-4 hover:bg-white dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all active:scale-95 shadow-sm hover:shadow-md"
+          className="p-2.5 sm:p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-600 hover:text-[#3629e1] dark:text-slate-300 dark:hover:text-indigo-400 transition-colors shadow-xs"
           aria-label="Semaine précédente"
         >
-          <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
-        </button>
+          <ChevronLeft size={20} />
+        </motion.button>
 
-        <div className="flex flex-col items-center min-w-[140px] px-2">
-          <h2 className="text-slate-600 dark:text-slate-300 font-semibold text-base md:text-lg leading-none mb-1 tracking-tight capitalize">
+        <div className="flex flex-col items-center min-w-[140px] px-3">
+          <h2 className="font-sport font-black text-slate-900 dark:text-white text-base md:text-lg leading-tight tracking-tight uppercase">
             {formattedMonth}
           </h2>
-          <span className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-500/20">
+          <span className="text-[11px] text-[#3629e1] dark:text-indigo-300 font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800/50 mt-0.5">
             {getWeekRange(currentDate)}
           </span>
         </div>
 
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
           onClick={onNextWeek}
-          className="p-3 sm:p-4 hover:bg-white dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-all active:scale-95 shadow-sm hover:shadow-md"
+          className="p-2.5 sm:p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-600 hover:text-[#3629e1] dark:text-slate-300 dark:hover:text-indigo-400 transition-colors shadow-xs"
           aria-label="Semaine suivante"
         >
-          <ChevronRight size={20} className="sm:w-6 sm:h-6" />
-        </button>
+          <ChevronRight size={20} />
+        </motion.button>
       </div>
 
-      {/* Actions (Bottom on mobile, Right on desktop) */}
-      <button
+      {/* Aujourd'hui Action Button */}
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.03 }}
         onClick={onToday}
-        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-full shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:scale-95 border border-white/20"
+        className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#3629e1] to-[#272890] hover:from-[#2a21b4] hover:to-[#1a1a5e] text-white font-bold rounded-full shadow-md shadow-[#3629e1]/20 transition-all border border-white/20 min-h-[42px]"
       >
-        <Calendar size={18} />
-        <span className="text-sm uppercase tracking-wide">Aujourd'hui</span>
-      </button>
+        <Calendar size={16} />
+        <span className="text-xs uppercase tracking-wider font-sport">Aujourd'hui</span>
+      </motion.button>
     </div>
   );
 };

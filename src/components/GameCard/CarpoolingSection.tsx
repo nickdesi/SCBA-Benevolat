@@ -304,11 +304,11 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.98 }}
                                   onClick={() => onRequestSeat(currentUserEntry.id, driver.id)}
-                                  className="flex items-center gap-1 px-4 py-2 min-h-[44px] bg-gradient-to-r from-amber-400 to-orange-500
-                                                                text-white text-xs font-semibold rounded-xl shadow-sm shadow-amber-200 dark:shadow-amber-900/30
-                                                                hover:from-amber-500 hover:to-orange-600 transition-all cursor-pointer active:scale-95"
+                                  className="flex items-center gap-1.5 px-4 py-2 min-h-[44px] bg-gradient-to-r from-[#3629e1] to-[#272890]
+                                                                text-white text-xs font-bold rounded-xl shadow-sm shadow-indigo-500/20
+                                                                hover:from-[#2a21b4] hover:to-[#1a1a5e] transition-all cursor-pointer active:scale-95 border border-white/10"
                                 >
-                                  <Sparkles className="w-3 h-3" />
+                                  <Sparkles className="w-3.5 h-3.5" />
                                   Demander
                                 </motion.button>
                               )}

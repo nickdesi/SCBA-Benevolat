@@ -170,30 +170,32 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
                   >
                     <div
                       className={`
-                                        inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg z-10 relative
-                                        ${
-                                          isToday
-                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-blue-500/30'
-                                            : 'bg-gradient-to-r from-slate-800 to-slate-700 shadow-slate-900/20'
-                                        }
-                                    `}
+                        inline-flex items-center gap-2 sm:gap-3 px-4 py-2 sm:py-2.5 rounded-2xl shadow-lg z-10 relative border
+                        ${
+                          isToday
+                            ? 'bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] text-white border-white/20 shadow-indigo-500/25'
+                            : 'bg-slate-900/90 text-white border-slate-700/60 shadow-slate-950/40 backdrop-blur-md'
+                        }
+                      `}
                     >
-                      <span className="text-lg sm:text-2xl" aria-hidden="true">
+                      <span className="text-base sm:text-xl" aria-hidden="true">
                         {isToday ? '🔥' : '📅'}
                       </span>
                       <div className="flex flex-col items-start leading-tight">
-                        <span className="text-sm sm:text-lg font-black text-white tracking-wide capitalize">
+                        <span className="text-xs sm:text-sm font-sport font-black text-white tracking-wide uppercase">
                           {isToday ? "Aujourd'hui" : dateFormatter.format(day)}
                         </span>
-                        <span className="text-[10px] font-medium uppercase tracking-wider flex items-center gap-1">
-                          <span className="text-emerald-400">{homeCount} Dom</span>
-                          <span className="text-slate-500">•</span>
-                          <span className="text-blue-400">{awayCount} Ext</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 opacity-90 mt-0.5">
+                          <span className="text-emerald-300">{homeCount} Domicile</span>
+                          <span className="text-white/40">•</span>
+                          <span className="text-blue-300">{awayCount} Extérieur</span>
                         </span>
                       </div>
-                      <span className="self-center flex flex-col items-center text-center font-bold px-2 sm:px-3 py-1.5 bg-white/20 text-white/90 rounded-xl ml-1 sm:ml-2">
-                        <span className="text-base leading-tight">{dayGames.length}</span>
-                        <span className="text-[10px] leading-tight">matchs</span>
+                      <span className="self-center flex flex-col items-center text-center font-sport font-black px-2.5 py-1 bg-white/15 text-white rounded-xl ml-2 border border-white/10">
+                        <span className="text-sm leading-none">{dayGames.length}</span>
+                        <span className="text-[9px] leading-none tracking-widest uppercase">
+                          {dayGames.length > 1 ? 'matchs' : 'match'}
+                        </span>
                       </span>
                     </div>
                   </motion.div>

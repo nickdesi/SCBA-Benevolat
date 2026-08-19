@@ -505,7 +505,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 onClick={() => setActiveTab('stats')}
                 className={`flex-1 px-4 md:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                   activeTab === 'stats'
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30'
+                    ? 'bg-gradient-to-r from-[#3629e1] to-[#272890] text-white shadow-lg shadow-indigo-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                 }`}
               >
@@ -517,13 +517,12 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 onClick={() => setActiveTab('broadcast')}
                 className={`flex-1 px-4 md:px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                   activeTab === 'broadcast'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-[#aa2e0f] to-[#f97316] text-white shadow-lg shadow-orange-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                 }`}
               >
                 <Megaphone className="w-4 h-4" />
-                <span className="hidden sm:inline">Communication</span>
-                <span className="sm:hidden">Com</span>
+                <span>Diffusion</span>
               </button>
             </motion.div>
           </div>
