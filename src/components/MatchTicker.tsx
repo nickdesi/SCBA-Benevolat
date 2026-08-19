@@ -15,6 +15,13 @@ interface TickerGame extends Game {
 // ⚡ Bolt: Cache Intl.DateTimeFormat outside component to avoid extremely slow Date.toLocaleDateString in render loops
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
 
+const SafeMarquee = (
+  typeof Marquee === 'function'
+    ? Marquee
+    : (Marquee as unknown as { default?: React.ComponentType<Record<string, unknown>> })?.default ||
+      'div'
+) as React.ElementType;
+
 // ⚡ Bolt: Wrapped MatchTicker in React.memo to prevent unnecessary re-renders when parent states change.
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const prefersReducedMotion = useReducedMotion();
@@ -116,7 +123,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
       {prefersReducedMotion ? (
         <div className="flex overflow-x-auto scrollbar-hide px-4">{tickerItems}</div>
       ) : (
-        <Marquee
+        <SafeMarquee
           speed={35}
           gradient={true}
           gradientColor="2, 6, 23" // slate-950 as string
@@ -126,7 +133,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
           className="!overflow-y-hidden"
         >
           {tickerItems}
-        </Marquee>
+        </SafeMarquee>
       )}
     </div>
   );

@@ -4,11 +4,14 @@ import { Home, Plane, Car, Flame, AlertTriangle, CheckIcon, Trophy } from 'lucid
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from '../Icons';
+import VolunteerCompletionRing from './VolunteerCompletionRing';
 
 interface GameHeaderProps {
   game: Game;
   isHomeGame: boolean;
   isFullyStaffed: boolean;
+  filledSlots?: number;
+  totalCapacity?: number;
   totalCarpoolSeats: number;
   totalPassengerRequests: number;
   isUrgent: boolean;
@@ -21,6 +24,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   game,
   isHomeGame,
   isFullyStaffed,
+  filledSlots = 0,
+  totalCapacity = 0,
   totalCarpoolSeats,
   totalPassengerRequests,
   isUrgent,
@@ -102,37 +107,53 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
       </div>
 
-      {/* Middle: Teams & Versus */}
-      <div className="relative z-10 mb-4 ">
-        <div className="flex items-center gap-2.5 mb-1">
-          {game.teamLogo && (
-            <img
-              src={game.teamLogo}
-              alt={game.team}
-              className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
-            />
-          )}
-          <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport">
-            {game.team}
-          </h3>
-          <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></span>
+      {/* Middle: Teams & Versus + Completion Ring */}
+      <div className="relative z-10 mb-4 flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 mb-1">
+            {game.teamLogo && (
+              <img
+                src={game.teamLogo}
+                alt={game.team}
+                className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
+              />
+            )}
+            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport truncate">
+              {game.team}
+            </h3>
+            <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></span>
+          </div>
+
+          <div className="group relative flex items-start gap-2.5">
+            <span className="text-slate-300 dark:text-slate-600 text-lg italic mt-1.5 flex-shrink-0">
+              VS
+            </span>
+            {game.opponentLogo && (
+              <img
+                src={game.opponentLogo}
+                alt={game.opponent}
+                className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-0.5"
+              />
+            )}
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 break-words">
+              {game.opponent}
+            </h2>
+          </div>
         </div>
 
-        <div className="group relative flex items-start gap-2.5">
-          <span className="text-slate-300 dark:text-slate-600 text-lg italic mt-1.5 flex-shrink-0">
-            VS
-          </span>
-          {game.opponentLogo && (
-            <img
-              src={game.opponentLogo}
-              alt={game.opponent}
-              className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-0.5"
+        {/* Volunteer Completion Ring (Home Games) */}
+        {isHomeGame && totalCapacity > 0 && (
+          <div className="flex-shrink-0 pl-2">
+            <VolunteerCompletionRing
+              filled={filledSlots}
+              total={totalCapacity}
+              isFullyStaffed={isFullyStaffed}
+              size={58}
+              strokeWidth={5}
+              showLabel={false}
             />
-          )}
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">
-            {game.opponent}
-          </h2>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom: Info Pills Layout (Refined) */}
