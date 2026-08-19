@@ -40,7 +40,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
           <div className="relative flex h-14 flex-1 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100/70 p-1 dark:border-slate-700/55 dark:bg-slate-800/55">
             <button
               onClick={() => handleViewChange('home')}
-              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'home' ? 'text-slate-50' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'home' ? 'text-slate-50' : 'text-slate-600 dark:text-slate-300'}`}
             >
               <motion.div
                 animate={
@@ -66,7 +66,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
             </button>
             <button
               onClick={() => handleViewChange('calendar')}
-              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'calendar' ? 'text-slate-50' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'calendar' ? 'text-slate-50' : 'text-slate-600 dark:text-slate-300'}`}
             >
               <motion.div
                 animate={

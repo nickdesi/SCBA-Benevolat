@@ -79,8 +79,8 @@
   --bg-card-hover: #f1f5f9;
   --bg-input: #ffffff;
   --text-primary: #0f172a;
-  --text-secondary: #3f4f5f;
-  --text-muted: #70849a;
+  --text-secondary: #334155;
+  --text-muted: #52637a;
   --border-color: #d9e1e8;
   --border-color-light: #edf1f5;
 
@@ -106,7 +106,7 @@
   --text-primary: #f8fafc;
   /* Keep text very bright */
   --text-secondary: #cbd5e1;
-  --text-muted: #7287a0;
+  --text-muted: #94a3b8;
   --border-color: #243349;
   --border-color-light: #0f172a;
   --glass-bg: rgba(15, 23, 42, 0.75);
