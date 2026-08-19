@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { User } from 'firebase/auth';
 import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStore';
 import { LogoutIcon, UserIcon } from './Icons';
@@ -26,6 +26,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((currentUser) => {
@@ -36,6 +37,33 @@ const UserProfile: React.FC<UserProfileProps> = ({
     });
     return () => unsubscribe();
   }, [onLogin, onLogout]);
+
+  // Click outside and Escape key handler to close the dropdown menu
+  useEffect(() => {
+    if (!showMenu) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showMenu]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -99,10 +127,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
   }
 
   return (
-    <div className="relative ml-2 z-50">
+    <div ref={menuRef} className="relative ml-2 z-50">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200"
+        className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
       >
         {user.photoURL ? (
           <img
@@ -112,36 +140,33 @@ const UserProfile: React.FC<UserProfileProps> = ({
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold border border-indigo-200">
+          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/60 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
             {user.displayName?.charAt(0).toUpperCase() || 'U'}
           </div>
         )}
       </button>
 
-      {/* Backdrop to close menu */}
-      {showMenu && (
-        <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setShowMenu(false)} />
-      )}
-
       {showMenu && (
         <div
-          className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200
-                                transform origin-top-right transition-all animate-in fade-in zoom-in-95 overflow-hidden z-50"
+          className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700
+                                transform origin-top-right transition-all animate-in fade-in zoom-in-95 overflow-hidden z-50 backdrop-blur-xl"
         >
-          <div className="p-3 border-b border-slate-100 bg-slate-50">
-            <p className="text-sm font-bold text-slate-800 truncate">{user.displayName}</p>
-            <p className="text-xs text-slate-500 truncate">{user.email}</p>
+          <div className="p-3 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-900/60">
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+              {user.displayName}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
           </div>
 
           {/* Mon Espace Bénévole */}
-          <div className="p-1">
+          <div className="p-1.5 space-y-1">
             <button
               onClick={() => {
                 onOpenProfile(); // Open global modal
                 setShowMenu(false); // Then close menu
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-indigo-600 font-bold
-                                       hover:bg-indigo-50 rounded-lg transition-colors text-left"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#3629e1] dark:text-indigo-400 font-bold
+                                       hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-colors text-left"
             >
               <UserIcon className="w-4 h-4" />
               Mon Espace Bénévole
@@ -154,8 +179,8 @@ const UserProfile: React.FC<UserProfileProps> = ({
                   onOpenAdminStats();
                   setShowMenu(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 font-bold
-                                           hover:bg-slate-100 rounded-lg transition-colors text-left mt-1"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 font-bold
+                                           hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -163,7 +188,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                   viewBox="0 0 24 24"
                   strokeWidth={2}
                   stroke="currentColor"
-                  className="w-4 h-4"
+                  className="w-4 h-4 text-slate-500 dark:text-slate-400"
                 >
                   <path
                     strokeLinecap="round"
@@ -181,11 +206,11 @@ const UserProfile: React.FC<UserProfileProps> = ({
             )}
           </div>
 
-          <div className="p-1 border-t border-slate-100">
+          <div className="p-1.5 border-t border-slate-100 dark:border-slate-700/60">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600
-                                       hover:bg-red-50 rounded-lg transition-colors text-left"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 font-bold
+                                       hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-colors text-left"
             >
               <LogoutIcon className="w-4 h-4" />
               Se déconnecter
