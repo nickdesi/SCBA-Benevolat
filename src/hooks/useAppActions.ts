@@ -10,7 +10,12 @@ interface UseAppActionsProps {
   deleteGame: (id: string) => Promise<boolean>;
   importGames: (data: GameFormData[]) => Promise<void>;
   handleVolunteer: (gameId: string, roleId: string, name: string | string[]) => Promise<void>;
-  handleRemoveVolunteer: (gameId: string, roleId: string, name: string) => Promise<void>;
+  handleRemoveVolunteer: (
+    gameId: string,
+    roleId: string,
+    name: string,
+    registrationId?: string,
+  ) => Promise<void>;
   handleUpdateVolunteer: (
     gameId: string,
     roleId: string,
@@ -119,9 +124,9 @@ export const useAppActions = (props: UseAppActionsProps) => {
   );
 
   const removeVolunteerWithToast = useCallback(
-    async (gameId: string, roleId: string, name: string) => {
+    async (gameId: string, roleId: string, name: string, registrationId?: string) => {
       try {
-        await handleRemoveVolunteer(gameId, roleId, name);
+        await handleRemoveVolunteer(gameId, roleId, name, registrationId);
       } catch (err) {
         addToast('Erreur lors de la désinscription', 'error');
       }

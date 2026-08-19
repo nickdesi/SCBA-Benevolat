@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { collection, query, onSnapshot, doc, runTransaction } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, runTransaction, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import type { Game, UserRegistration } from '../types';
 
@@ -8,7 +8,12 @@ interface UseVolunteersReturn {
   userRegistrations: UserRegistration[];
   userRegistrationsMap: Map<string, string[]>;
   handleVolunteer: (gameId: string, roleId: string, parentName: string | string[]) => Promise<void>;
-  handleRemoveVolunteer: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+  handleRemoveVolunteer: (
+    gameId: string,
+    roleId: string,
+    volunteerName: string,
+    registrationId?: string,
+  ) => Promise<void>;
   handleUpdateVolunteer: (
     gameId: string,
     roleId: string,
@@ -158,56 +163,73 @@ export const useVolunteers = (): UseVolunteersReturn => {
   );
 
   const handleRemoveVolunteer = useCallback(
-    async (gameId: string, roleId: string, volunteerName: string) => {
+    async (gameId: string, roleId: string, volunteerName: string, registrationId?: string) => {
       const gameRef = doc(db, 'matches', gameId);
 
       try {
         await runTransaction(db, async (transaction) => {
           const gameDoc = await transaction.get(gameRef);
 
-          if (!gameDoc.exists()) {
-            throw new Error('Game does not exist!');
+          if (gameDoc.exists()) {
+            const gameData = gameDoc.data() as Game;
+            const updatedRoles = gameData.roles.map((role) => {
+              // Robust check: Compare as strings
+              if (String(role.id) === String(roleId)) {
+                const currentVolunteers = role.volunteers || [];
+                const currentAvatars = role.avatars || {};
+
+                // Remove avatar entry
+                const newAvatars = { ...currentAvatars };
+                delete newAvatars[volunteerName];
+
+                return {
+                  ...role,
+                  volunteers: currentVolunteers.filter((v) => v !== volunteerName),
+                  avatars: newAvatars,
+                };
+              }
+              return role;
+            });
+            transaction.update(gameRef, { roles: updatedRoles });
           }
 
-          const gameData = gameDoc.data() as Game;
-          const updatedRoles = gameData.roles.map((role) => {
-            // Robust check: Compare as strings
-            if (String(role.id) === String(roleId)) {
-              const currentVolunteers = role.volunteers || [];
-              const currentAvatars = role.avatars || {};
-
-              // Remove avatar entry
-              const newAvatars = { ...currentAvatars };
-              delete newAvatars[volunteerName];
-
-              return {
-                ...role,
-                volunteers: currentVolunteers.filter((v) => v !== volunteerName),
-                avatars: newAvatars,
-              };
-            }
-            return role;
-          });
-          transaction.update(gameRef, { roles: updatedRoles });
-
           if (auth.currentUser) {
-            // Fix: Use the correct key format that includes the volunteer name
-            // Try the new format first
             const uniqueKey = `${gameId}_${roleId}_${volunteerName}`;
+            const legacyKey = `${gameId}_${roleId}`;
             const userRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, uniqueKey);
-
-            // We also need to handle legacy keys for backward compatibility if any exist
-            // But since we can't check existence easily in a transaction without reading,
-            // and we might not want to pay for a read if we don't have to...
-            // Let's assume we use the new format.
-            // Challenge: If the user has an OLD registration (key = gameId_roleId), strictly speaking we should check for that too.
-            // But for now, let's fix the immediate "New Registration" bug.
+            const legacyRegRef = doc(db, `users/${auth.currentUser.uid}/registrations`, legacyKey);
 
             transaction.delete(userRegRef);
+            transaction.delete(legacyRegRef);
+
+            if (registrationId && registrationId !== uniqueKey && registrationId !== legacyKey) {
+              const specificRegRef = doc(
+                db,
+                `users/${auth.currentUser.uid}/registrations`,
+                registrationId,
+              );
+              transaction.delete(specificRegRef);
+            }
           }
         });
       } catch (e) {
-        console.error('Remove Transaction failed: ', e);
+        console.warn('Remove Transaction notice, applying direct cleanup fallback: ', e);
+        if (auth.currentUser) {
+          try {
+            const uniqueKey = `${gameId}_${roleId}_${volunteerName}`;
+            const legacyKey = `${gameId}_${roleId}`;
+            await Promise.allSettled([
+              deleteDoc(doc(db, `users/${auth.currentUser.uid}/registrations`, uniqueKey)),
+              deleteDoc(doc(db, `users/${auth.currentUser.uid}/registrations`, legacyKey)),
+              registrationId
+                ? deleteDoc(doc(db, `users/${auth.currentUser.uid}/registrations`, registrationId))
+                : Promise.resolve(),
+            ]);
+            return;
+          } catch (subErr) {
+            console.error('Direct fallback delete failed:', subErr);
+          }
+        }
         throw e;
       }
     },

@@ -16,7 +16,12 @@ interface DashboardHomeProps {
   registrations: UserRegistration[];
   games: Game[];
   userCarpools: UserCarpoolRegistration[];
-  onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+  onUnsubscribe: (
+    gameId: string,
+    roleId: string,
+    volunteerName: string,
+    registrationId?: string,
+  ) => Promise<void>;
   onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
   allTeams: string[];
   favoriteTeams: string[];

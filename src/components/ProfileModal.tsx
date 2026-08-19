@@ -12,7 +12,12 @@ interface ProfileModalProps {
   registrations: UserRegistration[];
   games: Game[];
   userCarpools: UserCarpoolRegistration[];
-  onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+  onUnsubscribe: (
+    gameId: string,
+    roleId: string,
+    volunteerName: string,
+    registrationId?: string,
+  ) => Promise<void>;
   onRemoveCarpool: (gameId: string, entryId: string) => Promise<void>;
   onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
   allTeams: string[];

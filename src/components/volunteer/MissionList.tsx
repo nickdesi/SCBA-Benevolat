@@ -10,7 +10,12 @@ import { triggerHaptic } from '../../utils/haptics';
 
 interface MissionListProps {
   registrations: UserRegistration[];
-  onUnsubscribe: (gameId: string, roleId: string, volunteerName: string) => Promise<void>;
+  onUnsubscribe: (
+    gameId: string,
+    roleId: string,
+    volunteerName: string,
+    registrationId?: string,
+  ) => Promise<void>;
   user: User;
 }
 
@@ -58,7 +63,7 @@ export const MissionList: React.FC<MissionListProps> = ({ registrations, onUnsub
   const handleDelete = useCallback(
     (reg: UserRegistration) => {
       triggerHaptic('success');
-      onUnsubscribe(reg.gameId, reg.roleId, reg.volunteerName || user.displayName || '');
+      onUnsubscribe(reg.gameId, reg.roleId, reg.volunteerName || user.displayName || '', reg.id);
       setDeleteId(null);
     },
     [onUnsubscribe, user.displayName],
