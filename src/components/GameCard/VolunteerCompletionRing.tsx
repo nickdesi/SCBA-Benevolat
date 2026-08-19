@@ -1,5 +1,4 @@
-import React, { memo } from 'react';
-import { motion } from 'framer-motion';
+import React, { memo, useId } from 'react';
 import { CheckIcon } from 'lucide-react';
 
 interface VolunteerCompletionRingProps {
@@ -22,6 +21,9 @@ export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = m
     className = '',
     showLabel = true,
   }) => {
+    const rawId = useId();
+    const uniqueGradientId = `ring-grad-${rawId.replace(/:/g, '')}`;
+
     const validTotal = Math.max(total, 1);
     const validFilled = Math.min(Math.max(filled, 0), validTotal);
     const percentage = isFullyStaffed ? 100 : Math.round((validFilled / validTotal) * 100);
@@ -30,15 +32,13 @@ export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = m
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-    // Color gradient IDs
-    const gradientId = `ring-grad-${size}-${percentage}`;
-
     // Status colors
     const getColors = () => {
       if (isFullyStaffed) {
         return {
           start: '#10b981',
           end: '#34d399',
+          stroke: '#10b981',
           glow: 'rgba(16, 185, 129, 0.35)',
           badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
         };
@@ -47,6 +47,7 @@ export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = m
         return {
           start: '#3629e1',
           end: '#6366f1',
+          stroke: '#3629e1',
           glow: 'rgba(54, 41, 225, 0.35)',
           badgeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
         };
@@ -54,6 +55,7 @@ export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = m
       return {
         start: '#f97316',
         end: '#aa2e0f',
+        stroke: '#f97316',
         glow: 'rgba(249, 115, 22, 0.35)',
         badgeBg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
       };
@@ -69,7 +71,7 @@ export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = m
         >
           <svg width={size} height={size} className="transform -rotate-90">
             <defs>
-              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id={uniqueGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor={colors.start} />
                 <stop offset="100%" stopColor={colors.end} />
               </linearGradient>
@@ -82,39 +84,36 @@ export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = m
               r={radius}
               stroke="currentColor"
               strokeWidth={strokeWidth}
-              className="text-slate-200/80 dark:text-slate-700/60"
+              className="text-slate-200/90 dark:text-slate-700/80"
               fill="transparent"
             />
 
             {/* Progress Stroke */}
-            <motion.circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              stroke={`url(#${gradientId})`}
-              strokeWidth={strokeWidth}
-              strokeDasharray={circumference}
-              initial={{ strokeDashoffset: circumference }}
-              animate={{ strokeDashoffset }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-              strokeLinecap="round"
-              fill="transparent"
-              style={{
-                filter: `drop-shadow(0 0 6px ${colors.glow})`,
-              }}
-            />
+            {percentage > 0 && (
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke={colors.stroke}
+                strokeWidth={strokeWidth}
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                fill="transparent"
+                style={{
+                  transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                  filter: `drop-shadow(0 0 5px ${colors.glow})`,
+                }}
+              />
+            )}
           </svg>
 
           {/* Center Text / Status */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             {isFullyStaffed ? (
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="flex items-center justify-center p-1.5 rounded-full bg-emerald-500 text-white shadow-sm"
-              >
+              <div className="flex items-center justify-center p-1.5 rounded-full bg-emerald-500 text-white shadow-sm">
                 <CheckIcon className="w-4 h-4" strokeWidth={3} />
-              </motion.div>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center leading-none">
                 <span className="font-sport font-black text-sm text-slate-900 dark:text-slate-100 tracking-tight">
