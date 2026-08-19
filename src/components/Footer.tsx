@@ -11,6 +11,26 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.7.2',
+    date: '19 Août 2026',
+    changes: [
+      '🎨 Design System : Formalisation de la spécification officielle DESIGN.md (Google Labs) avec conformité des tokens et contrastes',
+      '♿ Accessibilité : Rehaussement des contrastes WCAG AA sur les créneaux vacants et urgents (EmptySlot), la barre mobile (BottomNav) et les variables globales',
+      '⚡ Perf : Optimisation du groupement de matchs (cache sans allocation Date en O(1), compteurs inline domicile/extérieur)',
+      '🌐 Fuseaux horaires : Correction du bug de décalage de mois dans le calendrier avec ancrage local au 15 du mois',
+      '📱 Ergonomie tactile : Cibles tactiles calibrées à 48 × 48 px pour manipulation fluide au pouce sur smartphone',
+    ],
+  },
+  {
+    version: 'v2.7.1',
+    date: '25 Juillet 2026',
+    changes: [
+      '⚡ Perf : Élimination des lectures et parsing synchrones localStorage dans les boucles de rendu (VolunteerSlot et Carpooling)',
+      '⚡ Perf : Mémoïsation du tri et déduplication dans les listes déroulantes (GameForm)',
+      '🛡️ Qualité : Nettoyage du code mort et configuration Knip / ESLint / Prettier renforcée',
+    ],
+  },
+  {
     version: 'v2.7.0',
     date: '05 Juillet 2026',
     changes: [
