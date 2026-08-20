@@ -1,5 +1,4 @@
 import React, { memo, useMemo } from 'react';
-import Marquee from 'react-fast-marquee';
 import type { Game } from '../types';
 import { getTodayISO } from '../utils/dateUtils';
 
@@ -12,6 +11,87 @@ interface TickerGame extends Game {
 }
 
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
+
+/** Renders a single ticker item (used twice: original + clone) */
+const TickerItem: React.FC<{ game: TickerGame; idx: number }> = ({ game, idx }) => {
+  const host = game.isHome ? game.team : game.opponent;
+  const visitor = game.isHome ? game.opponent : game.team;
+
+  return (
+    <span
+      className="inline-flex items-center gap-2 pr-10 text-xs whitespace-nowrap"
+      aria-label={`${host} vs ${visitor}`}
+      key={idx}
+    >
+      {/* Date badge */}
+      <span
+        style={{
+          fontFamily: 'monospace',
+          fontSize: '10px',
+          fontWeight: 600,
+          color: '#94a3b8',
+          background: '#0f172a',
+          padding: '1px 5px',
+          borderRadius: '4px',
+          border: '1px solid #1e293b',
+        }}
+      >
+        {game._formattedDate} {game.time}
+      </span>
+
+      {/* Host */}
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.03em',
+          color: game.isHome ? '#34d399' : '#cbd5e1',
+        }}
+      >
+        {host}
+      </span>
+
+      <span style={{ fontSize: '9px', fontWeight: 900, color: '#334155' }}>VS</span>
+
+      {/* Visitor */}
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.03em',
+          color: !game.isHome ? '#60a5fa' : '#cbd5e1',
+        }}
+      >
+        {visitor}
+      </span>
+
+      {/* DOM/EXT pill */}
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '1px 6px',
+          borderRadius: '999px',
+          fontSize: '9px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.07em',
+          background: game.isHome ? 'rgba(6,78,59,0.5)' : 'rgba(23,37,84,0.5)',
+          color: game.isHome ? '#6ee7b7' : '#93c5fd',
+          border: game.isHome
+            ? '1px solid rgba(52,211,153,0.25)'
+            : '1px solid rgba(96,165,250,0.25)',
+        }}
+      >
+        {game.isHome ? 'DOM' : 'EXT'}
+      </span>
+
+      <span style={{ color: '#1e293b', marginLeft: '8px' }}>•</span>
+    </span>
+  );
+};
 
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const upcomingGames = useMemo(() => {
@@ -36,72 +116,58 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     return null;
   }
 
-  const tickerItems = upcomingGames.map((game, i) => {
-    const host = game.isHome ? game.team : game.opponent;
-    const visitor = game.isHome ? game.opponent : game.team;
-
-    return (
-      <div
-        key={`${game.id}-${i}`}
-        className="inline-flex items-center gap-2 mr-10 text-xs whitespace-nowrap"
-      >
-        {/* Date & Hour badge */}
-        <span className="font-mono text-[10px] font-semibold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
-          {game._formattedDate} {game.time}
-        </span>
-
-        {/* Host Team */}
-        <span
-          className={`font-bold font-sport uppercase tracking-tight text-[11px] sm:text-xs ${
-            game.isHome ? 'text-emerald-400' : 'text-slate-300'
-          }`}
-        >
-          {host}
-        </span>
-
-        <span className="text-[9px] font-black text-slate-600 px-0.5">VS</span>
-
-        {/* Visitor Team */}
-        <span
-          className={`font-bold font-sport uppercase tracking-tight text-[11px] sm:text-xs ${
-            !game.isHome ? 'text-blue-400' : 'text-slate-300'
-          }`}
-        >
-          {visitor}
-        </span>
-
-        {/* Minimalist Home/Away Pill */}
-        <span
-          className={`inline-flex items-center px-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-            game.isHome
-              ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/40'
-              : 'bg-blue-950/60 text-blue-300 border border-blue-800/40'
-          }`}
-        >
-          {game.isHome ? 'DOM' : 'EXT'}
-        </span>
-
-        {/* Separator */}
-        <span className="text-slate-700 ml-4">•</span>
-      </div>
-    );
-  });
-
   return (
-    <div className="relative z-30 border-b border-slate-800/80 bg-slate-950/95 overflow-hidden py-1">
-      {/* Edge fades */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none z-20" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-12 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none z-20" />
+    <div
+      style={{
+        position: 'relative',
+        zIndex: 30,
+        borderBottom: '1px solid rgba(30,41,59,0.8)',
+        background: 'rgba(2,6,23,0.95)',
+        overflow: 'hidden',
+        padding: '4px 0',
+        height: '28px',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      {/* Left fade */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: '40px',
+          background: 'linear-gradient(to right, #020617, transparent)',
+          zIndex: 20,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Right fade */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: '40px',
+          background: 'linear-gradient(to left, #020617, transparent)',
+          zIndex: 20,
+          pointerEvents: 'none',
+        }}
+      />
 
-      <Marquee
-        speed={40}
-        gradient={false}
-        pauseOnHover={true}
-        autoFill={true}
-        className="overflow-hidden"
-      >
-        {tickerItems}
-      </Marquee>
+      {/* Scrolling track — 2 identical copies so -50% = exactly 1 loop */}
+      <div className="scba-ticker-track" style={{ display: 'flex', alignItems: 'center' }}>
+        {/* Copy 1 */}
+        {upcomingGames.map((game, i) => (
+          <TickerItem key={`a-${game.id}-${i}`} game={game} idx={i} />
+        ))}
+        {/* Copy 2 — seamless clone */}
+        {upcomingGames.map((game, i) => (
+          <TickerItem key={`b-${game.id}-${i}`} game={game} idx={i} />
+        ))}
+      </div>
     </div>
   );
 });
