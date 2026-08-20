@@ -18,7 +18,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   modals,
 }) => {
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden font-outfit pb-28 md:pb-12">
+    <div className="relative min-h-[100dvh] overflow-x-clip font-outfit pb-28 md:pb-12">
       <a
         href="#contenu-principal"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-[#3629e1] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
