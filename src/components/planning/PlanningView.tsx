@@ -102,9 +102,14 @@ const PlanningView: React.FC<PlanningViewProps> = memo(
       const maxAttempts = 30; // 30 * 50ms = 1.5s
       const timer = setInterval(() => {
         attempts++;
-        if (scrollToGameCard(targetGameId)) {
+        if (scrollToGameCard(targetGameId, true)) {
           clearInterval(timer);
-          setTargetGameId(null);
+          // Re-adjust scroll after Framer Motion AnimatePresence and layout transitions finish
+          setTimeout(() => scrollToGameCard(targetGameId, false), 250);
+          setTimeout(() => {
+            scrollToGameCard(targetGameId, false);
+            setTargetGameId(null);
+          }, 500);
         } else if (attempts >= maxAttempts) {
           clearInterval(timer);
           setTargetGameId(null);

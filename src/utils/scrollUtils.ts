@@ -20,16 +20,20 @@ export const findVisibleGameElement = (gameId: string): HTMLElement | null => {
 };
 
 /**
- * Scroll to a visible game element with temporary focus highlight
+ * Scroll to a visible game element with temporary focus highlight.
+ * Performs multiple scroll adjustments to compensate for Framer Motion layout animations.
  */
-export const scrollToGameCard = (gameId: string): boolean => {
+export const scrollToGameCard = (gameId: string, addHighlight: boolean = true): boolean => {
   const el = findVisibleGameElement(gameId);
   if (el) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
-    setTimeout(() => {
-      el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2');
-    }, 1500);
+
+    if (addHighlight) {
+      el.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'shadow-2xl');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'shadow-2xl');
+      }, 2000);
+    }
     return true;
   }
   return false;
