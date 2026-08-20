@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Game } from '../types';
 import { getTodayISO } from '../utils/dateUtils';
 
@@ -11,11 +11,10 @@ interface TickerGame extends Game {
 }
 
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
+const SPEED = 40; // pixels per second — same on all devices
 
-const SPEED_PX_PER_SEC = 50; // 50px/s → comfortable reading on all screens
-
-/** Single ticker item */
-const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
+/** Single ticker match item */
+const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
 
@@ -31,7 +30,6 @@ const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
         flexShrink: 0,
       }}
     >
-      {/* Date badge */}
       <span
         style={{
           fontFamily: 'monospace',
@@ -47,7 +45,6 @@ const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
         {game._formattedDate} {game.time}
       </span>
 
-      {/* Host */}
       <span
         style={{
           fontWeight: 700,
@@ -62,7 +59,6 @@ const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
 
       <span style={{ fontSize: '9px', fontWeight: 900, color: '#334155' }}>VS</span>
 
-      {/* Visitor */}
       <span
         style={{
           fontWeight: 700,
@@ -75,7 +71,6 @@ const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
         {visitor}
       </span>
 
-      {/* DOM/EXT pill */}
       <span
         style={{
           display: 'inline-flex',
@@ -99,13 +94,17 @@ const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
       <span style={{ color: '#1e293b' }}>•</span>
     </span>
   );
-};
+});
+TickerItem.displayName = 'TickerItem';
 
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
-  const copyRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const [duration, setDuration] = useState(30);
-  const [ready, setReady] = useState(false);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
+  const rafRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const pausedRef = useRef(false);
+  const copyWidthRef = useRef(0);
 
   const upcomingGames = useMemo(() => {
     const todayISO = getTodayISO();
@@ -122,29 +121,51 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     return upcoming;
   }, [games]);
 
-  /** Measure the real pixel width of one copy, then set animation duration accordingly */
-  const measure = useCallback(() => {
-    if (!copyRef.current) return;
-    const w = copyRef.current.getBoundingClientRect().width;
-    if (w > 0) {
-      const dur = Math.round(w / SPEED_PX_PER_SEC);
-      setDuration(Math.max(dur, 8));
-      if (trackRef.current) {
-        // Inject the exact pixel offset as a CSS variable so the keyframe is precise
-        trackRef.current.style.setProperty('--ticker-shift', `-${w}px`);
-      }
-      setReady(true);
+  /** The core animation loop — runs via requestAnimationFrame */
+  const tick = useCallback((timestamp: number) => {
+    if (!trackRef.current) return;
+
+    if (lastTimeRef.current === 0) {
+      lastTimeRef.current = timestamp;
     }
+
+    if (!pausedRef.current) {
+      const delta = (timestamp - lastTimeRef.current) / 1000; // seconds elapsed
+      offsetRef.current += delta * SPEED;
+
+      // Reset seamlessly when we've scrolled past one full copy
+      if (copyWidthRef.current > 0 && offsetRef.current >= copyWidthRef.current) {
+        offsetRef.current -= copyWidthRef.current;
+      }
+
+      trackRef.current.style.transform = `translateX(${-offsetRef.current}px)`;
+    }
+
+    lastTimeRef.current = timestamp;
+    rafRef.current = requestAnimationFrame(tick);
   }, []);
 
   useEffect(() => {
     if (upcomingGames.length === 0) return;
-    // Give the browser one frame to render, then measure
-    const raf = requestAnimationFrame(() => {
-      measure();
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [upcomingGames, measure]);
+
+    // Measure after render
+    const measureAndStart = () => {
+      if (copyRef.current) {
+        copyWidthRef.current = copyRef.current.getBoundingClientRect().width;
+      }
+      lastTimeRef.current = 0;
+      offsetRef.current = 0;
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    // Wait one frame for layout
+    const raf = requestAnimationFrame(measureAndStart);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [upcomingGames, tick]);
 
   if (upcomingGames.length === 0) return null;
 
@@ -161,7 +182,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         alignItems: 'center',
       }}
     >
-      {/* Edge fades */}
+      {/* Left fade */}
       <div
         style={{
           position: 'absolute',
@@ -174,6 +195,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
           pointerEvents: 'none',
         }}
       />
+      {/* Right fade */}
       <div
         style={{
           position: 'absolute',
@@ -187,34 +209,28 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         }}
       />
 
-      {/*
-       * Track: 2 identical copies side by side.
-       * Animation shifts by --ticker-shift (= -scrollWidth of copy 1 in px).
-       * Duration is computed so speed = SPEED_PX_PER_SEC regardless of content length.
-       */}
+      {/* Track: JS-driven translateX via requestAnimationFrame */}
       <div
         ref={trackRef}
         style={{
           display: 'flex',
           alignItems: 'center',
           willChange: 'transform',
-          // Only animate after measurement to avoid a flash of wrong position
-          animation: ready ? `scba-ticker-px ${duration}s linear infinite` : 'none',
         }}
         onMouseEnter={() => {
-          if (trackRef.current) trackRef.current.style.animationPlayState = 'paused';
+          pausedRef.current = true;
         }}
         onMouseLeave={() => {
-          if (trackRef.current) trackRef.current.style.animationPlayState = 'running';
+          pausedRef.current = false;
         }}
       >
-        {/* Copy 1 — measured via copyRef */}
+        {/* Copy 1 — measured */}
         <div ref={copyRef} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {upcomingGames.map((game, i) => (
             <TickerItem key={`a-${game.id}-${i}`} game={game} />
           ))}
         </div>
-        {/* Copy 2 — seamless clone, no ref needed */}
+        {/* Copy 2 — seamless clone */}
         <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {upcomingGames.map((game, i) => (
             <TickerItem key={`b-${game.id}-${i}`} game={game} />
