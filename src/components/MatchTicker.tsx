@@ -63,6 +63,7 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
 
     // Trigger navigation on valid tap or click (< 15px movement and < 600ms duration)
     if (dx < 15 && dy < 15 && dt < 600) {
+      (e.currentTarget as HTMLElement)?.blur();
       navigateToGame();
     }
   };
@@ -278,11 +279,15 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
           alignItems: 'center',
           willChange: 'transform',
         }}
-        onMouseEnter={() => {
-          pausedRef.current = true;
+        onPointerEnter={(e) => {
+          if (e.pointerType === 'mouse') {
+            pausedRef.current = true;
+          }
         }}
-        onMouseLeave={() => {
-          pausedRef.current = false;
+        onPointerLeave={(e) => {
+          if (e.pointerType === 'mouse') {
+            pausedRef.current = false;
+          }
         }}
       >
         {/* Copy 1 — measured */}
