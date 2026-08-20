@@ -9,13 +9,14 @@ export const findVisibleGameElement = (gameId: string): HTMLElement | null => {
 
   for (let i = 0; i < elements.length; i++) {
     const el = elements[i];
-    // An element is visible if it has layout dimensions and offsetParent (not inside display: none)
-    if (el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0) {
+    // An element is truly visible if it has layout dimensions and an active offsetParent (not inside display: none)
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0 && el.offsetParent !== null) {
       return el;
     }
   }
 
-  return elements[0] || null;
+  return null;
 };
 
 /**

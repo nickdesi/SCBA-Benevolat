@@ -22,8 +22,13 @@ const TickerItem: React.FC<{
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
   const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const lastNavTimeRef = useRef(0);
 
   const navigateToGame = useCallback(() => {
+    const now = Date.now();
+    if (now - lastNavTimeRef.current < 350) return;
+    lastNavTimeRef.current = now;
+
     // Unpause ticker immediately
     if (onNavigate) {
       onNavigate();
