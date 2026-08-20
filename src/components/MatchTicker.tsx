@@ -19,12 +19,28 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
   const visitor = game.isHome ? game.opponent : game.team;
 
   const handleClick = () => {
-    const el = document.getElementById(`game-${game.id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Brief highlight pulse
-      el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
-      setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2'), 1500);
+    const scrollToCard = () => {
+      const el = document.getElementById(`game-${game.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2'), 1500);
+        return true;
+      }
+      return false;
+    };
+
+    // If the card is already in the DOM (list view or correct week), scroll immediately
+    if (scrollToCard()) return;
+
+    // Otherwise, tell PlanningView to navigate to the game's week
+    if (game.dateISO) {
+      window.dispatchEvent(
+        new CustomEvent('ticker:navigate', { detail: { dateISO: game.dateISO, gameId: game.id } }),
+      );
+      // Retry scroll after React re-render (week change)
+      setTimeout(scrollToCard, 150);
+      setTimeout(scrollToCard, 400);
     }
   };
 

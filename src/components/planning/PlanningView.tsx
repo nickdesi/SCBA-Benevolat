@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import type { Game, CarpoolEntry } from '../../types';
 import PlanningHeader from './PlanningHeader';
 import DesktopGrid from './DesktopGrid';
@@ -65,6 +65,19 @@ const PlanningView: React.FC<PlanningViewProps> = memo(
     const handleToday = () => {
       setCurrentDate(new Date());
     };
+
+    // Listen for ticker click → navigate to the correct week
+    const handleTickerNavigate = useCallback((e: Event) => {
+      const { dateISO } = (e as CustomEvent).detail;
+      if (dateISO) {
+        setCurrentDate(new Date(dateISO));
+      }
+    }, []);
+
+    useEffect(() => {
+      window.addEventListener('ticker:navigate', handleTickerNavigate);
+      return () => window.removeEventListener('ticker:navigate', handleTickerNavigate);
+    }, [handleTickerNavigate]);
 
     // Common props to pass to GameCard through grid components
     const gameCardProps = {
