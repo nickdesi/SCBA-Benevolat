@@ -17,10 +17,9 @@ const SPEED = 40; // pixels per second — same on all devices
 const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
+  const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
-  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation();
-
+  const navigateToGame = useCallback(() => {
     // 1. Dispatch custom event so PlanningView switches to the appropriate week and auto-scrolls
     if (game.dateISO) {
       window.dispatchEvent(
@@ -44,30 +43,52 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
-        if (scrollToCard() || attempts >= 20) {
+        if (scrollToCard() || attempts >= 25) {
           clearInterval(interval);
         }
-      }, 70);
+      }, 60);
+    }
+  }, [game.dateISO, game.id]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!pointerStartRef.current) return;
+    const dx = Math.abs(e.clientX - pointerStartRef.current.x);
+    const dy = Math.abs(e.clientY - pointerStartRef.current.y);
+    const dt = Date.now() - pointerStartRef.current.time;
+    pointerStartRef.current = null;
+
+    // Trigger navigation on valid tap or click (< 15px movement and < 600ms duration)
+    if (dx < 15 && dy < 15 && dt < 600) {
+      navigateToGame();
     }
   };
 
   return (
-    <span
-      onClick={handleClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleClick(e as unknown as React.MouseEvent)}
+    <button
+      type="button"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onClick={navigateToGame}
+      aria-label={`Accéder au match ${host} contre ${visitor}`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        paddingRight: '40px',
+        padding: '0 40px 0 0',
+        margin: 0,
+        background: 'transparent',
+        border: 'none',
+        outline: 'none',
         fontSize: '11px',
         whiteSpace: 'nowrap',
         flexShrink: 0,
         cursor: 'pointer',
         touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'rgba(59, 130, 246, 0.2)',
+        WebkitTapHighlightColor: 'rgba(59, 130, 246, 0.3)',
       }}
     >
       <span
@@ -132,7 +153,7 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
       </span>
 
       <span style={{ color: '#1e293b' }}>•</span>
-    </span>
+    </button>
   );
 });
 TickerItem.displayName = 'TickerItem';
@@ -222,7 +243,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         alignItems: 'center',
       }}
     >
-      {/* Left fade */}
+      {/* Edge fades */}
       <div
         style={{
           position: 'absolute',
@@ -262,15 +283,6 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         }}
         onMouseLeave={() => {
           pausedRef.current = false;
-        }}
-        onTouchStart={() => {
-          pausedRef.current = true;
-        }}
-        onTouchEnd={() => {
-          // Resume scrolling slightly after release
-          setTimeout(() => {
-            pausedRef.current = false;
-          }, 800);
         }}
       >
         {/* Copy 1 — measured */}
