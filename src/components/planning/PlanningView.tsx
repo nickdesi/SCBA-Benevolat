@@ -66,11 +66,25 @@ const PlanningView: React.FC<PlanningViewProps> = memo(
       setCurrentDate(new Date());
     };
 
-    // Listen for ticker click → navigate to the correct week
+    // Listen for ticker click → navigate to the correct week and scroll to game
+    const [targetGameId, setTargetGameId] = useState<string | null>(null);
+
     const handleTickerNavigate = useCallback((e: Event) => {
-      const { dateISO } = (e as CustomEvent).detail;
+      const { dateISO, gameId } = (e as CustomEvent).detail || {};
       if (dateISO) {
-        setCurrentDate(new Date(dateISO));
+        // Robust local date parsing (sets to noon local time to avoid timezone week shift)
+        const parts = dateISO.split('-');
+        if (parts.length === 3) {
+          const y = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10) - 1;
+          const d = parseInt(parts[2], 10);
+          setCurrentDate(new Date(y, m, d, 12, 0, 0));
+        } else {
+          setCurrentDate(new Date(dateISO));
+        }
+      }
+      if (gameId) {
+        setTargetGameId(gameId);
       }
     }, []);
 
@@ -78,6 +92,32 @@ const PlanningView: React.FC<PlanningViewProps> = memo(
       window.addEventListener('ticker:navigate', handleTickerNavigate);
       return () => window.removeEventListener('ticker:navigate', handleTickerNavigate);
     }, [handleTickerNavigate]);
+
+    // Polling effect: once week changes or targetGameId is set, scroll to the card as soon as it mounts
+    useEffect(() => {
+      if (!targetGameId) return;
+
+      let attempts = 0;
+      const maxAttempts = 25; // 25 * 60ms = 1.5s (sufficient for MobileTimeline AnimatePresence)
+      const timer = setInterval(() => {
+        attempts++;
+        const el = document.getElementById(`game-${targetGameId}`);
+        if (el) {
+          clearInterval(timer);
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
+          setTimeout(() => {
+            el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2');
+            setTargetGameId(null);
+          }, 1500);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(timer);
+          setTargetGameId(null);
+        }
+      }, 60);
+
+      return () => clearInterval(timer);
+    }, [targetGameId, currentDate]);
 
     // Common props to pass to GameCard through grid components
     const gameCardProps = {

@@ -18,7 +18,17 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+
+    // 1. Dispatch custom event so PlanningView switches to the appropriate week and auto-scrolls
+    if (game.dateISO) {
+      window.dispatchEvent(
+        new CustomEvent('ticker:navigate', { detail: { dateISO: game.dateISO, gameId: game.id } }),
+      );
+    }
+
+    // 2. Immediate or retry scroll in case we are already on the current week or in list view
     const scrollToCard = () => {
       const el = document.getElementById(`game-${game.id}`);
       if (el) {
@@ -30,17 +40,14 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
       return false;
     };
 
-    // If the card is already in the DOM (list view or correct week), scroll immediately
-    if (scrollToCard()) return;
-
-    // Otherwise, tell PlanningView to navigate to the game's week
-    if (game.dateISO) {
-      window.dispatchEvent(
-        new CustomEvent('ticker:navigate', { detail: { dateISO: game.dateISO, gameId: game.id } }),
-      );
-      // Retry scroll after React re-render (week change)
-      setTimeout(scrollToCard, 150);
-      setTimeout(scrollToCard, 400);
+    if (!scrollToCard()) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (scrollToCard() || attempts >= 20) {
+          clearInterval(interval);
+        }
+      }, 70);
     }
   };
 
@@ -49,7 +56,7 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
       onClick={handleClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+      onKeyDown={(e) => e.key === 'Enter' && handleClick(e as unknown as React.MouseEvent)}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -59,6 +66,8 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
         whiteSpace: 'nowrap',
         flexShrink: 0,
         cursor: 'pointer',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'rgba(59, 130, 246, 0.2)',
       }}
     >
       <span
@@ -253,6 +262,15 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         }}
         onMouseLeave={() => {
           pausedRef.current = false;
+        }}
+        onTouchStart={() => {
+          pausedRef.current = true;
+        }}
+        onTouchEnd={() => {
+          // Resume scrolling slightly after release
+          setTimeout(() => {
+            pausedRef.current = false;
+          }, 800);
         }}
       >
         {/* Copy 1 — measured */}
