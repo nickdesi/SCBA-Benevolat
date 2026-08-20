@@ -68,6 +68,10 @@ export interface ParsedMatch {
   isHome: boolean; // true if SCBA is home team
   candidates?: string[]; // List of potential addresses found
   id?: string; // ID of existing match if found (for update)
+  competition?: string;
+  teamLogo?: string;
+  opponentLogo?: string;
+  ffbbMatchId?: string;
 }
 
 interface ImportResult {
@@ -548,4 +552,7 @@ export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string
   location: match.location,
   isHome: match.isHome,
   id: match.id,
+  competition: match.competition,
+  teamLogo: match.teamLogo,
+  opponentLogo: match.opponentLogo,
 });

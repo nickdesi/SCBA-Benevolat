@@ -18,6 +18,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "audit:root": "npm audit --audit-level=moderate",
     "audit:functions": "npm --prefix functions audit --audit-level=critical",
+    "import:ffbb": "./.venv/bin/python scripts/import_ffbb_matches.py",
+    "import:ffbb:dry": "./.venv/bin/python scripts/import_ffbb_matches.py --dry-run",
     "knip": "knip"
   },
   "dependencies": {

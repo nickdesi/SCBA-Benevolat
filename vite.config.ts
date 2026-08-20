@@ -34,6 +34,25 @@ export default defineConfig({
     host: '0.0.0.0',
   },
   plugins: [
+    {
+      name: 'ffbb-matches-dev-api',
+      configureServer(server) {
+        server.middlewares.use('/api/ffbb-matches', async (req, res) => {
+          try {
+            const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
+            const team = url.searchParams.get('team') || '';
+            const pythonCmd = `./.venv/bin/python scripts/export_ffbb_json.py ${team ? `--team "${team}"` : ''}`;
+            const output = execSync(pythonCmd, { encoding: 'utf8' });
+            res.setHeader('Content-Type', 'application/json');
+            res.end(output);
+          } catch (err: any) {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: err?.message || 'Erreur FFBB Data Client' }));
+          }
+        });
+      },
+    },
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     VitePWA({

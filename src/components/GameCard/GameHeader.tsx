@@ -6,6 +6,13 @@ import ConfirmModal from '../ConfirmModal';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from '../Icons';
 import VolunteerCompletionRing from './VolunteerCompletionRing';
 
+/** Détecte si la compétition est une coupe (style doré/trophée) vs un championnat régulier */
+const isCupCompetition = (competition?: string): boolean => {
+  if (!competition) return false;
+  const lower = competition.toLowerCase();
+  return lower.includes('coupe') || lower.includes('trophée') || lower.includes('challenge');
+};
+
 interface GameHeaderProps {
   game: Game;
   isHomeGame: boolean;
@@ -34,11 +41,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   onDeleteRequest,
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const isCup = isCupCompetition(game.competition);
 
   return (
     <div
       className={`relative p-5 overflow-hidden transition-colors duration-300 ${
-        game.competition
+        isCup
           ? 'bg-gradient-to-br from-amber-200/80 via-yellow-100/50 to-white/80 dark:from-amber-900/40 dark:via-amber-950/20 dark:to-slate-900'
           : isHomeGame
             ? 'bg-gradient-to-br from-emerald-200/80 via-emerald-100/60 to-white/80 dark:from-emerald-900/60 dark:via-emerald-900/20 dark:to-slate-900'
@@ -48,14 +56,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       {/* Watermark Icon - Subtle & Elegant */}
       <div
         className={`absolute -right-6 -top-6 pointer-events-none transform rotate-12 scale-150 transition-opacity duration-300 ${
-          game.competition
+          isCup
             ? 'text-amber-500/15 dark:text-amber-400/10'
             : isHomeGame
               ? 'text-emerald-500/20 dark:text-emerald-400/10'
               : 'text-blue-500/20 dark:text-blue-400/10'
         }`}
       >
-        {game.competition ? (
+        {isCup ? (
           <Trophy className="w-48 h-48" />
         ) : isHomeGame ? (
           <Home className="w-48 h-48" />
@@ -68,9 +76,13 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       <div
         className={`relative flex items-center justify-between mb-2 z-10 ${isAdmin ? 'pr-16' : ''}`}
       >
-        {game.competition ? (
+        {isCup ? (
           <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider rounded-full shadow-sm bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse">
             <Trophy className="w-3.5 h-3.5 text-yellow-100" />
+            {game.competition}
+          </div>
+        ) : game.competition ? (
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider rounded-full bg-slate-100/80 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/40">
             {game.competition}
           </div>
         ) : (
@@ -110,34 +122,70 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       {/* Middle: Teams & Versus + Completion Ring */}
       <div className="relative z-10 mb-4 flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5 mb-1">
-            {game.teamLogo && (
-              <img
-                src={game.teamLogo}
-                alt={game.team}
-                className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
-              />
+          {/* Ligne 1 : équipe qui reçoit */}
+          <div className={`flex items-center gap-2.5 mb-1`}>
+            {isHomeGame ? (
+              <>
+                {game.teamLogo && (
+                  <img
+                    src={game.teamLogo}
+                    alt={game.team}
+                    className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
+                  />
+                )}
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 truncate">
+                  {game.team}
+                </h2>
+              </>
+            ) : (
+              <>
+                {game.opponentLogo && (
+                  <img
+                    src={game.opponentLogo}
+                    alt={game.opponent}
+                    className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
+                  />
+                )}
+                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport truncate">
+                  {game.opponent}
+                </h3>
+              </>
             )}
-            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport truncate">
-              {game.team}
-            </h3>
             <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></span>
           </div>
 
+          {/* Ligne 2 : équipe visiteuse */}
           <div className="group relative flex items-start gap-2.5">
             <span className="text-slate-300 dark:text-slate-600 text-lg italic mt-1.5 flex-shrink-0">
               VS
             </span>
-            {game.opponentLogo && (
-              <img
-                src={game.opponentLogo}
-                alt={game.opponent}
-                className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-0.5"
-              />
+            {isHomeGame ? (
+              <>
+                {game.opponentLogo && (
+                  <img
+                    src={game.opponentLogo}
+                    alt={game.opponent}
+                    className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-1"
+                  />
+                )}
+                <h3 className="text-base font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sport mt-1 break-words">
+                  {game.opponent}
+                </h3>
+              </>
+            ) : (
+              <>
+                {game.teamLogo && (
+                  <img
+                    src={game.teamLogo}
+                    alt={game.team}
+                    className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-0.5"
+                  />
+                )}
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 break-words">
+                  {game.team}
+                </h2>
+              </>
             )}
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 break-words">
-              {game.opponent}
-            </h2>
           </div>
         </div>
 

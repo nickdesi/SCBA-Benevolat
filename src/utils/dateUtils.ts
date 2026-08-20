@@ -133,11 +133,11 @@ export const getDaysOfWeek = (date: Date): Date[] => {
 };
 
 /**
- * Checks if a given date falls within the summer off-season (June, July, August)
+ * Checks if a given date falls within the summer off-season.
+ * Currently disabled: season 2026-2027 matches are already scheduled from August.
  */
-export const isOffSeason = (date: Date): boolean => {
-  const month = date.getMonth();
-  return month >= 5 && month <= 7; // June is 5, August is 7
+export const isOffSeason = (_date: Date): boolean => {
+  return false;
 };
 
 /**

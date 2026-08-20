@@ -95,12 +95,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
             e.stopPropagation();
             setIsAuthModalOpen(true);
           }}
-          className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20
-                               text-white font-medium rounded-full border border-white/20
-                               transition-all shadow-sm hover:shadow-md ml-2 backdrop-blur-sm"
+          className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-bold rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all shadow-xs hover:shadow-sm ml-1 cursor-pointer text-xs sm:text-sm"
           title="Espace Bénévoles"
         >
-          <div className="w-5 h-5 opacity-90">
+          <div className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 dark:text-slate-400">
             <UserIcon />
           </div>
           <span className="hidden sm:inline">Connexion / Inscription</span>

@@ -204,17 +204,12 @@ describe('dateUtils', () => {
   });
 
   describe('isOffSeason', () => {
-    it('returns true for summer months (June, July, August)', () => {
-      expect(isOffSeason(new Date(2026, 5, 15))).toBe(true); // June
-      expect(isOffSeason(new Date(2026, 6, 15))).toBe(true); // July
-      expect(isOffSeason(new Date(2026, 7, 15))).toBe(true); // August
-    });
-
-    it('returns false for non-summer months', () => {
+    it('returns false when off-season is disabled (match schedule active)', () => {
+      expect(isOffSeason(new Date(2026, 5, 15))).toBe(false); // June
+      expect(isOffSeason(new Date(2026, 6, 15))).toBe(false); // July
+      expect(isOffSeason(new Date(2026, 7, 15))).toBe(false); // August
       expect(isOffSeason(new Date(2026, 0, 15))).toBe(false); // January
-      expect(isOffSeason(new Date(2026, 4, 15))).toBe(false); // May
       expect(isOffSeason(new Date(2026, 8, 15))).toBe(false); // September
-      expect(isOffSeason(new Date(2026, 11, 15))).toBe(false); // December
     });
   });
 

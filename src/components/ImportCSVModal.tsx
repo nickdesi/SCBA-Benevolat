@@ -1,4 +1,6 @@
 import React, { useState, useCallback, memo } from 'react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase';
 import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
@@ -14,17 +16,89 @@ interface ImportCSVModalProps {
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
   ({ isOpen, onClose, onImport, existingGames = [] }) => {
     useScrollLock(isOpen);
+    const [activeTab, setActiveTab] = useState<'ffbb' | 'manual'>('ffbb');
     const [csvContent, setCsvContent] = useState('');
-    const [selectedTeam, setSelectedTeam] = useState<string>('SENIOR M1');
+    const [selectedTeam, setSelectedTeam] = useState<string>('ALL');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [duplicatesCount, setDuplicatesCount] = useState(0);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
+    const [ffbbError, setFfbbError] = useState<string | null>(null);
     const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
+    const [isFetchingFFBB, setIsFetchingFFBB] = useState(false);
+
+    // ⚡ 1-Click Automated Import from FFBB (via ffbb-data-client)
+    const handleFetchFFBB = useCallback(async () => {
+      setIsFetchingFFBB(true);
+      setFfbbError(null);
+
+      try {
+        let fetchedMatches: ParsedMatch[] = [];
+
+        // 1. Essai via l'API locale /api/ffbb-matches (ffbb-data-client)
+        try {
+          const queryParam =
+            selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
+          const localRes = await fetch(`/api/ffbb-matches${queryParam}`);
+          if (localRes.ok) {
+            const data = await localRes.json();
+            if (Array.isArray(data?.matches)) {
+              fetchedMatches = data.matches;
+            }
+          }
+        } catch (e) {
+          // Fallback sur Cloud Function
+        }
+
+        // 2. Si non récupéré en local, appel de la Cloud Function
+        if (fetchedMatches.length === 0) {
+          const fetchFn = httpsCallable<
+            { team?: string },
+            { matches: ParsedMatch[]; count: number }
+          >(functions, 'fetchFFBBMatches');
+          const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
+          fetchedMatches = res.data?.matches || [];
+        }
+
+        if (fetchedMatches.length === 0) {
+          setFfbbError(
+            selectedTeam === 'ALL'
+              ? 'Aucune rencontre trouvée sur la FFBB pour le SCBA actuellement (poules pas encore publiées).'
+              : `Aucune rencontre trouvée sur la FFBB pour l'équipe ${selectedTeam}.`,
+          );
+          setIsFetchingFFBB(false);
+          return;
+        }
+
+        const newMatches: ParsedMatch[] = [];
+        let updateCount = 0;
+
+        fetchedMatches.forEach((match) => {
+          const existing = findMatchingGame(match, existingGames);
+          if (existing) {
+            newMatches.push({ ...match, id: existing.id });
+            updateCount++;
+          } else {
+            newMatches.push(match);
+          }
+        });
+
+        setParsedMatches(newMatches);
+        setDuplicatesCount(updateCount);
+        setErrors([]);
+        setStep('preview');
+      } catch (err: any) {
+        console.error('Erreur lors de la récupération FFBB:', err);
+        setFfbbError(err?.message || 'Erreur lors de la récupération des matchs depuis la FFBB.');
+      } finally {
+        setIsFetchingFFBB(false);
+      }
+    }, [selectedTeam, existingGames]);
 
     // Parse from CSV/paste with Deduplication/Update detection
     const handleParseText = useCallback(() => {
-      const result = parseCSV(csvContent, selectedTeam);
+      const teamForManual = selectedTeam === 'ALL' ? 'SENIOR M1' : selectedTeam;
+      const result = parseCSV(csvContent, teamForManual);
 
       const newMatches: ParsedMatch[] = [];
       let updateCount = 0;
@@ -41,7 +115,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       });
 
       setParsedMatches(newMatches);
-      setDuplicatesCount(updateCount); // Reused state for "Updates" count
+      setDuplicatesCount(updateCount);
       setErrors(result.errors);
 
       if (newMatches.length > 0) {
@@ -49,7 +123,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       }
     }, [csvContent, selectedTeam, existingGames]);
 
-    // Enrich locations with Nominatim + Data ES
+    // Enrich locations with Nominatim + Data ES (for manual imports)
     const handleEnrichLocations = useCallback(async () => {
       setIsEnriching(true);
       const updatedMatches = [...parsedMatches];
@@ -61,9 +135,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             (match.location === 'Extérieur' || match.location.startsWith('Extérieur (')),
         );
 
-      // ⚡ Bolt Optimization: Group matches by city to prevent N+1 API calls.
-      // Instead of fetching APIs for every single match, group them by unique city name.
-      // Fetch once per unique city and apply results to all matches sharing that city.
       const cityGroups = new Map<string, { match: ParsedMatch; index: number }[]>();
       matchesToEnrich.forEach(({ match, index }) => {
         const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
@@ -92,7 +163,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
               .normalize('NFD')
               .replace(/[\u0300-\u036f]/g, '');
 
-            // Parallel fetch from multiple sources
             const fetchNominatim = async () => {
               const results: string[] = [];
               const queries = [
@@ -125,7 +195,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                       .normalize('NFD')
                       .replace(/[\u0300-\u036f]/g, '');
 
-                    // Loose matching
                     if (
                       resultCityNorm.includes(cityNameLower) ||
                       cityNameLower.includes(resultCityNorm)
@@ -158,7 +227,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             const fetchDataES = async () => {
               const results: string[] = [];
               try {
-                // API Data ES: search for "Gymnase" + City Name
                 const response = await fetch(
                   `https://equipements.sports.gouv.fr/api/explore/v2.1/catalog/datasets/data-es/records?` +
                     `where=search(inst_nom, "${encodeURIComponent(cityName)}")` +
@@ -207,10 +275,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
               fetchDataES(),
             ]);
 
-            // Merge and dedup
             const candidates = Array.from(new Set([...dataEsResults, ...nominatimResults]));
-
-            // Apply the fetched location candidates to all matches that share this city
             const matchesForCity = cityGroups.get(cityName)!;
 
             if (candidates.length > 0) {
@@ -246,200 +311,305 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
     }, [parsedMatches, onImport]);
 
     const handleClose = useCallback(() => {
-      setStep('input'); // Reset to input
+      setStep('input');
       setIsEnriching(false);
+      setFfbbError(null);
       onClose();
     }, [onClose]);
 
     if (!isOpen) return null;
 
-    const teams = [
-      'SENIOR M1',
-      'SENIOR M2',
-      'U18 M1',
-      'U18 M2',
-      'U15 M1',
-      'U15 M2',
-      'U13 M1',
-      'U11 M1',
-      'U11 M2',
-      'U9 M1',
+    const teamOptions = [
+      { value: 'ALL', label: '✨ Toutes les équipes (Club complet)' },
+      { value: 'SENIOR M1', label: 'SENIOR M1' },
+      { value: 'SENIOR M2', label: 'SENIOR M2' },
+      { value: 'U18 M1', label: 'U18 M1' },
+      { value: 'U18 M2', label: 'U18 M2' },
+      { value: 'U15 M1', label: 'U15 M1' },
+      { value: 'U15 M2', label: 'U15 M2' },
+      { value: 'U13 M1', label: 'U13 M1' },
+      { value: 'U11 M1', label: 'U11 M1' },
+      { value: 'U11 M2', label: 'U11 M2' },
+      { value: 'U9 M1', label: 'U9 M1' },
     ];
 
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up flex flex-col">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up flex flex-col border border-slate-200/80 dark:border-slate-700/80">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white flex-shrink-0">
-            <h2 className="text-xl font-bold flex items-center gap-2">📥 Importer des matchs</h2>
+          <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 p-6 text-white flex-shrink-0 relative overflow-hidden">
+            <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <h2 className="text-xl font-black tracking-tight flex items-center gap-2 font-sport">
+              <span>📥</span> Importer des rencontres
+            </h2>
             <p className="text-blue-100 text-sm mt-1">
-              {step === 'input' ? 'Saisissez les données' : 'Vérifiez les matchs détectés'}
+              {step === 'input'
+                ? 'Synchronisez directement depuis la FFBB ou collez un calendrier.'
+                : 'Vérifiez les matchs détectés avant de confirmer.'}
             </p>
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto flex-1">
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
             {step === 'input' && (
               <>
                 {/* Team Selector */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5 font-sport">
                     Équipe concernée
                   </label>
                   <CustomSelect
                     label="Équipe concernée"
                     value={selectedTeam}
                     onChange={(val) => setSelectedTeam(val as string)}
-                    options={teams.map((team) => ({ value: team, label: team }))}
+                    options={teamOptions}
                   />
                 </div>
 
-                {/* Input Area */}
-                <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600">
-                  <p className="text-sm text-slate-600 dark:text-slate-300 font-medium mb-2">
-                    📋 Instructions :
-                  </p>
-                  <ul className="text-xs text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
-                    <li>Allez sur la page FFBB de l'équipe</li>
-                    <li>Sélectionnez le tableau des matchs</li>
-                    <li>Copiez (Ctrl+C) et collez ci-dessous (Ctrl+V)</li>
-                  </ul>
+                {/* Mode Selector Tabs */}
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-700/60 rounded-2xl">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('ffbb')}
+                    className={`flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+                      activeTab === 'ffbb'
+                        ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <span>⚡</span> Synchronisation 1-Clic FFBB
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('manual')}
+                    className={`flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+                      activeTab === 'manual'
+                        ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <span>📋</span> Saisie manuelle
+                  </button>
                 </div>
-                <textarea
-                  value={csvContent}
-                  onChange={(e) => setCsvContent(e.target.value)}
-                  placeholder="Collez le tableau FFBB ici..."
-                  className="w-full h-40 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-xl font-mono text-sm
-                                     bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-                                     focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                                     resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
 
-                {/* Errors */}
-                {errors.length > 0 && (
-                  <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl">
-                    <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">
-                      ⚠️ Erreurs :
-                    </p>
-                    <ul className="text-xs text-red-600 dark:text-red-300 space-y-1">
-                      {errors.map((err, i) => (
-                        <li key={i}>{err.error}</li>
-                      ))}
-                    </ul>
+                {/* TAB 1: 1-CLICK FFBB AUTOMATION */}
+                {activeTab === 'ffbb' && (
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-white dark:from-slate-700/60 dark:via-slate-800/40 dark:to-slate-800 border border-blue-100 dark:border-blue-900/30 text-center space-y-4">
+                    <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20">
+                      ⚡
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-800 dark:text-white font-sport">
+                        Import Officiel FFBB en 1-Clic
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                        Interroge l'API officielle pour récupérer automatiquement les matchs, dates,
+                        horaires, salles exactes et logos des clubs adverses.
+                      </p>
+                    </div>
+
+                    {ffbbError && (
+                      <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-xl text-left">
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-400">
+                          ⚠️ {ffbbError}
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleFetchFFBB}
+                      disabled={isFetchingFFBB}
+                      className="w-full py-3.5 px-6 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-600 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-sport tracking-wide"
+                    >
+                      {isFetchingFFBB ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          <span>Récupération depuis la FFBB...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>⚡ Récupérer automatiquement depuis la FFBB</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* TAB 2: MANUAL CSV / COPY-PASTE */}
+                {activeTab === 'manual' && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600">
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                        📋 Instructions :
+                      </p>
+                      <ul className="text-xs text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
+                        <li>Allez sur la page FFBB de l'équipe</li>
+                        <li>Sélectionnez et copiez (Ctrl+C) le tableau des matchs</li>
+                        <li>Collez ci-dessous (Ctrl+V) puis cliquez sur Analyser</li>
+                      </ul>
+                    </div>
+
+                    <textarea
+                      value={csvContent}
+                      onChange={(e) => setCsvContent(e.target.value)}
+                      placeholder="Collez le tableau FFBB ici..."
+                      className="w-full h-36 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl font-mono text-xs bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    />
+
+                    {errors.length > 0 && (
+                      <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-2xl">
+                        <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">
+                          ⚠️ Erreurs d'analyse :
+                        </p>
+                        <ul className="text-xs text-red-600 dark:text-red-300 space-y-1 list-disc list-inside">
+                          {errors.map((err, i) => (
+                            <li key={i}>{err.error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
             )}
 
+            {/* PREVIEW STEP */}
             {step === 'preview' && (
-              <>
-                {/* Preview */}
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      <span className="text-emerald-600 dark:text-emerald-400">
-                        ✅ {parsedMatches.length - duplicatesCount} nouveau(x)
+              <div className="space-y-4">
+                <div className="flex justify-between items-center flex-wrap gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                  <div className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 font-sport">
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      ✨ {parsedMatches.length - duplicatesCount} nouveau(x) match(s)
+                    </span>
+                    {duplicatesCount > 0 && (
+                      <span className="text-blue-500 dark:text-blue-400 ml-2">
+                        (🔄 {duplicatesCount} mise(s) à jour)
                       </span>
-                      {duplicatesCount > 0 && (
-                        <span className="text-blue-500 dark:text-blue-400 ml-2">
-                          (🔄 {duplicatesCount} mise(s) à jour)
-                        </span>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
+                  {activeTab === 'manual' && (
                     <button
+                      type="button"
                       onClick={handleEnrichLocations}
                       disabled={isEnriching}
-                      className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 font-bold rounded-lg
-                                                 hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+                      className="text-xs px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                       {isEnriching ? <>⏳ Recherche...</> : <>🔍 Trouver les gymnases</>}
                     </button>
-                  </div>
+                  )}
+                </div>
 
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {parsedMatches.length === 0 && (
-                      <div className="text-center py-8 text-slate-400 dark:text-slate-500 italic">
-                        Aucun nouveau match à importer.
-                      </div>
-                    )}
-                    {parsedMatches.map((match, i) => (
-                      <div
-                        key={i}
-                        className={`p-3 rounded-xl border ${
-                          match.isHome
-                            ? 'bg-green-50 border-green-200'
-                            : 'bg-blue-50 border-blue-200'
-                        }`}
-                      >
-                        <div className="flex items-center">
+                <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                  {parsedMatches.length === 0 && (
+                    <div className="text-center py-8 text-slate-400 dark:text-slate-500 italic text-sm">
+                      Aucun match détecté.
+                    </div>
+                  )}
+                  {parsedMatches.map((match, i) => (
+                    <div
+                      key={i}
+                      className={`p-3.5 rounded-2xl border transition-all ${
+                        match.isHome
+                          ? 'bg-emerald-50/70 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/40'
+                          : 'bg-blue-50/70 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
                           <span
-                            className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                              match.isHome ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                            className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                              match.isHome ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
                             }`}
                           >
-                            {match.isHome ? '🏠 DOM' : '🚗 EXT'}
+                            {match.isHome ? '🏠 Domicile' : '🚗 Extérieur'}
                           </span>
-                          <span className="ml-2 font-semibold text-slate-800 dark:text-white">
-                            {match.team}
+                          {match.competition && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 truncate max-w-[180px]">
+                              {match.competition}
+                            </span>
+                          )}
+                        </div>
+
+                        {match.id && (
+                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/50 px-2 py-0.5 rounded-full">
+                            🔄 Mise à jour
                           </span>
-                          <span className="text-slate-500 dark:text-slate-400 mx-2">vs</span>
-                          <span className="font-medium text-slate-700 dark:text-slate-300">
-                            {match.opponent}
+                        )}
+                      </div>
+
+                      {/* Opponents & Logos */}
+                      <div className="flex items-center gap-2.5 mt-2">
+                        {match.teamLogo && (
+                          <img
+                            src={match.teamLogo}
+                            alt="Logo SCBA"
+                            className="w-6 h-6 object-contain rounded-full bg-white dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
+                          />
+                        )}
+                        <span className="font-bold text-xs text-slate-900 dark:text-white font-sport uppercase">
+                          {match.team}
+                        </span>
+                        <span className="text-slate-400 text-xs italic font-bold">vs</span>
+                        {match.opponentLogo && (
+                          <img
+                            src={match.opponentLogo}
+                            alt="Logo adversaire"
+                            className="w-6 h-6 object-contain rounded-full bg-white dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
+                          />
+                        )}
+                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200 font-sport truncate">
+                          {match.opponent}
+                        </span>
+                      </div>
+
+                      {/* Date, Time, Location */}
+                      <div className="mt-2.5 text-xs text-slate-600 dark:text-slate-400 flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5 font-medium">
+                          <span>📅</span>
+                          <span>
+                            {match.date} à {match.time}
                           </span>
                         </div>
-                        <div className="mt-2 flex flex-col gap-1">
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
-                            <span aria-hidden="true">📅</span> {match.date} à {match.time}
-                          </div>
 
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-lg">📍</span>
-                            <div className="flex-1">
-                              <input
-                                type="text"
-                                value={match.location}
-                                onChange={(e) => {
-                                  const newMatches = [...parsedMatches];
-                                  newMatches[i] = { ...match, location: e.target.value };
-                                  setParsedMatches(newMatches);
-                                }}
-                                className="w-full text-xs p-1.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
-                                placeholder="Adresse du match"
-                              />
-
-                              {match.candidates && match.candidates.length > 1 && (
-                                <div className="flex gap-1 flex-wrap mt-1">
-                                  {match.candidates.map((cand, cIdx) => (
-                                    <button
-                                      key={cIdx}
-                                      onClick={() => {
-                                        const newMatches = [...parsedMatches];
-                                        newMatches[i] = { ...match, location: cand };
-                                        setParsedMatches(newMatches);
-                                      }}
-                                      className={`text-[10px] px-2 py-1 rounded-full border transition-colors text-left truncate max-w-full
-                                                                            ${
-                                                                              match.location ===
-                                                                              cand
-                                                                                ? 'bg-blue-100 border-blue-400 text-blue-800'
-                                                                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                                                                            }`}
-                                      title={cand}
-                                    >
-                                      {cand.split(',')[0]}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                        <div className="flex items-start gap-1.5 mt-0.5">
+                          <span className="mt-0.5">📍</span>
+                          <input
+                            type="text"
+                            value={match.location}
+                            onChange={(e) => {
+                              const newMatches = [...parsedMatches];
+                              newMatches[i] = { ...match, location: e.target.value };
+                              setParsedMatches(newMatches);
+                            }}
+                            className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
+                            placeholder="Adresse du match"
+                          />
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              </>
+              </div>
             )}
           </div>
 
@@ -447,39 +617,36 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
           <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
             {step === 'preview' && (
               <button
+                type="button"
                 onClick={() => setStep('input')}
-                className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors font-sport"
               >
-                ← Modifier
+                ← Retour
               </button>
             )}
             <button
+              type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
+              className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors font-sport"
             >
               Annuler
             </button>
-            {step === 'input' && (
+            {step === 'input' && activeTab === 'manual' && (
               <button
+                type="button"
                 onClick={handleParseText}
                 disabled={!csvContent.trim()}
-                className="px-6 py-2 text-sm font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all
-                                      disabled:opacity-50 disabled:cursor-not-allowed
-                                      bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600
-                                      flex items-center gap-2"
+                className="px-6 py-2.5 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 flex items-center gap-2 font-sport tracking-wide"
               >
-                <>Analyser →</>
+                Analyser →
               </button>
             )}
             {step === 'preview' && (
               <button
+                type="button"
                 onClick={handleImport}
                 disabled={parsedMatches.length === 0}
-                className="px-6 py-2 text-sm font-bold text-white
-                                     bg-gradient-to-r from-green-500 to-emerald-500
-                                     hover:from-green-600 hover:to-emerald-600
-                                     rounded-xl shadow-md hover:shadow-lg transition-all
-                                     disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/35 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-sport tracking-wide"
               >
                 ✓ Importer / Mettre à jour {parsedMatches.length} match(s)
               </button>
