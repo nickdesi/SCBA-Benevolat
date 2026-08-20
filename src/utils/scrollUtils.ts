@@ -49,17 +49,22 @@ export const scrollToGameCard = (gameId: string, addHighlight: boolean = true): 
       el.scrollIntoView(true);
     }
 
-    // 4. Guaranteed visual feedback via direct CSS style injection
+    // 4. Guaranteed visual feedback via rounded-aware box-shadow + border glow
     if (addHighlight) {
-      el.style.transition = 'box-shadow 0.3s ease, outline 0.3s ease';
-      el.style.outline = '4px solid #3b82f6';
-      el.style.outlineOffset = '4px';
-      el.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.6)';
+      const prevTransition = el.style.transition;
+      const prevBoxShadow = el.style.boxShadow;
+      const prevBorderColor = el.style.borderColor;
+
+      el.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+      el.style.boxShadow = '0 0 0 3px #3b82f6, 0 0 35px rgba(59, 130, 246, 0.7)';
+      el.style.borderColor = '#3b82f6';
 
       setTimeout(() => {
-        el.style.outline = '';
-        el.style.outlineOffset = '';
-        el.style.boxShadow = '';
+        el.style.boxShadow = prevBoxShadow;
+        el.style.borderColor = prevBorderColor;
+        setTimeout(() => {
+          el.style.transition = prevTransition;
+        }, 300);
       }, 2500);
     }
     return true;
