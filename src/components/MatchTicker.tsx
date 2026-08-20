@@ -18,8 +18,22 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
 
+  const handleClick = () => {
+    const el = document.getElementById(`game-${game.id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Brief highlight pulse
+      el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
+      setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2'), 1500);
+    }
+  };
+
   return (
     <span
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -28,6 +42,7 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
         fontSize: '11px',
         whiteSpace: 'nowrap',
         flexShrink: 0,
+        cursor: 'pointer',
       }}
     >
       <span
