@@ -114,6 +114,7 @@ const GameCard: React.FC<GameCardProps> = memo(
     return (
       <motion.div
         id={`game-${game.id}`}
+        data-game-id={game.id}
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}

@@ -3,6 +3,7 @@ import type { Game, CarpoolEntry } from '../../types';
 import PlanningHeader from './PlanningHeader';
 import DesktopGrid from './DesktopGrid';
 import MobileTimeline from './MobileTimeline';
+import { scrollToGameCard } from '../../utils/scrollUtils';
 
 interface PlanningViewProps {
   games: Game[];
@@ -93,28 +94,22 @@ const PlanningView: React.FC<PlanningViewProps> = memo(
       return () => window.removeEventListener('ticker:navigate', handleTickerNavigate);
     }, [handleTickerNavigate]);
 
-    // Polling effect: once week changes or targetGameId is set, scroll to the card as soon as it mounts
+    // Polling effect: once week changes or targetGameId is set, scroll to the visible card as soon as it mounts
     useEffect(() => {
       if (!targetGameId) return;
 
       let attempts = 0;
-      const maxAttempts = 25; // 25 * 60ms = 1.5s (sufficient for MobileTimeline AnimatePresence)
+      const maxAttempts = 30; // 30 * 50ms = 1.5s
       const timer = setInterval(() => {
         attempts++;
-        const el = document.getElementById(`game-${targetGameId}`);
-        if (el) {
+        if (scrollToGameCard(targetGameId)) {
           clearInterval(timer);
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
-          setTimeout(() => {
-            el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2');
-            setTargetGameId(null);
-          }, 1500);
+          setTargetGameId(null);
         } else if (attempts >= maxAttempts) {
           clearInterval(timer);
           setTargetGameId(null);
         }
-      }, 60);
+      }, 50);
 
       return () => clearInterval(timer);
     }, [targetGameId, currentDate]);

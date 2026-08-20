@@ -113,6 +113,17 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // When clicking a match in ticker, clear any active team filter to ensure the target game is visible
+  useEffect(() => {
+    const handleTickerNav = () => {
+      if (selectedTeam) {
+        setSelectedTeam('');
+      }
+    };
+    window.addEventListener('ticker:navigate', handleTickerNav);
+    return () => window.removeEventListener('ticker:navigate', handleTickerNav);
+  }, [selectedTeam]);
+
   const {
     addGameWithToast,
     updateGameWithToast,

@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Game } from '../types';
 import { getTodayISO } from '../utils/dateUtils';
+import { scrollToGameCard } from '../utils/scrollUtils';
 
 interface MatchTickerProps {
   games: Game[];
@@ -36,25 +37,14 @@ const TickerItem: React.FC<{
     }
 
     // 2. Immediate or retry scroll in case we are already on the current week or in list view
-    const scrollToCard = () => {
-      const el = document.getElementById(`game-${game.id}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2');
-        setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2'), 1500);
-        return true;
-      }
-      return false;
-    };
-
-    if (!scrollToCard()) {
+    if (!scrollToGameCard(game.id)) {
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
-        if (scrollToCard() || attempts >= 25) {
+        if (scrollToGameCard(game.id) || attempts >= 25) {
           clearInterval(interval);
         }
-      }, 60);
+      }, 50);
     }
   }, [game.dateISO, game.id, onNavigate]);
 
