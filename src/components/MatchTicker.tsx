@@ -14,12 +14,20 @@ const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 
 const SPEED = 40; // pixels per second — same on all devices
 
 /** Single ticker match item */
-const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
+const TickerItem: React.FC<{
+  game: TickerGame;
+  onNavigate?: () => void;
+}> = memo(({ game, onNavigate }) => {
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
   const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   const navigateToGame = useCallback(() => {
+    // Unpause ticker immediately
+    if (onNavigate) {
+      onNavigate();
+    }
+
     // 1. Dispatch custom event so PlanningView switches to the appropriate week and auto-scrolls
     if (game.dateISO) {
       window.dispatchEvent(
@@ -48,7 +56,7 @@ const TickerItem: React.FC<{ game: TickerGame }> = memo(({ game }) => {
         }
       }, 60);
     }
-  }, [game.dateISO, game.id]);
+  }, [game.dateISO, game.id, onNavigate]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     pointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
@@ -279,27 +287,41 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
           alignItems: 'center',
           willChange: 'transform',
         }}
-        onPointerEnter={(e) => {
-          if (e.pointerType === 'mouse') {
+        onMouseEnter={() => {
+          // Only pause if device physically supports hover (desktop with mouse)
+          if (
+            typeof window !== 'undefined' &&
+            window.matchMedia('(hover: hover) and (pointer: fine)').matches
+          ) {
             pausedRef.current = true;
           }
         }}
-        onPointerLeave={(e) => {
-          if (e.pointerType === 'mouse') {
-            pausedRef.current = false;
-          }
+        onMouseLeave={() => {
+          pausedRef.current = false;
         }}
       >
         {/* Copy 1 — measured */}
         <div ref={copyRef} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {upcomingGames.map((game, i) => (
-            <TickerItem key={`a-${game.id}-${i}`} game={game} />
+            <TickerItem
+              key={`a-${game.id}-${i}`}
+              game={game}
+              onNavigate={() => {
+                pausedRef.current = false;
+              }}
+            />
           ))}
         </div>
         {/* Copy 2 — seamless clone */}
         <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {upcomingGames.map((game, i) => (
-            <TickerItem key={`b-${game.id}-${i}`} game={game} />
+            <TickerItem
+              key={`b-${game.id}-${i}`}
+              game={game}
+              onNavigate={() => {
+                pausedRef.current = false;
+              }}
+            />
           ))}
         </div>
       </div>
