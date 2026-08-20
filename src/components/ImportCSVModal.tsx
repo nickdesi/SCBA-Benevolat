@@ -34,6 +34,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
 
       try {
         let fetchedMatches: ParsedMatch[] = [];
+        let localError: string | null = null;
 
         // 1. Essai via l'API locale /api/ffbb-matches (ffbb-data-client)
         try {
@@ -45,27 +46,50 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             if (Array.isArray(data?.matches)) {
               fetchedMatches = data.matches;
             }
+            if (data?.error && fetchedMatches.length === 0) {
+              localError = data.error;
+            }
           }
-        } catch (e) {
-          // Fallback sur Cloud Function
+        } catch {
+          // Fallback sur Cloud Function si l'endpoint local n'est pas dispo
         }
 
         // 2. Si non récupéré en local, appel de la Cloud Function
-        if (fetchedMatches.length === 0) {
-          const fetchFn = httpsCallable<
-            { team?: string },
-            { matches: ParsedMatch[]; count: number }
-          >(functions, 'fetchFFBBMatches');
-          const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
-          fetchedMatches = res.data?.matches || [];
+        if (fetchedMatches.length === 0 && !localError) {
+          try {
+            const fetchFn = httpsCallable<
+              { team?: string },
+              { matches: ParsedMatch[]; count: number }
+            >(functions, 'fetchFFBBMatches');
+            const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
+            fetchedMatches = res.data?.matches || [];
+          } catch (cloudErr: any) {
+            console.warn('Fallback Cloud Function échoué:', cloudErr);
+            // Si on est en dev et que la Cloud Function n'est pas déployée
+            if (
+              cloudErr?.code === 'functions/not-found' ||
+              cloudErr?.code === 'functions/internal' ||
+              cloudErr?.message?.includes('internal')
+            ) {
+              throw new Error(
+                'Impossible de joindre le service FFBB. Veuillez vérifier votre connexion ou réessayer.',
+                { cause: cloudErr },
+              );
+            }
+            throw cloudErr;
+          }
         }
 
         if (fetchedMatches.length === 0) {
-          setFfbbError(
-            selectedTeam === 'ALL'
-              ? 'Aucune rencontre trouvée sur la FFBB pour le SCBA actuellement (poules pas encore publiées).'
-              : `Aucune rencontre trouvée sur la FFBB pour l'équipe ${selectedTeam}.`,
-          );
+          if (localError) {
+            setFfbbError(`Erreur API FFBB : ${localError}`);
+          } else {
+            setFfbbError(
+              selectedTeam === 'ALL'
+                ? 'Aucune rencontre trouvée sur la FFBB pour le SCBA actuellement (poules pas encore publiées).'
+                : `Aucune rencontre trouvée sur la FFBB pour l'équipe ${selectedTeam}.`,
+            );
+          }
           setIsFetchingFFBB(false);
           return;
         }
@@ -89,7 +113,11 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         setStep('preview');
       } catch (err: any) {
         console.error('Erreur lors de la récupération FFBB:', err);
-        setFfbbError(err?.message || 'Erreur lors de la récupération des matchs depuis la FFBB.');
+        const msg =
+          err?.message === 'internal'
+            ? 'Erreur interne lors de la communication avec la FFBB. Veuillez réessayer.'
+            : err?.message || 'Erreur lors de la récupération des matchs depuis la FFBB.';
+        setFfbbError(msg);
       } finally {
         setIsFetchingFFBB(false);
       }

@@ -32,29 +32,42 @@ const normalize = (str: string) => {
 
 /**
  * Trouve un match correspondant dans la base existante
+ * Permet de détecter les mises à jour (changement d'horaire, de date ou de salle)
+ * sans créer de doublon.
  */
 export const findMatchingGame = (
   newMatch: ParsedMatch,
   existingGames: Game[],
 ): Game | undefined => {
   return existingGames.find((existing) => {
-    // 1. Comparaison Date et Heure (critère strict)
-    const sameDate = existing.dateISO === newMatch.dateISO;
-    const sameTime = existing.time === newMatch.time; // Format HH:MM ou HHhmm attendu identique via parseTime
+    // 1. Comparaison par identifiant officiel FFBB (le plus fiable)
+    if (newMatch.ffbbMatchId && existing.ffbbMatchId) {
+      return String(existing.ffbbMatchId) === String(newMatch.ffbbMatchId);
+    }
 
-    if (!sameDate || !sameTime) return false;
-
-    // 2. Comparaison Equipe (SCBA)
+    // 2. Comparaison Équipe SCBA
     const sameTeam = normalize(existing.team) === normalize(newMatch.team);
+    if (!sameTeam) return false;
 
-    // 3. Comparaison Adversaire (plus souple car l'orthographe peut varier)
-    // On check si l'un est inclus dans l'autre
+    // 3. Comparaison Adversaire (souple pour tolérer les variations de nom)
     const normExistingOpp = normalize(existing.opponent);
     const normNewOpp = normalize(newMatch.opponent);
     const sameOpponent =
       normExistingOpp.includes(normNewOpp) || normNewOpp.includes(normExistingOpp);
+    if (!sameOpponent) return false;
 
-    return sameTeam && sameOpponent;
+    // 4. Si même équipe SCBA et même adversaire :
+    // a) Même configuration domicile/extérieur (identifie le match aller ou retour dans la saison)
+    if (existing.isHome === newMatch.isHome) {
+      return true;
+    }
+
+    // b) Même date ISO
+    if (existing.dateISO && newMatch.dateISO && existing.dateISO === newMatch.dateISO) {
+      return true;
+    }
+
+    return false;
   });
 };
 
@@ -548,6 +561,7 @@ export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string
   team: match.team,
   opponent: match.opponent,
   date: match.date,
+  dateISO: match.dateISO,
   time: match.time,
   location: match.location,
   isHome: match.isHome,
@@ -555,4 +569,5 @@ export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string
   competition: match.competition,
   teamLogo: match.teamLogo,
   opponentLogo: match.opponentLogo,
+  ffbbMatchId: match.ffbbMatchId,
 });

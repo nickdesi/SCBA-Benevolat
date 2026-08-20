@@ -34,6 +34,7 @@ export interface Game {
   competition?: string;
   teamLogo?: string;
   opponentLogo?: string;
+  ffbbMatchId?: string;
 }
 
 // Type for role configuration (used in constants)
@@ -62,7 +63,8 @@ export interface GameFormData {
   id?: string;
   team: string; // Ex: 'Senior M1'
   opponent: string;
-  date: string; // Format YYYY-MM-DD
+  date: string; // Format YYYY-MM-DD or display format
+  dateISO?: string; // ISO format YYYY-MM-DD
   time: string; // Format HH:mm
   location: string;
   isHome: boolean;
@@ -70,6 +72,7 @@ export interface GameFormData {
   competition?: string;
   teamLogo?: string;
   opponentLogo?: string;
+  ffbbMatchId?: string;
 }
 
 export interface Announcement {
