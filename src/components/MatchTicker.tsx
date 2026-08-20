@@ -1,6 +1,4 @@
 import React, { memo, useMemo } from 'react';
-import Marquee from 'react-fast-marquee';
-import { useReducedMotion } from 'framer-motion';
 import type { Game } from '../types';
 import { getTodayISO } from '../utils/dateUtils';
 
@@ -12,23 +10,9 @@ interface TickerGame extends Game {
   _formattedDate?: string;
 }
 
-// ⚡ Bolt: Cache Intl.DateTimeFormat outside component to avoid extremely slow Date.toLocaleDateString in render loops
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
 
-const SafeMarquee = (
-  typeof Marquee === 'function'
-    ? Marquee
-    : (Marquee as unknown as { default?: React.ComponentType<Record<string, unknown>> })?.default ||
-      'div'
-) as React.ElementType;
-
-// ⚡ Bolt: Wrapped MatchTicker in React.memo to prevent unnecessary re-renders when parent states change.
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
-  const prefersReducedMotion = useReducedMotion();
-
-  // ⚡ Bolt: Use an early-exit O(K) loop instead of O(N log N) filter/sort/slice chain.
-  // Performance impact: The `games` array is already globally sorted by `sortGames` (Date + Time).
-  // We avoid iterating over all past games and avoid a redundant sorting pass. We stop exactly after finding 10 matches.
   const upcomingGames = useMemo(() => {
     const todayISO = getTodayISO();
     const upcoming: TickerGame[] = [];
@@ -36,105 +20,83 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     for (let i = 0; i < games.length; i++) {
       const g = games[i];
       if (g.dateISO && g.dateISO >= todayISO) {
-        // ⚡ Bolt Optimization: Pre-compute formatted date strings during the memoized phase
-        // Why: Avoids O(K) redundant Date object allocations and Intl string formatting on every render cycle.
-        // Impact: Reduces garbage collection pressure and CPU overhead for smoother UI performance.
         upcoming.push({
           ...g,
           _formattedDate: dateFormatter.format(new Date(g.dateISO)),
         });
-        if (upcoming.length === 10) break;
+        if (upcoming.length === 12) break;
       }
     }
 
     return upcoming;
   }, [games]);
 
-  // Reserve space even when empty to prevent CLS (layout shift)
   if (upcomingGames.length === 0) {
-    return <div className="h-[53px] bg-slate-950" aria-hidden="true" />;
+    return null;
   }
 
-  const tickerItems = upcomingGames.map((game, i) => {
-    // Determine Host and Visitor
-    const host = game.isHome ? game.team : game.opponent;
-    const visitor = game.isHome ? game.opponent : game.team;
-
-    return (
-      <div
-        key={`${game.id}-${i}`}
-        className="flex items-center gap-4 mr-16 select-none group border-r border-slate-800/50 pr-4 last:border-0"
-      >
-        {/* Date & Time Group */}
-        <div className="flex flex-col items-end leading-none min-w-[50px]">
-          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">
-            {game._formattedDate || ''}
-          </span>
-          <span className="text-xs font-bold text-white font-mono">{game.time}</span>
-        </div>
-
-        {/* Teams */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-sm font-bold uppercase tracking-tight ${game.isHome ? 'text-emerald-400' : 'text-slate-400'}`}
-            >
-              {host}
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center px-2">
-            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
-              VS
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-sm font-bold uppercase tracking-tight ${!game.isHome ? 'text-blue-400' : 'text-slate-400'}`}
-            >
-              {visitor}
-            </span>
-          </div>
-        </div>
-
-        {/* Location/Type Indicator */}
-        <div
-          className={`
-                    flex items-center justify-center w-8 h-8 rounded-full text-lg font-bold shadow-sm ring-1 ring-inset
-                    ${
-                      game.isHome
-                        ? 'bg-emerald-950/30 text-emerald-400 ring-emerald-500/20'
-                        : 'bg-blue-950/30 text-blue-400 ring-blue-500/20'
-                    }
-                `}
-        >
-          <span aria-hidden="true">{game.isHome ? '🏠' : '✈️'}</span>
-        </div>
-      </div>
-    );
-  });
+  // Duplicate items 4 times to ensure seamless infinite scrolling even on ultra-wide / 4K displays
+  const repeatedGames = [...upcomingGames, ...upcomingGames, ...upcomingGames, ...upcomingGames];
 
   return (
-    <div className="relative z-30 border-b border-slate-800 bg-slate-950 overflow-hidden py-2.5">
-      {/* Gradient Overlay for modern feel */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/10 via-transparent to-emerald-900/10 pointer-events-none z-10" />
+    <div className="relative z-30 border-b border-slate-800/80 bg-slate-950/95 overflow-hidden py-1 backdrop-blur-md">
+      {/* Edge gradient masks for seamless fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none z-20" />
+      <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none z-20" />
 
-      {prefersReducedMotion ? (
-        <div className="flex overflow-x-auto scrollbar-hide px-4">{tickerItems}</div>
-      ) : (
-        <SafeMarquee
-          speed={35}
-          gradient={true}
-          gradientColor="2, 6, 23" // slate-950 as string
-          gradientWidth={50}
-          pauseOnHover={true}
-          autoFill={true}
-          className="!overflow-y-hidden"
-        >
-          {tickerItems}
-        </SafeMarquee>
-      )}
+      {/* Hardware-accelerated continuous scrolling track */}
+      <div className="scba-ticker-track flex items-center select-none">
+        {repeatedGames.map((game, idx) => {
+          const host = game.isHome ? game.team : game.opponent;
+          const visitor = game.isHome ? game.opponent : game.team;
+
+          return (
+            <div
+              key={`${game.id}-${idx}`}
+              className="inline-flex items-center gap-2 mr-8 text-xs whitespace-nowrap pl-2"
+            >
+              {/* Date & Hour badge */}
+              <span className="font-mono text-[10px] font-semibold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                {game._formattedDate} {game.time}
+              </span>
+
+              {/* Host Team */}
+              <span
+                className={`font-bold font-sport uppercase tracking-tight text-[11px] sm:text-xs ${
+                  game.isHome ? 'text-emerald-400' : 'text-slate-300'
+                }`}
+              >
+                {host}
+              </span>
+
+              <span className="text-[9px] font-black text-slate-600 px-0.5">VS</span>
+
+              {/* Visitor Team */}
+              <span
+                className={`font-bold font-sport uppercase tracking-tight text-[11px] sm:text-xs ${
+                  !game.isHome ? 'text-blue-400' : 'text-slate-300'
+                }`}
+              >
+                {visitor}
+              </span>
+
+              {/* Minimalist Home/Away Pill */}
+              <span
+                className={`inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                  game.isHome
+                    ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/40'
+                    : 'bg-blue-950/60 text-blue-300 border border-blue-800/40'
+                }`}
+              >
+                {game.isHome ? 'DOM' : 'EXT'}
+              </span>
+
+              {/* Separator dot */}
+              <span className="text-slate-700 ml-3">•</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 });
