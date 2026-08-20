@@ -763,29 +763,18 @@ a:active,
   transition: all 50ms ease-out;
 }
 
-/* Hardware-accelerated Continuous Match Ticker */
-@keyframes scba-ticker {
+/* Hardware-accelerated Continuous Match Ticker — pixel-exact offset via JS measure */
+@keyframes scba-ticker-px {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translateX(0);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translateX(var(--ticker-shift, -50%));
   }
-}
-
-.scba-ticker-track {
-  display: flex;
-  width: max-content;
-  will-change: transform;
-  animation: scba-ticker 30s linear infinite;
-}
-
-.scba-ticker-track:hover {
-  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scba-ticker-track {
-    animation: none;
+  [style*='scba-ticker-px'] {
+    animation: none !important;
   }
 }

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Game } from '../types';
 import { getTodayISO } from '../utils/dateUtils';
 
@@ -12,16 +12,24 @@ interface TickerGame extends Game {
 
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' });
 
-/** Renders a single ticker item (used twice: original + clone) */
-const TickerItem: React.FC<{ game: TickerGame; idx: number }> = ({ game, idx }) => {
+const SPEED_PX_PER_SEC = 50; // 50px/s → comfortable reading on all screens
+
+/** Single ticker item */
+const TickerItem: React.FC<{ game: TickerGame }> = ({ game }) => {
   const host = game.isHome ? game.team : game.opponent;
   const visitor = game.isHome ? game.opponent : game.team;
 
   return (
     <span
-      className="inline-flex items-center gap-2 pr-10 text-xs whitespace-nowrap"
-      aria-label={`${host} vs ${visitor}`}
-      key={idx}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        paddingRight: '40px',
+        fontSize: '11px',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
+      }}
     >
       {/* Date badge */}
       <span
@@ -45,7 +53,7 @@ const TickerItem: React.FC<{ game: TickerGame; idx: number }> = ({ game, idx }) 
           fontWeight: 700,
           fontSize: '11px',
           textTransform: 'uppercase',
-          letterSpacing: '0.03em',
+          letterSpacing: '0.04em',
           color: game.isHome ? '#34d399' : '#cbd5e1',
         }}
       >
@@ -60,7 +68,7 @@ const TickerItem: React.FC<{ game: TickerGame; idx: number }> = ({ game, idx }) 
           fontWeight: 700,
           fontSize: '11px',
           textTransform: 'uppercase',
-          letterSpacing: '0.03em',
+          letterSpacing: '0.04em',
           color: !game.isHome ? '#60a5fa' : '#cbd5e1',
         }}
       >
@@ -88,18 +96,21 @@ const TickerItem: React.FC<{ game: TickerGame; idx: number }> = ({ game, idx }) 
         {game.isHome ? 'DOM' : 'EXT'}
       </span>
 
-      <span style={{ color: '#1e293b', marginLeft: '8px' }}>•</span>
+      <span style={{ color: '#1e293b' }}>•</span>
     </span>
   );
 };
 
 const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
+  const copyRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [duration, setDuration] = useState(30);
+  const [ready, setReady] = useState(false);
+
   const upcomingGames = useMemo(() => {
     const todayISO = getTodayISO();
     const upcoming: TickerGame[] = [];
-
-    for (let i = 0; i < games.length; i++) {
-      const g = games[i];
+    for (const g of games) {
       if (g.dateISO && g.dateISO >= todayISO) {
         upcoming.push({
           ...g,
@@ -108,13 +119,34 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         if (upcoming.length === 15) break;
       }
     }
-
     return upcoming;
   }, [games]);
 
-  if (upcomingGames.length === 0) {
-    return null;
-  }
+  /** Measure the real pixel width of one copy, then set animation duration accordingly */
+  const measure = useCallback(() => {
+    if (!copyRef.current) return;
+    const w = copyRef.current.getBoundingClientRect().width;
+    if (w > 0) {
+      const dur = Math.round(w / SPEED_PX_PER_SEC);
+      setDuration(Math.max(dur, 8));
+      if (trackRef.current) {
+        // Inject the exact pixel offset as a CSS variable so the keyframe is precise
+        trackRef.current.style.setProperty('--ticker-shift', `-${w}px`);
+      }
+      setReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (upcomingGames.length === 0) return;
+    // Give the browser one frame to render, then measure
+    const raf = requestAnimationFrame(() => {
+      measure();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [upcomingGames, measure]);
+
+  if (upcomingGames.length === 0) return null;
 
   return (
     <div
@@ -124,13 +156,12 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         borderBottom: '1px solid rgba(30,41,59,0.8)',
         background: 'rgba(2,6,23,0.95)',
         overflow: 'hidden',
-        padding: '4px 0',
         height: '28px',
         display: 'flex',
         alignItems: 'center',
       }}
     >
-      {/* Left fade */}
+      {/* Edge fades */}
       <div
         style={{
           position: 'absolute',
@@ -143,7 +174,6 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
           pointerEvents: 'none',
         }}
       />
-      {/* Right fade */}
       <div
         style={{
           position: 'absolute',
@@ -157,16 +187,39 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         }}
       />
 
-      {/* Scrolling track — 2 identical copies so -50% = exactly 1 loop */}
-      <div className="scba-ticker-track" style={{ display: 'flex', alignItems: 'center' }}>
-        {/* Copy 1 */}
-        {upcomingGames.map((game, i) => (
-          <TickerItem key={`a-${game.id}-${i}`} game={game} idx={i} />
-        ))}
-        {/* Copy 2 — seamless clone */}
-        {upcomingGames.map((game, i) => (
-          <TickerItem key={`b-${game.id}-${i}`} game={game} idx={i} />
-        ))}
+      {/*
+       * Track: 2 identical copies side by side.
+       * Animation shifts by --ticker-shift (= -scrollWidth of copy 1 in px).
+       * Duration is computed so speed = SPEED_PX_PER_SEC regardless of content length.
+       */}
+      <div
+        ref={trackRef}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          willChange: 'transform',
+          // Only animate after measurement to avoid a flash of wrong position
+          animation: ready ? `scba-ticker-px ${duration}s linear infinite` : 'none',
+        }}
+        onMouseEnter={() => {
+          if (trackRef.current) trackRef.current.style.animationPlayState = 'paused';
+        }}
+        onMouseLeave={() => {
+          if (trackRef.current) trackRef.current.style.animationPlayState = 'running';
+        }}
+      >
+        {/* Copy 1 — measured via copyRef */}
+        <div ref={copyRef} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          {upcomingGames.map((game, i) => (
+            <TickerItem key={`a-${game.id}-${i}`} game={game} />
+          ))}
+        </div>
+        {/* Copy 2 — seamless clone, no ref needed */}
+        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          {upcomingGames.map((game, i) => (
+            <TickerItem key={`b-${game.id}-${i}`} game={game} />
+          ))}
+        </div>
       </div>
     </div>
   );
