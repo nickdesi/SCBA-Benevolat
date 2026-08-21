@@ -164,3 +164,6 @@
 ## 2026-10-20 - Avoid redundant Date allocations when generating cache keys in loops
 **Learning:** Instantiating `new Date(game.dateISO)` inside a rendering loop (like in `GameList.tsx`) just to extract the year and month for a cache key causes O(N) redundant Date object allocations and unnecessary garbage collection.
 **Action:** When grouping an array of objects by month or year using strictly formatted strings (like 'YYYY-MM-DD' ISO dates), use fast string slicing (e.g. `dateISO.substring(0, 7)`) to construct the cache key directly. Only instantiate the `Date` object on a cache miss to compute localized values.
+## 2026-03-22 - Pre-allocated Object Mapping Entries in Helper Functions
+**Learning:** Instantiating static lookup objects and calling `Object.entries()` inside repeatedly invoked helper functions allocates new objects and arrays on every call, increasing GC overhead and execution time.
+**Action:** Hoist static configuration dictionaries and pre-compute `Object.entries()` at module scope to reuse allocations across all function calls.
