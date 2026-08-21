@@ -130,17 +130,13 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
     }, [entries]);
 
     const storedName = useMemo(() => getStoredName(), [entries]);
-    // ⚡ Bolt Optimization: Pre-compute normalizedStoredName to avoid redundant
-    // storedName.toLowerCase() re-evaluations inside render loops (drivers.map, passengers.map).
-    const normalizedStoredName = useMemo(
-      () => (storedName ? storedName.toLowerCase() : ''),
-      [storedName],
-    );
-
     const currentUserEntry = useMemo(() => {
-      if (!normalizedStoredName) return undefined;
+      // ⚡ Bolt Optimization: Hoist storedName.toLowerCase() outside the iteration loop
+      // to prevent redundant O(N) string reallocations during array traversal.
+      if (!storedName) return undefined;
+      const normalizedStoredName = storedName.toLowerCase();
       return entries.find((e) => e.name.toLowerCase() === normalizedStoredName);
-    }, [entries, normalizedStoredName]);
+    }, [entries, storedName]);
 
     const handleSubmit = useCallback(
       (e: React.FormEvent) => {
@@ -170,13 +166,13 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
 
     const handleRemove = useCallback(
       (entryId: string, entryName: string) => {
-        if (normalizedStoredName && entryName.toLowerCase() === normalizedStoredName) {
+        if (entryName.toLowerCase() === storedName.toLowerCase()) {
           onRemoveEntry(entryId);
         } else {
           setConfirmDelete({ id: entryId, name: entryName });
         }
       },
-      [normalizedStoredName, onRemoveEntry],
+      [storedName, onRemoveEntry],
     );
 
     const executeDelete = () => {
@@ -232,9 +228,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
                 {drivers.map((driver) => {
                   const remainingSeats = remainingSeatsByDriver.get(driver.id) || 0;
                   const pendingRequests = pendingRequestsByDriver.get(driver.id) || [];
-                  const isCurrentUser =
-                    Boolean(normalizedStoredName) &&
-                    driver.name.toLowerCase() === normalizedStoredName;
+                  const isCurrentUser = driver.name.toLowerCase() === storedName.toLowerCase();
 
                   return (
                     <motion.div
@@ -434,9 +428,7 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
               </h5>
               <div className="space-y-2">
                 {passengers.map((passenger) => {
-                  const isCurrentUser =
-                    Boolean(normalizedStoredName) &&
-                    passenger.name.toLowerCase() === normalizedStoredName;
+                  const isCurrentUser = passenger.name.toLowerCase() === storedName.toLowerCase();
                   const matchedDriver = passenger.matchedWith?.[0]
                     ? entriesById.get(passenger.matchedWith[0])
                     : undefined;

@@ -137,23 +137,25 @@ const normalizeTeamName = (team: string): string => {
   return team.replace(/SCBA|STADE CLERMONT/gi, '').trim();
 };
 
+// ⚡ Bolt Optimization: Hoist city mappings dictionary and pre-compute entries array at module level
+// to avoid recreating the object and allocating Object.entries array on every inferCityFromTeam call.
+const CITY_MAPPINGS: Record<string, string> = {
+  'TAIN TOURNON': "Tain-l'Hermitage", // or Tournon-sur-Rhône, but search usually works better with Tain
+  'GOLFE JUAN': 'Vallauris', // Golfe-Juan is a locality in Vallauris
+  'LYON SO': 'Lyon', // Lyon Sud Ouest
+  'ROCHE VENDÉE': 'La Roche-sur-Yon',
+};
+const CITY_MAPPINGS_ENTRIES = Object.entries(CITY_MAPPINGS);
+
 /**
  * Extract likely City name from Opponent team name
  * Used to provide better "Extérieur" location context
  * Example: "RIORGES BC" -> "RIORGES"
  */
 const inferCityFromTeam = (opponent: string): string => {
-  // 0. Specific mappings for known complex cases
-  const MAPPINGS: Record<string, string> = {
-    'TAIN TOURNON': "Tain-l'Hermitage", // or Tournon-sur-Rhône, but search usually works better with Tain
-    'GOLFE JUAN': 'Vallauris', // Golfe-Juan is a locality in Vallauris
-    'LYON SO': 'Lyon', // Lyon Sud Ouest
-    'ROCHE VENDÉE': 'La Roche-sur-Yon',
-  };
-
-  // Check exact or partial matches in mappings
+  // Check exact or partial matches in pre-computed mappings
   const upperOpp = opponent.toUpperCase();
-  for (const [key, value] of Object.entries(MAPPINGS)) {
+  for (const [key, value] of CITY_MAPPINGS_ENTRIES) {
     if (upperOpp.includes(key)) return value;
   }
 
