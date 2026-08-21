@@ -167,3 +167,8 @@
 ## 2026-03-22 - Pre-allocated Object Mapping Entries in Helper Functions
 **Learning:** Instantiating static lookup objects and calling `Object.entries()` inside repeatedly invoked helper functions allocates new objects and arrays on every call, increasing GC overhead and execution time.
 **Action:** Hoist static configuration dictionaries and pre-compute `Object.entries()` at module scope to reuse allocations across all function calls.
+
+
+## 2026-08-21 - Pre-computing Normalized User Identifiers for React Render Loops
+**Learning:** In React list components rendering items with per-item current user checks, executing string lowercasing inside render loops causes redundant string allocations per frame.
+**Action:** Pre-compute and memoize normalized user identifiers via useMemo outside mapping loops, then use direct string comparisons against pre-normalized identifiers.
