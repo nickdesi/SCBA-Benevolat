@@ -167,3 +167,9 @@
 ## 2026-03-22 - Pre-allocated Object Mapping Entries in Helper Functions
 **Learning:** Instantiating static lookup objects and calling `Object.entries()` inside repeatedly invoked helper functions allocates new objects and arrays on every call, increasing GC overhead and execution time.
 **Action:** Hoist static configuration dictionaries and pre-compute `Object.entries()` at module scope to reuse allocations across all function calls.
+
+## 2026-08-21 - Strict Pre-commit Verification & Scope Discipline
+**Learning:** Pushing commits with formatting discrepancies (e.g. unformatted lines in `src/lib/iconMap.tsx`) or unrelated file modifications causes CI pipelines to fail and requires manual intervention.
+**Action:**
+1. Always run local formatting and verification commands (`npm run format:check && npm test && npm run build`) before pushing any commit or responding to review feedback.
+2. Strictly limit file modifications to the files directly involved in the optimization (avoid touching unrelated files).
