@@ -35,6 +35,20 @@
       name="description"
       content="Gestion du bénévolat pour le Stade Clermontois Basket Auvergne - Inscrivez-vous pour aider lors des matchs"
     />
+    <link rel="canonical" href="https://scba.desimone.fr/" />
+
+    <!-- Open Graph & Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SCBA Bénévoles" />
+    <meta property="og:title" content="SCBA Bénévoles : Stade Clermontois Basket Auvergne" />
+    <meta property="og:description" content="Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne (SCBA) : inscrivez-vous pour aider lors des matchs et événements." />
+    <meta property="og:url" content="https://scba.desimone.fr/" />
+    <meta property="og:image" content="https://scba.desimone.fr/apple-touch-icon.png" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="SCBA Bénévoles : Stade Clermontois Basket Auvergne" />
+    <meta name="twitter:description" content="Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne (SCBA)." />
+    <meta name="twitter:image" content="https://scba.desimone.fr/apple-touch-icon.png" />
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#272890" />
@@ -47,16 +61,49 @@
     <!-- LCP Optimization: Preload Logo -->
     <link rel="preload" as="image" href="/logo-scba.webp" type="image/webp" fetchpriority="high" />
 
-    <!-- Favicon -->
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-
-    <!-- PWA Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.webp" />
-    <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.webp" />
 
-    <title>SCBA Bénévoles</title>
+    <title>SCBA Bénévoles : Stade Clermontois Basket Auvergne</title>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://scba.desimone.fr/#website",
+          "url": "https://scba.desimone.fr/",
+          "name": "SCBA Bénévoles",
+          "alternateName": ["SCBA", "Stade Clermontois Basket Auvergne Bénévoles", "Bénévolat SCBA"],
+          "description": "Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne.",
+          "inLanguage": "fr-FR"
+        },
+        {
+          "@type": "SportsClub",
+          "@id": "https://scba.desimone.fr/#club",
+          "name": "Stade Clermontois Basket Auvergne",
+          "alternateName": "SCBA",
+          "url": "https://scba.desimone.fr/",
+          "logo": "https://scba.desimone.fr/apple-touch-icon.png",
+          "sport": "Basketball",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Clermont-Ferrand",
+            "postalCode": "63000",
+            "addressCountry": "FR"
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Fonts: Self-hosted via @fontsource (imported in index.tsx) -->
   </head>
