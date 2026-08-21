@@ -11,7 +11,7 @@ interface VolunteerCompletionRingProps {
   showLabel?: boolean;
 }
 
-export const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = memo(
+const VolunteerCompletionRing: React.FC<VolunteerCompletionRingProps> = memo(
   ({
     filled,
     total,

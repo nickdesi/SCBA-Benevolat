@@ -764,3 +764,9 @@ a:active,
 }
 
 /* Match Ticker: animation is JS-driven via requestAnimationFrame (see MatchTicker.tsx) */
+
+/* Mobile Optimization: Native virtual rendering for 60/120 FPS scrolling across iOS Safari, Android Chrome, Brave, Firefox */
+.game-card-container {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}

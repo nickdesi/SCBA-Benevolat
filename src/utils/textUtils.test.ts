@@ -78,3 +78,19 @@ describe('parseNames', () => {
     expect(parseNames(' et Thierry et Christelle et ')).toEqual(['Thierry', 'Christelle']);
   });
 });
+
+import { getHomeAwayCounts } from './gameUtils';
+import type { Game } from '../types';
+
+describe('getHomeAwayCounts', () => {
+  it('counts home and away games accurately', () => {
+    const games: Game[] = [
+      { id: '1', team: 'U13M1', isHome: true } as Game,
+      { id: '2', team: 'U13M1', isHome: false } as Game,
+      { id: '3', team: 'U13M1', isHome: true } as Game,
+    ];
+    const { homeCount, awayCount } = getHomeAwayCounts(games);
+    expect(homeCount).toBe(2);
+    expect(awayCount).toBe(1);
+  });
+});

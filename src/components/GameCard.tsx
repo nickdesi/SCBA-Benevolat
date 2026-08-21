@@ -120,7 +120,7 @@ const GameCard: React.FC<GameCardProps> = memo(
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.05 }}
         className={`
-            relative rounded-3xl overflow-hidden transition-all duration-300 h-full
+            game-card-container relative rounded-3xl overflow-hidden transition-all duration-300 h-full
             bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
             border border-white/20 dark:border-slate-700/50
             ${
