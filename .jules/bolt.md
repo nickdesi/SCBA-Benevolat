@@ -164,3 +164,8 @@
 ## 2026-10-20 - Avoid redundant Date allocations when generating cache keys in loops
 **Learning:** Instantiating `new Date(game.dateISO)` inside a rendering loop (like in `GameList.tsx`) just to extract the year and month for a cache key causes O(N) redundant Date object allocations and unnecessary garbage collection.
 **Action:** When grouping an array of objects by month or year using strictly formatted strings (like 'YYYY-MM-DD' ISO dates), use fast string slicing (e.g. `dateISO.substring(0, 7)`) to construct the cache key directly. Only instantiate the `Date` object on a cache miss to compute localized values.
+
+
+## 2026-08-21 - Pre-computing Normalized User Identifiers for React Render Loops
+**Learning:** In React list components rendering items with per-item current user checks, executing string lowercasing inside render loops causes redundant string allocations per frame.
+**Action:** Pre-compute and memoize normalized user identifiers via useMemo outside mapping loops, then use direct string comparisons against pre-normalized identifiers.
