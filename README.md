@@ -5,7 +5,7 @@
 **L'application officielle de gestion du bénévolat du Stade Clermontois Basket Auvergne — une expérience moderne, fluide et sociale pour simplifier la vie du club.**
 
 [![CI](https://github.com/nickdesi/SCBA-Benevolat/actions/workflows/ci.yml/badge.svg)](https://github.com/nickdesi/SCBA-Benevolat/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-v2.8.0-blue?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
+[![Version](https://img.shields.io/badge/version-v2.9.0-blue?style=for-the-badge)](https://github.com/nickdesi/SCBA-Benevolat/releases)
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A67D8?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 [![Firebase](https://img.shields.io/badge/Firebase-Powered-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
 [![Coolify](https://img.shields.io/badge/Coolify-Self%20Hosted-blueviolet?style=for-the-badge&logo=server)](https://coolify.io)

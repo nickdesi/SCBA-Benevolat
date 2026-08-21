@@ -11,6 +11,17 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.9.0',
+    date: '21 Août 2026',
+    changes: [
+      "🏀 Import FFBB 1-Clic : Synchronisation directe des calendriers de matchs depuis l'API FFBB (ffbb-data-client) avec résolution automatique et batch Firestore",
+      '⚡ MatchTicker Interactif : Défilement haute performance requestAnimationFrame, PointerEvents et centrage fluide direct sur le match sélectionné',
+      "📱 Défilement Mobile Fluidifié : Résolution des blocages sur Safari/Brave, ciblage d'élément visible fiable et ajustement post-animation",
+      '🔍 SEO & Données Structurées : Intégration favicons haute définition PNG/ICO et balisage Schema.org JSON-LD (SportsEvent)',
+      "🚀 Performance & Mémoïsation : Réduction des allocations et mémoïsation optimisée dans les modules de covoiturage et d'import CSV",
+    ],
+  },
+  {
     version: 'v2.8.0',
     date: '19 Août 2026',
     changes: [

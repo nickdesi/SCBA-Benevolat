@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.9.0] - 2026-08-21
+
+### Nouveautés & Fonctionnalités
+
+- **Import FFBB 1-Clic (`ffbb-data-client`)** : Intégration complète de la synchronisation directe des calendriers de matchs depuis l'API FFBB avec sélection automatique des saisons, organismes et poules, cache local et écriture par lot Firestore.
+- **MatchTicker Interactif & Défilement Haute Performance** :
+  - Défilement continu fluide basé sur `requestAnimationFrame` (zéro dépendance externe instable, élimination des sauts de mise en page).
+  - Support natif des `PointerEvent` et pause adaptative sur `(hover: hover)`.
+  - Interaction au clic : navigation automatique vers la semaine correspondante dans le calendrier et défilement centré vers la carte du match avec halo lumineux dynamique (360° `box-shadow` arrondi).
+
+### Correctifs & Optimisations
+
+- **Défilement Mobile & Navigateurs WebKit** :
+  - Suppression des contraintes `overflow-hidden` bloquant le défilement sur Safari iOS et Brave Mobile.
+  - Fiabilisation du ciblage de carte visible (`findVisibleGameElement`) et ajustement multi-étapes du défilement post-animation Framer Motion.
+- **Déduplication & Fiabilisation des Imports** : Amélioration de la déduplication des rencontres FFBB, mise à jour incrémentale propre et reporting d'erreurs détaillé.
+- **SEO & Données Structurées** : Ajout des favicons PNG/ICO haute définition, balisage Schema.org JSON-LD structuré (`SportsEvent`, `BreadcrumbList`) et métadonnées OpenGraph optimisées.
+- **Optimisations de Performance (Bolt)** :
+  - Mémoïsation `useMemo` des identifiants utilisateurs normalisés dans les boucles de rendu du module de covoiturage (`CarpoolingSection.tsx`).
+  - Pré-allocation et hoisting à portée module des dictionnaires et entrées de correspondance de villes (`csvImport.ts`).
+
 ## [2.8.0] - 2026-08-19
 
 ### UI/UX & Design System
