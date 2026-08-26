@@ -36,8 +36,8 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         let fetchedMatches: ParsedMatch[] = [];
         let localError: string | null = null;
 
-        // 1. Essai via l'API Dokploy 24/7 (https://api.ffbb.desimone.fr)
-        const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://api.ffbb.desimone.fr';
+        // 1. Essai via l'API Dokploy 24/7 (https://ffbb-api.desimone.fr ou https://basket.desimone.fr)
+        const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://ffbb-api.desimone.fr';
         const teamParam = selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
 
         try {
