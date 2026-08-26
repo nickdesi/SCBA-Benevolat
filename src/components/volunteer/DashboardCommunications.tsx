@@ -9,6 +9,15 @@ const dateFormatter = new Intl.DateTimeFormat();
 export const DashboardComm: React.FC = () => {
   const { announcements } = useAnnouncements();
 
+  const formattedAnnouncements = React.useMemo(() => {
+    return announcements.map((ann) => ({
+      ...ann,
+      // ⚡ Bolt Optimization: Pre-compute formatted dates in useMemo to prevent
+      // O(N) Date allocations and Intl formatting during the React render phase.
+      _formattedDate: ann.createdAt ? dateFormatter.format(new Date(ann.createdAt.toMillis())) : '',
+    }));
+  }, [announcements]);
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="text-center mb-8">
@@ -22,12 +31,12 @@ export const DashboardComm: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {announcements.length === 0 ? (
+        {formattedAnnouncements.length === 0 ? (
           <div className="p-8 bg-slate-100 dark:bg-slate-800 rounded-2xl text-center border-2 border-dashed border-slate-200 dark:border-slate-700">
             <p className="text-slate-400 font-medium">Aucune annonce club pour le moment.</p>
           </div>
         ) : (
-          announcements.map((ann, index) => (
+          formattedAnnouncements.map((ann, index) => (
             <motion.div
               key={ann.id}
               initial={{ opacity: 0, y: 10 }}
@@ -80,9 +89,7 @@ export const DashboardComm: React.FC = () => {
                     </span>
                     <span className="text-xs text-slate-400 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {ann.createdAt
-                        ? dateFormatter.format(new Date(ann.createdAt.toMillis()))
-                        : ''}
+                      {ann._formattedDate}
                     </span>
                   </div>
                   <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
