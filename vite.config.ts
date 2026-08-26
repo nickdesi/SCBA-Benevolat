@@ -37,7 +37,7 @@ export default defineConfig({
     {
       name: 'ffbb-matches-dev-api',
       configureServer(server) {
-        server.middlewares.use('/api/ffbb-matches', async (req, res) => {
+        const handleFfbbRequest = async (req: any, res: any) => {
           try {
             const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
             const team = url.searchParams.get('team') || '';
@@ -50,7 +50,10 @@ export default defineConfig({
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: err?.message || 'Erreur FFBB Data Client' }));
           }
-        });
+        };
+
+        server.middlewares.use('/api/ffbb-matches', handleFfbbRequest);
+        server.middlewares.use('/api/v1/club/9326/matches', handleFfbbRequest);
       },
     },
     react(),

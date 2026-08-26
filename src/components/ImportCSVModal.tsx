@@ -36,20 +36,35 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         let fetchedMatches: ParsedMatch[] = [];
         let localError: string | null = null;
 
-        // 1. Essai via l'API Dokploy 24/7 (https://ffbb-api.desimone.fr ou https://basket.desimone.fr)
-        const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://ffbb-api.desimone.fr';
+        // 1. Essai prioritaire en Same-Origin / proxy Nginx (/api/v1/club/9326/matches)
         const teamParam = selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
 
         try {
-          const apiRes = await fetch(`${ffbbApiBase}/api/v1/club/9326/matches${teamParam}`);
-          if (apiRes.ok) {
-            const data = await apiRes.json();
-            if (Array.isArray(data?.matches)) {
+          const sameOriginRes = await fetch(`/api/v1/club/9326/matches${teamParam}`);
+          if (sameOriginRes.ok) {
+            const data = await sameOriginRes.json();
+            if (Array.isArray(data?.matches) && data.matches.length > 0) {
               fetchedMatches = data.matches;
             }
           }
-        } catch (apiErr) {
-          console.warn('API Dokploy non joignable, tentative en local ou Cloud Function:', apiErr);
+        } catch {
+          // Si same-origin échoue (ex: hébergé sur Firebase sans reverse proxy), continuer
+        }
+
+        // 2. Essai via l'API Dokploy directe (https://ffbb-api.desimone.fr)
+        if (fetchedMatches.length === 0) {
+          const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://ffbb-api.desimone.fr';
+          try {
+            const apiRes = await fetch(`${ffbbApiBase}/api/v1/club/9326/matches${teamParam}`);
+            if (apiRes.ok) {
+              const data = await apiRes.json();
+              if (Array.isArray(data?.matches) && data.matches.length > 0) {
+                fetchedMatches = data.matches;
+              }
+            }
+          } catch (apiErr) {
+            console.warn('API Dokploy directe non joignable:', apiErr);
+          }
         }
 
         // 2. Essai via l'API locale /api/ffbb-matches (ffbb-data-client) si en dev
