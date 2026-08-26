@@ -36,25 +36,41 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         let fetchedMatches: ParsedMatch[] = [];
         let localError: string | null = null;
 
-        // 1. Essai via l'API locale /api/ffbb-matches (ffbb-data-client)
+        // 1. Essai via l'API Dokploy 24/7 (https://api.ffbb.desimone.fr)
+        const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://api.ffbb.desimone.fr';
+        const teamParam = selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
+
         try {
-          const queryParam =
-            selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
-          const localRes = await fetch(`/api/ffbb-matches${queryParam}`);
-          if (localRes.ok) {
-            const data = await localRes.json();
+          const apiRes = await fetch(`${ffbbApiBase}/api/v1/club/9326/matches${teamParam}`);
+          if (apiRes.ok) {
+            const data = await apiRes.json();
             if (Array.isArray(data?.matches)) {
               fetchedMatches = data.matches;
             }
-            if (data?.error && fetchedMatches.length === 0) {
-              localError = data.error;
-            }
           }
-        } catch {
-          // Fallback sur Cloud Function si l'endpoint local n'est pas dispo
+        } catch (apiErr) {
+          console.warn('API Dokploy non joignable, tentative en local ou Cloud Function:', apiErr);
         }
 
-        // 2. Si non récupéré en local, appel de la Cloud Function
+        // 2. Essai via l'API locale /api/ffbb-matches (ffbb-data-client) si en dev
+        if (fetchedMatches.length === 0) {
+          try {
+            const localRes = await fetch(`/api/ffbb-matches${teamParam}`);
+            if (localRes.ok) {
+              const data = await localRes.json();
+              if (Array.isArray(data?.matches)) {
+                fetchedMatches = data.matches;
+              }
+              if (data?.error && fetchedMatches.length === 0) {
+                localError = data.error;
+              }
+            }
+          } catch {
+            // Fallback sur Cloud Function si l'endpoint local n'est pas dispo
+          }
+        }
+
+        // 3. Si non récupéré, appel de la Cloud Function Firebase
         if (fetchedMatches.length === 0 && !localError) {
           try {
             const fetchFn = httpsCallable<
@@ -65,7 +81,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             fetchedMatches = res.data?.matches || [];
           } catch (cloudErr: any) {
             console.warn('Fallback Cloud Function échoué:', cloudErr);
-            // Si on est en dev et que la Cloud Function n'est pas déployée
             if (
               cloudErr?.code === 'functions/not-found' ||
               cloudErr?.code === 'functions/internal' ||
