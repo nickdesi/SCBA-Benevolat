@@ -39,6 +39,11 @@ export const findMatchingGame = (
   newMatch: ParsedMatch,
   existingGames: Game[],
 ): Game | undefined => {
+  // ⚡ Bolt Optimization: Hoist newMatch normalizations outside of the existingGames.find() loop
+  // to avoid redundant O(N) expensive string allocations and normalizations.
+  const normNewTeam = normalize(newMatch.team);
+  const normNewOpp = normalize(newMatch.opponent);
+
   return existingGames.find((existing) => {
     // 1. Comparaison par identifiant officiel FFBB (le plus fiable)
     if (newMatch.ffbbMatchId && existing.ffbbMatchId) {
@@ -46,12 +51,11 @@ export const findMatchingGame = (
     }
 
     // 2. Comparaison Équipe SCBA
-    const sameTeam = normalize(existing.team) === normalize(newMatch.team);
+    const sameTeam = normalize(existing.team) === normNewTeam;
     if (!sameTeam) return false;
 
     // 3. Comparaison Adversaire (souple pour tolérer les variations de nom)
     const normExistingOpp = normalize(existing.opponent);
-    const normNewOpp = normalize(newMatch.opponent);
     const sameOpponent =
       normExistingOpp.includes(normNewOpp) || normNewOpp.includes(normExistingOpp);
     if (!sameOpponent) return false;

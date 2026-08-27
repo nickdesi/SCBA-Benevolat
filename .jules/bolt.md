@@ -173,3 +173,6 @@
 **Action:**
 1. Always run local formatting and verification commands (`npm run format:check && npm test && npm run build`) before pushing any commit or responding to review feedback.
 2. Strictly limit file modifications to the files directly involved in the optimization (avoid touching unrelated files).
+## 2026-11-12 - [Optimization] Hoist expensive string normalizations out of CSV import loop
+**Learning:** Re-evaluating expensive string formatters like `normalize(newMatch.team)` inside the `.find()` method over `existingGames` creates a severe $O(N \times M)$ performance bottleneck due to redundant string allocations.
+**Action:** Always hoist expensive invariant operations like `.toLowerCase()` or custom `.normalize()` outside of array traversal loops to reduce time complexity and avoid redundant reallocations.
