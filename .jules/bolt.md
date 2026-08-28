@@ -173,3 +173,7 @@
 **Action:**
 1. Always run local formatting and verification commands (`npm run format:check && npm test && npm run build`) before pushing any commit or responding to review feedback.
 2. Strictly limit file modifications to the files directly involved in the optimization (avoid touching unrelated files).
+
+## 2026-11-20 - Avoid O(N*M) redundant string parsing inside loops
+**Learning:** In data processing functions (like CSV import `findMatchingGame`), running expensive string normalizations (e.g. `.toLowerCase().normalize().replace()`) on invariants (`newMatch.team`) inside a `.find()` loop, or repeatedly normalizing variant strings (`existing.team`) without a cache, creates a severe $O(N \times M)$ memory and CPU bottleneck.
+**Action:** Always hoist invariant variable normalizations outside of search loops. For repeated string normalizations on overlapping datasets (like team names), use a module-level `Map` cache to instantly bypass redundant computation.
