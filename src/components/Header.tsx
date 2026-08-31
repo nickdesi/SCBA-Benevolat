@@ -13,6 +13,7 @@ interface HeaderProps {
   isAdmin: boolean;
   onOpenAdminStats?: () => void;
   onOpenProfile: () => void;
+  onOpenImport?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = memo(
@@ -24,6 +25,7 @@ const Header: React.FC<HeaderProps> = memo(
     onToast = () => {},
     onOpenAdminStats = () => {},
     onOpenProfile,
+    onOpenImport,
   }) => {
     const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
 
@@ -75,6 +77,7 @@ const Header: React.FC<HeaderProps> = memo(
                 isAdmin={isAdmin}
                 onOpenAdminStats={onOpenAdminStats}
                 onOpenProfile={onOpenProfile}
+                onOpenImport={onOpenImport}
               />
             </div>
           </div>

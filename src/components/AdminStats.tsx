@@ -21,6 +21,7 @@ interface AdminStatsProps {
   games: Game[];
   onClose: () => void;
   onToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  onOpenImport?: () => void;
 }
 
 type FilterType = 'all' | 'urgent' | 'incomplete';
@@ -287,7 +288,7 @@ const GameCard = ({ game, index: _index }: { game: any; index: number }) => {
   );
 };
 
-const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
+const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast, onOpenImport }) => {
   useScrollLock(true);
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -483,15 +484,35 @@ const AdminStats: React.FC<AdminStatsProps> = ({ games, onClose, onToast }) => {
                 </div>
               </div>
 
-              {/* Close Button */}
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={onClose}
-                className="p-2 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </motion.button>
+              {/* Actions Header */}
+              <div className="flex items-center gap-2">
+                {onOpenImport && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      onClose();
+                      onOpenImport();
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/25 transition-all font-sport cursor-pointer"
+                    title="Synchroniser les matchs depuis la FFBB"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-cyan-200" />
+                    <span>Sync FFBB</span>
+                  </motion.button>
+                )}
+
+                {/* Close Button */}
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={onClose}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-slate-300 hover:text-white"
+                  aria-label="Fermer"
+                >
+                  <X className="w-6 h-6" />
+                </motion.button>
+              </div>
             </div>
 
             {/* Tabs */}

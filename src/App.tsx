@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
-import { List, Calendar, Trophy, Search, CalendarDays, Palmtree } from 'lucide-react';
+import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Zap, Plus } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
@@ -203,6 +203,7 @@ function App() {
           onToast={addToast}
           onOpenAdminStats={() => setIsAdminStatsOpen(true)}
           onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenImport={() => setIsImportModalOpen(true)}
         />
       }
       topElements={
@@ -268,6 +269,7 @@ function App() {
                 games={games}
                 onClose={() => setIsAdminStatsOpen(false)}
                 onToast={addToast}
+                onOpenImport={() => setIsImportModalOpen(true)}
               />
             )}
           </Suspense>
@@ -398,24 +400,18 @@ function App() {
                     action={
                       isAdmin
                         ? {
-                            label: 'Ajouter un match',
+                            label: '⚡ Synchroniser FFBB (1-Clic)',
+                            onClick: () => setIsImportModalOpen(true),
+                            variant: 'gradient',
+                          }
+                        : undefined
+                    }
+                    secondaryAction={
+                      isAdmin
+                        ? {
+                            label: 'Ajouter un match manuellement',
                             onClick: () => setIsAddingGame(true),
-                            icon: (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2.5}
-                                stroke="currentColor"
-                                className="w-5 h-5"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M12 4.5v15m7.5-7.5h-15"
-                                />
-                              </svg>
-                            ),
+                            icon: <Plus className="w-4 h-4 text-emerald-500" />,
                           }
                         : undefined
                     }

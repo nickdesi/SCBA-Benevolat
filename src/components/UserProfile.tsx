@@ -12,6 +12,7 @@ interface UserProfileProps {
   isAdmin?: boolean;
   onOpenAdminStats?: () => void;
   onOpenProfile: () => void;
+  onOpenImport?: () => void;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
@@ -21,6 +22,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
   isAdmin = false,
   onOpenAdminStats = () => {},
   onOpenProfile,
+  onOpenImport,
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -172,35 +174,49 @@ const UserProfile: React.FC<UserProfileProps> = ({
 
             {/* Admin Stats Link */}
             {isAdmin && (
-              <button
-                onClick={() => {
-                  onOpenAdminStats();
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 font-bold
-                                           hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-4 h-4 text-slate-500 dark:text-slate-400"
+              <>
+                <button
+                  onClick={() => {
+                    onOpenAdminStats();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left cursor-pointer"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"
-                  />
-                </svg>
-                Administration
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-4 h-4 text-slate-500 dark:text-slate-400"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"
+                    />
+                  </svg>
+                  Tableau de bord Admin
+                </button>
+
+                {onOpenImport && (
+                  <button
+                    onClick={() => {
+                      onOpenImport();
+                      setShowMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-xl transition-colors text-left cursor-pointer"
+                  >
+                    <span className="text-base">⚡</span>
+                    Importer / Sync FFBB
+                  </button>
+                )}
+              </>
             )}
           </div>
 
