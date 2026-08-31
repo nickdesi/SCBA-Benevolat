@@ -35,6 +35,8 @@ export interface Game {
   teamLogo?: string;
   opponentLogo?: string;
   ffbbMatchId?: string;
+  teamRank?: number | string; // Classement de l'équipe SCBA avant le match (J-1)
+  opponentRank?: number | string; // Classement de l'adversaire avant le match (J-1)
 }
 
 // Type for role configuration (used in constants)
@@ -73,6 +75,8 @@ export interface GameFormData {
   teamLogo?: string;
   opponentLogo?: string;
   ffbbMatchId?: string;
+  teamRank?: number | string;
+  opponentRank?: number | string;
 }
 
 export interface Announcement {

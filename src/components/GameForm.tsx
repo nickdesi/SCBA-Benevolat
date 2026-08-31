@@ -37,6 +37,9 @@ const GameForm: React.FC<GameFormProps> = ({
     time: gameToEdit?.time || '',
     location: gameToEdit?.location || 'Maison des Sports',
     isHome: gameToEdit?.isHome ?? true,
+    competition: gameToEdit?.competition || '',
+    teamRank: gameToEdit?.teamRank ?? '',
+    opponentRank: gameToEdit?.opponentRank ?? '',
   });
 
   // Initialize role capacities from existing game or defaults
@@ -242,6 +245,47 @@ const GameForm: React.FC<GameFormProps> = ({
                 <option key={opp} value={opp} />
               ))}
             </datalist>
+          </div>
+
+          {/* CLASSEMENTS AVANT-MATCH (CHAMPIONNAT) */}
+          <div className="space-y-1">
+            <label
+              htmlFor="teamRank"
+              className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
+            >
+              <span aria-hidden="true">📊</span> Classement SCBA avant-match
+            </label>
+            <input
+              type="text"
+              id="teamRank"
+              name="teamRank"
+              value={formData.teamRank}
+              onChange={handleChange}
+              placeholder="Ex: 2 ou 2e (optionnel)"
+              className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
+                       focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent
+                       bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label
+              htmlFor="opponentRank"
+              className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300"
+            >
+              <span aria-hidden="true">📊</span> Classement Adversaire avant-match
+            </label>
+            <input
+              type="text"
+              id="opponentRank"
+              name="opponentRank"
+              value={formData.opponentRank}
+              onChange={handleChange}
+              placeholder="Ex: 5 ou 5e (optionnel)"
+              className="w-full px-4 py-3 text-base border-2 border-slate-200 dark:border-slate-600 rounded-xl
+                       focus:outline-none focus:ring-2 focus:ring-[#3629e1] focus:border-transparent
+                       bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+            />
           </div>
 
           {/* DATE PICKER */}

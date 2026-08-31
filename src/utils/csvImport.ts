@@ -93,6 +93,8 @@ export interface ParsedMatch {
   teamLogo?: string;
   opponentLogo?: string;
   ffbbMatchId?: string;
+  teamRank?: number | string;
+  opponentRank?: number | string;
 }
 
 interface ImportResult {
@@ -580,4 +582,6 @@ export const toGameFormData = (match: ParsedMatch): GameFormData & { id?: string
   teamLogo: match.teamLogo,
   opponentLogo: match.opponentLogo,
   ffbbMatchId: match.ffbbMatchId,
+  teamRank: match.teamRank,
+  opponentRank: match.opponentRank,
 });

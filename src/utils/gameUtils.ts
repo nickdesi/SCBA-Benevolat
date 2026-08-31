@@ -200,3 +200,31 @@ export const getHomeAwayCounts = (games: Game[]) => {
   }
   return { homeCount, awayCount };
 };
+
+/**
+ * Détermine si la compétition est un match de championnat (et non une coupe ou trophée).
+ */
+export const isChampionshipCompetition = (competition?: string): boolean => {
+  if (!competition) return true; // Par défaut, considéré comme match de championnat si non spécifié
+  const lower = competition.toLowerCase();
+  return !(lower.includes('coupe') || lower.includes('trophée') || lower.includes('challenge'));
+};
+
+/**
+ * Formate un classement en chaîne française (ex: 1 -> "1er", 2 -> "2e", 3 -> "3e").
+ * Retourne null si aucun classement valide n'est fourni.
+ */
+export const formatRank = (rank?: number | string | null): string | null => {
+  if (rank === undefined || rank === null) return null;
+  const str = String(rank).trim();
+  if (!str) return null;
+
+  // Si c'est déjà formaté proprement (ex: "1er", "2e", "3e")
+  if (/^1(er|ER)$/i.test(str)) return '1er';
+  if (/^\d+(e|E|ème|EME)$/i.test(str)) return str.toLowerCase().replace(/ème$/, 'e');
+
+  const num = parseInt(str, 10);
+  if (isNaN(num) || num <= 0) return null;
+
+  return num === 1 ? '1er' : `${num}e`;
+};

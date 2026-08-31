@@ -228,6 +228,20 @@ export const fetchFFBBMatches = onCall(
 
                     const pouleJson = await pouleRes.json();
                     const rencontres = pouleJson?.data?.rencontres || [];
+                    const classementsList = pouleJson?.data?.classements || [];
+                    const rankMap = new Map<string, number | string>();
+
+                    if (Array.isArray(classementsList)) {
+                        for (const c of classementsList) {
+                            const rank = c?.place || c?.position || c?.rang || c?.ordre;
+                            const orgId = String(c?.idOrganisme || c?.id_organisme || "");
+                            const eqNom = (c?.nomEquipe || c?.nom_equipe || c?.nom || "").toUpperCase().trim();
+                            if (rank) {
+                                if (orgId) rankMap.set(`org_${orgId}`, rank);
+                                if (eqNom) rankMap.set(`nom_${eqNom}`, rank);
+                            }
+                        }
+                    }
 
                     for (const m of rencontres) {
                         const matchId = String(m?.id || "");
@@ -248,6 +262,12 @@ export const fetchFFBBMatches = onCall(
                         const scbaTeam = normalizeScbaTeam(isHome ? nomEq1 : nomEq2, compNom);
                         const opponent = cleanOpponentName(isHome ? nomEq2 : nomEq1);
                         const oppOrgId = isHome ? idOrg2 : idOrg1;
+                        const scbaOrgId = isHome ? idOrg1 : idOrg2;
+                        const oppNom = isHome ? nomEq2 : nomEq1;
+                        const scbaNom = isHome ? nomEq1 : nomEq2;
+
+                        const teamRank = rankMap.get(`org_${scbaOrgId}`) || rankMap.get(`nom_${scbaNom.toUpperCase().trim()}`);
+                        const oppRank = rankMap.get(`org_${oppOrgId}`) || rankMap.get(`nom_${oppNom.toUpperCase().trim()}`);
 
                         if (teamFilter && teamFilter !== "ALL" && !scbaTeam.toUpperCase().includes(teamFilter)) {
                             continue;
@@ -342,6 +362,8 @@ export const fetchFFBBMatches = onCall(
                             competition: compNom,
                             teamLogo: SCBA_LOGO_URL,
                             ...(opponentLogo ? { opponentLogo } : {}),
+                            ...(teamRank !== undefined ? { teamRank } : {}),
+                            ...(oppRank !== undefined ? { opponentRank: oppRank } : {}),
                         });
                     }
                 } catch (e) {

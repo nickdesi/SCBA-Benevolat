@@ -130,7 +130,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         fetchedMatches.forEach((match) => {
           const existing = findMatchingGame(match, existingGames);
           if (existing) {
-            newMatches.push({ ...match, id: existing.id });
+            newMatches.push({
+              ...match,
+              id: existing.id,
+              teamRank: match.teamRank ?? existing.teamRank,
+              opponentRank: match.opponentRank ?? existing.opponentRank,
+            });
             updateCount++;
           } else {
             newMatches.push(match);

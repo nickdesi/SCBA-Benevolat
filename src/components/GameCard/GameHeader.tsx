@@ -5,6 +5,7 @@ import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from '../Icons';
 import VolunteerCompletionRing from './VolunteerCompletionRing';
+import { formatRank } from '../../utils/gameUtils';
 
 /** Détecte si la compétition est une coupe (style doré/trophée) vs un championnat régulier */
 const isCupCompetition = (competition?: string): boolean => {
@@ -42,6 +43,9 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isCup = isCupCompetition(game.competition);
+  const isChampionship = !isCup;
+  const formattedTeamRank = isChampionship ? formatRank(game.teamRank) : null;
+  const formattedOpponentRank = isChampionship ? formatRank(game.opponentRank) : null;
 
   return (
     <div
@@ -123,7 +127,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       <div className="relative z-10 mb-4 flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
           {/* Ligne 1 : équipe qui reçoit */}
-          <div className={`flex items-center gap-2.5 mb-1`}>
+          <div className={`flex items-center gap-2.5 mb-1 flex-wrap`}>
             {isHomeGame ? (
               <>
                 {game.teamLogo && (
@@ -136,6 +140,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 truncate">
                   {game.team}
                 </h2>
+                {formattedTeamRank && (
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 text-xs font-black rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 flex-shrink-0 shadow-sm"
+                    title={`Classement SCBA avant-match : ${formattedTeamRank}`}
+                  >
+                    {formattedTeamRank}
+                  </span>
+                )}
               </>
             ) : (
               <>
@@ -149,18 +161,26 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport truncate">
                   {game.opponent}
                 </h3>
+                {formattedOpponentRank && (
+                  <span
+                    className="inline-flex items-center px-1.5 py-0.5 text-[11px] font-bold rounded bg-slate-200/80 text-slate-700 dark:bg-slate-700/80 dark:text-slate-300 border border-slate-300/50 dark:border-slate-600/50 flex-shrink-0"
+                    title={`Classement adversaire avant-match : ${formattedOpponentRank}`}
+                  >
+                    {formattedOpponentRank}
+                  </span>
+                )}
               </>
             )}
-            <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></span>
+            <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1 min-w-[20px]"></span>
           </div>
 
           {/* Ligne 2 : équipe visiteuse */}
-          <div className="group relative flex items-start gap-2.5">
+          <div className="group relative flex items-start gap-2.5 flex-wrap">
             <span className="text-slate-300 dark:text-slate-600 text-lg italic mt-1.5 flex-shrink-0">
               VS
             </span>
             {isHomeGame ? (
-              <>
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
                 {game.opponentLogo && (
                   <img
                     src={game.opponentLogo}
@@ -171,9 +191,17 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 <h3 className="text-base font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sport mt-1 break-words">
                   {game.opponent}
                 </h3>
-              </>
+                {formattedOpponentRank && (
+                  <span
+                    className="inline-flex items-center px-1.5 py-0.5 text-[11px] font-bold rounded bg-slate-200/80 text-slate-700 dark:bg-slate-700/80 dark:text-slate-300 border border-slate-300/50 dark:border-slate-600/50 flex-shrink-0 mt-1"
+                    title={`Classement adversaire avant-match : ${formattedOpponentRank}`}
+                  >
+                    {formattedOpponentRank}
+                  </span>
+                )}
+              </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
                 {game.teamLogo && (
                   <img
                     src={game.teamLogo}
@@ -184,7 +212,15 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 break-words">
                   {game.team}
                 </h2>
-              </>
+                {formattedTeamRank && (
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 text-xs font-black rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 flex-shrink-0 shadow-sm mt-1"
+                    title={`Classement SCBA avant-match : ${formattedTeamRank}`}
+                  >
+                    {formattedTeamRank}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
