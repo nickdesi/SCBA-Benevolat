@@ -43,7 +43,7 @@ function App() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAdminStatsOpen, setIsAdminStatsOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('calendar');
+  const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('home');
 
   // Wrap view changes in startTransition for non-blocking UI updates
   const handleViewChange = useCallback((view: 'home' | 'planning' | 'calendar') => {
@@ -210,8 +210,15 @@ function App() {
         <>
           <AnnouncementBanner />
           <EventSchema games={sortedGames} />
-          {/* Ticker restored */}
-          <MatchTicker games={sortedGames} />
+          {/* Ticker : visible seulement s'il y a un match dans les 72h */}
+          {sortedGames.some((g) => {
+            const dateStr = g.dateISO ?? g.date;
+            if (!dateStr) return false;
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return false;
+            const diff = d.getTime() - Date.now();
+            return diff >= 0 && diff <= 72 * 60 * 60 * 1000;
+          }) && <MatchTicker games={sortedGames} />}
         </>
       }
       toasts={

@@ -105,7 +105,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5"
+        className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5"
       >
         <StatCard
           label="Missions Totales"
@@ -119,6 +119,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
           icon={<Clock className="w-5 h-5" />}
           gradient="from-emerald-400 via-teal-500 to-cyan-600"
         />
+        {/* 3e carte : pleine largeur sur mobile pour éviter l'écrasement à 320px */}
         <StatCard
           label="Rôle Favori"
           value={stats.favoriteRole}

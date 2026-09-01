@@ -93,6 +93,17 @@ const GameCard: React.FC<GameCardProps> = memo(
       [game, isFullyStaffed],
     );
 
+    // P0 : badge "Mon engagement" visible sans ouvrir l'accordéon.
+    // True si userRegistrations contient au moins un rôle pour ce match.
+    const isUserRegistered = useMemo(() => {
+      if (!userRegistrations) return false;
+      // userRegistrations keys = "gameId_roleId"
+      for (const key of userRegistrations.keys()) {
+        if (key.startsWith(game.id + '_')) return true;
+      }
+      return false;
+    }, [userRegistrations, game.id]);
+
     if (isEditing) {
       return (
         <Suspense
@@ -146,6 +157,7 @@ const GameCard: React.FC<GameCardProps> = memo(
             totalPassengerRequests={totalPassengerRequests}
             isUrgent={isUrgent}
             isAdmin={isAdmin}
+            isUserRegistered={isUserRegistered}
             onEditRequest={() => onEditRequest(game.id)}
             onDeleteRequest={() => onDeleteRequest(game.id)}
           />

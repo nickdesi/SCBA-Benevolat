@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { List, Calendar } from 'lucide-react';
+import { List, Calendar, LogIn } from 'lucide-react';
 import { AnimatedBallIcon } from './Icons';
 
 interface BottomNavProps {
@@ -92,12 +92,13 @@ const BottomNav: React.FC<BottomNavProps> = memo(
             </button>
           </div>
 
-          {/* Mon Espace (Premium Action Button) */}
-          {isAuthenticated && (
+          {/* Mon Espace (authentifié) OU Connexion (non-authentifié) */}
+          {isAuthenticated ? (
             <motion.button
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handlePlanningClick}
+              aria-label="Mon espace bénévole"
               className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-[#aa2e0f] to-[#c2988f] text-white shadow-lg shadow-[#aa2e0f]/30 dark:border-white/15 dark:from-[#3629e1] dark:to-[#aa2e0f] dark:shadow-[#3629e1]/30"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -112,6 +113,17 @@ const BottomNav: React.FC<BottomNavProps> = memo(
                 <AnimatedBallIcon className="w-6 h-6" />
               </motion.div>
               <span className="text-[9px] font-black uppercase tracking-tight">Moi</span>
+            </motion.button>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.05 }}
+              onClick={handlePlanningClick}
+              aria-label="Se connecter"
+              className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-[#3629e1]/30 bg-[#3629e1]/10 text-[#3629e1] dark:bg-[#3629e1]/20 dark:text-indigo-300 shadow-sm"
+            >
+              <LogIn className="w-5 h-5" />
+              <span className="text-[9px] font-black uppercase tracking-tight">Connexion</span>
             </motion.button>
           )}
         </div>

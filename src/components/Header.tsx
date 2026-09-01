@@ -56,7 +56,10 @@ const Header: React.FC<HeaderProps> = memo(
             <div className="flex-1 text-center min-w-0 flex flex-col items-center justify-center px-1">
               <h1 className="flex flex-col items-center justify-center leading-none">
                 <span className="font-sport text-sm xs:text-base sm:text-2xl md:text-3xl font-black italic tracking-tighter text-slate-900 dark:text-white drop-shadow-xs uppercase">
-                  STADE CLERMONTOIS BASKET AUVERGNE
+                  {/* Version abrégée sur très petits écrans (< 390px) */}
+                  <span className="xs:hidden">SCBA</span>
+                  {/* Version complète à partir de 390px */}
+                  <span className="hidden xs:inline">STADE CLERMONTOIS BASKET AUVERGNE</span>
                 </span>
                 {/* Athletic Separator & Badge */}
                 <div className="flex items-center gap-2 mt-1 sm:mt-1.5">
@@ -100,7 +103,7 @@ const Header: React.FC<HeaderProps> = memo(
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onSelectTeam(null)}
-                  className={`snap-center flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 backdrop-blur-md cursor-pointer ${
+                  className={`snap-center flex min-h-[44px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 backdrop-blur-md cursor-pointer ${
                     selectedTeam === null
                       ? 'border-[#3629e1]/40 bg-gradient-to-r from-[#3629e1] to-[#272890] text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20'
                       : 'border-slate-200/90 bg-white/70 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-700/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-indigo-500/40'
@@ -114,7 +117,7 @@ const Header: React.FC<HeaderProps> = memo(
                     layoutId={`team-pill-${team}`}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onSelectTeam(team)}
-                    className={`snap-center flex min-h-[36px] sm:min-h-[40px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 backdrop-blur-md cursor-pointer ${
+                    className={`snap-center flex min-h-[44px] items-center justify-center rounded-full border px-4 py-1.5 text-xs font-bold transition-all duration-200 backdrop-blur-md cursor-pointer ${
                       selectedTeam === team
                         ? 'border-transparent bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] text-white shadow-md shadow-indigo-500/30 ring-1 ring-white/20'
                         : 'border-slate-200/90 bg-white/70 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-700/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-indigo-500/40'

@@ -180,3 +180,45 @@ export const getSeasonStartISO = (date: Date = new Date()): string => {
   const d = (1).toString().padStart(2, '0');
   return `${seasonStartYear}-${m}-${d}`;
 };
+
+/**
+ * Condense a game date for mobile display.
+ * Input: ISO "YYYY-MM-DD" or French long "Samedi 15 Novembre 2025"
+ * Output: "Sam. 15 Nov." (compact, fits in a pill at 375px)
+ */
+export const formatDateShort = (dateISO?: string, dateLong?: string): string => {
+  const DAY_SHORT = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+  const MONTH_SHORT = [
+    'Jan.',
+    'Fév.',
+    'Mar.',
+    'Avr.',
+    'Mai',
+    'Jun.',
+    'Jul.',
+    'Aoû.',
+    'Sep.',
+    'Oct.',
+    'Nov.',
+    'Déc.',
+  ];
+
+  // Prefer ISO date (most reliable)
+  if (dateISO && ISO_DATE_REGEX.test(dateISO)) {
+    const [year, month, day] = dateISO.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    if (!isNaN(d.getTime())) {
+      return `${DAY_SHORT[d.getDay()]} ${day} ${MONTH_SHORT[month - 1]}`;
+    }
+  }
+
+  // Fallback: parse long French date
+  if (dateLong) {
+    const parsed = parseFrenchDate(dateLong);
+    if (parsed) {
+      return `${DAY_SHORT[parsed.getDay()]} ${parsed.getDate()} ${MONTH_SHORT[parsed.getMonth()]}`;
+    }
+  }
+
+  return dateLong ?? '';
+};

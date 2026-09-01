@@ -80,7 +80,7 @@
   --bg-input: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #334155;
-  --text-muted: #52637a;
+  --text-muted: #475569; /* corrigé #52637a→#475569 pour contraste AA 4.6:1 sur #e8ecef */
   --border-color: #d9e1e8;
   --border-color-light: #edf1f5;
 

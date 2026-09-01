@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Plane, Car, Flame, AlertTriangle, CheckIcon, Trophy } from 'lucide-react';
+import {
+  Home,
+  Plane,
+  Car,
+  Flame,
+  AlertTriangle,
+  CheckIcon,
+  Trophy,
+  BadgeCheck,
+} from 'lucide-react';
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from '../Icons';
 import VolunteerCompletionRing from './VolunteerCompletionRing';
 import { formatRank } from '../../utils/gameUtils';
+import { formatDateShort } from '../../utils/dateUtils';
 
 /** Détecte si la compétition est une coupe (style doré/trophée) vs un championnat régulier */
 const isCupCompetition = (competition?: string): boolean => {
@@ -24,6 +34,7 @@ interface GameHeaderProps {
   totalPassengerRequests: number;
   isUrgent: boolean;
   isAdmin: boolean;
+  isUserRegistered?: boolean;
   onEditRequest: () => void;
   onDeleteRequest: () => void;
 }
@@ -38,6 +49,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   totalPassengerRequests,
   isUrgent,
   isAdmin,
+  isUserRegistered = false,
   onEditRequest,
   onDeleteRequest,
 }) => {
@@ -94,7 +106,20 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         )}
         <div className="flex flex-col items-end gap-1.5">
           {/* Urgency / Status Pills */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {/* Badge Mon engagement — visible sans ouvrir l'accordéon (P0) */}
+            {isUserRegistered && isHomeGame && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-[#3629e1] text-white shadow-sm shadow-[#3629e1]/30"
+                aria-label="Vous êtes inscrit à ce match"
+              >
+                <BadgeCheck className="w-3 h-3" />
+                Mon engagement
+              </motion.span>
+            )}
             {isUrgent && !isFullyStaffed && (
               <motion.span
                 animate={{ scale: [1, 1.05, 1], opacity: [0.9, 1, 0.9] }}
@@ -249,7 +274,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             <div className="flex-shrink-0 p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-lg">
               <CalendarIcon className="w-4 h-4" />
             </div>
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+            {/* Format condensé sur mobile, long sur sm+ */}
+            <span className="sm:hidden text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight whitespace-nowrap">
+              {formatDateShort(game.dateISO, game.date)}
+            </span>
+            <span className="hidden sm:inline text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
               {game.date}
             </span>
           </div>
@@ -329,7 +358,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         <div className="absolute top-2 right-2 flex gap-1 z-50">
           <button
             onClick={onEditRequest}
-            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:bg-blue-100"
+            className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:bg-blue-100"
+            aria-label="Modifier ce match"
           >
             <EditIcon className="w-4 h-4" />
           </button>
@@ -338,7 +368,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               e.stopPropagation();
               setShowDeleteConfirm(true);
             }}
-            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors active:bg-red-100"
+            className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors active:bg-red-100"
+            aria-label="Supprimer ce match"
           >
             <DeleteIcon className="w-4 h-4" />
           </button>
