@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Share, PlusSquare, X, Smartphone, Sparkles } from 'lucide-react';
+import { Download, Share, PlusSquare, X, Smartphone, Sparkles, MoreVertical } from 'lucide-react';
 
 const DISMISS_KEY = 'scba-pwa-install-dismissed-v4';
 const DISMISS_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 jours
@@ -25,13 +25,17 @@ function isAlreadyInstalled(): boolean {
   );
 }
 
-function checkIsIOS(): boolean {
-  if (typeof window === 'undefined') return false;
+type Platform = 'ios' | 'android' | 'desktop';
+
+function detectPlatform(): Platform {
+  if (typeof window === 'undefined') return 'desktop';
   const ua = navigator.userAgent || '';
-  const isIOSDevice =
+  const isIOS =
     /iPhone|iPad|iPod/.test(ua) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  return isIOSDevice;
+  if (isIOS) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'desktop';
 }
 
 function wasDismissedRecently(): boolean {
@@ -40,49 +44,44 @@ function wasDismissedRecently(): boolean {
   return Date.now() - parseInt(ts, 10) < DISMISS_DURATION_MS;
 }
 
+// Phase d'affichage : 'ask' = bouton 1-clic, 'guide' = instructions manuelles
+type Phase = 'ask' | 'guide';
+
 const InstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(
     typeof window !== 'undefined' ? window.__pwaInstallPrompt || null : null,
   );
   const [show, setShow] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [phase, setPhase] = useState<Phase>('ask');
+  const [platform, setPlatform] = useState<Platform>('desktop');
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
 
-    const ios = checkIsIOS();
-    setIsIOS(ios);
+    setPlatform(detectPlatform());
 
-    // Initialisation depuis l'événement capturé tôt dans index.html
+    // Récupérer le prompt capturé tôt dans index.html
     if (window.__pwaInstallPrompt) {
       setDeferredPrompt(window.__pwaInstallPrompt);
     }
 
-    // Réception de l'événement pwa-prompt-ready
     const handlePromptReady = () => {
       if (window.__pwaInstallPrompt) {
         setDeferredPrompt(window.__pwaInstallPrompt);
       }
-      if (!wasDismissedRecently()) {
-        setShow(true);
-      }
+      if (!wasDismissedRecently()) setShow(true);
     };
     window.addEventListener('pwa-prompt-ready', handlePromptReady);
 
-    // Écouteur standard en secours
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.__pwaInstallPrompt = promptEvent;
-      setDeferredPrompt(promptEvent);
-      if (!wasDismissedRecently()) {
-        setShow(true);
-      }
+      const evt = e as BeforeInstallPromptEvent;
+      window.__pwaInstallPrompt = evt;
+      setDeferredPrompt(evt);
+      if (!wasDismissedRecently()) setShow(true);
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // Fermeture automatique dès que l'app est installée
     const onInstalled = () => {
       setShow(false);
       setDeferredPrompt(null);
@@ -90,19 +89,18 @@ const InstallPrompt: React.FC = () => {
     };
     window.addEventListener('appinstalled', onInstalled);
 
-    // Déclencheur manuel (ex: bouton dans le footer ou menu profil)
+    // Déclencheur manuel (footer / menu profil)
     const handleManualOpen = () => {
+      setPhase('ask');
       setShow(true);
-      setShowIOSGuide(false);
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Sur mobile (iOS et Android), affichage automatique de la popup si non fermée récemment
+    // Affichage automatique sur mobile
     let timer: NodeJS.Timeout | null = null;
     if (!wasDismissedRecently()) {
-      timer = setTimeout(() => {
-        setShow(true);
-      }, 1000);
+      const delay = detectPlatform() !== 'desktop' ? 1000 : 3000;
+      timer = setTimeout(() => setShow(true), delay);
     }
 
     return () => {
@@ -114,33 +112,32 @@ const InstallPrompt: React.FC = () => {
     };
   }, []);
 
-  // Action 1-Clic : Déclenche directement la popup native sur Android/Chrome
-  // ou affiche le guide express sur iOS (contrainte WebKit Apple)
   const handleInstallClick = async () => {
-    if (isIOS) {
-      setShowIOSGuide(true);
-      return;
-    }
-
+    // 1. Tenter le prompt natif (Android/Chrome/Edge)
     const promptEvent = deferredPrompt || window.__pwaInstallPrompt;
     if (promptEvent) {
-      await promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      setDeferredPrompt(null);
-      window.__pwaInstallPrompt = null;
-      if (outcome === 'accepted') {
-        setShow(false);
+      try {
+        await promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        setDeferredPrompt(null);
+        window.__pwaInstallPrompt = null;
+        if (outcome === 'accepted') {
+          setShow(false);
+          return;
+        }
+      } catch {
+        // prompt() peut échouer si déjà utilisé ; on passe au guide
       }
-    } else {
-      // Fallback si prompt indisponible sur l'instant
-      setShowIOSGuide(true);
     }
+
+    // 2. Pas de prompt natif → afficher le guide d'installation manuel
+    setPhase('guide');
   };
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setShow(false);
-    setShowIOSGuide(false);
+    setPhase('ask');
   };
 
   if (isAlreadyInstalled()) return null;
@@ -158,7 +155,7 @@ const InstallPrompt: React.FC = () => {
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
             <div className="bg-slate-900/98 text-white p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-slate-700/80 backdrop-blur-2xl">
-              {/* En-tête : Icône + Titre + Bouton Fermer */}
+              {/* En-tête */}
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <picture>
@@ -179,7 +176,9 @@ const InstallPrompt: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Installer l'application sur votre appareil ?
+                      {phase === 'ask'
+                        ? "Installer l'application sur votre appareil ?"
+                        : 'Suivez ces étapes rapides :'}
                     </p>
                   </div>
                 </div>
@@ -192,49 +191,8 @@ const InstallPrompt: React.FC = () => {
                 </button>
               </div>
 
-              {/* Guide visuel iOS si demandé */}
-              {isIOS && showIOSGuide && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-4 text-xs text-slate-200 space-y-2.5 border border-blue-500/40 shadow-inner"
-                >
-                  <div className="font-bold text-white flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-blue-400" />
-                    <span>Sur iPhone / iPad :</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
-                      1
-                    </span>
-                    <span>
-                      Touchez <span className="font-bold text-white">Partager</span>{' '}
-                      <Share className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" />
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
-                      2
-                    </span>
-                    <span>
-                      Choisissez{' '}
-                      <span className="font-bold text-white">« Sur l'écran d'accueil »</span>{' '}
-                      <PlusSquare className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" />
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
-                      3
-                    </span>
-                    <span>
-                      Touchez <span className="font-bold text-white">Ajouter</span> en haut à droite
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Bouton d'action principal 1-Clic */}
-              {(!isIOS || !showIOSGuide) && (
+              {/* ========== PHASE ASK : Bouton 1-Clic ========== */}
+              {phase === 'ask' && (
                 <button
                   onClick={handleInstallClick}
                   className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
@@ -244,12 +202,111 @@ const InstallPrompt: React.FC = () => {
                 </button>
               )}
 
+              {/* ========== PHASE GUIDE : Instructions visuelles adaptées ========== */}
+              {phase === 'guide' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-blue-500/40"
+                >
+                  {platform === 'ios' ? (
+                    /* ---- iOS : Partager → Écran d'accueil ---- */
+                    <>
+                      <div className="font-bold text-white flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-blue-400" />
+                        <span>Sur iPhone / iPad :</span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
+                          1
+                        </span>
+                        <span>
+                          Touchez{' '}
+                          <span className="font-bold text-white">
+                            Partager{' '}
+                            <Share className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
+                          </span>{' '}
+                          en bas de l'écran
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
+                          2
+                        </span>
+                        <span>
+                          Sélectionnez{' '}
+                          <span className="font-bold text-white">
+                            « Sur l'écran d'accueil »{' '}
+                            <PlusSquare className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
+                          </span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
+                          3
+                        </span>
+                        <span>
+                          Touchez <span className="font-bold text-white">Ajouter</span> ✅
+                        </span>
+                      </div>
+                    </>
+                  ) : platform === 'android' ? (
+                    /* ---- Android sans prompt natif ---- */
+                    <>
+                      <div className="font-bold text-white flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-emerald-400" />
+                        <span>Sur Android :</span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600/40 text-emerald-300 font-bold text-[11px] flex-shrink-0">
+                          1
+                        </span>
+                        <span>
+                          Touchez le menu{' '}
+                          <MoreVertical className="inline-block w-3.5 h-3.5 mx-0.5 text-emerald-400 -mt-0.5" />{' '}
+                          en haut à droite
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600/40 text-emerald-300 font-bold text-[11px] flex-shrink-0">
+                          2
+                        </span>
+                        <span>
+                          Choisissez{' '}
+                          <span className="font-bold text-white">« Installer l'application »</span>{' '}
+                          ou{' '}
+                          <span className="font-bold text-white">
+                            « Ajouter à l'écran d'accueil »
+                          </span>
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    /* ---- Desktop ---- */
+                    <>
+                      <div className="font-bold text-white flex items-center gap-2">
+                        <Download className="w-4 h-4 text-blue-400" />
+                        <span>Sur ordinateur :</span>
+                      </div>
+                      <p className="text-slate-300 leading-relaxed">
+                        Cliquez sur l'icône{' '}
+                        <span className="font-bold text-white">
+                          <Download className="inline-block w-3 h-3 mx-0.5 -mt-0.5" />{' '}
+                          d'installation
+                        </span>{' '}
+                        dans la barre d'adresse de votre navigateur (Chrome, Edge, Brave).
+                      </p>
+                    </>
+                  )}
+                </motion.div>
+              )}
+
               {/* Bouton secondaire */}
               <button
                 onClick={handleDismiss}
                 className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
               >
-                {isIOS && showIOSGuide ? "J'ai compris" : 'Plus tard'}
+                {phase === 'guide' ? "J'ai compris" : 'Plus tard'}
               </button>
             </div>
           </motion.div>
