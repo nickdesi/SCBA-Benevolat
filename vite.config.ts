@@ -91,11 +91,13 @@ export default defineConfig({
             src: 'pwa-192x192.webp',
             sizes: '192x192',
             type: 'image/webp',
+            purpose: 'any',
           },
           {
             src: 'pwa-512x512.webp',
             sizes: '512x512',
             type: 'image/webp',
+            purpose: 'any',
           },
           {
             src: 'pwa-512x512.webp',
