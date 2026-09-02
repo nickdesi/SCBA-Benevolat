@@ -84,13 +84,46 @@ export default defineConfig({
         short_name: 'SCBA',
         description: 'Gestion du bénévolat - Stade Clermontois Basket Auvergne',
         lang: 'fr',
+        dir: 'ltr',
         theme_color: '#272890',
         background_color: '#efe9f0',
         display: 'standalone',
-        orientation: 'portrait',
-        start_url: '/',
+        orientation: 'portrait-primary',
+        start_url: '/?source=pwa',
         scope: '/',
         categories: ['sports', 'utilities'],
+        shortcuts: [
+          {
+            name: 'Matchs à venir',
+            short_name: 'Matchs',
+            description: 'Voir la liste des prochains matchs et besoins bénévoles',
+            url: '/?source=shortcut',
+            icons: [{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' }],
+          },
+          {
+            name: 'Planning & Calendrier',
+            short_name: 'Planning',
+            description: 'Consulter la grille de planning des matchs',
+            url: '/?tab=planning&source=shortcut',
+            icons: [{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' }],
+          },
+        ],
+        screenshots: [
+          {
+            src: '/screenshot-hero.webp',
+            sizes: '1280x720',
+            type: 'image/webp',
+            form_factor: 'wide',
+            label: 'Tableau de bord des bénévoles SCBA',
+          },
+          {
+            src: '/screenshot-hero.webp',
+            sizes: '720x1280',
+            type: 'image/webp',
+            form_factor: 'narrow',
+            label: 'Gestion des matchs sur mobile',
+          },
+        ],
         icons: [
           {
             src: '/pwa-192x192.png',
