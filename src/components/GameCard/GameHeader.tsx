@@ -175,9 +175,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 </span>
               )}
             </div>
-            <h2 className="font-sport font-black text-sm sm:text-base text-slate-900 dark:text-white uppercase leading-tight tracking-tight line-clamp-2">
-              {scbaTeamName}
-            </h2>
+            <div className="h-10 sm:h-11 flex items-center justify-center px-1">
+              <h2 className="font-sport font-black text-xs sm:text-sm text-slate-900 dark:text-white uppercase leading-tight tracking-tight line-clamp-2">
+                {scbaTeamName}
+              </h2>
+            </div>
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
               {isHomeGame ? 'Hôte' : 'Visiteur'}
             </span>
@@ -221,9 +223,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 </span>
               )}
             </div>
-            <h3 className="font-sport font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 uppercase leading-tight tracking-tight line-clamp-2">
-              {opponentName}
-            </h3>
+            <div className="h-10 sm:h-11 flex items-center justify-center px-1">
+              <h3 className="font-sport font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 uppercase leading-tight tracking-tight line-clamp-2">
+                {opponentName}
+              </h3>
+            </div>
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
               {!isHomeGame ? 'Hôte' : 'Visiteur'}
             </span>
@@ -256,40 +260,6 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           Itinéraire
         </a>
       </div>
-
-      {/* Smart Carpool summary for Away games */}
-      {!isHomeGame && (
-        <div className="relative z-10 mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-            <Car className="w-3.5 h-3.5 text-blue-500" />
-            <span className="font-bold text-slate-700 dark:text-slate-300">Covoiturage :</span>
-            {(() => {
-              const remainingSeats = totalCarpoolSeats - totalPassengerRequests;
-              if (totalCarpoolSeats === 0 && totalPassengerRequests === 0) {
-                return <span className="italic text-slate-400">Pas encore d'offre</span>;
-              }
-              if (remainingSeats < 0) {
-                return (
-                  <span className="font-bold text-red-500">
-                    Manque {Math.abs(remainingSeats)} place(s)
-                  </span>
-                );
-              }
-              if (remainingSeats > 0) {
-                return (
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                    {remainingSeats} place(s) libre(s)
-                  </span>
-                );
-              }
-              return <span className="font-bold text-slate-600 dark:text-slate-400">Complet</span>;
-            })()}
-          </div>
-          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-            Voir détails →
-          </span>
-        </div>
-      )}
 
       {/* Admin Confirm Modal */}
       {isAdmin && (

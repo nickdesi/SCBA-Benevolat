@@ -147,9 +147,9 @@ const GameList: React.FC<GameListProps> = memo(
               </div>
             </div>
 
-            <div className="columns-1 lg:columns-2 gap-6 lg:gap-8 space-y-6 lg:space-y-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-stretch">
               {group.games.map((game, index) => (
-                <div key={game.id} className="break-inside-avoid mb-6 lg:mb-8 cv-auto">
+                <div key={game.id} className="h-full flex flex-col cv-auto">
                   <GameCard
                     game={game}
                     isAdmin={isAdmin}
