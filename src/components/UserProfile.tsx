@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { User } from 'firebase/auth';
 import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStore';
 import { LogoutIcon, UserIcon } from './Icons';
+import { useIsPWAInstalled } from '../hooks/useIsPWAInstalled';
 
 const UserAuthModal = lazy(() => import('./UserAuthModal'));
 
@@ -28,6 +29,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const isPWAInstalled = useIsPWAInstalled();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -226,17 +228,19 @@ const UserProfile: React.FC<UserProfileProps> = ({
             )}
 
             {/* Installer l'application */}
-            <button
-              role="menuitem"
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('pwa-open-install'));
-                setShowMenu(false);
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left cursor-pointer min-h-[44px]"
-            >
-              <span className="text-base">📲</span>
-              Installer l'application
-            </button>
+            {!isPWAInstalled && (
+              <button
+                role="menuitem"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('pwa-open-install'));
+                  setShowMenu(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-left cursor-pointer min-h-[44px]"
+              >
+                <span className="text-base">📲</span>
+                Installer l'application
+              </button>
+            )}
           </div>
 
           <div className="p-1.5 border-t border-slate-100 dark:border-slate-700/60">

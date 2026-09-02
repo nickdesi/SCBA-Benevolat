@@ -31,14 +31,7 @@ declare global {
   }
 }
 
-function isAlreadyInstalled(): boolean {
-  if (typeof window === 'undefined') return false;
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as unknown as { standalone?: boolean }).standalone === true ||
-    document.referrer.includes('android-app://')
-  );
-}
+import { useIsPWAInstalled, isPWAInstalled } from '../hooks/useIsPWAInstalled';
 
 type PlatformType = 'ios' | 'android' | 'macos-safari' | 'desktop-chromium' | 'desktop-other';
 
@@ -79,13 +72,14 @@ function wasDismissedRecently(): boolean {
 }
 
 const InstallPrompt: React.FC = () => {
+  const isInstalled = useIsPWAInstalled();
   const [show, setShow] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [platform, setPlatform] = useState<PlatformType>('desktop-chromium');
   const [isBrave, setIsBrave] = useState(false);
 
   useEffect(() => {
-    if (isAlreadyInstalled()) return;
+    if (isPWAInstalled()) return;
 
     const detected = detectPlatform();
     setPlatform(detected);
@@ -185,7 +179,7 @@ const InstallPrompt: React.FC = () => {
     setShowGuide(false);
   };
 
-  if (isAlreadyInstalled()) return null;
+  if (isInstalled) return null;
 
   return (
     <aside aria-label="Installation de l'application SCBA Bénévoles">

@@ -3,6 +3,7 @@ import { Download } from 'lucide-react';
 import UserProfile from './UserProfile';
 import { ThemeToggle } from '../utils/ThemeContext';
 import { useDraggableScroll } from '../hooks/useDraggableScroll';
+import { useIsPWAInstalled } from '../hooks/useIsPWAInstalled';
 
 interface HeaderProps {
   onLogout: () => void;
@@ -28,6 +29,7 @@ const Header: React.FC<HeaderProps> = memo(
     onOpenImport,
   }) => {
     const { ref: scrollRef, events: scrollEvents, style: scrollStyle } = useDraggableScroll();
+    const isPWAInstalled = useIsPWAInstalled();
 
     return (
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl transition-all duration-200">
@@ -67,15 +69,17 @@ const Header: React.FC<HeaderProps> = memo(
             {/* Right Controls: Theme + User Capsule */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <div className="flex items-center bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-full border border-slate-200/80 dark:border-slate-800/80 shadow-xs backdrop-blur-md">
-                <button
-                  type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('pwa-open-install'))}
-                  className="p-2 rounded-full text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-                  title="Installer l'application"
-                  aria-label="Installer l'application"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
+                {!isPWAInstalled && (
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('pwa-open-install'))}
+                    className="p-2 rounded-full text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+                    title="Installer l'application"
+                    aria-label="Installer l'application"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                )}
                 <ThemeToggle />
                 <UserProfile
                   onToast={onToast}
