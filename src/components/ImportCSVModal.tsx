@@ -1,6 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebase';
+import { getFirebaseFunctions } from '../firebase';
 import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
@@ -88,10 +87,14 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         // 3. Si non récupéré, appel de la Cloud Function Firebase
         if (fetchedMatches.length === 0 && !localError) {
           try {
+            const [{ httpsCallable }, functionsInstance] = await Promise.all([
+              import('firebase/functions'),
+              getFirebaseFunctions(),
+            ]);
             const fetchFn = httpsCallable<
               { team?: string },
               { matches: ParsedMatch[]; count: number }
-            >(functions, 'fetchFFBBMatches');
+            >(functionsInstance, 'fetchFFBBMatches');
             const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
             fetchedMatches = res.data?.matches || [];
           } catch (cloudErr: any) {
@@ -279,7 +282,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                       results.push(fullAddress);
                     }
                   }
-                } catch (e) {
+                } catch {
                   /* ignore */
                 }
                 if (results.length > 0 && queries.indexOf(query) < 2) break;

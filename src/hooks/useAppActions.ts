@@ -116,7 +116,7 @@ export const useAppActions = (props: UseAppActionsProps) => {
       try {
         await handleVolunteer(gameId, roleId, name);
         addToast('Inscription confirmée !', 'success');
-      } catch (err) {
+      } catch {
         addToast("Erreur lors de l'inscription", 'error');
       }
     },
@@ -127,7 +127,7 @@ export const useAppActions = (props: UseAppActionsProps) => {
     async (gameId: string, roleId: string, name: string, registrationId?: string) => {
       try {
         await handleRemoveVolunteer(gameId, roleId, name, registrationId);
-      } catch (err) {
+      } catch {
         addToast('Erreur lors de la désinscription', 'error');
       }
     },
@@ -139,7 +139,7 @@ export const useAppActions = (props: UseAppActionsProps) => {
       try {
         await handleUpdateVolunteer(gameId, roleId, old, next);
         addToast('Nom modifié', 'success');
-      } catch (err) {
+      } catch {
         addToast('Erreur lors de la modification', 'error');
       }
     },
@@ -156,7 +156,7 @@ export const useAppActions = (props: UseAppActionsProps) => {
       try {
         await handleAddCarpool(gameId, entry);
         addToast('🚗 Inscription covoiturage !', 'success');
-      } catch (err) {
+      } catch {
         addToast('Erreur covoiturage', 'error');
       }
     },

@@ -27,8 +27,8 @@ const TIME_REGEX = /(\d{1,2})[hH:](\d{2})/;
  * Returns null if parsing fails
  */
 export const parseFrenchDate = (dateStr: string, timeStr?: string): Date | null => {
-  let day: number = 0,
-    month: number = -1,
+  let day: number,
+    month: number,
     year: number = new Date().getFullYear();
   let hours = 0,
     minutes = 0;

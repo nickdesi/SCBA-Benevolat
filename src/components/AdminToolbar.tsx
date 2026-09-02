@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Plus, Sparkles } from 'lucide-react';
+import { Zap, Plus } from 'lucide-react';
 
 interface AdminToolbarProps {
   onImport: () => void;

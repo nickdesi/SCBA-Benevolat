@@ -157,7 +157,7 @@ const GameForm: React.FC<GameFormProps> = ({
       const m = (monthIndex + 1).toString().padStart(2, '0');
       const d = day.padStart(2, '0');
       return `${year}-${m}-${d}`;
-    } catch (e) {
+    } catch {
       return '';
     }
   };

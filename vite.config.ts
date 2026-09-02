@@ -108,18 +108,16 @@ export default defineConfig({
         screenshots: [
           {
             src: '/screenshot-hero.webp',
-            sizes: '1280x720',
+            sizes: '2560x1358',
             type: 'image/webp',
             form_factor: 'wide',
             label: 'Tableau de bord des bénévoles SCBA',
           },
-          {
-            src: '/screenshot-hero.webp',
-            sizes: '720x1280',
-            type: 'image/webp',
-            form_factor: 'narrow',
-            label: 'Gestion des matchs sur mobile',
-          },
+          // TODO: no real portrait/mobile screenshot exists yet — the previous
+          // 'narrow' entry reused this same landscape file mislabeled as
+          // 720x1280, which is spec-invalid and gets silently dropped/ignored
+          // by browsers. Add a genuine ~750x1334 portrait capture here once
+          // available so the Android/desktop install card shows a mobile preview.
         ],
         icons: [
           {
@@ -129,23 +127,20 @@ export default defineConfig({
             purpose: 'any',
           },
           {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-          {
             src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
+          // 'maskable' purpose intentionally omitted: this artwork (golden ring)
+          // runs to within ~1-2% of the canvas edge with no safe-zone padding,
+          // so Android's circular/squircle icon mask would crop it badly.
+          // Falsely advertising it as maskable is worse than not declaring it —
+          // Android falls back to its own safe treatment of an 'any' icon.
+          // To get a proper adaptive icon: generate a 512x512 variant with the
+          // mark confined to the center 80% (410px circle) and a solid
+          // background fill (e.g. #272890) in the outer margin, then re-add
+          // purpose: 'maskable' entries pointing at that dedicated file.
         ],
       },
       workbox: {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
-import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Zap, Plus } from 'lucide-react';
+import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Plus } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
