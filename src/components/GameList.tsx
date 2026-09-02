@@ -128,8 +128,8 @@ const GameList: React.FC<GameListProps> = memo(
         {groups.map((group, groupIdx) => (
           <section key={`${group.label}-${groupIdx}`} className="relative">
             {/* Native Mobile Sticky Month Header Capsule */}
-            <div className="sticky top-[118px] sm:top-[126px] z-20 my-3 transition-all">
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800/90 shadow-xs">
+            <div className="sticky top-[130px] sm:top-[142px] z-20 my-4 transition-all">
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800/90 shadow-sm">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#3629e1] shadow-xs flex-shrink-0" />
                   <h2 className="font-sport text-sm sm:text-base font-black uppercase tracking-wider text-slate-900 dark:text-white truncate">
@@ -147,9 +147,10 @@ const GameList: React.FC<GameListProps> = memo(
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-stretch">
+            {/* Grille avec items-start : chaque carte a une hauteur indépendante au dépliement */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-start">
               {group.games.map((game, index) => (
-                <div key={game.id} className="h-full flex flex-col cv-auto">
+                <div key={game.id} className="w-full flex flex-col cv-auto self-start">
                   <GameCard
                     game={game}
                     isAdmin={isAdmin}
