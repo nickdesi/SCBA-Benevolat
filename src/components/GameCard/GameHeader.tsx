@@ -3,15 +3,8 @@ import { Home, Car, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'luci
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { EditIcon, DeleteIcon } from '../Icons';
-import { formatRank } from '../../utils/gameUtils';
+import { formatRank, isCupCompetition } from '../../utils/gameUtils';
 import { formatDateShort } from '../../utils/dateUtils';
-
-/** Détecte si la compétition est une coupe vs un championnat régulier */
-const isCupCompetition = (competition?: string): boolean => {
-  if (!competition) return false;
-  const lower = competition.toLowerCase();
-  return lower.includes('coupe') || lower.includes('trophée') || lower.includes('challenge');
-};
 
 interface GameHeaderProps {
   game: Game;
@@ -54,7 +47,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   return (
     <div
       className={`relative p-4 sm:p-5 overflow-hidden transition-colors duration-300 ${
-        game.competition
+        isCup
           ? 'bg-gradient-to-br from-amber-100/90 via-amber-50/40 to-white/95 dark:from-amber-950/50 dark:via-slate-900/95 dark:to-slate-950/95'
           : isHomeGame
             ? 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/40 to-white/95 dark:from-emerald-950/60 dark:via-slate-900/95 dark:to-slate-950/95'
@@ -64,14 +57,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       {/* Signature Watermark Icon - Subtle & Elegant */}
       <div
         className={`absolute -right-8 -top-8 pointer-events-none transform rotate-12 transition-opacity duration-300 ${
-          game.competition
+          isCup
             ? 'text-amber-500/15 dark:text-amber-400/10'
             : isHomeGame
               ? 'text-emerald-500/15 dark:text-emerald-400/10'
               : 'text-blue-500/15 dark:text-blue-400/10'
         }`}
       >
-        {game.competition ? (
+        {isCup ? (
           <Trophy className="w-52 h-52" />
         ) : isHomeGame ? (
           <Home className="w-52 h-52" />

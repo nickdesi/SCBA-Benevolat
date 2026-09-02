@@ -8,7 +8,12 @@ import GameHeader from './GameCard/GameHeader';
 import VolunteerSection from './GameCard/VolunteerSection';
 import ActionButtons from './GameCard/ActionButtons';
 import CarpoolingSection from './GameCard/CarpoolingSection';
-import { isGameUrgent, getCarpoolStats, getGameRoleStats } from '../utils/gameUtils';
+import {
+  isGameUrgent,
+  getCarpoolStats,
+  getGameRoleStats,
+  isCupCompetition,
+} from '../utils/gameUtils';
 
 // Lazy-loaded for code-splitting
 const GameForm = lazy(() => import('./GameForm'));
@@ -142,7 +147,7 @@ const GameCard: React.FC<GameCardProps> = memo(
           bg-white dark:bg-slate-900
           border
           ${
-            game.competition
+            isCupCompetition(game.competition)
               ? 'border-amber-400/40 dark:border-amber-500/30 shadow-md shadow-amber-500/5 ring-1 ring-amber-400/20'
               : isFullyStaffed
                 ? 'border-emerald-500/20 dark:border-emerald-500/20 opacity-80 dark:opacity-70 shadow-xs'

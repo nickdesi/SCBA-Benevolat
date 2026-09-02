@@ -51,6 +51,15 @@ const isRoleComplete = (role: Role | { capacity: number; volunteers: string[] })
 };
 
 /**
+ * Détecte si la compétition est une coupe vs un championnat régulier.
+ */
+export const isCupCompetition = (competition?: string): boolean => {
+  if (!competition) return false;
+  const lower = competition.toLowerCase();
+  return lower.includes('coupe') || lower.includes('trophée') || lower.includes('challenge');
+};
+
+/**
  * Check if all roles in a game are complete.
  */
 const isGameFullyStaffed = (game: Game): boolean => {
