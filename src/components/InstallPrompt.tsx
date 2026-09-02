@@ -9,9 +9,10 @@ import {
   Sparkles,
   Laptop,
   ShieldCheck,
+  Compass,
 } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed-v11';
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v12';
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
@@ -39,13 +40,36 @@ function isAlreadyInstalled(): boolean {
   );
 }
 
-function isAppleDevice(): boolean {
-  if (typeof window === 'undefined') return false;
+type PlatformType = 'ios' | 'android' | 'macos-safari' | 'desktop-chromium' | 'desktop-other';
+
+function detectPlatform(): PlatformType {
+  if (typeof window === 'undefined') return 'desktop-chromium';
   const ua = navigator.userAgent || '';
-  return (
-    /iPhone|iPad|iPod/.test(ua) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  );
+  const isTouch = navigator.maxTouchPoints > 0;
+  const isMac = /Macintosh|MacIntel|MacPPC|Mac68K/i.test(navigator.platform || ua);
+
+  // iOS (iPhone, iPad, iPod)
+  if (/iPhone|iPad|iPod/.test(ua) || (isMac && isTouch)) {
+    return 'ios';
+  }
+
+  // Android
+  if (/Android/i.test(ua)) {
+    return 'android';
+  }
+
+  // macOS Safari (Desktop Safari)
+  const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
+  if (isMac && isSafari) {
+    return 'macos-safari';
+  }
+
+  // Desktop Chromium (Chrome, Brave, Edge, Arc, Opera)
+  if (/Chrome|Edg|Brave|OPR/i.test(ua)) {
+    return 'desktop-chromium';
+  }
+
+  return 'desktop-other';
 }
 
 function wasDismissedRecently(): boolean {
@@ -57,14 +81,14 @@ function wasDismissedRecently(): boolean {
 const InstallPrompt: React.FC = () => {
   const [show, setShow] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [platform, setPlatform] = useState<PlatformType>('desktop-chromium');
   const [isBrave, setIsBrave] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
 
-    const isApple = isAppleDevice();
-    setIsIOS(isApple);
+    const detected = detectPlatform();
+    setPlatform(detected);
 
     if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
       navigator.brave.isBrave().then((b) => {
@@ -115,7 +139,7 @@ const InstallPrompt: React.FC = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (isIOS) {
+    if (platform === 'ios' || platform === 'macos-safari') {
       setShowGuide(true);
       return;
     }
@@ -135,7 +159,6 @@ const InstallPrompt: React.FC = () => {
         setShowGuide(true);
       }
     } else {
-      // Si le prompt natif n'est pas disponible (Brave shields, Firefox, etc.)
       setShowGuide(true);
     }
   };
@@ -157,7 +180,7 @@ const InstallPrompt: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-            className="fixed bottom-24 left-3.5 right-3.5 md:bottom-6 md:right-6 md:left-auto md:w-[400px] z-[99997]"
+            className="fixed bottom-24 left-3.5 right-3.5 md:bottom-6 md:right-6 md:left-auto md:w-[420px] z-[99997]"
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
             <div className="bg-slate-900/98 text-white p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-slate-700/80 backdrop-blur-2xl">
@@ -196,9 +219,9 @@ const InstallPrompt: React.FC = () => {
               </div>
 
               {/* ============================================================ */}
-              {/* GUIDE VISUEL iOS (Si demandé ou appareil Apple)             */}
+              {/* CAS 1 : iPhone / iPad (iOS Safari)                          */}
               {/* ============================================================ */}
-              {isIOS && showGuide && (
+              {platform === 'ios' && showGuide && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -245,28 +268,113 @@ const InstallPrompt: React.FC = () => {
               )}
 
               {/* ============================================================ */}
-              {/* GUIDE DE SECOURS (Brave / Navigateurs sans prompt natif)     */}
+              {/* CAS 2 : Mac Safari (macOS Sonoma / Sequoia)                 */}
               {/* ============================================================ */}
-              {!isIOS && showGuide && (
+              {platform === 'macos-safari' && showGuide && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2 border border-orange-500/40"
+                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-indigo-500/40"
                 >
-                  <div className="flex items-center gap-2 font-bold text-orange-400">
+                  <div className="font-bold text-indigo-300 flex items-center gap-2">
+                    <Compass className="w-4 h-4 text-indigo-400" />
+                    <span>Sur Safari Mac :</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600/40 text-indigo-300 font-bold text-[11px] flex-shrink-0">
+                      1
+                    </span>
+                    <span>
+                      Dans la barre de menus en haut, cliquez sur{' '}
+                      <span className="font-bold text-white">Fichier</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600/40 text-indigo-300 font-bold text-[11px] flex-shrink-0">
+                      2
+                    </span>
+                    <span>
+                      Sélectionnez{' '}
+                      <span className="font-bold text-white">« Ajouter au Dock... »</span> 📌
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ============================================================ */}
+              {/* CAS 3 : Desktop Chromium (Chrome / Brave / Edge sur Mac & PC)*/}
+              {/* ============================================================ */}
+              {(platform === 'desktop-chromium' || platform === 'desktop-other') && showGuide && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-blue-500/40"
+                >
+                  <div className="font-bold text-blue-300 flex items-center gap-2">
+                    <Laptop className="w-4 h-4 text-blue-400" />
+                    <span>Sur votre ordinateur :</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
+                      1
+                    </span>
+                    <span>
+                      Cliquez sur l'icône{' '}
+                      <span className="font-bold text-white">
+                        Installer{' '}
+                        <Download className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
+                      </span>{' '}
+                      dans la barre d'adresse (en haut à droite)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/40 text-blue-300 font-bold text-[11px] flex-shrink-0">
+                      2
+                    </span>
+                    <span>
+                      Ou ouvrez le menu <span className="font-bold text-white">⋮</span> ➔{' '}
+                      <span className="font-bold text-white">« Installer SCBA Bénévoles »</span>
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ============================================================ */}
+              {/* CAS 4 : Android (Brave / Samsung / Firefox)                  */}
+              {/* ============================================================ */}
+              {platform === 'android' && showGuide && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-emerald-500/40"
+                >
+                  <div className="flex items-center gap-2 font-bold text-emerald-400">
                     {isBrave ? (
                       <ShieldCheck className="w-4 h-4 text-orange-400" />
                     ) : (
                       <Smartphone className="w-4 h-4 text-emerald-400" />
                     )}
-                    <span>{isBrave ? 'Sur Brave :' : 'Sur votre navigateur :'}</span>
+                    <span>{isBrave ? 'Sur Brave Android :' : 'Sur Android :'}</span>
                   </div>
-                  <p className="text-slate-300 leading-snug">
-                    Touchez le menu <span className="font-bold text-white">⋮</span> puis
-                    sélectionnez{' '}
-                    <span className="font-bold text-white">« Installer l'application »</span> ou{' '}
-                    <span className="font-bold text-white">« Ajouter à l'écran d'accueil »</span>.
-                  </p>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600/40 text-emerald-300 font-bold text-[11px] flex-shrink-0">
+                      1
+                    </span>
+                    <span>
+                      Touchez le menu <span className="font-bold text-white">⋮</span> (en haut à
+                      droite ou en bas)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600/40 text-emerald-300 font-bold text-[11px] flex-shrink-0">
+                      2
+                    </span>
+                    <span>
+                      Sélectionnez{' '}
+                      <span className="font-bold text-white">« Installer l'application »</span> ou{' '}
+                      <span className="font-bold text-white">« Ajouter à l'écran d'accueil »</span>
+                    </span>
+                  </div>
                 </motion.div>
               )}
 
