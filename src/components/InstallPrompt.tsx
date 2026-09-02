@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Share, PlusSquare, X, Smartphone } from 'lucide-react';
+import { Download, Share, PlusSquare, X, Smartphone, MoreVertical, Sparkles } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed';
-const DISMISS_DURATION_MS = 14 * 24 * 60 * 60 * 1000; // 14 jours
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v2';
+const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 jours de rappel si refusé
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -14,23 +14,24 @@ function isAlreadyInstalled(): boolean {
   if (typeof window === 'undefined') return false;
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as unknown as { standalone?: boolean }).standalone === true
+    (navigator as unknown as { standalone?: boolean }).standalone === true ||
+    document.referrer.includes('android-app://')
   );
 }
 
-function isIOS(): boolean {
-  if (typeof window === 'undefined') return false;
-  const ua = navigator.userAgent;
-  const isIOSDevice =
-    /iPhone|iPad|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream;
-  const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-  return isIOSDevice || isIPadOS;
-}
+function getPlatformInfo() {
+  if (typeof window === 'undefined') {
+    return { isIOS: false, isSafari: false, isAndroid: false, isMobile: false };
+  }
+  const ua = navigator.userAgent || '';
+  const isIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  const isMobile = isIOS || isAndroid || window.innerWidth < 768;
 
-function isIOSSafari(): boolean {
-  if (!isIOS()) return false;
-  const ua = navigator.userAgent;
-  return /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+  return { isIOS, isSafari, isAndroid, isMobile };
 }
 
 function wasDismissedRecently(): boolean {
@@ -42,44 +43,67 @@ function wasDismissedRecently(): boolean {
 const InstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
-  const [isIOSDevice, setIsIOSDevice] = useState(false);
+  const [platform, setPlatform] = useState({
+    isIOS: false,
+    isSafari: false,
+    isAndroid: false,
+    isMobile: false,
+  });
 
   useEffect(() => {
-    if (isAlreadyInstalled() || wasDismissedRecently()) return;
+    const info = getPlatformInfo();
+    setPlatform(info);
 
-    // Fermer si l'application est installée
-    const onInstalled = () => setShow(false);
+    // Si déjà installé dans l'écran d'accueil, ne rien afficher
+    if (isAlreadyInstalled()) return;
+
+    // Fermer automatiquement si l'app est installée
+    const onInstalled = () => {
+      setShow(false);
+      setDeferredPrompt(null);
+    };
     window.addEventListener('appinstalled', onInstalled);
 
-    if (isIOSSafari()) {
-      setIsIOSDevice(true);
-      // Léger délai d'attente pour ne pas gêner le premier chargement
-      const timer = setTimeout(() => setShow(true), 3500);
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener('appinstalled', onInstalled);
-      };
-    } else {
-      const handler = (e: Event) => {
-        e.preventDefault();
-        setDeferredPrompt(e as BeforeInstallPromptEvent);
+    // Écouteur pour ouverture manuelle via bouton dans l'application
+    const handleManualOpen = () => {
+      setShow(true);
+    };
+    window.addEventListener('pwa-open-install', handleManualOpen);
+
+    // Capture standard de l'événement beforeinstallprompt (Chromium, Android, Edge, etc.)
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      if (!wasDismissedRecently()) {
         setShow(true);
-      };
-      window.addEventListener('beforeinstallprompt', handler);
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handler);
-        window.removeEventListener('appinstalled', onInstalled);
-      };
+      }
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+    // Sur mobile (iOS et Android), afficher la bannière avec un court délai si non dismiss récemment
+    let timer: NodeJS.Timeout | null = null;
+    if (info.isMobile && !wasDismissedRecently()) {
+      timer = setTimeout(() => {
+        setShow(true);
+      }, 1200);
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('appinstalled', onInstalled);
+      window.removeEventListener('pwa-open-install', handleManualOpen);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if (outcome === 'accepted') {
-      setShow(false);
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      if (outcome === 'accepted') {
+        setShow(false);
+      }
     }
   };
 
@@ -88,57 +112,67 @@ const InstallPrompt: React.FC = () => {
     setShow(false);
   };
 
+  if (isAlreadyInstalled()) return null;
+
   return (
-    <aside aria-label="Invitation d'installation PWA">
+    <aside aria-label="Installation de l'application SCBA Bénévoles">
       <AnimatePresence>
         {show && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            initial={{ opacity: 0, y: 60, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-[400px] z-[99997]"
+            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 450, damping: 28 }}
+            className="fixed bottom-24 left-3.5 right-3.5 md:bottom-6 md:right-6 md:left-auto md:w-[420px] z-[99997]"
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
-            <div className="bg-slate-900/95 text-white p-5 rounded-3xl shadow-2xl border border-slate-700/80 backdrop-blur-xl">
-              {/* En-tête */}
+            <div className="bg-slate-900/98 text-white p-4.5 sm:p-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-700/80 backdrop-blur-2xl">
+              {/* En-tête avec logo & titre */}
               <div className="flex items-start justify-between gap-3 mb-3.5">
                 <div className="flex items-center gap-3">
                   <picture>
                     <source srcSet="/pwa-192x192.webp" type="image/webp" />
                     <img
                       src="/pwa-192x192.png"
-                      alt="SCBA Bénévoles"
-                      className="w-12 h-12 rounded-2xl flex-shrink-0 shadow-md border border-white/10"
+                      alt="Logo SCBA"
+                      className="w-12 h-12 rounded-2xl flex-shrink-0 shadow-md border border-white/15"
                     />
                   </picture>
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-base text-white">Installez l'app</h3>
-                      <span className="text-xs bg-blue-500/20 text-blue-400 font-semibold px-2 py-0.5 rounded-full border border-blue-500/30">
-                        Hors-ligne
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="font-sport font-black text-base tracking-wide text-white uppercase">
+                        SCBA Bénévoles
+                      </h3>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5" /> Hors-ligne
                       </span>
                     </div>
-                    <p className="text-xs text-slate-300 mt-0.5">
-                      Accès instantané même sans réseau au gymnase.
+                    <p className="text-xs text-slate-300 mt-0.5 leading-snug">
+                      Installez l'app sur votre écran d'accueil pour un accès ultra-rapide au
+                      gymnase.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleDismiss}
-                  className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+                  className="text-slate-400 hover:text-white p-1 rounded-xl hover:bg-slate-800 transition-colors"
                   aria-label="Fermer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4.5 h-4.5" />
                 </button>
               </div>
 
-              {/* Contenu spécifique iOS Safari */}
-              {isIOSDevice ? (
-                <div className="bg-slate-800/80 rounded-2xl p-3.5 mb-3.5 text-xs text-slate-200 space-y-2.5 border border-slate-700/50">
-                  <div className="font-semibold text-slate-100 flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-blue-400" />
-                    <span>Installer sur iPhone / iPad :</span>
+              {/* Guide d'installation selon la plateforme */}
+              {platform.isIOS ? (
+                /* Cas iOS (iPhone / iPad - Safari ou autre navigateur) */
+                <div className="bg-slate-800/90 rounded-2xl p-3.5 mb-3.5 text-xs text-slate-200 space-y-2.5 border border-slate-700/60">
+                  <div className="font-bold text-slate-100 flex items-center gap-2 text-xs">
+                    <Smartphone className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                    <span>
+                      {platform.isSafari
+                        ? 'Installation sur iPhone / iPad :'
+                        : 'Ouvrez dans Safari pour installer :'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600/30 text-blue-300 font-bold text-[11px] flex-shrink-0">
@@ -146,8 +180,8 @@ const InstallPrompt: React.FC = () => {
                     </span>
                     <span>
                       Appuyez sur <span className="font-bold text-white">Partager</span>{' '}
-                      <Share className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" /> dans
-                      la barre Safari
+                      <Share className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" /> en
+                      bas de Safari
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -155,7 +189,7 @@ const InstallPrompt: React.FC = () => {
                       2
                     </span>
                     <span>
-                      Sélectionnez{' '}
+                      Faites défiler et choisissez{' '}
                       <span className="font-bold text-white">« Sur l'écran d'accueil »</span>{' '}
                       <PlusSquare className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" />
                     </span>
@@ -166,25 +200,41 @@ const InstallPrompt: React.FC = () => {
                     </span>
                     <span>
                       Touchez <span className="font-bold text-white">Ajouter</span> en haut à droite
+                      ✅
                     </span>
                   </div>
                 </div>
-              ) : (
-                /* Bouton Android / Chromium */
+              ) : deferredPrompt ? (
+                /* Cas Android / Chromium avec prompt natif 1-clic disponible */
                 <button
                   onClick={handleInstall}
-                  className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mb-2 text-sm cursor-pointer"
+                  className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 mb-2 text-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Installer l'application
                 </button>
+              ) : (
+                /* Cas Android / Navigateur sans prompt automatique */
+                <div className="bg-slate-800/90 rounded-2xl p-3 mb-3 text-xs text-slate-200 space-y-2 border border-slate-700/60">
+                  <div className="font-bold text-slate-100 flex items-center gap-2">
+                    <MoreVertical className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                    <span>Installation manuelle :</span>
+                  </div>
+                  <p className="text-slate-300">
+                    Ouvrez le menu du navigateur <span className="font-bold text-white">⋮</span>{' '}
+                    puis sélectionnez{' '}
+                    <span className="font-bold text-white">« Installer l'application »</span> ou{' '}
+                    <span className="font-bold text-white">« Ajouter à l'écran d'accueil »</span>.
+                  </p>
+                </div>
               )}
 
+              {/* Bouton secondaire Fermer / Plus tard */}
               <button
                 onClick={handleDismiss}
                 className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
               >
-                {isIOSDevice ? "J'ai compris" : 'Plus tard'}
+                {platform.isIOS ? "J'ai compris" : 'Plus tard'}
               </button>
             </div>
           </motion.div>

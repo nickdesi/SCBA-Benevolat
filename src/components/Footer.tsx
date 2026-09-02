@@ -438,7 +438,18 @@ const Footer: React.FC = memo(() => {
           </p>
 
           {/* Right: Version & Links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
+            {/* Install App Button */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('pwa-open-install'))}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60
+                         text-blue-700 dark:text-blue-300 text-xs font-bold rounded-full border border-blue-200 dark:border-blue-800/60 transition-all cursor-pointer shadow-xs"
+              title="Installer l'application sur votre appareil"
+            >
+              <span>📲</span>
+              <span>Installer l'app</span>
+            </button>
+
             {/* Version Badge with Changelog Toggle */}
             <button
               onClick={() => setIsChangelogOpen(!isChangelogOpen)}
