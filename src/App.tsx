@@ -45,13 +45,19 @@ function App() {
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'home' | 'planning' | 'calendar'>('home');
 
-  // Wrap view changes in startTransition for non-blocking UI updates
+  // Wrap view changes in startTransition for non-blocking UI updates and scroll to top
   const handleViewChange = useCallback((view: 'home' | 'planning' | 'calendar') => {
     startTransition(() => {
       setCurrentView(view);
       setIsProfileModalOpen(false); // Close Profile Modal when switching views
     });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
+
+  // Scroll to top whenever currentView changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [currentView]);
 
   // Toast notifications
   const { toasts, addToast, removeToast } = useToast();
