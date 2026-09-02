@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download,
@@ -9,10 +9,9 @@ import {
   Sparkles,
   Laptop,
   ShieldCheck,
-  CheckCircle2,
 } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-v10';
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v11';
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
@@ -40,19 +39,13 @@ function isAlreadyInstalled(): boolean {
   );
 }
 
-type Platform = 'ios' | 'android' | 'desktop';
-
-function detectPlatform(): Platform {
-  if (typeof window === 'undefined') return 'desktop';
+function isAppleDevice(): boolean {
+  if (typeof window === 'undefined') return false;
   const ua = navigator.userAgent || '';
-  if (
+  return (
     /iPhone|iPad|iPod/.test(ua) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  ) {
-    return 'ios';
-  }
-  if (/Android/i.test(ua)) return 'android';
-  return 'desktop';
+  );
 }
 
 function wasDismissedRecently(): boolean {
@@ -62,63 +55,45 @@ function wasDismissedRecently(): boolean {
 }
 
 const InstallPrompt: React.FC = () => {
-  const [hasNativePrompt, setHasNativePrompt] = useState(
-    typeof window !== 'undefined' && window.__pwaInstallPrompt != null,
-  );
   const [show, setShow] = useState(false);
-  const [isBraveBrowser, setIsBraveBrowser] = useState(false);
-  const [platform, setPlatform] = useState<Platform>('desktop');
-  const promptRef = useRef<BeforeInstallPromptEvent | null>(
-    typeof window !== 'undefined' ? window.__pwaInstallPrompt || null : null,
-  );
+  const [showGuide, setShowGuide] = useState(false);
+  const [isBrave, setIsBrave] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
 
-    const detected = detectPlatform();
-    setPlatform(detected);
+    const isApple = isAppleDevice();
+    setIsIOS(isApple);
 
     if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
-      navigator.brave.isBrave().then((brave) => {
-        if (brave) setIsBraveBrowser(true);
+      navigator.brave.isBrave().then((b) => {
+        if (b) setIsBrave(true);
       });
     }
 
-    if (window.__pwaInstallPrompt) {
-      promptRef.current = window.__pwaInstallPrompt;
-      setHasNativePrompt(true);
-    }
-
     const handlePromptReady = () => {
-      if (window.__pwaInstallPrompt) {
-        promptRef.current = window.__pwaInstallPrompt;
-        setHasNativePrompt(true);
-      }
       if (!wasDismissedRecently()) setShow(true);
     };
     window.addEventListener('pwa-prompt-ready', handlePromptReady);
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.__pwaInstallPrompt = promptEvent;
-      promptRef.current = promptEvent;
-      setHasNativePrompt(true);
+      window.__pwaInstallPrompt = e as BeforeInstallPromptEvent;
       if (!wasDismissedRecently()) setShow(true);
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
     const onInstalled = () => {
       setShow(false);
-      setHasNativePrompt(false);
       window.__pwaInstallPrompt = null;
-      promptRef.current = null;
     };
     window.addEventListener('appinstalled', onInstalled);
 
     // Déclencheur manuel (footer / profil)
     const handleManualOpen = () => {
       setShow(true);
+      setShowGuide(false);
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
@@ -127,7 +102,7 @@ const InstallPrompt: React.FC = () => {
     if (!wasDismissedRecently()) {
       timer = setTimeout(() => {
         setShow(true);
-      }, 500);
+      }, 600);
     }
 
     return () => {
@@ -140,26 +115,35 @@ const InstallPrompt: React.FC = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    const promptEvent = promptRef.current || window.__pwaInstallPrompt;
+    if (isIOS) {
+      setShowGuide(true);
+      return;
+    }
+
+    const promptEvent = window.__pwaInstallPrompt;
     if (promptEvent) {
       try {
         await promptEvent.prompt();
         const { outcome } = await promptEvent.userChoice;
         window.__pwaInstallPrompt = null;
-        promptRef.current = null;
-        setHasNativePrompt(false);
         if (outcome === 'accepted') {
           setShow(false);
+          return;
         }
       } catch (err) {
-        console.warn('[PWA Install] Prompt natif fermé:', err);
+        console.warn('[PWA Install] Erreur lors de l’ouverture du prompt:', err);
+        setShowGuide(true);
       }
+    } else {
+      // Si le prompt natif n'est pas disponible (Brave shields, Firefox, etc.)
+      setShowGuide(true);
     }
   };
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setShow(false);
+    setShowGuide(false);
   };
 
   if (isAlreadyInstalled()) return null;
@@ -173,7 +157,7 @@ const InstallPrompt: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-            className="fixed bottom-24 left-3.5 right-3.5 md:bottom-6 md:right-6 md:left-auto md:w-[420px] z-[99997]"
+            className="fixed bottom-24 left-3.5 right-3.5 md:bottom-6 md:right-6 md:left-auto md:w-[400px] z-[99997]"
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
             <div className="bg-slate-900/98 text-white p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-slate-700/80 backdrop-blur-2xl">
@@ -198,11 +182,7 @@ const InstallPrompt: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      {hasNativePrompt
-                        ? "Installer l'application sur votre appareil ?"
-                        : platform === 'ios'
-                          ? "Ajoutez l'application sur votre écran d'accueil"
-                          : 'Installez en 2 secondes :'}
+                      Installer l'application sur votre appareil ?
                     </p>
                   </div>
                 </div>
@@ -216,21 +196,14 @@ const InstallPrompt: React.FC = () => {
               </div>
 
               {/* ============================================================ */}
-              {/* OPTION A : Prompt natif prêt (1-Clic direct)                */}
+              {/* GUIDE VISUEL iOS (Si demandé ou appareil Apple)             */}
               {/* ============================================================ */}
-              {hasNativePrompt ? (
-                <button
-                  onClick={handleInstallClick}
-                  className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
+              {isIOS && showGuide && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-blue-500/40"
                 >
-                  <Download className="w-4.5 h-4.5" />
-                  Installer l'application
-                </button>
-              ) : platform === 'ios' ? (
-                /* ============================================================ */
-                /* OPTION B : iPhone / iPad (iOS Safari)                       */
-                /* ============================================================ */
-                <div className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-blue-500/40">
                   <div className="font-bold text-white flex items-center gap-2">
                     <Smartphone className="w-4 h-4 text-blue-400" />
                     <span>Sur iPhone / iPad :</span>
@@ -268,65 +241,46 @@ const InstallPrompt: React.FC = () => {
                       Touchez <span className="font-bold text-white">Ajouter</span> ✅
                     </span>
                   </div>
-                </div>
-              ) : (
-                /* ============================================================ */
-                /* OPTION C : Android (Brave / Chrome / Samsung)               */
-                /* ============================================================ */
-                <div className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-indigo-500/40">
-                  <div className="flex items-center gap-2 font-bold text-indigo-300">
-                    {isBraveBrowser ? (
-                      <ShieldCheck className="w-4 h-4 text-orange-400" />
-                    ) : platform === 'android' ? (
-                      <Smartphone className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                      <Laptop className="w-4 h-4 text-blue-400" />
-                    )}
-                    <span>
-                      {isBraveBrowser
-                        ? 'Sur Brave Android :'
-                        : platform === 'android'
-                          ? 'Sur Android :'
-                          : 'Sur ordinateur :'}
-                    </span>
-                  </div>
+                </motion.div>
+              )}
 
-                  {platform === 'android' || isBraveBrowser ? (
-                    <>
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600/40 text-indigo-300 font-bold text-[11px] flex-shrink-0">
-                          1
-                        </span>
-                        <span>
-                          Touchez le menu <span className="font-bold text-white">⋮</span> (en haut à
-                          droite ou en bas de Brave)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600/40 text-indigo-300 font-bold text-[11px] flex-shrink-0">
-                          2
-                        </span>
-                        <span>
-                          Sélectionnez{' '}
-                          <span className="font-bold text-white">« Installer l'application »</span>{' '}
-                          ou{' '}
-                          <span className="font-bold text-white">
-                            « Ajouter à l'écran d'accueil »
-                          </span>
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2 text-slate-300 leading-relaxed">
-                      <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                      <span>
-                        Cliquez sur l'icône{' '}
-                        <Download className="inline-block w-3.5 h-3.5 mx-1 -mt-0.5 text-blue-400" />{' '}
-                        dans la barre d'adresse pour installer l'application.
-                      </span>
-                    </div>
-                  )}
-                </div>
+              {/* ============================================================ */}
+              {/* GUIDE DE SECOURS (Brave / Navigateurs sans prompt natif)     */}
+              {/* ============================================================ */}
+              {!isIOS && showGuide && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2 border border-orange-500/40"
+                >
+                  <div className="flex items-center gap-2 font-bold text-orange-400">
+                    {isBrave ? (
+                      <ShieldCheck className="w-4 h-4 text-orange-400" />
+                    ) : (
+                      <Smartphone className="w-4 h-4 text-emerald-400" />
+                    )}
+                    <span>{isBrave ? 'Sur Brave :' : 'Sur votre navigateur :'}</span>
+                  </div>
+                  <p className="text-slate-300 leading-snug">
+                    Touchez le menu <span className="font-bold text-white">⋮</span> puis
+                    sélectionnez{' '}
+                    <span className="font-bold text-white">« Installer l'application »</span> ou{' '}
+                    <span className="font-bold text-white">« Ajouter à l'écran d'accueil »</span>.
+                  </p>
+                </motion.div>
+              )}
+
+              {/* ============================================================ */}
+              {/* BOUTON PRINCIPAL 1-CLIC : TOUJOURS ACCESSIBLE                */}
+              {/* ============================================================ */}
+              {(!isIOS || !showGuide) && (
+                <button
+                  onClick={handleInstallClick}
+                  className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
+                >
+                  <Download className="w-4.5 h-4.5" />
+                  Installer l'application
+                </button>
               )}
 
               {/* Bouton secondaire */}
@@ -334,7 +288,7 @@ const InstallPrompt: React.FC = () => {
                 onClick={handleDismiss}
                 className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
               >
-                {hasNativePrompt ? 'Plus tard' : "J'ai compris"}
+                {showGuide ? "J'ai compris" : 'Plus tard'}
               </button>
             </div>
           </motion.div>
