@@ -25,6 +25,15 @@
         }
       })();
     </script>
+    <!-- Early PWA Install Prompt Capture for 1-Click Android/Chromium Installation -->
+    <script>
+      window.__pwaInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__pwaInstallPrompt = e;
+        window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+      });
+    </script>
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
