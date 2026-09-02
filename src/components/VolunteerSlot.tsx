@@ -153,52 +153,47 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
 
     return (
       <div
-        className="mb-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden"
+        className="py-3 px-1 border-b border-slate-100 dark:border-slate-800/80 last:border-b-0 transition-colors"
         style={{ animationDelay: `${animationDelay}s` }}
       >
-        {/* Header */}
-        <div
-          className={`
-                flex items-center justify-between px-4 py-3
-                bg-slate-50 dark:bg-slate-900/50
-                border-b border-slate-100 dark:border-slate-700
-                border-l-4 ${roleConfig.borderColor}
-            `}
-        >
-          <div className="flex items-center gap-3">
-            <StyledRoleIcon role={role.name} size="md" />
-            <div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
+        {/* Role Row Header */}
+        <div className="flex items-center justify-between gap-3 mb-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              <StyledRoleIcon role={role.name} size="sm" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm leading-tight truncate">
                 {role.name}
               </h3>
               {currentCount < role.capacity && !isUnlimited && (
-                <p className="text-[10px] font-medium text-red-500 animate-pulse">
-                  Recherche {role.capacity - currentCount} bénévole
-                  {role.capacity - currentCount > 1 ? 's' : ''} !
+                <p className="text-[10px] font-bold text-red-500 leading-tight">
+                  {role.capacity - currentCount} place{role.capacity - currentCount > 1 ? 's' : ''}{' '}
+                  libre{role.capacity - currentCount > 1 ? 's' : ''}
                 </p>
               )}
             </div>
           </div>
-          {/* Status Text */}
-          {/* Status Text or Badge */}
+
+          {/* Status Badge */}
           {isFull && !isUnlimited ? (
-            <span className="flex items-center gap-1.5 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-bold border border-emerald-200 dark:border-emerald-800">
-              <CheckIcon className="w-3.5 h-3.5" strokeWidth={3} />
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md text-[11px] font-black border border-emerald-500/20 flex-shrink-0">
+              <CheckIcon className="w-3 h-3" strokeWidth={3} />
               Complet
             </span>
           ) : (
-            <span className="text-xs font-bold px-2 py-1 rounded-lg bg-white/50 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0">
               {isUnlimited ? `${currentCount} inscrits` : `${currentCount} / ${role.capacity}`}
             </span>
           )}
         </div>
 
-        {/* Roster Grid */}
-        <div className="p-4 grid grid-cols-4 gap-4 sm:grid-cols-5 md:grid-cols-6 justify-items-center">
+        {/* Volunteers & Empty Slots Row (Horizontally Scrollable / Wrap on mobile) */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
           {/* 1. Filled Slots */}
           {optimisticVolunteers.map((volunteer) => {
             const isMine = isAuthenticated
-              ? myRegistrationNames.includes(volunteer) // Check if name exists in my list
+              ? myRegistrationNames.includes(volunteer)
               : localRegistrations.includes(volunteer);
 
             return (
@@ -213,7 +208,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
             );
           })}
 
-          {/* 2. Empty Slots (Placeholders) */}
+          {/* 2. Empty Slots */}
           {(!isFull || isUnlimited) &&
             !isInputVisible &&
             Array.from({ length: Math.max(0, effectiveCapacity - currentCount) }).map((_, idx) => (

@@ -5,7 +5,7 @@ import VolunteerSlot from '../VolunteerSlot';
 interface VolunteerSectionProps {
   roles: Role[];
   gameId: string;
-  teamName: string; // New prop
+  teamName: string;
   isAdmin: boolean;
   userRegistrations?: Map<string, string[]>;
   isAuthenticated?: boolean;
@@ -26,26 +26,22 @@ const VolunteerSection: React.FC<VolunteerSectionProps> = ({
   onUpdateVolunteer,
 }) => {
   return (
-    <div>
-      <div className="space-y-4">
-        {' '}
-        {/* Increased spacing for grid layout breathing room */}
-        {roles.map((role, index) => (
-          <VolunteerSlot
-            key={role.id}
-            role={role}
-            gameId={gameId}
-            teamName={teamName}
-            isAdmin={isAdmin}
-            myRegistrationNames={userRegistrations?.get(`${gameId}_${role.id}`)}
-            isAuthenticated={isAuthenticated}
-            onVolunteer={onVolunteer}
-            onRemoveVolunteer={onRemoveVolunteer}
-            onUpdateVolunteer={onUpdateVolunteer}
-            animationDelay={index * 0.05}
-          />
-        ))}
-      </div>
+    <div className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white/60 dark:bg-slate-900/60 rounded-xl p-2 border border-slate-100 dark:border-slate-800/80">
+      {roles.map((role, index) => (
+        <VolunteerSlot
+          key={role.id}
+          role={role}
+          gameId={gameId}
+          teamName={teamName}
+          isAdmin={isAdmin}
+          myRegistrationNames={userRegistrations?.get(`${gameId}_${role.id}`)}
+          isAuthenticated={isAuthenticated}
+          onVolunteer={onVolunteer}
+          onRemoveVolunteer={onRemoveVolunteer}
+          onUpdateVolunteer={onUpdateVolunteer}
+          animationDelay={index * 0.03}
+        />
+      ))}
     </div>
   );
 };
