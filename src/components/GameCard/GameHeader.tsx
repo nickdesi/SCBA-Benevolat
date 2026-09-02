@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Car, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'lucide-react';
+import { Home, Plane, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'lucide-react';
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { EditIcon, DeleteIcon } from '../Icons';
@@ -25,10 +25,10 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   game,
   isHomeGame,
   isFullyStaffed,
-  filledSlots: _filledSlots = 0,
-  totalCapacity: _totalCapacity = 0,
-  totalCarpoolSeats,
-  totalPassengerRequests,
+  filledSlots = 0,
+  totalCapacity = 0,
+  totalCarpoolSeats: _totalCarpoolSeats,
+  totalPassengerRequests: _totalPassengerRequests,
   isUrgent,
   isAdmin,
   isUserRegistered = false,
@@ -44,24 +44,31 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   const scbaTeamName = game.team;
   const opponentName = game.opponent;
 
+  // Calcul pour la jauge circulaire
+  const progressPercent =
+    totalCapacity > 0 ? Math.min(100, Math.round((filledSlots / totalCapacity) * 100)) : 0;
+  const radius = 14;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+
   return (
     <div
       className={`relative p-4 sm:p-5 overflow-hidden transition-colors duration-300 ${
         isCup
-          ? 'bg-gradient-to-br from-amber-100/90 via-amber-50/40 to-white/95 dark:from-amber-950/50 dark:via-slate-900/95 dark:to-slate-950/95'
+          ? 'bg-gradient-to-br from-amber-200/90 via-amber-100/70 to-amber-50/60 dark:from-amber-950/80 dark:via-amber-900/40 dark:to-slate-900'
           : isHomeGame
-            ? 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/40 to-white/95 dark:from-emerald-950/60 dark:via-slate-900/95 dark:to-slate-950/95'
-            : 'bg-gradient-to-br from-blue-100/90 via-blue-50/40 to-white/95 dark:from-blue-950/60 dark:via-slate-900/95 dark:to-slate-950/95'
+            ? 'bg-gradient-to-br from-emerald-200/90 via-emerald-100/70 to-emerald-50/60 dark:from-emerald-950/80 dark:via-emerald-900/40 dark:to-slate-900'
+            : 'bg-gradient-to-br from-blue-200/90 via-blue-100/70 to-blue-50/60 dark:from-blue-950/80 dark:via-blue-900/40 dark:to-slate-900'
       }`}
     >
-      {/* Signature Watermark Icon - Subtle & Elegant */}
+      {/* Signature Watermark Icon - Subtle & Elegant (Plane for away, Home for home, Trophy for cup) */}
       <div
         className={`absolute -right-8 -top-8 pointer-events-none transform rotate-12 transition-opacity duration-300 ${
           isCup
-            ? 'text-amber-500/15 dark:text-amber-400/10'
+            ? 'text-amber-500/25 dark:text-amber-400/20'
             : isHomeGame
-              ? 'text-emerald-500/15 dark:text-emerald-400/10'
-              : 'text-blue-500/15 dark:text-blue-400/10'
+              ? 'text-emerald-600/25 dark:text-emerald-400/20'
+              : 'text-blue-600/25 dark:text-blue-400/20'
         }`}
       >
         {isCup ? (
@@ -69,21 +76,21 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         ) : isHomeGame ? (
           <Home className="w-52 h-52" />
         ) : (
-          <Car className="w-52 h-52" />
+          <Plane className="w-52 h-52" />
         )}
       </div>
 
-      {/* Top Meta Bar: Badges + Admin Controls */}
-      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[26px]">
+      {/* Top Meta Bar: Badges + Jauge Bénévoles + Admin Controls */}
+      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[30px]">
         {/* Left: Competition Badge */}
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isCup ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 truncate shadow-xs">
-              <Trophy className="w-3 h-3 text-amber-500 flex-shrink-0" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 truncate shadow-xs">
+              <Trophy className="w-3 h-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <span className="truncate">{game.competition}</span>
             </span>
           ) : game.competition ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700/80 truncate">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-white/70 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/80 backdrop-blur-xs truncate shadow-2xs">
               {game.competition}
             </span>
           ) : (
@@ -93,11 +100,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           )}
         </div>
 
-        {/* Right: Urgent + My Registration + Home/Away Pills + Admin Actions */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        {/* Right: Urgent + My Registration + Home/Away Pills + Circular Gauge + Admin Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Admin Controls */}
           {isAdmin && (
-            <div className="flex items-center gap-0.5 mr-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-700/80">
+            <div className="flex items-center gap-0.5 mr-0.5 bg-white/80 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
               <button
                 type="button"
                 onClick={onEditRequest}
@@ -152,11 +159,50 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               </>
             ) : (
               <>
-                <Car className="w-3 h-3 text-blue-200" />
+                <Plane className="w-3 h-3 text-blue-200" />
                 Extérieur
               </>
             )}
           </span>
+
+          {/* Circular Volunteer Progress Gauge for Home games */}
+          {isHomeGame && totalCapacity > 0 && (
+            <div
+              className="relative w-8 h-8 flex items-center justify-center bg-white/90 dark:bg-slate-800/90 rounded-full shadow-2xs border border-white/90 dark:border-slate-700/80 backdrop-blur-sm"
+              title={`Bénévoles : ${filledSlots}/${totalCapacity} (${progressPercent}%)`}
+            >
+              <svg className="w-7 h-7 transform -rotate-90" viewBox="0 0 32 32">
+                <circle
+                  cx="16"
+                  cy="16"
+                  r={radius}
+                  className="stroke-slate-200 dark:stroke-slate-700"
+                  strokeWidth="2.5"
+                  fill="transparent"
+                />
+                <circle
+                  cx="16"
+                  cy="16"
+                  r={radius}
+                  className={
+                    isFullyStaffed
+                      ? 'stroke-emerald-500 transition-all duration-500'
+                      : isUrgent
+                        ? 'stroke-red-500 transition-all duration-500'
+                        : 'stroke-emerald-600 dark:stroke-emerald-400 transition-all duration-500'
+                  }
+                  strokeWidth="2.5"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  fill="transparent"
+                />
+              </svg>
+              <span className="absolute text-[9px] font-black font-sport text-slate-800 dark:text-slate-100">
+                {filledSlots}/{totalCapacity}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
