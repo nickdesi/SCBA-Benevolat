@@ -77,6 +77,7 @@ export default defineConfig({
         enabled: false,
       },
       manifest: {
+        id: '/',
         name: 'SCBA Bénévoles',
         short_name: 'SCBA',
         description: 'Gestion du bénévolat - Stade Clermontois Basket Auvergne',
@@ -86,7 +87,26 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         scope: '/',
+        categories: ['sports', 'utilities'],
         icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
           {
             src: 'pwa-192x192.webp',
             sizes: '192x192',
@@ -104,6 +124,14 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/webp',
             purpose: 'maskable',
+          },
+        ],
+        screenshots: [
+          {
+            src: 'screenshot-hero.webp',
+            sizes: '2560x1358',
+            type: 'image/webp',
+            form_factor: 'wide',
           },
         ],
       },
