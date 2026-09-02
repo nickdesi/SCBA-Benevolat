@@ -67,13 +67,10 @@ export default defineConfig({
         'favicon-32x32.png',
         'favicon-48x48.png',
         'favicon-96x96.png',
-        'favicon-192x192.png',
-        'apple-touch-icon.webp',
         'apple-touch-icon.png',
         'pwa-192x192.png',
         'pwa-512x512.png',
         'pwa-192x192.webp',
-        'pwa-512x512.webp',
       ],
       devOptions: {
         enabled: false,
@@ -214,7 +211,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   build: {

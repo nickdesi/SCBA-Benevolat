@@ -83,7 +83,6 @@ const InstallPrompt: React.FC = () => {
   const [showGuide, setShowGuide] = useState(false);
   const [platform, setPlatform] = useState<PlatformType>('desktop-chromium');
   const [isBrave, setIsBrave] = useState(false);
-  const [hasNativePrompt, setHasNativePrompt] = useState(false);
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
@@ -97,12 +96,7 @@ const InstallPrompt: React.FC = () => {
       });
     }
 
-    if (window.__pwaInstallPrompt) {
-      setHasNativePrompt(true);
-    }
-
     const handlePromptReady = () => {
-      setHasNativePrompt(true);
       // Auto-popup UNIQUEMENT sur mobile si non fermé récemment
       if (detected === 'android' && !wasDismissedRecently()) {
         setShow(true);
@@ -113,7 +107,6 @@ const InstallPrompt: React.FC = () => {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       window.__pwaInstallPrompt = e as BeforeInstallPromptEvent;
-      setHasNativePrompt(true);
       // Auto-popup UNIQUEMENT sur mobile si non fermé récemment
       if (detected === 'android' && !wasDismissedRecently()) {
         setShow(true);
@@ -123,7 +116,6 @@ const InstallPrompt: React.FC = () => {
 
     const onInstalled = () => {
       setShow(false);
-      setHasNativePrompt(false);
       window.__pwaInstallPrompt = null;
     };
     window.addEventListener('appinstalled', onInstalled);
@@ -138,7 +130,6 @@ const InstallPrompt: React.FC = () => {
             if (outcome === 'accepted') {
               setShow(false);
               window.__pwaInstallPrompt = null;
-              setHasNativePrompt(false);
             }
           });
         });
@@ -175,7 +166,6 @@ const InstallPrompt: React.FC = () => {
         await promptEvent.prompt();
         const { outcome } = await promptEvent.userChoice;
         window.__pwaInstallPrompt = null;
-        setHasNativePrompt(false);
         if (outcome === 'accepted') {
           setShow(false);
           return;
@@ -245,9 +235,9 @@ const InstallPrompt: React.FC = () => {
               </div>
 
               {/* ============================================================ */}
-              {/* CAS 1 : iPhone / iPad (iOS Safari)                          */}
+              {/* CAS 1 : iPhone / iPad (iOS Safari / iPadOS)                 */}
               {/* ============================================================ */}
-              {platform === 'ios' && showGuide && (
+              {platform === 'ios' && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -267,7 +257,7 @@ const InstallPrompt: React.FC = () => {
                         Partager{' '}
                         <Share className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
                       </span>{' '}
-                      en bas de Safari
+                      (barre de menu Safari en bas ou en haut)
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -407,7 +397,7 @@ const InstallPrompt: React.FC = () => {
               {/* ============================================================ */}
               {/* BOUTON PRINCIPAL                                             */}
               {/* ============================================================ */}
-              {!showGuide ? (
+              {!showGuide && platform !== 'ios' ? (
                 <button
                   onClick={handleInstallClick}
                   className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
@@ -425,7 +415,7 @@ const InstallPrompt: React.FC = () => {
               )}
 
               {/* Bouton secondaire */}
-              {!showGuide && (
+              {!showGuide && platform !== 'ios' && (
                 <button
                   onClick={handleDismiss}
                   className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"

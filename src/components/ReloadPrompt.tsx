@@ -18,11 +18,7 @@ const ReloadPrompt: React.FC = () => {
     onRegisteredSW(swUrl, r) {
       if (!r) return;
 
-      // Vérification initiale des mises à jour
-      r.update();
-
-      // Polling régulier toutes les heures avec fetch no-store pour bypasser le cache
-      const intervalId = window.setInterval(async () => {
+      const checkForUpdate = async () => {
         if (!navigator.onLine) return;
         try {
           if (swUrl) {
@@ -42,9 +38,29 @@ const ReloadPrompt: React.FC = () => {
         } catch (err) {
           console.debug('[PWA] Échec vérification mise à jour:', err);
         }
-      }, ONE_HOUR_MS);
+      };
 
-      return () => clearInterval(intervalId);
+      // Vérification initiale des mises à jour
+      checkForUpdate();
+
+      // Polling régulier toutes les heures
+      const intervalId = window.setInterval(checkForUpdate, ONE_HOUR_MS);
+
+      // Réactivation au retour au premier plan (crucial sur Safari / iOS PWA où setInterval est suspendu)
+      const handleResume = () => {
+        if (document.visibilityState === 'visible') {
+          checkForUpdate();
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleResume);
+      window.addEventListener('focus', handleResume);
+
+      return () => {
+        clearInterval(intervalId);
+        document.removeEventListener('visibilitychange', handleResume);
+        window.removeEventListener('focus', handleResume);
+      };
     },
     onRegisterError(error) {
       console.warn('[PWA] Erreur enregistrement Service Worker:', error);

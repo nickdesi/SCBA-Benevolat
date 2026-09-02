@@ -54,6 +54,9 @@ jobs:
       - name: Lint codebase (ESLint)
         run: npx eslint .
 
+      - name: Check unused code (Knip)
+        run: npx knip --reporter compact
+
       - name: Typecheck frontend
         run: npm run typecheck
 
