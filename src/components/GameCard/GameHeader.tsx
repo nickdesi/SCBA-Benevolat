@@ -52,20 +52,36 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   const opponentName = game.opponent;
 
   return (
-    <div className="relative p-4 sm:p-5 overflow-hidden transition-colors duration-200">
-      {/* Subtle top accent bar */}
+    <div
+      className={`relative p-4 sm:p-5 overflow-hidden transition-colors duration-300 ${
+        game.competition
+          ? 'bg-gradient-to-br from-amber-100/90 via-amber-50/40 to-white/95 dark:from-amber-950/50 dark:via-slate-900/95 dark:to-slate-950/95'
+          : isHomeGame
+            ? 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/40 to-white/95 dark:from-emerald-950/60 dark:via-slate-900/95 dark:to-slate-950/95'
+            : 'bg-gradient-to-br from-blue-100/90 via-blue-50/40 to-white/95 dark:from-blue-950/60 dark:via-slate-900/95 dark:to-slate-950/95'
+      }`}
+    >
+      {/* Signature Watermark Icon - Subtle & Elegant */}
       <div
-        className={`absolute top-0 left-0 right-0 h-1.5 ${
-          isCup
-            ? 'bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600'
+        className={`absolute -right-8 -top-8 pointer-events-none transform rotate-12 transition-opacity duration-300 ${
+          game.competition
+            ? 'text-amber-500/15 dark:text-amber-400/10'
             : isHomeGame
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-600'
-              : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+              ? 'text-emerald-500/15 dark:text-emerald-400/10'
+              : 'text-blue-500/15 dark:text-blue-400/10'
         }`}
-      />
+      >
+        {game.competition ? (
+          <Trophy className="w-52 h-52" />
+        ) : isHomeGame ? (
+          <Home className="w-52 h-52" />
+        ) : (
+          <Car className="w-52 h-52" />
+        )}
+      </div>
 
-      {/* Top Meta Bar: Competition tag + Match Status Pills */}
-      <div className="flex items-center justify-between gap-2 mb-3.5 z-10 relative">
+      {/* Top Meta Bar: Badges + Admin Controls */}
+      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[26px]">
         {/* Left: Competition Badge */}
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isCup ? (
@@ -235,16 +251,16 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
       </div>
 
-      {/* Bottom Info Strip: Location & Direct GPS */}
-      <div className="relative z-10 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+      {/* Bottom Info Strip: Location & Direct GPS (Glass Capsule) */}
+      <div className="relative z-10 mt-3 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/80 dark:border-slate-700/60 shadow-2xs flex items-center justify-between gap-2">
         {/* Short Date & Location Line */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 min-w-0 flex-1">
           <Calendar className="w-3.5 h-3.5 text-[#3629e1] dark:text-indigo-400 flex-shrink-0" />
-          <span className="font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+          <span className="font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
             {formatDateShort(game.dateISO, game.date)}
           </span>
-          <span className="text-slate-300 dark:text-slate-700">•</span>
-          <span className="truncate text-slate-500 dark:text-slate-400 font-medium">
+          <span className="text-slate-300 dark:text-slate-600">•</span>
+          <span className="truncate text-slate-600 dark:text-slate-400 font-medium">
             {game.location}
           </span>
         </div>
@@ -254,7 +270,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           href={`https://waze.com/ul?q=${encodeURIComponent(game.location)}&navigate=yes`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-md border border-indigo-100 dark:border-indigo-900/50 transition-colors flex-shrink-0"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 rounded-md border border-indigo-100 dark:border-indigo-900/60 transition-colors flex-shrink-0"
         >
           <Navigation className="w-3 h-3" />
           Itinéraire
