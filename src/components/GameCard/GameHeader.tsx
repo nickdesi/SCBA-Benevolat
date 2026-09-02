@@ -3,7 +3,7 @@ import { Home, Plane, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'lu
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { EditIcon, DeleteIcon } from '../Icons';
-import { formatRank, isCupCompetition } from '../../utils/gameUtils';
+import { formatRank, isCupCompetition, formatCompetitionShort } from '../../utils/gameUtils';
 import { formatDateShort } from '../../utils/dateUtils';
 
 interface GameHeaderProps {
@@ -40,9 +40,22 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   const isChampionship = !isCup;
   const formattedTeamRank = isChampionship ? formatRank(game.teamRank) : null;
   const formattedOpponentRank = isChampionship ? formatRank(game.opponentRank) : null;
+  const shortCompetition = formatCompetitionShort(game.competition);
 
-  const scbaTeamName = game.team;
-  const opponentName = game.opponent;
+  // Règle sportive absolue : l'équipe qui reçoit (HÔTE) est TOUJOURS en 1ère position (gauche)
+  const hostTeam = {
+    name: isHomeGame ? game.team : game.opponent,
+    logo: isHomeGame ? game.teamLogo : game.opponentLogo,
+    rank: isHomeGame ? formattedTeamRank : formattedOpponentRank,
+    isScba: isHomeGame,
+  };
+
+  const guestTeam = {
+    name: isHomeGame ? game.opponent : game.team,
+    logo: isHomeGame ? game.opponentLogo : game.teamLogo,
+    rank: isHomeGame ? formattedOpponentRank : formattedTeamRank,
+    isScba: !isHomeGame,
+  };
 
   // Calcul pour la jauge circulaire
   const progressPercent =
@@ -87,11 +100,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {isCup ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-md bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/40 truncate shadow-xs">
               <Trophy className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-              <span className="truncate">{game.competition}</span>
+              <span className="truncate">{shortCompetition || game.competition}</span>
             </span>
-          ) : game.competition ? (
+          ) : shortCompetition ? (
             <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-white/80 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700/80 backdrop-blur-xs truncate shadow-2xs">
-              {game.competition}
+              {shortCompetition}
             </span>
           ) : (
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -209,34 +222,42 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       {/* Main Face-Off Section (Scoreboard / Versus Style) */}
       <div className="relative z-10 py-1.5 px-0.5">
         <div className="grid grid-cols-11 items-center gap-2">
-          {/* Team 1: SCBA (or Host) */}
+          {/* Team 1: HÔTE (TOUJOURS l'équipe qui reçoit à gauche) */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
               <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 flex items-center justify-center overflow-hidden p-0">
-                {game.teamLogo ? (
+                {hostTeam.logo ? (
                   <img
-                    src={game.teamLogo}
-                    alt={scbaTeamName}
+                    src={hostTeam.logo}
+                    alt={hostTeam.name}
                     className="w-full h-full object-contain transform scale-135"
                     loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-xl text-[#3629e1]">SCBA</span>
+                  <span
+                    className={`font-sport font-black ${
+                      hostTeam.isScba
+                        ? 'text-xl text-[#3629e1]'
+                        : 'text-lg text-slate-700 uppercase'
+                    }`}
+                  >
+                    {hostTeam.isScba ? 'SCBA' : hostTeam.name.substring(0, 3)}
+                  </span>
                 )}
               </div>
-              {formattedTeamRank && (
+              {hostTeam.rank && (
                 <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-amber-500 text-white font-black text-[11px] shadow-xs">
-                  {formattedTeamRank}
+                  {hostTeam.rank}
                 </span>
               )}
             </div>
             <div className="h-11 sm:h-12 flex items-center justify-center px-1">
               <h2 className="font-sport font-black text-sm sm:text-base text-slate-900 dark:text-white uppercase leading-tight tracking-tight line-clamp-2">
-                {scbaTeamName}
+                {hostTeam.name}
               </h2>
             </div>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">
-              {isHomeGame ? 'Hôte' : 'Visiteur'}
+              Hôte
             </span>
           </div>
 
@@ -255,36 +276,42 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             </span>
           </div>
 
-          {/* Team 2: Opponent */}
+          {/* Team 2: VISITEUR (TOUJOURS l'équipe qui se déplace à droite) */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
               <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 flex items-center justify-center overflow-hidden p-0">
-                {game.opponentLogo ? (
+                {guestTeam.logo ? (
                   <img
-                    src={game.opponentLogo}
-                    alt={opponentName}
+                    src={guestTeam.logo}
+                    alt={guestTeam.name}
                     className="w-full h-full object-contain transform scale-135"
                     loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-lg text-slate-700 uppercase">
-                    {opponentName.substring(0, 3)}
+                  <span
+                    className={`font-sport font-black ${
+                      guestTeam.isScba
+                        ? 'text-xl text-[#3629e1]'
+                        : 'text-lg text-slate-700 uppercase'
+                    }`}
+                  >
+                    {guestTeam.isScba ? 'SCBA' : guestTeam.name.substring(0, 3)}
                   </span>
                 )}
               </div>
-              {formattedOpponentRank && (
+              {guestTeam.rank && (
                 <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-slate-600 text-white font-black text-[11px] shadow-xs">
-                  {formattedOpponentRank}
+                  {guestTeam.rank}
                 </span>
               )}
             </div>
             <div className="h-11 sm:h-12 flex items-center justify-center px-1">
               <h3 className="font-sport font-black text-sm sm:text-base text-slate-800 dark:text-slate-200 uppercase leading-tight tracking-tight line-clamp-2">
-                {opponentName}
+                {guestTeam.name}
               </h3>
             </div>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">
-              {!isHomeGame ? 'Hôte' : 'Visiteur'}
+              Visiteur
             </span>
           </div>
         </div>

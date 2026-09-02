@@ -60,6 +60,64 @@ export const isCupCompetition = (competition?: string): boolean => {
 };
 
 /**
+ * Raccourcit intelligemment les noms de compétitions FFBB pour l'affichage :
+ * Ex: "Pré Nationale Masculine" -> "PNM", "Régionale Masculine Seniors - Division 2" -> "RM2"
+ */
+export const formatCompetitionShort = (competition?: string): string => {
+  if (!competition) return '';
+  const trimmed = competition.trim();
+
+  // Abréviations courantes basket FFBB
+  const map: Record<string, string> = {
+    'pré nationale masculine': 'PNM',
+    'pre nationale masculine': 'PNM',
+    'pré nationale féminine': 'PNF',
+    'pre nationale feminine': 'PNF',
+    'nationale masculine 1': 'NM1',
+    'nationale masculine 2': 'NM2',
+    'nationale masculine 3': 'NM3',
+    'nationale féminine 1': 'NF1',
+    'nationale féminine 2': 'NF2',
+    'nationale féminine 3': 'NF3',
+    'régionale masculine seniors - division 2': 'RM2',
+    'regionale masculine seniors - division 2': 'RM2',
+    'régionale masculine 2': 'RM2',
+    'régionale masculine 1': 'RM1',
+    'régionale masculine 3': 'RM3',
+    'régionale féminine seniors - division 2': 'RF2',
+    'régionale féminine 2': 'RF2',
+    'régionale féminine 1': 'RF1',
+    'régionale féminine 3': 'RF3',
+    'u18 masculin coupe ara': 'U18M Coupe ARA',
+    'u18 masculin': 'U18M',
+    'u18 féminin': 'U18F',
+    'u15 masculin': 'U15M',
+    'u15 féminin': 'U15F',
+    'u13 masculin': 'U13M',
+    'u13 féminin': 'U13F',
+    'u11 masculin': 'U11M',
+    'u11 féminin': 'U11F',
+  };
+
+  const lower = trimmed.toLowerCase();
+  if (map[lower]) return map[lower];
+
+  return trimmed
+    .replace(/Pré\s*Nationale\s*Masculine/gi, 'PNM')
+    .replace(/Pré\s*Nationale\s*Féminine/gi, 'PNF')
+    .replace(/Pre\s*Nationale\s*Masculine/gi, 'PNM')
+    .replace(/Pre\s*Nationale\s*Feminine/gi, 'PNF')
+    .replace(/Régionale\s*Masculine\s*Seniors\s*-\s*Division\s*(\d+)/gi, 'RM$1')
+    .replace(/Régionale\s*Féminine\s*Seniors\s*-\s*Division\s*(\d+)/gi, 'RF$1')
+    .replace(/Nationale\s*Masculine\s*(\d+)/gi, 'NM$1')
+    .replace(/Nationale\s*Féminine\s*(\d+)/gi, 'NF$1')
+    .replace(/Départementale\s*Masculine\s*(\d+)/gi, 'DM$1')
+    .replace(/Départementale\s*Féminine\s*(\d+)/gi, 'DF$1')
+    .replace(/U(\d+)\s*Masculin/gi, 'U$1M')
+    .replace(/U(\d+)\s*Féminin/gi, 'U$1F');
+};
+
+/**
  * Check if all roles in a game are complete.
  */
 const isGameFullyStaffed = (game: Game): boolean => {
