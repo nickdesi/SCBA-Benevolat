@@ -154,7 +154,7 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: false,
+        skipWaiting: true,
         navigateFallback: 'index.html',
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB: ensure large bundles & fontsource fonts are precached
         // Precache essential files for offline support including self-hosted fonts
