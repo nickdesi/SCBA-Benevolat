@@ -47,7 +47,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   // Calcul pour la jauge circulaire
   const progressPercent =
     totalCapacity > 0 ? Math.min(100, Math.round((filledSlots / totalCapacity) * 100)) : 0;
-  const radius = 14;
+  const radius = 15;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
@@ -168,21 +168,21 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Circular Volunteer Progress Gauge for Home games */}
           {isHomeGame && totalCapacity > 0 && (
             <div
-              className="relative w-8 h-8 flex items-center justify-center bg-white/90 dark:bg-slate-800/90 rounded-full shadow-2xs border border-white/90 dark:border-slate-700/80 backdrop-blur-sm"
+              className="relative w-10 h-10 flex items-center justify-center bg-white/95 dark:bg-slate-800/95 rounded-full shadow-xs border border-white dark:border-slate-700/80 backdrop-blur-md flex-shrink-0"
               title={`Bénévoles : ${filledSlots}/${totalCapacity} (${progressPercent}%)`}
             >
-              <svg className="w-7 h-7 transform -rotate-90" viewBox="0 0 32 32">
+              <svg className="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">
                 <circle
-                  cx="16"
-                  cy="16"
+                  cx="18"
+                  cy="18"
                   r={radius}
-                  className="stroke-slate-200 dark:stroke-slate-700"
-                  strokeWidth="2.5"
+                  className="stroke-slate-200 dark:stroke-slate-700/80"
+                  strokeWidth="3"
                   fill="transparent"
                 />
                 <circle
-                  cx="16"
-                  cy="16"
+                  cx="18"
+                  cy="18"
                   r={radius}
                   className={
                     isFullyStaffed
@@ -191,14 +191,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                         ? 'stroke-red-500 transition-all duration-500'
                         : 'stroke-emerald-600 dark:stroke-emerald-400 transition-all duration-500'
                   }
-                  strokeWidth="2.5"
+                  strokeWidth="3"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                   fill="transparent"
                 />
               </svg>
-              <span className="absolute text-[9px] font-black font-sport text-slate-800 dark:text-slate-100">
+              <span className="absolute text-xs font-black font-sport text-slate-900 dark:text-white tracking-tight">
                 {filledSlots}/{totalCapacity}
               </span>
             </div>

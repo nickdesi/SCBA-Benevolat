@@ -127,20 +127,20 @@ const GameList: React.FC<GameListProps> = memo(
       <div className="space-y-8">
         {groups.map((group, groupIdx) => (
           <section key={`${group.label}-${groupIdx}`} className="relative">
-            {/* Native Mobile Sticky Month Header */}
-            <div className="sticky top-[108px] z-30 py-2.5 px-1 backdrop-blur-md bg-[#e8ecef]/85 dark:bg-[#0b1320]/85 transition-colors">
-              <div className="flex items-center justify-between gap-2 border-b border-slate-300/80 dark:border-slate-800 pb-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#3629e1]" />
-                  <h2 className="font-sport text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white">
+            {/* Native Mobile Sticky Month Header Capsule */}
+            <div className="sticky top-[118px] sm:top-[126px] z-20 my-3 transition-all">
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800/90 shadow-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#3629e1] shadow-xs flex-shrink-0" />
+                  <h2 className="font-sport text-sm sm:text-base font-black uppercase tracking-wider text-slate-900 dark:text-white truncate">
                     {group.label}
                   </h2>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] font-bold">
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                <div className="flex items-center gap-1.5 text-xs font-bold flex-shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                     {group.homeCount} Dom
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
                     {group.awayCount} Ext
                   </span>
                 </div>
