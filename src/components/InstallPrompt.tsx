@@ -12,8 +12,8 @@ import {
   Compass,
 } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed-v12';
-const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v13';
+const DISMISS_DURATION_MS = 14 * 24 * 60 * 60 * 1000; // 14 jours
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -58,7 +58,7 @@ function detectPlatform(): PlatformType {
     return 'android';
   }
 
-  // macOS Safari (Desktop Safari)
+  // macOS Safari
   const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
   if (isMac && isSafari) {
     return 'macos-safari';
@@ -83,6 +83,7 @@ const InstallPrompt: React.FC = () => {
   const [showGuide, setShowGuide] = useState(false);
   const [platform, setPlatform] = useState<PlatformType>('desktop-chromium');
   const [isBrave, setIsBrave] = useState(false);
+  const [hasNativePrompt, setHasNativePrompt] = useState(false);
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
@@ -96,37 +97,66 @@ const InstallPrompt: React.FC = () => {
       });
     }
 
+    if (window.__pwaInstallPrompt) {
+      setHasNativePrompt(true);
+    }
+
     const handlePromptReady = () => {
-      if (!wasDismissedRecently()) setShow(true);
+      setHasNativePrompt(true);
+      // Auto-popup UNIQUEMENT sur mobile si non fermé récemment
+      if (detected === 'android' && !wasDismissedRecently()) {
+        setShow(true);
+      }
     };
     window.addEventListener('pwa-prompt-ready', handlePromptReady);
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       window.__pwaInstallPrompt = e as BeforeInstallPromptEvent;
-      if (!wasDismissedRecently()) setShow(true);
+      setHasNativePrompt(true);
+      // Auto-popup UNIQUEMENT sur mobile si non fermé récemment
+      if (detected === 'android' && !wasDismissedRecently()) {
+        setShow(true);
+      }
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
     const onInstalled = () => {
       setShow(false);
+      setHasNativePrompt(false);
       window.__pwaInstallPrompt = null;
     };
     window.addEventListener('appinstalled', onInstalled);
 
-    // Déclencheur manuel (footer / profil)
+    // Déclencheur manuel universel (Header, Footer, Profil)
     const handleManualOpen = () => {
-      setShow(true);
-      setShowGuide(false);
+      const currentPrompt = window.__pwaInstallPrompt;
+      if (currentPrompt) {
+        // Déclenchement 1-clic direct sans ouvrir de modale intermédiaire
+        currentPrompt.prompt().then(() => {
+          currentPrompt.userChoice.then(({ outcome }) => {
+            if (outcome === 'accepted') {
+              setShow(false);
+              window.__pwaInstallPrompt = null;
+              setHasNativePrompt(false);
+            }
+          });
+        });
+      } else {
+        // Si prompt non supporté par le navigateur (iOS, Safari Mac, Brave), ouvrir le guide
+        setShow(true);
+        setShowGuide(true);
+      }
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Affichage automatique
+    // Auto-affichage doux sur mobile (iOS uniquement avec délai respectueux)
     let timer: NodeJS.Timeout | null = null;
-    if (!wasDismissedRecently()) {
+    if (detected === 'ios' && !wasDismissedRecently()) {
       timer = setTimeout(() => {
         setShow(true);
-      }, 600);
+        setShowGuide(true);
+      }, 3500);
     }
 
     return () => {
@@ -139,23 +169,19 @@ const InstallPrompt: React.FC = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (platform === 'ios' || platform === 'macos-safari') {
-      setShowGuide(true);
-      return;
-    }
-
     const promptEvent = window.__pwaInstallPrompt;
     if (promptEvent) {
       try {
         await promptEvent.prompt();
         const { outcome } = await promptEvent.userChoice;
         window.__pwaInstallPrompt = null;
+        setHasNativePrompt(false);
         if (outcome === 'accepted') {
           setShow(false);
           return;
         }
       } catch (err) {
-        console.warn('[PWA Install] Erreur lors de l’ouverture du prompt:', err);
+        console.warn('[PWA Install] Échec prompt natif:', err);
         setShowGuide(true);
       }
     } else {
