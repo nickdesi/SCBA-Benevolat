@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Share, PlusSquare, X, Smartphone, MoreVertical, Sparkles } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed-v2';
-const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 jours de rappel si refusé
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v3';
+const DISMISS_DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 2 jours de répit après clic "Plus tard"
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -54,23 +54,23 @@ const InstallPrompt: React.FC = () => {
     const info = getPlatformInfo();
     setPlatform(info);
 
-    // Si déjà installé dans l'écran d'accueil, ne rien afficher
+    // Si déjà lancé en mode standalone / PWA installée, ne rien afficher
     if (isAlreadyInstalled()) return;
 
-    // Fermer automatiquement si l'app est installée
+    // Fermer si l'application vient d'être installée
     const onInstalled = () => {
       setShow(false);
       setDeferredPrompt(null);
     };
     window.addEventListener('appinstalled', onInstalled);
 
-    // Écouteur pour ouverture manuelle via bouton dans l'application
+    // Écouteur pour déclenchement manuel (ex: clic sur "Installer l'app" dans Footer ou Profil)
     const handleManualOpen = () => {
       setShow(true);
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Capture standard de l'événement beforeinstallprompt (Chromium, Android, Edge, etc.)
+    // Capture standard de l'événement beforeinstallprompt (Chromium / Android / Edge)
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -80,7 +80,7 @@ const InstallPrompt: React.FC = () => {
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // Sur mobile (iOS et Android), afficher la bannière avec un court délai si non dismiss récemment
+    // Affichage automatique réactif sur mobile (iOS et Android) si non refusé récemment
     let timer: NodeJS.Timeout | null = null;
     if (info.isMobile && !wasDismissedRecently()) {
       timer = setTimeout(() => {
@@ -96,7 +96,7 @@ const InstallPrompt: React.FC = () => {
     };
   }, []);
 
-  const handleInstall = async () => {
+  const handleInstallClick = async () => {
     if (deferredPrompt) {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -148,8 +148,11 @@ const InstallPrompt: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mt-0.5 leading-snug">
-                      Installez l'app sur votre écran d'accueil pour un accès ultra-rapide au
-                      gymnase.
+                      {platform.isIOS
+                        ? "Ajoutez l'app sur votre iPhone / iPad pour un accès instantané au gymnase."
+                        : platform.isAndroid
+                          ? "Installez l'app sur votre smartphone Android pour l'utiliser sans connexion."
+                          : "Installez l'application sur votre appareil pour l'utiliser sans connexion."}
                     </p>
                   </div>
                 </div>
@@ -162,16 +165,17 @@ const InstallPrompt: React.FC = () => {
                 </button>
               </div>
 
-              {/* Guide d'installation selon la plateforme */}
+              {/* ============================================================ */}
+              {/* 1. CAS iOS (iPhone / iPad - Safari ou autre navigateur iOS)  */}
+              {/* ============================================================ */}
               {platform.isIOS ? (
-                /* Cas iOS (iPhone / iPad - Safari ou autre navigateur) */
                 <div className="bg-slate-800/90 rounded-2xl p-3.5 mb-3.5 text-xs text-slate-200 space-y-2.5 border border-slate-700/60">
                   <div className="font-bold text-slate-100 flex items-center gap-2 text-xs">
                     <Smartphone className="w-4 h-4 text-blue-400 flex-shrink-0" />
                     <span>
                       {platform.isSafari
-                        ? 'Installation sur iPhone / iPad :'
-                        : 'Ouvrez dans Safari pour installer :'}
+                        ? 'Installation sur iOS (Safari) :'
+                        : 'Installation sur iPhone / iPad :'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -180,8 +184,8 @@ const InstallPrompt: React.FC = () => {
                     </span>
                     <span>
                       Appuyez sur <span className="font-bold text-white">Partager</span>{' '}
-                      <Share className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" /> en
-                      bas de Safari
+                      <Share className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" /> dans
+                      la barre du navigateur
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -189,7 +193,7 @@ const InstallPrompt: React.FC = () => {
                       2
                     </span>
                     <span>
-                      Faites défiler et choisissez{' '}
+                      Faites défiler et sélectionnez{' '}
                       <span className="font-bold text-white">« Sur l'écran d'accueil »</span>{' '}
                       <PlusSquare className="inline-block w-3.5 h-3.5 mx-1 text-blue-400 -mt-0.5" />
                     </span>
@@ -205,36 +209,70 @@ const InstallPrompt: React.FC = () => {
                   </div>
                 </div>
               ) : deferredPrompt ? (
-                /* Cas Android / Chromium avec prompt natif 1-clic disponible */
+                /* ============================================================ */
+                /* 2. CAS Android / Chromium avec prompt natif 1-clic capturé   */
+                /* ============================================================ */
                 <button
-                  onClick={handleInstall}
+                  onClick={handleInstallClick}
                   className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 mb-2 text-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   Installer l'application
                 </button>
+              ) : platform.isAndroid ? (
+                /* ============================================================ */
+                /* 3. CAS Android sans prompt automatique immédiat              */
+                /* ============================================================ */
+                <div className="bg-slate-800/90 rounded-2xl p-3.5 mb-3.5 text-xs text-slate-200 space-y-2.5 border border-slate-700/60">
+                  <div className="font-bold text-slate-100 flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span>Installation sur Android :</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600/30 text-emerald-300 font-bold text-[11px] flex-shrink-0">
+                      1
+                    </span>
+                    <span>
+                      Appuyez sur le menu{' '}
+                      <MoreVertical className="inline-block w-3.5 h-3.5 mx-0.5 text-emerald-400 -mt-0.5" />{' '}
+                      (trois points en haut à droite de Chrome/Brave/Edge)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600/30 text-emerald-300 font-bold text-[11px] flex-shrink-0">
+                      2
+                    </span>
+                    <span>
+                      Sélectionnez{' '}
+                      <span className="font-bold text-white">« Installer l'application »</span> ou{' '}
+                      <span className="font-bold text-white">« Ajouter à l'écran d'accueil »</span>
+                    </span>
+                  </div>
+                </div>
               ) : (
-                /* Cas Android / Navigateur sans prompt automatique */
+                /* ============================================================ */
+                /* 4. CAS Desktop / Autre navigateur                            */
+                /* ============================================================ */
                 <div className="bg-slate-800/90 rounded-2xl p-3 mb-3 text-xs text-slate-200 space-y-2 border border-slate-700/60">
                   <div className="font-bold text-slate-100 flex items-center gap-2">
                     <MoreVertical className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                    <span>Installation manuelle :</span>
+                    <span>Installation :</span>
                   </div>
                   <p className="text-slate-300">
-                    Ouvrez le menu du navigateur <span className="font-bold text-white">⋮</span>{' '}
-                    puis sélectionnez{' '}
-                    <span className="font-bold text-white">« Installer l'application »</span> ou{' '}
-                    <span className="font-bold text-white">« Ajouter à l'écran d'accueil »</span>.
+                    Cliquez sur l'icône d'installation dans la barre d'adresse de votre navigateur
+                    ou via le menu pour ajouter l'application.
                   </p>
                 </div>
               )}
 
-              {/* Bouton secondaire Fermer / Plus tard */}
+              {/* Bouton de fermeture */}
               <button
                 onClick={handleDismiss}
                 className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
               >
-                {platform.isIOS ? "J'ai compris" : 'Plus tard'}
+                {platform.isIOS || (!deferredPrompt && platform.isAndroid)
+                  ? "J'ai compris"
+                  : 'Plus tard'}
               </button>
             </div>
           </motion.div>
