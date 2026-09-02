@@ -57,10 +57,10 @@ const GameHeader: React.FC<GameHeaderProps> = ({
     isScba: !isHomeGame,
   };
 
-  // Calcul pour la jauge circulaire
+  // Calcul pour la jauge circulaire (format grand & lisible)
   const progressPercent =
     totalCapacity > 0 ? Math.min(100, Math.round((filledSlots / totalCapacity) * 100)) : 0;
-  const radius = 15;
+  const radius = 18;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
@@ -94,7 +94,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </div>
 
       {/* Top Meta Bar: Badges + Jauge Bénévoles + Admin Controls */}
-      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[32px]">
+      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[36px]">
         {/* Left: Competition Badge */}
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isCup ? (
@@ -178,24 +178,24 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             )}
           </span>
 
-          {/* Circular Volunteer Progress Gauge for Home games */}
+          {/* Large Circular Volunteer Progress Gauge for Home games */}
           {isHomeGame && totalCapacity > 0 && (
             <div
-              className="relative w-10 h-10 flex items-center justify-center bg-white/95 dark:bg-slate-800/95 rounded-full shadow-xs border border-white dark:border-slate-700/80 backdrop-blur-md flex-shrink-0"
+              className="relative w-12 h-12 sm:w-13 sm:h-13 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full shadow-md border-2 border-white dark:border-slate-700 backdrop-blur-md flex-shrink-0"
               title={`Bénévoles : ${filledSlots}/${totalCapacity} (${progressPercent}%)`}
             >
-              <svg className="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">
+              <svg className="w-11 h-11 sm:w-12 sm:h-12 transform -rotate-90" viewBox="0 0 44 44">
                 <circle
-                  cx="18"
-                  cy="18"
+                  cx="22"
+                  cy="22"
                   r={radius}
-                  className="stroke-slate-200 dark:stroke-slate-700/80"
-                  strokeWidth="3"
+                  className="stroke-slate-200 dark:stroke-slate-700"
+                  strokeWidth="3.5"
                   fill="transparent"
                 />
                 <circle
-                  cx="18"
-                  cy="18"
+                  cx="22"
+                  cy="22"
                   r={radius}
                   className={
                     isFullyStaffed
@@ -204,14 +204,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                         ? 'stroke-red-500 transition-all duration-500'
                         : 'stroke-emerald-600 dark:stroke-emerald-400 transition-all duration-500'
                   }
-                  strokeWidth="3"
+                  strokeWidth="3.5"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                   fill="transparent"
                 />
               </svg>
-              <span className="absolute text-xs font-black font-sport text-slate-900 dark:text-white tracking-tight">
+              <span className="absolute text-xs sm:text-sm font-black font-sport text-slate-900 dark:text-white tracking-tight">
                 {filledSlots}/{totalCapacity}
               </span>
             </div>
