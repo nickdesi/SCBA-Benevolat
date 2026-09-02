@@ -177,8 +177,8 @@ const InstallPrompt: React.FC = () => {
                       <h3 className="font-sport font-black text-base tracking-wide text-white uppercase">
                         SCBA Bénévoles
                       </h3>
-                      <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
-                        <Sparkles className="w-2.5 h-2.5" /> Hors-ligne
+                      <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-500/30 flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5" /> App Officielle
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mt-0.5">
