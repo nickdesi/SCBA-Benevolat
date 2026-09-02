@@ -93,7 +93,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
       transition={{ duration: 0.2, ease: 'easeOut' }}
       aria-label={`Prochain match : ${host} contre ${visitor} — Voir le match`}
       className={`
-        w-full flex items-center gap-3 px-4 py-2.5 text-left
+        w-full min-h-[44px] flex items-center gap-3 px-4 py-2 text-left
         border-b cursor-pointer group transition-colors duration-150
         ${
           isUrgent
@@ -104,43 +104,47 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     >
       {/* Countdown pill */}
       <span
-        className={`flex-shrink-0 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+        className={`flex-shrink-0 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
           isToday
             ? 'bg-red-500/25 text-red-300 border border-red-500/30'
-            : 'bg-slate-700/60 text-slate-400 border border-slate-600/40'
+            : 'bg-slate-700/60 text-slate-300 border border-slate-600/40'
         }`}
       >
         {countdownLabel}
       </span>
 
       {/* Heure */}
-      <span className="flex-shrink-0 flex items-center gap-1 text-slate-400 text-[11px] font-semibold">
-        <Clock className="w-3 h-3" />
+      <span className="flex-shrink-0 flex items-center gap-1.5 text-slate-300 text-xs font-bold">
+        <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
         {nextGame.time}
       </span>
 
       {/* Séparateur */}
-      <span className="flex-shrink-0 text-slate-700 text-xs">·</span>
+      <span className="flex-shrink-0 text-slate-600 text-xs" aria-hidden="true">
+        ·
+      </span>
 
       {/* Équipes */}
       <span className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
         <span
-          className={`font-black text-[11px] uppercase tracking-wide truncate ${
-            nextGame.isHome ? 'text-emerald-400' : 'text-slate-200'
+          className={`font-black text-xs uppercase tracking-wide truncate ${
+            nextGame.isHome ? 'text-emerald-400' : 'text-slate-100'
           }`}
         >
           {host}
         </span>
-        <span className="text-slate-600 text-[9px] font-black flex-shrink-0">VS</span>
-        <span className="font-bold text-[11px] uppercase tracking-wide text-slate-400 truncate">
+        <span className="text-slate-500 text-[10px] font-black flex-shrink-0" aria-hidden="true">
+          VS
+        </span>
+        <span className="font-bold text-xs uppercase tracking-wide text-slate-300 truncate">
           {visitor}
         </span>
       </span>
 
       {/* Lieu (desktop uniquement) */}
       {nextGame.location && (
-        <span className="hidden sm:flex flex-shrink-0 items-center gap-1 text-slate-500 text-[10px] font-medium max-w-[140px] truncate">
-          <MapPin className="w-3 h-3 flex-shrink-0" />
+        <span className="hidden sm:flex flex-shrink-0 items-center gap-1 text-slate-400 text-xs font-medium max-w-[140px] truncate">
+          <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" aria-hidden="true" />
           {nextGame.location}
         </span>
       )}
@@ -148,27 +152,27 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
       {/* Statut couverture — matchs domicile uniquement */}
       {nextGame.isHome && (
         <span
-          className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+          className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
             isFullyStaffed
               ? 'bg-emerald-900/50 text-emerald-300 border-emerald-700/40'
               : isUrgent
                 ? 'bg-red-900/60 text-red-300 border-red-700/40 animate-pulse'
-                : 'bg-slate-800/60 text-slate-400 border-slate-600/40'
+                : 'bg-slate-800/60 text-slate-300 border-slate-600/40'
           }`}
         >
           {isFullyStaffed ? (
             <>
-              <CheckCircle className="w-3 h-3" />
+              <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
               Couvert
             </>
           ) : isUrgent ? (
             <>
-              <Flame className="w-3 h-3" />
+              <Flame className="w-3.5 h-3.5" aria-hidden="true" />
               Urgent
             </>
           ) : (
             <>
-              <Users className="w-3 h-3" />
+              <Users className="w-3.5 h-3.5" aria-hidden="true" />
               {filledSlots}/{totalCapacity}
             </>
           )}
@@ -176,7 +180,10 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
       )}
 
       {/* Flèche CTA hover */}
-      <span className="flex-shrink-0 text-slate-600 group-hover:text-slate-400 transition-colors text-xs">
+      <span
+        className="flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors text-xs"
+        aria-hidden="true"
+      >
         →
       </span>
     </motion.button>

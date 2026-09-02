@@ -36,15 +36,23 @@ const BottomNav: React.FC<BottomNavProps> = memo(
       >
         {/* Native Frosted Glass Shell with 1px border & soft elevation */}
         <div className="relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/92 dark:bg-slate-900/92 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-2xl p-1.5 transition-all">
-          <div className="grid grid-cols-3 gap-1.5 items-center">
+          <div
+            role="tablist"
+            aria-label="Navigation principale"
+            className="grid grid-cols-3 gap-1.5 items-center"
+          >
             {/* Tab 1: Liste des Matchs */}
             <motion.button
+              type="button"
+              role="tab"
+              aria-selected={currentView === 'home'}
+              aria-label="Afficher la liste des matchs"
               whileTap={{ scale: 0.94 }}
               onClick={() => handleViewChange('home')}
               className={`relative flex h-13 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors cursor-pointer select-none ${
                 currentView === 'home'
                   ? 'text-white font-black'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold'
               }`}
             >
               {currentView === 'home' && (
@@ -59,19 +67,29 @@ const BottomNav: React.FC<BottomNavProps> = memo(
                 />
               )}
               <div className="relative z-10">
-                <List className="w-5 h-5" strokeWidth={currentView === 'home' ? 2.5 : 2} />
+                <List
+                  className="w-5 h-5"
+                  strokeWidth={currentView === 'home' ? 2.5 : 2}
+                  aria-hidden="true"
+                />
               </div>
-              <span className="relative z-10 text-[10px] tracking-tight uppercase">Matchs</span>
+              <span className="relative z-10 text-xs font-black tracking-tight uppercase">
+                Matchs
+              </span>
             </motion.button>
 
             {/* Tab 2: Calendrier Semaine */}
             <motion.button
+              type="button"
+              role="tab"
+              aria-selected={currentView === 'calendar'}
+              aria-label="Afficher le planning de la semaine"
               whileTap={{ scale: 0.94 }}
               onClick={() => handleViewChange('calendar')}
               className={`relative flex h-13 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors cursor-pointer select-none ${
                 currentView === 'calendar'
                   ? 'text-white font-black'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-bold'
               }`}
             >
               {currentView === 'calendar' && (
@@ -86,13 +104,20 @@ const BottomNav: React.FC<BottomNavProps> = memo(
                 />
               )}
               <div className="relative z-10">
-                <Calendar className="w-5 h-5" strokeWidth={currentView === 'calendar' ? 2.5 : 2} />
+                <Calendar
+                  className="w-5 h-5"
+                  strokeWidth={currentView === 'calendar' ? 2.5 : 2}
+                  aria-hidden="true"
+                />
               </div>
-              <span className="relative z-10 text-[10px] tracking-tight uppercase">Semaine</span>
+              <span className="relative z-10 text-xs font-black tracking-tight uppercase">
+                Semaine
+              </span>
             </motion.button>
 
             {/* Tab 3: Mon Espace (Authentifié) OU Connexion */}
             <motion.button
+              type="button"
               whileTap={{ scale: 0.94 }}
               onClick={handlePlanningClick}
               className={`relative flex h-13 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors cursor-pointer select-none ${
@@ -104,12 +129,12 @@ const BottomNav: React.FC<BottomNavProps> = memo(
             >
               <div className="relative z-10">
                 {isAuthenticated ? (
-                  <User className="w-5 h-5" strokeWidth={2} />
+                  <User className="w-5 h-5" strokeWidth={2} aria-hidden="true" />
                 ) : (
-                  <LogIn className="w-5 h-5" strokeWidth={2.2} />
+                  <LogIn className="w-5 h-5" strokeWidth={2.2} aria-hidden="true" />
                 )}
               </div>
-              <span className="relative z-10 text-[10px] font-bold tracking-tight uppercase">
+              <span className="relative z-10 text-xs font-black tracking-tight uppercase">
                 {isAuthenticated ? 'Mon Profil' : 'Connexion'}
               </span>
             </motion.button>

@@ -52,8 +52,11 @@ const Header: React.FC<HeaderProps> = memo(
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
+                  <span
+                    className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+                    aria-hidden="true"
+                  />
+                  <span className="text-xs font-bold tracking-wider text-slate-600 dark:text-slate-300 uppercase">
                     Stade Clermontois Basket
                   </span>
                 </div>
@@ -76,13 +79,18 @@ const Header: React.FC<HeaderProps> = memo(
           </div>
         </div>
 
-        {/* Filter Bar - Native Segmented Pills Scroll */}
+        {/* Filter Bar - Native Segmented Pills Scroll (Touch target min 44px, Accessible semantics) */}
         {teams.length > 0 && (
-          <div className="border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-950/40">
+          <nav
+            aria-label="Filtres par équipe"
+            className="border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-950/40"
+          >
             <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2">
               <div
                 ref={scrollRef}
                 {...scrollEvents}
+                role="tablist"
+                aria-label="Sélectionner une équipe"
                 className="flex gap-2 items-center overflow-x-auto scrollbar-hide whitespace-nowrap px-0.5 py-0.5 snap-x touch-pan-x"
                 style={{
                   ...scrollStyle,
@@ -92,11 +100,14 @@ const Header: React.FC<HeaderProps> = memo(
               >
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={selectedTeam === null}
+                  aria-label="Tous les matchs"
                   onClick={() => onSelectTeam(null)}
-                  className={`snap-center flex h-9 items-center justify-center rounded-full px-4 text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                  className={`snap-center flex min-h-[44px] items-center justify-center rounded-full px-4.5 text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                     selectedTeam === null
                       ? 'bg-[#3629e1] text-white shadow-sm shadow-[#3629e1]/40'
-                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   Tous les matchs
@@ -105,11 +116,14 @@ const Header: React.FC<HeaderProps> = memo(
                   <button
                     key={team}
                     type="button"
+                    role="tab"
+                    aria-selected={selectedTeam === team}
+                    aria-label={`Équipe ${team}`}
                     onClick={() => onSelectTeam(team)}
-                    className={`snap-center flex h-9 items-center justify-center rounded-full px-4 text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                    className={`snap-center flex min-h-[44px] items-center justify-center rounded-full px-4.5 text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                       selectedTeam === team
                         ? 'bg-gradient-to-r from-[#3629e1] to-[#aa2e0f] text-white shadow-sm shadow-[#3629e1]/40'
-                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     {team}
@@ -117,7 +131,7 @@ const Header: React.FC<HeaderProps> = memo(
                 ))}
               </div>
             </div>
-          </div>
+          </nav>
         )}
       </header>
     );

@@ -130,7 +130,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
     <div ref={menuRef} className="relative ml-2 z-50">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+        aria-expanded={showMenu}
+        aria-haspopup="menu"
+        aria-label="Menu profil utilisateur"
+        className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[44px] min-w-[44px] justify-center"
       >
         {user.photoURL ? (
           <img
@@ -148,6 +151,8 @@ const UserProfile: React.FC<UserProfileProps> = ({
 
       {showMenu && (
         <div
+          role="menu"
+          aria-label="Options du compte"
           className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700
                                 transform origin-top-right transition-all animate-in fade-in zoom-in-95 overflow-hidden z-50 backdrop-blur-xl"
         >
@@ -161,12 +166,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
           {/* Mon Espace Bénévole */}
           <div className="p-1.5 space-y-1">
             <button
+              role="menuitem"
               onClick={() => {
                 onOpenProfile(); // Open global modal
                 setShowMenu(false); // Then close menu
               }}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[#3629e1] dark:text-indigo-400 font-bold
-                                       hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-colors text-left"
+                                       hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition-colors text-left min-h-[44px]"
             >
               <UserIcon className="w-4 h-4" />
               Mon Espace Bénévole
