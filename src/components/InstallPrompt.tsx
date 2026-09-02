@@ -271,9 +271,9 @@ const InstallPrompt: React.FC = () => {
               )}
 
               {/* ============================================================ */}
-              {/* BOUTON PRINCIPAL 1-CLIC : TOUJOURS ACCESSIBLE                */}
+              {/* BOUTON PRINCIPAL                                             */}
               {/* ============================================================ */}
-              {(!isIOS || !showGuide) && (
+              {!showGuide ? (
                 <button
                   onClick={handleInstallClick}
                   className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
@@ -281,15 +281,24 @@ const InstallPrompt: React.FC = () => {
                   <Download className="w-4.5 h-4.5" />
                   Installer l'application
                 </button>
+              ) : (
+                <button
+                  onClick={handleDismiss}
+                  className="w-full bg-slate-800 hover:bg-slate-750 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 mb-2 text-sm cursor-pointer border border-slate-700"
+                >
+                  J'ai compris
+                </button>
               )}
 
               {/* Bouton secondaire */}
-              <button
-                onClick={handleDismiss}
-                className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
-              >
-                {showGuide ? "J'ai compris" : 'Plus tard'}
-              </button>
+              {!showGuide && (
+                <button
+                  onClick={handleDismiss}
+                  className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
+                >
+                  Plus tard
+                </button>
+              )}
             </div>
           </motion.div>
         )}
