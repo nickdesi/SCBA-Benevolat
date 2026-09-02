@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Share, PlusSquare, X, Smartphone, Sparkles, Laptop } from 'lucide-react';
+import {
+  Download,
+  Share,
+  PlusSquare,
+  X,
+  Smartphone,
+  Sparkles,
+  Laptop,
+  ShieldCheck,
+} from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed-v5';
-const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000; // 24h de rappel si refusé
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v6';
+const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -13,6 +22,11 @@ interface BeforeInstallPromptEvent extends Event {
 declare global {
   interface Window {
     __pwaInstallPrompt?: BeforeInstallPromptEvent | null;
+  }
+  interface Navigator {
+    brave?: {
+      isBrave: () => Promise<boolean>;
+    };
   }
 }
 
@@ -52,7 +66,8 @@ const InstallPrompt: React.FC = () => {
   );
   const [show, setShow] = useState(false);
   const [reloadActive, setReloadActive] = useState(false);
-  const [showDesktopHelp, setShowDesktopHelp] = useState(false);
+  const [showManualGuide, setShowManualGuide] = useState(false);
+  const [isBraveBrowser, setIsBraveBrowser] = useState(false);
   const [platform, setPlatform] = useState<Platform>('desktop');
 
   useEffect(() => {
@@ -60,6 +75,13 @@ const InstallPrompt: React.FC = () => {
 
     const detected = detectPlatform();
     setPlatform(detected);
+
+    // Détection de Brave (les boucliers Brave bloquent souvent beforeinstallprompt par défaut)
+    if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+      navigator.brave.isBrave().then((brave) => {
+        if (brave) setIsBraveBrowser(true);
+      });
+    }
 
     if (window.__pwaInstallPrompt) {
       setHasNativePrompt(true);
@@ -95,11 +117,11 @@ const InstallPrompt: React.FC = () => {
     // Déclencheur manuel (footer / profil)
     const handleManualOpen = () => {
       setShow(true);
-      setShowDesktopHelp(false);
+      setShowManualGuide(false);
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Affichage automatique dès 1s sur mobile et 2s sur desktop si non masqué récemment
+    // Affichage automatique
     let timer: NodeJS.Timeout | null = null;
     if (!wasDismissedRecently()) {
       const delay = detected === 'desktop' ? 1500 : 1000;
@@ -129,25 +151,25 @@ const InstallPrompt: React.FC = () => {
         setHasNativePrompt(false);
         if (outcome === 'accepted') {
           setShow(false);
+          return;
         }
       } catch {
-        // En cas d'exception prompt, afficher l'aide
-        setShowDesktopHelp(true);
+        setShowManualGuide(true);
       }
     } else {
-      setShowDesktopHelp(true);
+      // Sur Brave mobile ou navigateurs bloquant le prompt natif, afficher l'assistance dédiée
+      setShowManualGuide(true);
     }
   };
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setShow(false);
-    setShowDesktopHelp(false);
+    setShowManualGuide(false);
   };
 
   if (isAlreadyInstalled()) return null;
 
-  // Masquer si la bannière de mise à jour ReloadPrompt est active
   const isVisible = show && !reloadActive;
 
   return (
@@ -163,7 +185,7 @@ const InstallPrompt: React.FC = () => {
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
             <div className="bg-slate-900/98 text-white p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-slate-700/80 backdrop-blur-2xl">
-              {/* En-tête : Logo + Titre + Fermer */}
+              {/* En-tête */}
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <picture>
@@ -200,7 +222,7 @@ const InstallPrompt: React.FC = () => {
               </div>
 
               {/* ============================================================ */}
-              {/* 1. CAS iOS : Guide Apple avec Partager -> Écran d'accueil    */}
+              {/* 1. CAS iOS : Guide Apple (Safari / Brave iOS)               */}
               {/* ============================================================ */}
               {platform === 'ios' ? (
                 <div className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-blue-500/40">
@@ -218,7 +240,7 @@ const InstallPrompt: React.FC = () => {
                         Partager{' '}
                         <Share className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
                       </span>{' '}
-                      en bas de Safari
+                      en bas de l'écran
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -244,7 +266,7 @@ const InstallPrompt: React.FC = () => {
                 </div>
               ) : (
                 /* ============================================================ */
-                /* 2. CAS Android & Desktop : Bouton 1-Clic direct              */
+                /* 2. CAS Android & Desktop                                    */
                 /* ============================================================ */
                 <>
                   <button
@@ -255,21 +277,47 @@ const InstallPrompt: React.FC = () => {
                     Installer l'application
                   </button>
 
-                  {/* Message d'aide si prompt natif non supporté par le navigateur actuel */}
-                  {showDesktopHelp && !hasNativePrompt && (
+                  {/* Assistance si Brave Mobile ou navigateur bloquant le prompt natif */}
+                  {showManualGuide && !hasNativePrompt && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
-                      className="bg-slate-800/95 rounded-2xl p-3 mb-2.5 text-xs text-slate-200 border border-slate-700/60"
+                      className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2 border border-orange-500/40"
                     >
-                      <div className="flex items-center gap-1.5 font-bold text-white mb-1">
-                        <Laptop className="w-3.5 h-3.5 text-blue-400" />
-                        <span>Navigateur :</span>
+                      <div className="flex items-center gap-2 font-bold text-orange-400">
+                        {isBraveBrowser ? (
+                          <ShieldCheck className="w-4 h-4 text-orange-400" />
+                        ) : platform === 'android' ? (
+                          <Smartphone className="w-4 h-4 text-emerald-400" />
+                        ) : (
+                          <Laptop className="w-4 h-4 text-blue-400" />
+                        )}
+                        <span>
+                          {isBraveBrowser
+                            ? 'Brave Bouclier détecté :'
+                            : platform === 'android'
+                              ? 'Installation Android :'
+                              : 'Sur ordinateur :'}
+                        </span>
                       </div>
-                      <p className="text-slate-300 leading-snug">
-                        Cliquez sur l'icône d'installation dans la barre d'adresse de votre
-                        navigateur (Chrome, Edge, Brave) pour installer l'application.
-                      </p>
+
+                      {platform === 'android' || isBraveBrowser ? (
+                        <p className="text-slate-300 leading-snug">
+                          Touchez le menu <span className="font-bold text-white">⋮</span> (en bas ou
+                          en haut à droite de Brave) puis sélectionnez{' '}
+                          <span className="font-bold text-white">« Installer l'application »</span>{' '}
+                          ou{' '}
+                          <span className="font-bold text-white">
+                            « Ajouter à l'écran d'accueil »
+                          </span>
+                          .
+                        </p>
+                      ) : (
+                        <p className="text-slate-300 leading-snug">
+                          Cliquez sur l'icône d'installation dans la barre d'adresse de votre
+                          navigateur pour installer l'application.
+                        </p>
+                      )}
                     </motion.div>
                   )}
                 </>
@@ -280,7 +328,7 @@ const InstallPrompt: React.FC = () => {
                 onClick={handleDismiss}
                 className="w-full text-slate-400 hover:text-slate-200 text-xs py-1.5 transition-colors cursor-pointer text-center"
               >
-                {platform === 'ios' ? "J'ai compris" : 'Plus tard'}
+                {platform === 'ios' || showManualGuide ? "J'ai compris" : 'Plus tard'}
               </button>
             </div>
           </motion.div>
