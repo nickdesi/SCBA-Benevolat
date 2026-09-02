@@ -157,16 +157,16 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Team 1: SCBA (or Host) */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 p-1 flex items-center justify-center overflow-hidden">
+              <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 flex items-center justify-center overflow-hidden p-0">
                 {game.teamLogo ? (
                   <img
                     src={game.teamLogo}
                     alt={scbaTeamName}
-                    className="w-full h-full object-contain transform scale-105"
+                    className="w-full h-full object-contain transform scale-135"
                     loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-xl text-[#3629e1]">SCBA</span>
+                  <span className="font-sport font-black text-lg text-[#3629e1]">SCBA</span>
                 )}
               </div>
               {formattedTeamRank && (
@@ -201,16 +201,16 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Team 2: Opponent */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 p-1 flex items-center justify-center overflow-hidden">
+              <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 flex items-center justify-center overflow-hidden p-0">
                 {game.opponentLogo ? (
                   <img
                     src={game.opponentLogo}
                     alt={opponentName}
-                    className="w-full h-full object-contain transform scale-105"
+                    className="w-full h-full object-contain transform scale-135"
                     loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-lg text-slate-700 uppercase">
+                  <span className="font-sport font-black text-base text-slate-700 uppercase">
                     {opponentName.substring(0, 3)}
                   </span>
                 )}
