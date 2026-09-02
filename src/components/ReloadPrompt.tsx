@@ -77,6 +77,14 @@ const ReloadPrompt: React.FC = () => {
     }
   }, [offlineReady, setOfflineReady]);
 
+  // Signaler aux autres composants (InstallPrompt) qu'une notification ReloadPrompt est visible
+  const isAnyVisible = isUpdating || needRefresh || offlineReady;
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent(isAnyVisible ? 'pwa-reload-visible' : 'pwa-reload-hidden'),
+    );
+  }, [isAnyVisible]);
+
   const handleUpdate = async () => {
     shouldReloadOnControllerChangeRef.current = true;
     setIsUpdating(true);
