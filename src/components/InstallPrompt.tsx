@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download,
@@ -9,9 +9,10 @@ import {
   Sparkles,
   Laptop,
   ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-v8';
+const DISMISS_KEY = 'scba-pwa-install-v9';
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
@@ -65,9 +66,13 @@ const InstallPrompt: React.FC = () => {
     typeof window !== 'undefined' && window.__pwaInstallPrompt != null,
   );
   const [show, setShow] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
   const [showManualGuide, setShowManualGuide] = useState(false);
   const [isBraveBrowser, setIsBraveBrowser] = useState(false);
   const [platform, setPlatform] = useState<Platform>('desktop');
+  const promptRef = useRef<BeforeInstallPromptEvent | null>(
+    typeof window !== 'undefined' ? window.__pwaInstallPrompt || null : null,
+  );
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
@@ -82,18 +87,24 @@ const InstallPrompt: React.FC = () => {
     }
 
     if (window.__pwaInstallPrompt) {
+      promptRef.current = window.__pwaInstallPrompt;
       setHasNativePrompt(true);
     }
 
     const handlePromptReady = () => {
-      if (window.__pwaInstallPrompt) setHasNativePrompt(true);
+      if (window.__pwaInstallPrompt) {
+        promptRef.current = window.__pwaInstallPrompt;
+        setHasNativePrompt(true);
+      }
       if (!wasDismissedRecently()) setShow(true);
     };
     window.addEventListener('pwa-prompt-ready', handlePromptReady);
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
-      window.__pwaInstallPrompt = e as BeforeInstallPromptEvent;
+      const promptEvent = e as BeforeInstallPromptEvent;
+      window.__pwaInstallPrompt = promptEvent;
+      promptRef.current = promptEvent;
       setHasNativePrompt(true);
       if (!wasDismissedRecently()) setShow(true);
     };
@@ -103,6 +114,7 @@ const InstallPrompt: React.FC = () => {
       setShow(false);
       setHasNativePrompt(false);
       window.__pwaInstallPrompt = null;
+      promptRef.current = null;
     };
     window.addEventListener('appinstalled', onInstalled);
 
@@ -113,12 +125,12 @@ const InstallPrompt: React.FC = () => {
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Affichage automatique rapide (400ms)
+    // Affichage automatique
     let timer: NodeJS.Timeout | null = null;
     if (!wasDismissedRecently()) {
       timer = setTimeout(() => {
         setShow(true);
-      }, 400);
+      }, 500);
     }
 
     return () => {
@@ -130,22 +142,78 @@ const InstallPrompt: React.FC = () => {
     };
   }, []);
 
+  // Attendre que beforeinstallprompt soit capturé si l'utilisateur clique très vite
+  const waitForPrompt = async (timeoutMs = 2500): Promise<BeforeInstallPromptEvent | null> => {
+    if (promptRef.current || window.__pwaInstallPrompt) {
+      return promptRef.current || window.__pwaInstallPrompt || null;
+    }
+
+    return new Promise((resolve) => {
+      let done = false;
+      const onReady = () => {
+        if (!done && (promptRef.current || window.__pwaInstallPrompt)) {
+          done = true;
+          window.removeEventListener('pwa-prompt-ready', onReady);
+          window.removeEventListener('beforeinstallprompt', onBefore);
+          resolve(promptRef.current || window.__pwaInstallPrompt || null);
+        }
+      };
+      const onBefore = (e: Event) => {
+        if (!done) {
+          done = true;
+          e.preventDefault();
+          const evt = e as BeforeInstallPromptEvent;
+          window.__pwaInstallPrompt = evt;
+          promptRef.current = evt;
+          window.removeEventListener('pwa-prompt-ready', onReady);
+          window.removeEventListener('beforeinstallprompt', onBefore);
+          resolve(evt);
+        }
+      };
+
+      window.addEventListener('pwa-prompt-ready', onReady);
+      window.addEventListener('beforeinstallprompt', onBefore);
+
+      setTimeout(() => {
+        if (!done) {
+          done = true;
+          window.removeEventListener('pwa-prompt-ready', onReady);
+          window.removeEventListener('beforeinstallprompt', onBefore);
+          resolve(promptRef.current || window.__pwaInstallPrompt || null);
+        }
+      }, timeoutMs);
+    });
+  };
+
   const handleInstallClick = async () => {
-    const promptEvent = window.__pwaInstallPrompt;
-    if (promptEvent) {
-      try {
+    if (platform === 'ios') {
+      return;
+    }
+
+    setIsInstalling(true);
+
+    try {
+      // Attente si prompt en cours d'initialisation
+      const promptEvent = await waitForPrompt();
+
+      if (promptEvent) {
         await promptEvent.prompt();
         const { outcome } = await promptEvent.userChoice;
         window.__pwaInstallPrompt = null;
+        promptRef.current = null;
         setHasNativePrompt(false);
+        setIsInstalling(false);
         if (outcome === 'accepted') {
           setShow(false);
           return;
         }
-      } catch {
+      } else {
+        setIsInstalling(false);
         setShowManualGuide(true);
       }
-    } else {
+    } catch (err) {
+      console.warn('[PWA Install] Échec du prompt natif:', err);
+      setIsInstalling(false);
       setShowManualGuide(true);
     }
   };
@@ -257,10 +325,20 @@ const InstallPrompt: React.FC = () => {
                 <>
                   <button
                     onClick={handleInstallClick}
-                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
+                    disabled={isInstalling}
+                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer disabled:opacity-75"
                   >
-                    <Download className="w-4.5 h-4.5" />
-                    Installer l'application
+                    {isInstalling ? (
+                      <>
+                        <RefreshCw className="w-4.5 h-4.5 animate-spin" />
+                        Ouverture de l'installation...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4.5 h-4.5" />
+                        Installer l'application
+                      </>
+                    )}
                   </button>
 
                   {/* Assistance si prompt bloqué par le navigateur */}
