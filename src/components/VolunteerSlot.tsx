@@ -153,21 +153,21 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
 
     return (
       <div
-        className="py-3 px-1 border-b border-slate-100 dark:border-slate-800/80 last:border-b-0 transition-colors"
+        className="py-3.5 px-1.5 border-b border-slate-100 dark:border-slate-800/80 last:border-b-0 transition-colors"
         style={{ animationDelay: `${animationDelay}s` }}
       >
         {/* Role Row Header */}
-        <div className="flex items-center justify-between gap-3 mb-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-              <StyledRoleIcon role={role.name} size="sm" />
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0">
+              <StyledRoleIcon role={role.name} size="md" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-slate-900 dark:text-white text-sm leading-tight truncate">
+              <h3 className="font-black text-slate-900 dark:text-white text-base sm:text-lg leading-tight truncate">
                 {role.name}
               </h3>
               {currentCount < role.capacity && !isUnlimited && (
-                <p className="text-[10px] font-bold text-red-500 leading-tight">
+                <p className="text-xs sm:text-sm font-bold text-red-600 dark:text-red-400 leading-tight mt-0.5">
                   {role.capacity - currentCount} place{role.capacity - currentCount > 1 ? 's' : ''}{' '}
                   libre{role.capacity - currentCount > 1 ? 's' : ''}
                 </p>
@@ -177,12 +177,12 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
 
           {/* Status Badge */}
           {isFull && !isUnlimited ? (
-            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md text-[11px] font-black border border-emerald-500/20 flex-shrink-0">
-              <CheckIcon className="w-3 h-3" strokeWidth={3} />
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs sm:text-sm font-black border border-emerald-500/20 flex-shrink-0">
+              <CheckIcon className="w-3.5 h-3.5" strokeWidth={3} />
               Complet
             </span>
           ) : (
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0">
+            <span className="text-xs sm:text-sm font-black px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/60 flex-shrink-0">
               {isUnlimited ? `${currentCount} inscrits` : `${currentCount} / ${role.capacity}`}
             </span>
           )}

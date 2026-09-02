@@ -36,7 +36,7 @@ const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
       {/* Avatar Circle */}
       <div
         className={`
-                w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden
+                w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105 overflow-hidden
                 ${
                   isMine
                     ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white ring-2 ring-blue-200 dark:ring-blue-900'
@@ -47,12 +47,12 @@ const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
         {avatarUrl ? (
           <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-sm font-bold tracking-tight">{getInitials(name)}</span>
+          <span className="text-base font-black tracking-tight">{getInitials(name)}</span>
         )}
 
         {/* Badge "Me" */}
         {isMine && (
-          <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[11px] px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm z-10">
+          <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-black px-2 py-0.5 rounded-full border-2 border-white dark:border-slate-800 shadow-sm z-10">
             Moi
           </div>
         )}
@@ -60,7 +60,7 @@ const VolunteerAvatar: React.FC<VolunteerAvatarProps> = ({
 
       {/* Name Label */}
       <span
-        className="text-xs text-center font-medium text-slate-700 dark:text-slate-300 truncate max-w-[80px]"
+        className="text-xs sm:text-sm text-center font-bold text-slate-800 dark:text-slate-100 truncate max-w-[90px]"
         title={name}
       >
         {name}

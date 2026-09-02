@@ -147,10 +147,10 @@ const GameList: React.FC<GameListProps> = memo(
               </div>
             </div>
 
-            {/* Grille avec items-start : chaque carte a une hauteur indépendante au dépliement */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-start">
+            {/* Layout multi-colonnes masonry natif : flux vertical indépendant sans trou vide */}
+            <div className="columns-1 lg:columns-2 gap-6 [column-fill:_balance]">
               {group.games.map((game, index) => (
-                <div key={game.id} className="w-full flex flex-col cv-auto self-start">
+                <div key={game.id} className="break-inside-avoid mb-6 w-full cv-auto">
                   <GameCard
                     game={game}
                     isAdmin={isAdmin}

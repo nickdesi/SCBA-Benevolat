@@ -55,13 +55,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ game, isHomeGame: _isHome
         whileTap={{ scale: 0.98 }}
         whileHover={{ scale: 1.02 }}
         onClick={() => setShowCalendarPicker(!showCalendarPicker)}
-        className="flex-1 min-h-[40px] py-2 px-4 flex items-center justify-center gap-2
-                    text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200
-                    bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80
-                    border border-slate-200/80 dark:border-slate-700/60 rounded-xl transition-all shadow-xs"
+        className="flex-1 min-h-[44px] py-2.5 px-4 flex items-center justify-center gap-2.5
+                    text-xs sm:text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100
+                    bg-slate-100/95 dark:bg-slate-800/95 hover:bg-slate-200/90 dark:hover:bg-slate-700/90
+                    border border-slate-200/80 dark:border-slate-700/80 rounded-xl transition-all shadow-xs"
         aria-label="Ajouter au calendrier"
       >
-        <Calendar className="w-4 h-4 text-[#3629e1] dark:text-indigo-400" aria-hidden="true" />
+        <Calendar
+          className="w-4.5 h-4.5 text-[#3629e1] dark:text-indigo-400 flex-shrink-0"
+          aria-hidden="true"
+        />
         <span>Ajouter au calendrier</span>
       </motion.button>
 

@@ -20,7 +20,7 @@ const EmptySlot: React.FC<EmptySlotProps> = ({ onClick, label = 'Rejoindre', isU
       {/* Dashed Circle with Glow */}
       <div
         className={`
-          relative w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center transition-all duration-300
+          relative w-13 h-13 sm:w-14 sm:h-14 rounded-full border-2 border-dashed flex items-center justify-center transition-all duration-300
           ${
             isUrgent
               ? 'border-orange-500/80 bg-orange-500/10 text-orange-600 dark:border-orange-400 dark:bg-orange-950/40 dark:text-orange-300 shadow-[0_0_12px_rgba(249,115,22,0.25)]'
@@ -28,17 +28,17 @@ const EmptySlot: React.FC<EmptySlotProps> = ({ onClick, label = 'Rejoindre', isU
           }
         `}
       >
-        <PlusIcon className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
+        <PlusIcon className="w-6 h-6 transition-transform duration-200 group-hover:rotate-90" />
       </div>
 
       {/* Action Tag */}
       <span
         className={`
-          text-[11px] font-bold tracking-tight px-2 py-0.5 rounded-full transition-all duration-200
+          text-xs sm:text-sm font-black tracking-tight px-2.5 py-0.5 rounded-full transition-all duration-200
           ${
             isUrgent
-              ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 font-bold border border-orange-200/60 dark:border-orange-800/60 shadow-xs'
-              : 'text-slate-600 dark:text-slate-300 group-hover:text-[#3629e1] dark:group-hover:text-indigo-300'
+              ? 'bg-orange-100 text-orange-800 dark:bg-orange-950/70 dark:text-orange-200 border border-orange-200/80 dark:border-orange-800/80 shadow-xs'
+              : 'text-slate-700 dark:text-slate-200 group-hover:text-[#3629e1] dark:group-hover:text-indigo-300'
           }
         `}
       >
