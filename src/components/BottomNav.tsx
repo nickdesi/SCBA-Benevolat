@@ -1,16 +1,14 @@
 import React, { memo, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { List, Calendar, LogIn } from 'lucide-react';
-import { AnimatedBallIcon } from './Icons';
+import { List, Calendar, User, LogIn } from 'lucide-react';
+import { triggerHaptic } from '../utils/haptics';
 
 interface BottomNavProps {
   currentView: 'home' | 'planning' | 'calendar';
   onViewChange: (view: 'home' | 'planning' | 'calendar') => void;
-  onPlanningClick: () => void; // Opens ProfileModal
+  onPlanningClick: () => void; // Opens ProfileModal / Auth
   isAuthenticated: boolean;
 }
-
-import { triggerHaptic } from '../utils/haptics';
 
 const BottomNav: React.FC<BottomNavProps> = memo(
   ({ currentView, onViewChange, onPlanningClick, isAuthenticated }) => {
@@ -19,7 +17,7 @@ const BottomNav: React.FC<BottomNavProps> = memo(
     const handleViewChange = useCallback(
       (view: 'home' | 'calendar') => {
         if (currentView !== view) {
-          triggerHaptic(6); // Short, sharp click for switching
+          triggerHaptic(6);
           onViewChange(view);
         }
       },
@@ -27,107 +25,97 @@ const BottomNav: React.FC<BottomNavProps> = memo(
     );
 
     const handlePlanningClick = useCallback(() => {
-      triggerHaptic([10, 30, 10]); // Premium double-tap pattern
+      triggerHaptic([8, 20, 8]);
       onPlanningClick();
     }, [onPlanningClick]);
 
     return (
-      <div className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
-        <div className="absolute inset-0 rounded-2xl border border-white/35 bg-white/78 shadow-[0_12px_30px_rgba(18,31,47,0.18)] backdrop-blur-xl dark:border-slate-700/45 dark:bg-slate-900/78 dark:shadow-[0_12px_36px_rgba(0,0,0,0.42)]" />
-
-        <div className="flex justify-between items-center p-2 gap-3 relative z-10">
-          {/* View Switcher (Floating Pill) */}
-          <div className="relative flex h-14 flex-1 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100/70 p-1 dark:border-slate-700/55 dark:bg-slate-800/55">
-            <button
+      <nav
+        aria-label="Navigation principale"
+        className="fixed bottom-3.5 left-4 right-4 z-50 md:hidden max-w-md mx-auto"
+      >
+        {/* Native Frosted Glass Shell with 1px border & soft elevation */}
+        <div className="relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/92 dark:bg-slate-900/92 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-2xl p-1.5 transition-all">
+          <div className="grid grid-cols-3 gap-1.5 items-center">
+            {/* Tab 1: Liste des Matchs */}
+            <motion.button
+              whileTap={{ scale: 0.94 }}
               onClick={() => handleViewChange('home')}
-              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'home' ? 'text-slate-50' : 'text-slate-600 dark:text-slate-300'}`}
+              className={`relative flex h-13 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors cursor-pointer select-none ${
+                currentView === 'home'
+                  ? 'text-white font-black'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold'
+              }`}
             >
-              <motion.div
-                animate={
-                  prefersReducedMotion
-                    ? undefined
-                    : {
-                        scale: currentView === 'home' ? 1.1 : 1,
-                        rotate: currentView === 'home' ? [0, -10, 0] : 0,
-                      }
-                }
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <List className="w-5 h-5" />
-              </motion.div>
-              <span>Liste</span>
               {currentView === 'home' && (
                 <motion.div
-                  layoutId="nav-pill"
-                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#3629e1] to-[#aa2e0f] shadow-sm dark:border-white/10"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 rounded-xl bg-[#3629e1] shadow-sm shadow-[#3629e1]/40"
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { type: 'spring', stiffness: 450, damping: 35 }
+                  }
                 />
               )}
-            </button>
-            <button
+              <div className="relative z-10">
+                <List className="w-5 h-5" strokeWidth={currentView === 'home' ? 2.5 : 2} />
+              </div>
+              <span className="relative z-10 text-[10px] tracking-tight uppercase">Matchs</span>
+            </motion.button>
+
+            {/* Tab 2: Calendrier Semaine */}
+            <motion.button
+              whileTap={{ scale: 0.94 }}
               onClick={() => handleViewChange('calendar')}
-              className={`relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors duration-300 ${currentView === 'calendar' ? 'text-slate-50' : 'text-slate-600 dark:text-slate-300'}`}
+              className={`relative flex h-13 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors cursor-pointer select-none ${
+                currentView === 'calendar'
+                  ? 'text-white font-black'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold'
+              }`}
             >
-              <motion.div
-                animate={
-                  prefersReducedMotion
-                    ? undefined
-                    : {
-                        scale: currentView === 'calendar' ? 1.1 : 1,
-                        rotate: currentView === 'calendar' ? [0, 10, 0] : 0,
-                      }
-                }
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <Calendar className="w-5 h-5" />
-              </motion.div>
-              <span>Semaine</span>
               {currentView === 'calendar' && (
                 <motion.div
-                  layoutId="nav-pill"
-                  className="absolute inset-0 -z-10 rounded-lg border border-black/5 bg-gradient-to-r from-[#3629e1] to-[#aa2e0f] shadow-sm dark:border-white/10"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 rounded-xl bg-[#3629e1] shadow-sm shadow-[#3629e1]/40"
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0 }
+                      : { type: 'spring', stiffness: 450, damping: 35 }
+                  }
                 />
               )}
-            </button>
-          </div>
+              <div className="relative z-10">
+                <Calendar className="w-5 h-5" strokeWidth={currentView === 'calendar' ? 2.5 : 2} />
+              </div>
+              <span className="relative z-10 text-[10px] tracking-tight uppercase">Semaine</span>
+            </motion.button>
 
-          {/* Mon Espace (authentifié) OU Connexion (non-authentifié) */}
-          {isAuthenticated ? (
+            {/* Tab 3: Mon Espace (Authentifié) OU Connexion */}
             <motion.button
-              whileTap={{ scale: 0.92 }}
-              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
               onClick={handlePlanningClick}
-              aria-label="Mon espace bénévole"
-              className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-white/20 bg-gradient-to-br from-[#aa2e0f] to-[#c2988f] text-white shadow-lg shadow-[#aa2e0f]/30 dark:border-white/15 dark:from-[#3629e1] dark:to-[#aa2e0f] dark:shadow-[#3629e1]/30"
+              className={`relative flex h-13 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors cursor-pointer select-none ${
+                isAuthenticated
+                  ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  : 'text-[#3629e1] dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 font-bold'
+              }`}
+              aria-label={isAuthenticated ? 'Mon espace bénévole' : 'Se connecter'}
             >
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <motion.div
-                animate={prefersReducedMotion ? undefined : { rotate: 360 }}
-                transition={
-                  prefersReducedMotion
-                    ? undefined
-                    : { duration: 20, repeat: Infinity, ease: 'linear' }
-                }
-              >
-                <AnimatedBallIcon className="w-6 h-6" />
-              </motion.div>
-              <span className="text-[9px] font-black uppercase tracking-tight">Moi</span>
+              <div className="relative z-10">
+                {isAuthenticated ? (
+                  <User className="w-5 h-5" strokeWidth={2} />
+                ) : (
+                  <LogIn className="w-5 h-5" strokeWidth={2.2} />
+                )}
+              </div>
+              <span className="relative z-10 text-[10px] font-bold tracking-tight uppercase">
+                {isAuthenticated ? 'Mon Profil' : 'Connexion'}
+              </span>
             </motion.button>
-          ) : (
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              whileHover={{ scale: 1.05 }}
-              onClick={handlePlanningClick}
-              aria-label="Se connecter"
-              className="group relative flex h-14 aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-[#3629e1]/30 bg-[#3629e1]/10 text-[#3629e1] dark:bg-[#3629e1]/20 dark:text-indigo-300 shadow-sm"
-            >
-              <LogIn className="w-5 h-5" />
-              <span className="text-[9px] font-black uppercase tracking-tight">Connexion</span>
-            </motion.button>
-          )}
+          </div>
         </div>
-      </div>
+      </nav>
     );
   },
 );

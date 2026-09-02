@@ -84,8 +84,33 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           )}
         </div>
 
-        {/* Right: Urgent + My Registration + Home/Away Pills */}
+        {/* Right: Urgent + My Registration + Home/Away Pills + Admin Actions */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Admin Controls */}
+          {isAdmin && (
+            <div className="flex items-center gap-0.5 mr-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-700/80">
+              <button
+                type="button"
+                onClick={onEditRequest}
+                className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                aria-label="Modifier ce match"
+              >
+                <EditIcon className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(true);
+                }}
+                className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-red-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                aria-label="Supprimer ce match"
+              >
+                <DeleteIcon className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {/* Mon engagement */}
           {isUserRegistered && isHomeGame && (
             <span
@@ -264,40 +289,21 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
       )}
 
-      {/* Admin Controls */}
+      {/* Admin Confirm Modal */}
       {isAdmin && (
-        <div className="absolute top-2 right-2 flex gap-1 z-50">
-          <button
-            onClick={onEditRequest}
-            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:bg-blue-100"
-            aria-label="Modifier ce match"
-          >
-            <EditIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDeleteConfirm(true);
-            }}
-            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors active:bg-red-100"
-            aria-label="Supprimer ce match"
-          >
-            <DeleteIcon className="w-4 h-4" />
-          </button>
-          <ConfirmModal
-            isOpen={showDeleteConfirm}
-            title="Supprimer ce match ?"
-            message="Voulez-vous vraiment supprimer ce match ?"
-            confirmText="Supprimer"
-            cancelText="Annuler"
-            confirmStyle="danger"
-            onConfirm={() => {
-              setShowDeleteConfirm(false);
-              onDeleteRequest();
-            }}
-            onCancel={() => setShowDeleteConfirm(false)}
-          />
-        </div>
+        <ConfirmModal
+          isOpen={showDeleteConfirm}
+          title="Supprimer ce match ?"
+          message="Voulez-vous vraiment supprimer ce match ?"
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          confirmStyle="danger"
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            onDeleteRequest();
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       )}
     </div>
   );
