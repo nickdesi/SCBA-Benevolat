@@ -157,12 +157,13 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Team 1: SCBA (or Host) */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
-              <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-white dark:bg-slate-800 p-1.5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/20 p-2 flex items-center justify-center overflow-hidden">
                 {game.teamLogo ? (
                   <img
                     src={game.teamLogo}
                     alt={scbaTeamName}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+                    loading="lazy"
                   />
                 ) : (
                   <span className="font-sport font-black text-lg text-[#3629e1]">SCBA</span>
@@ -200,15 +201,16 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Team 2: Opponent */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
-              <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-white dark:bg-slate-800 p-1.5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/20 p-2 flex items-center justify-center overflow-hidden">
                 {game.opponentLogo ? (
                   <img
                     src={game.opponentLogo}
                     alt={opponentName}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal"
+                    loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-sm text-slate-400 uppercase">
+                  <span className="font-sport font-black text-sm text-slate-600 uppercase">
                     {opponentName.substring(0, 3)}
                   </span>
                 )}
