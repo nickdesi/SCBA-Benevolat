@@ -81,20 +81,20 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </div>
 
       {/* Top Meta Bar: Badges + Jauge Bénévoles + Admin Controls */}
-      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[30px]">
+      <div className="relative z-10 flex items-center justify-between gap-2 mb-3 min-h-[32px]">
         {/* Left: Competition Badge */}
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isCup ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 truncate shadow-xs">
-              <Trophy className="w-3 h-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-md bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/40 truncate shadow-xs">
+              <Trophy className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <span className="truncate">{game.competition}</span>
             </span>
           ) : game.competition ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-white/70 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/80 backdrop-blur-xs truncate shadow-2xs">
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-white/80 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700/80 backdrop-blur-xs truncate shadow-2xs">
               {game.competition}
             </span>
           ) : (
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Match officiel
             </span>
           )}
@@ -108,10 +108,10 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               <button
                 type="button"
                 onClick={onEditRequest}
-                className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
                 aria-label="Modifier ce match"
               >
-                <EditIcon className="w-3.5 h-3.5" />
+                <EditIcon className="w-4 h-4" />
               </button>
               <button
                 type="button"
@@ -119,10 +119,10 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                   e.stopPropagation();
                   setShowDeleteConfirm(true);
                 }}
-                className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-red-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-red-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
                 aria-label="Supprimer ce match"
               >
-                <DeleteIcon className="w-3.5 h-3.5" />
+                <DeleteIcon className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -130,36 +130,36 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Mon engagement */}
           {isUserRegistered && isHomeGame && (
             <span
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-[#3629e1] text-white shadow-xs"
+              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full bg-[#3629e1] text-white shadow-xs"
               title="Vous êtes bénévole sur ce match"
             >
-              <BadgeCheck className="w-3 h-3" />
+              <BadgeCheck className="w-3.5 h-3.5" />
               Inscrit
             </span>
           )}
 
           {/* Urgent Badge */}
           {isUrgent && !isFullyStaffed && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-red-500 text-white shadow-xs animate-pulse">
-              <Flame className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full bg-red-600 text-white shadow-xs animate-pulse">
+              <Flame className="w-3.5 h-3.5" />
               Urgent
             </span>
           )}
 
           {/* Domicile / Extérieur Pill */}
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-full text-white shadow-xs ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full text-white shadow-xs ${
               isHomeGame ? 'bg-emerald-600' : 'bg-blue-600'
             }`}
           >
             {isHomeGame ? (
               <>
-                <Home className="w-3 h-3 text-emerald-200" />
+                <Home className="w-3.5 h-3.5 text-emerald-100" />
                 Domicile
               </>
             ) : (
               <>
-                <Plane className="w-3 h-3 text-blue-200" />
+                <Plane className="w-3.5 h-3.5 text-blue-100" />
                 Extérieur
               </>
             )}
@@ -221,36 +221,36 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                     loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-lg text-[#3629e1]">SCBA</span>
+                  <span className="font-sport font-black text-xl text-[#3629e1]">SCBA</span>
                 )}
               </div>
               {formattedTeamRank && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.2 rounded-md bg-amber-500 text-white font-black text-[9px] shadow-xs">
+                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-amber-500 text-white font-black text-[11px] shadow-xs">
                   {formattedTeamRank}
                 </span>
               )}
             </div>
-            <div className="h-10 sm:h-11 flex items-center justify-center px-1">
-              <h2 className="font-sport font-black text-xs sm:text-sm text-slate-900 dark:text-white uppercase leading-tight tracking-tight line-clamp-2">
+            <div className="h-11 sm:h-12 flex items-center justify-center px-1">
+              <h2 className="font-sport font-black text-sm sm:text-base text-slate-900 dark:text-white uppercase leading-tight tracking-tight line-clamp-2">
                 {scbaTeamName}
               </h2>
             </div>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">
               {isHomeGame ? 'Hôte' : 'Visiteur'}
             </span>
           </div>
 
           {/* Center: Match Time / Date Pill */}
           <div className="col-span-3 flex flex-col items-center justify-center text-center">
-            <div className="flex flex-col items-center justify-center px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs w-full max-w-[96px]">
-              <span className="font-sport font-black text-base sm:text-lg text-slate-900 dark:text-white tracking-tight leading-none">
+            <div className="flex flex-col items-center justify-center px-2 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs w-full max-w-[100px]">
+              <span className="font-sport font-black text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-none">
                 {game.time}
               </span>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1 leading-none">
                 {formatDateShort(game.dateISO, game.date)}
               </span>
             </div>
-            <span className="font-sport text-[10px] font-black text-slate-300 dark:text-slate-600 mt-1 uppercase tracking-widest">
+            <span className="font-sport text-xs font-black text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">
               VS
             </span>
           </div>
@@ -267,23 +267,23 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                     loading="lazy"
                   />
                 ) : (
-                  <span className="font-sport font-black text-base text-slate-700 uppercase">
+                  <span className="font-sport font-black text-lg text-slate-700 uppercase">
                     {opponentName.substring(0, 3)}
                   </span>
                 )}
               </div>
               {formattedOpponentRank && (
-                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.2 rounded-md bg-slate-600 text-white font-black text-[9px] shadow-xs">
+                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-slate-600 text-white font-black text-[11px] shadow-xs">
                   {formattedOpponentRank}
                 </span>
               )}
             </div>
-            <div className="h-10 sm:h-11 flex items-center justify-center px-1">
-              <h3 className="font-sport font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 uppercase leading-tight tracking-tight line-clamp-2">
+            <div className="h-11 sm:h-12 flex items-center justify-center px-1">
+              <h3 className="font-sport font-black text-sm sm:text-base text-slate-800 dark:text-slate-200 uppercase leading-tight tracking-tight line-clamp-2">
                 {opponentName}
               </h3>
             </div>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0.5">
               {!isHomeGame ? 'Hôte' : 'Visiteur'}
             </span>
           </div>
@@ -291,15 +291,15 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </div>
 
       {/* Bottom Info Strip: Location & Direct GPS (Glass Capsule) */}
-      <div className="relative z-10 mt-3 px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/80 dark:border-slate-700/60 shadow-2xs flex items-center justify-between gap-2">
+      <div className="relative z-10 mt-3 px-3 py-2 rounded-xl bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-white/90 dark:border-slate-700/60 shadow-2xs flex items-center justify-between gap-2">
         {/* Short Date & Location Line */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 min-w-0 flex-1">
-          <Calendar className="w-3.5 h-3.5 text-[#3629e1] dark:text-indigo-400 flex-shrink-0" />
-          <span className="font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 min-w-0 flex-1">
+          <Calendar className="w-4 h-4 text-[#3629e1] dark:text-indigo-400 flex-shrink-0" />
+          <span className="font-black text-slate-900 dark:text-white whitespace-nowrap">
             {formatDateShort(game.dateISO, game.date)}
           </span>
           <span className="text-slate-300 dark:text-slate-600">•</span>
-          <span className="truncate text-slate-600 dark:text-slate-400 font-medium">
+          <span className="truncate text-slate-700 dark:text-slate-300 font-semibold">
             {game.location}
           </span>
         </div>
@@ -309,9 +309,9 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           href={`https://waze.com/ul?q=${encodeURIComponent(game.location)}&navigate=yes`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 rounded-md border border-indigo-100 dark:border-indigo-900/60 transition-colors flex-shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 rounded-lg border border-indigo-100 dark:border-indigo-900/60 transition-colors flex-shrink-0 min-h-[32px]"
         >
-          <Navigation className="w-3 h-3" />
+          <Navigation className="w-3.5 h-3.5" />
           Itinéraire
         </a>
       </div>

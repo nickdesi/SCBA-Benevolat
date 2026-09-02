@@ -246,16 +246,16 @@ const GameCard: React.FC<GameCardProps> = memo(
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 leading-none">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none">
                       Bénévoles
                     </span>
                     {missingRolesNames.length > 0 && (
                       <span
-                        className={`text-[10px] font-bold ${
+                        className={`text-xs font-bold ${
                           isUrgent
                             ? 'text-red-600 dark:text-red-400'
                             : 'text-amber-600 dark:text-amber-400'
-                        } leading-none truncate max-w-[140px]`}
+                        } leading-none truncate max-w-[150px]`}
                       >
                         Manque : {missingRolesNames[0]}
                         {missingRolesNames.length > 1 ? ` +${missingRolesNames.length - 1}` : ''}
@@ -267,7 +267,7 @@ const GameCard: React.FC<GameCardProps> = memo(
             ) : (
               /* Matchs extérieurs : statut covoiturage */
               <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300">
-                <div className="p-1 rounded-lg bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400">
+                <div className="p-1.5 rounded-lg bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400">
                   <Car className="w-4 h-4" />
                 </div>
                 {(() => {
@@ -275,19 +275,19 @@ const GameCard: React.FC<GameCardProps> = memo(
                   const passengers = carpoolStats.passengers;
                   if (drivers === 0 && passengers === 0)
                     return (
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                         Covoiturage disponible
                       </span>
                     );
                   return (
                     <div className="flex items-center gap-1.5">
                       {drivers > 0 && (
-                        <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">
+                        <span className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">
                           {drivers} conducteur{drivers > 1 ? 's' : ''}
                         </span>
                       )}
                       {passengers > 0 && (
-                        <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
+                        <span className="px-3 py-1 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
                           {passengers} passager{passengers > 1 ? 's' : ''}
                         </span>
                       )}
@@ -303,7 +303,7 @@ const GameCard: React.FC<GameCardProps> = memo(
             {/* Label CTA visible sur mobile */}
             {!isExpanded && isHomeGame && !isFullyStaffed && (
               <span
-                className={`text-[10px] font-black uppercase tracking-wider hidden xs:inline-flex items-center gap-1 px-2.5 py-1 rounded-full transition-colors ${
+                className={`text-xs font-black uppercase tracking-wider hidden xs:inline-flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors ${
                   isUrgent
                     ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400'
                     : 'bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400'
