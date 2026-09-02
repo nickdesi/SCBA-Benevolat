@@ -1,5 +1,4 @@
 import React, { memo, useMemo } from 'react';
-import { Calendar } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
 import GameCard from './GameCard';
 
@@ -125,30 +124,26 @@ const GameList: React.FC<GameListProps> = memo(
     }
 
     return (
-      <div className="space-y-12">
+      <div className="space-y-8">
         {groups.map((group, groupIdx) => (
-          <div key={`${group.label}-${groupIdx}`}>
-            {/* Month Header - Modern pill style */}
-            <div className="flex items-center justify-center my-10">
-              <div
-                className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3
-                          bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-900 dark:to-purple-900
-                          rounded-full shadow-lg shadow-indigo-500/30 border border-white/10"
-              >
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-base sm:text-lg font-black text-white tracking-wide">
+          <section key={`${group.label}-${groupIdx}`} className="relative">
+            {/* Native Mobile Sticky Month Header */}
+            <div className="sticky top-[108px] z-30 py-2.5 px-1 backdrop-blur-md bg-[#e8ecef]/85 dark:bg-[#0b1320]/85 transition-colors">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-300/80 dark:border-slate-800 pb-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#3629e1]" />
+                  <h2 className="font-sport text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white">
                     {group.label}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                    {group.homeCount} Dom
                   </span>
-                  <span className="text-[11px] font-medium uppercase tracking-wider flex items-center gap-1">
-                    <span className="text-emerald-300">{group.homeCount} Dom</span>
-                    <span className="text-slate-400">•</span>
-                    <span className="text-blue-300">{group.awayCount} Ext</span>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+                    {group.awayCount} Ext
                   </span>
                 </div>
-                <span className="text-xs sm:text-sm font-bold px-2 py-0.5 bg-white/20 text-white/90 rounded-full ml-1 sm:ml-2 flex-shrink-0">
-                  {group.games.length} matchs
-                </span>
               </div>
             </div>
 
@@ -180,7 +175,7 @@ const GameList: React.FC<GameListProps> = memo(
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         ))}
       </div>
     );

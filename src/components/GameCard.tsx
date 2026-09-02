@@ -62,7 +62,7 @@ const GameCard: React.FC<GameCardProps> = memo(
     onAcceptPassenger,
     onRejectPassenger,
     onCancelRequest,
-    onToast,
+    onToast: _onToast,
     isAdmin,
     isEditing,
     onEditRequest,
@@ -73,7 +73,7 @@ const GameCard: React.FC<GameCardProps> = memo(
     isAuthenticated,
     index = 0,
   }) => {
-    // Accordion state - Default expanded if urgent logic removed or kept? kept locally but simplified
+    // Accordéon — auto-ouvert pour les matchs urgents (P0 Phase 4)
     const [isExpanded, setIsExpanded] = useState(false);
 
     const roleStats = useMemo(() => getGameRoleStats(game), [game]);
@@ -93,7 +93,14 @@ const GameCard: React.FC<GameCardProps> = memo(
       [game, isFullyStaffed],
     );
 
-    // P0 : badge "Mon engagement" visible sans ouvrir l'accordéon.
+    // P0 Phase 4 : auto-expansion des matchs urgents
+    React.useEffect(() => {
+      if (isUrgent && !isFullyStaffed) {
+        setIsExpanded(true);
+      }
+    }, [isUrgent, isFullyStaffed]);
+
+    // P0 Phase 3 : badge "Mon engagement" visible sans ouvrir l'accordéon.
     // True si userRegistrations contient au moins un rôle pour ce match.
     const isUserRegistered = useMemo(() => {
       if (!userRegistrations) return false;
@@ -126,23 +133,23 @@ const GameCard: React.FC<GameCardProps> = memo(
       <motion.div
         id={`game-${game.id}`}
         data-game-id={game.id}
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.05 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.04 }}
         className={`
-            game-card-container relative rounded-3xl overflow-hidden transition-all duration-300 h-full
-            bg-white/90 dark:bg-slate-900/90 backdrop-blur-md
-            border border-white/20 dark:border-slate-700/50
-            ${
-              game.competition
-                ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-amber-500/30 dark:border-amber-500/30 shadow-amber-500/5 ring-1 ring-amber-500/20'
-                : isFullyStaffed
-                  ? 'shadow-none border-emerald-500/20 dark:border-emerald-500/20 opacity-70 dark:opacity-50 grayscale-[30%] hover:opacity-100 hover:grayscale-0'
-                  : isUrgent
-                    ? 'shadow-lg hover:shadow-xl hover:-translate-y-1 border-red-500/30 dark:border-red-500/30 shadow-red-500/5'
-                    : 'shadow-lg hover:shadow-xl hover:-translate-y-1'
-            }
+          game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-full
+          bg-white dark:bg-slate-900
+          border
+          ${
+            game.competition
+              ? 'border-amber-400/40 dark:border-amber-500/30 shadow-md shadow-amber-500/5 ring-1 ring-amber-400/20'
+              : isFullyStaffed
+                ? 'border-emerald-500/20 dark:border-emerald-500/20 opacity-80 dark:opacity-70 shadow-xs'
+                : isUrgent
+                  ? 'border-red-500/40 dark:border-red-500/30 shadow-md shadow-red-500/10 ring-1 ring-red-500/20'
+                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-md shadow-slate-950/5'
+          }
         `}
       >
         {/* 1. Header Section */}
@@ -163,36 +170,47 @@ const GameCard: React.FC<GameCardProps> = memo(
           />
         </div>
 
-        {/* 2. Accordion Trigger */}
+        {/* 2. Accordion Trigger — Phase 4 : CTA explicite + surface de tap optimisée */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           aria-expanded={isExpanded}
           aria-controls={`game-card-panel-${game.id}`}
-          aria-label={`${isExpanded ? 'Masquer' : 'Afficher'} les détails du match ${game.team} contre ${game.opponent}`}
+          aria-label={`${
+            isExpanded ? 'Masquer' : 'Voir'
+          } les détails du match ${game.team} contre ${game.opponent}`}
           className={`
-                    w-full px-4 py-3 flex items-center justify-between cursor-pointer
-                    bg-slate-50/50 dark:bg-slate-900/30
-                    border-t border-slate-200/60 dark:border-slate-800/60
-                    hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors relative group
-                `}
+            w-full px-4 flex items-center justify-between cursor-pointer
+            min-h-[52px]
+            bg-slate-50/50 dark:bg-slate-900/30
+            border-t border-slate-200/60 dark:border-slate-800/60
+            hover:bg-slate-100/50 dark:hover:bg-slate-800/50
+            active:bg-slate-200/60 dark:active:bg-slate-700/60
+            transition-colors relative group
+          `}
         >
-          {/* Progress Bar Background - Modern Gradient */}
+          {/* Progress Bar Background */}
           {isHomeGame && (
             <div
-              className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-1000 ease-out
-                        ${
-                          isFullyStaffed
-                            ? 'bg-gradient-to-r from-emerald-500/10 via-emerald-500/20 to-emerald-500/30 dark:from-emerald-900/30 dark:to-emerald-900/50'
-                            : 'bg-gradient-to-r from-emerald-500/5 via-emerald-500/10 to-emerald-500/15 dark:from-emerald-900/10 dark:to-emerald-900/20 border-r border-emerald-500/10'
-                        }`}
-              style={{ width: isFullyStaffed ? '100%' : `${(filledSlots / totalCapacity) * 100}%` }}
+              className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-700 ease-out
+                ${
+                  isFullyStaffed
+                    ? 'bg-gradient-to-r from-emerald-500/12 to-emerald-500/25 dark:from-emerald-900/35 dark:to-emerald-900/55'
+                    : isUrgent
+                      ? 'bg-gradient-to-r from-red-500/8 to-red-500/18 dark:from-red-900/20 dark:to-red-900/35'
+                      : 'bg-gradient-to-r from-emerald-500/6 to-emerald-500/14 dark:from-emerald-900/12 dark:to-emerald-900/22'
+                }`}
+              style={{
+                width: isFullyStaffed
+                  ? '100%'
+                  : `${Math.round((filledSlots / Math.max(totalCapacity, 1)) * 100)}%`,
+              }}
             />
           )}
 
-          {/* Status Content */}
-          {isHomeGame && (
-            <div className="flex items-center gap-3 relative z-10 pl-1">
-              {isFullyStaffed ? (
+          {/* Status content — left side */}
+          <div className="flex items-center gap-3 relative z-10 pl-1 flex-1 min-w-0">
+            {isHomeGame ? (
+              isFullyStaffed ? (
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -212,7 +230,7 @@ const GameCard: React.FC<GameCardProps> = memo(
                   </span>
                 </motion.div>
               ) : (
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300">
                   <div className="flex items-baseline gap-1">
                     <span className="font-black text-xl text-slate-800 dark:text-slate-100">
                       {filledSlots}
@@ -222,68 +240,88 @@ const GameCard: React.FC<GameCardProps> = memo(
                       {totalCapacity}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-0.5">
-                    Bénévoles
-                  </span>
-
-                  {missingRolesNames.length > 0 && (
-                    <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-500/20">
-                      Manque : {missingRolesNames[0]}{' '}
-                      {missingRolesNames.length > 1 ? `+${missingRolesNames.length - 1}` : ''}
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 leading-none">
+                      Bénévoles
                     </span>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          {!isHomeGame && (
-            <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300 relative z-10 pl-1">
-              <div className="p-1 rounded-lg bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400">
-                <Car className="w-4 h-4" />
-              </div>
-              {(() => {
-                const drivers = carpoolStats.drivers;
-                const passengers = carpoolStats.passengers;
-
-                if (drivers === 0 && passengers === 0)
-                  return (
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Covoiturage disponible
-                    </span>
-                  );
-
-                return (
-                  <div className="flex items-center gap-1.5">
-                    {drivers > 0 && (
-                      <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">
-                        {drivers} conducteur{drivers > 1 ? 's' : ''}
-                      </span>
-                    )}
-                    {passengers > 0 && (
-                      <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
-                        {passengers} passager{passengers > 1 ? 's' : ''}
+                    {missingRolesNames.length > 0 && (
+                      <span
+                        className={`text-[10px] font-bold ${
+                          isUrgent
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-amber-600 dark:text-amber-400'
+                        } leading-none truncate max-w-[140px]`}
+                      >
+                        Manque : {missingRolesNames[0]}
+                        {missingRolesNames.length > 1 ? ` +${missingRolesNames.length - 1}` : ''}
                       </span>
                     )}
                   </div>
-                );
-              })()}
-            </div>
-          )}
+                </div>
+              )
+            ) : (
+              /* Matchs extérieurs : statut covoiturage */
+              <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-300">
+                <div className="p-1 rounded-lg bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400">
+                  <Car className="w-4 h-4" />
+                </div>
+                {(() => {
+                  const drivers = carpoolStats.drivers;
+                  const passengers = carpoolStats.passengers;
+                  if (drivers === 0 && passengers === 0)
+                    return (
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Covoiturage disponible
+                      </span>
+                    );
+                  return (
+                    <div className="flex items-center gap-1.5">
+                      {drivers > 0 && (
+                        <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">
+                          {drivers} conducteur{drivers > 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {passengers > 0 && (
+                        <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
+                          {passengers} passager{passengers > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
 
-          <div
-            className={`
-                        w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
-                        ${
-                          isExpanded
-                            ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
-                            : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
-                        }
-                    `}
-          >
-            <ChevronIcon
-              className="w-4 h-4 text-slate-600 dark:text-slate-400"
-              isOpen={isExpanded}
-            />
+          {/* CTA label + chevron — right side (Phase 4) */}
+          <div className="flex items-center gap-2 relative z-10 flex-shrink-0">
+            {/* Label CTA visible sur mobile */}
+            {!isExpanded && isHomeGame && !isFullyStaffed && (
+              <span
+                className={`text-[10px] font-black uppercase tracking-wider hidden xs:inline-flex items-center gap-1 px-2.5 py-1 rounded-full transition-colors ${
+                  isUrgent
+                    ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400'
+                    : 'bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400'
+                }`}
+              >
+                Voir les postes
+              </span>
+            )}
+            <div
+              className={`
+                w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+                ${
+                  isExpanded
+                    ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
+                    : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
+                }
+              `}
+            >
+              <ChevronIcon
+                className="w-4 h-4 text-slate-600 dark:text-slate-400"
+                isOpen={isExpanded}
+              />
+            </div>
           </div>
         </button>
 

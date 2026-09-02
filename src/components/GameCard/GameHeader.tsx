@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Home,
-  Plane,
-  Car,
-  Flame,
-  AlertTriangle,
-  CheckIcon,
-  Trophy,
-  BadgeCheck,
-} from 'lucide-react';
+import { Home, Car, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'lucide-react';
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
-import { CalendarIcon, ClockIcon, LocationIcon, EditIcon, DeleteIcon } from '../Icons';
-import VolunteerCompletionRing from './VolunteerCompletionRing';
+import { EditIcon, DeleteIcon } from '../Icons';
 import { formatRank } from '../../utils/gameUtils';
 import { formatDateShort } from '../../utils/dateUtils';
 
-/** Détecte si la compétition est une coupe (style doré/trophée) vs un championnat régulier */
+/** Détecte si la compétition est une coupe vs un championnat régulier */
 const isCupCompetition = (competition?: string): boolean => {
   if (!competition) return false;
   const lower = competition.toLowerCase();
@@ -43,8 +32,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   game,
   isHomeGame,
   isFullyStaffed,
-  filledSlots = 0,
-  totalCapacity = 0,
+  filledSlots: _filledSlots = 0,
+  totalCapacity: _totalCapacity = 0,
   totalCarpoolSeats,
   totalPassengerRequests,
   isUrgent,
@@ -59,297 +48,219 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   const formattedTeamRank = isChampionship ? formatRank(game.teamRank) : null;
   const formattedOpponentRank = isChampionship ? formatRank(game.opponentRank) : null;
 
+  const scbaTeamName = game.team;
+  const opponentName = game.opponent;
+
   return (
-    <div
-      className={`relative p-5 overflow-hidden transition-colors duration-300 ${
-        isCup
-          ? 'bg-gradient-to-br from-amber-200/80 via-yellow-100/50 to-white/80 dark:from-amber-900/40 dark:via-amber-950/20 dark:to-slate-900'
-          : isHomeGame
-            ? 'bg-gradient-to-br from-emerald-200/80 via-emerald-100/60 to-white/80 dark:from-emerald-900/60 dark:via-emerald-900/20 dark:to-slate-900'
-            : 'bg-gradient-to-br from-blue-200/80 via-blue-100/60 to-white/80 dark:from-blue-900/60 dark:via-blue-900/20 dark:to-slate-900'
-      }`}
-    >
-      {/* Watermark Icon - Subtle & Elegant */}
+    <div className="relative p-4 sm:p-5 overflow-hidden transition-colors duration-200">
+      {/* Subtle top accent bar */}
       <div
-        className={`absolute -right-6 -top-6 pointer-events-none transform rotate-12 scale-150 transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 h-1.5 ${
           isCup
-            ? 'text-amber-500/15 dark:text-amber-400/10'
+            ? 'bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600'
             : isHomeGame
-              ? 'text-emerald-500/20 dark:text-emerald-400/10'
-              : 'text-blue-500/20 dark:text-blue-400/10'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-600'
+              : 'bg-gradient-to-r from-blue-500 to-indigo-600'
         }`}
-      >
-        {isCup ? (
-          <Trophy className="w-48 h-48" />
-        ) : isHomeGame ? (
-          <Home className="w-48 h-48" />
-        ) : (
-          <Plane className="w-48 h-48" />
-        )}
-      </div>
+      />
 
-      {/* Top Row: Status only (Date moved to info) */}
-      <div
-        className={`relative flex items-center justify-between mb-2 z-10 ${isAdmin ? 'pr-16' : ''}`}
-      >
-        {isCup ? (
-          <div className="flex items-center gap-1.5 px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider rounded-full shadow-sm bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse">
-            <Trophy className="w-3.5 h-3.5 text-yellow-100" />
-            {game.competition}
-          </div>
-        ) : game.competition ? (
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider rounded-full bg-slate-100/80 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/40">
-            {game.competition}
-          </div>
-        ) : (
-          <div />
-        )}
-        <div className="flex flex-col items-end gap-1.5">
-          {/* Urgency / Status Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {/* Badge Mon engagement — visible sans ouvrir l'accordéon (P0) */}
-            {isUserRegistered && isHomeGame && (
-              <motion.span
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-[#3629e1] text-white shadow-sm shadow-[#3629e1]/30"
-                aria-label="Vous êtes inscrit à ce match"
-              >
-                <BadgeCheck className="w-3 h-3" />
-                Mon engagement
-              </motion.span>
-            )}
-            {isUrgent && !isFullyStaffed && (
-              <motion.span
-                animate={{ scale: [1, 1.05, 1], opacity: [0.9, 1, 0.9] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-red-50 text-red-600 border border-red-100 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/50 shadow-sm"
-              >
-                <Flame className="w-3 h-3 inline mr-1 mb-0.5" />
-                Urgence
-              </motion.span>
-            )}
-
-            <span
-              className={`
-                            flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-sm
-                            ${isHomeGame ? 'bg-emerald-500 text-white' : 'bg-blue-500 text-white'}
-                        `}
-            >
-              {isHomeGame ? (
-                <Home className="w-3 h-3 text-emerald-100" />
-              ) : (
-                <Car className="w-3 h-3 text-blue-100" />
-              )}
-              {isHomeGame ? 'Domicile' : 'Extérieur'}
+      {/* Top Meta Bar: Competition tag + Match Status Pills */}
+      <div className="flex items-center justify-between gap-2 mb-3.5 z-10 relative">
+        {/* Left: Competition Badge */}
+        <div className="min-w-0 flex-1 flex items-center gap-1.5">
+          {isCup ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 truncate shadow-xs">
+              <Trophy className="w-3 h-3 text-amber-500 flex-shrink-0" />
+              <span className="truncate">{game.competition}</span>
             </span>
-          </div>
+          ) : game.competition ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700/80 truncate">
+              {game.competition}
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              Match officiel
+            </span>
+          )}
         </div>
-      </div>
 
-      {/* Middle: Teams & Versus + Completion Ring */}
-      <div className="relative z-10 mb-4 flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          {/* Ligne 1 : équipe qui reçoit */}
-          <div className={`flex items-center gap-2.5 mb-1 flex-wrap`}>
+        {/* Right: Urgent + My Registration + Home/Away Pills */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Mon engagement */}
+          {isUserRegistered && isHomeGame && (
+            <span
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-[#3629e1] text-white shadow-xs"
+              title="Vous êtes bénévole sur ce match"
+            >
+              <BadgeCheck className="w-3 h-3" />
+              Inscrit
+            </span>
+          )}
+
+          {/* Urgent Badge */}
+          {isUrgent && !isFullyStaffed && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-red-500 text-white shadow-xs animate-pulse">
+              <Flame className="w-3 h-3" />
+              Urgent
+            </span>
+          )}
+
+          {/* Domicile / Extérieur Pill */}
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-full text-white shadow-xs ${
+              isHomeGame ? 'bg-emerald-600' : 'bg-blue-600'
+            }`}
+          >
             {isHomeGame ? (
               <>
-                {game.teamLogo && (
-                  <img
-                    src={game.teamLogo}
-                    alt={game.team}
-                    className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
-                  />
-                )}
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 truncate">
-                  {game.team}
-                </h2>
-                {formattedTeamRank && (
-                  <span
-                    className="inline-flex items-center px-2 py-0.5 text-xs font-black rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 flex-shrink-0 shadow-sm"
-                    title={`Classement SCBA avant-match : ${formattedTeamRank}`}
-                  >
-                    {formattedTeamRank}
-                  </span>
-                )}
+                <Home className="w-3 h-3 text-emerald-200" />
+                Domicile
               </>
             ) : (
               <>
-                {game.opponentLogo && (
-                  <img
-                    src={game.opponentLogo}
-                    alt={game.opponent}
-                    className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0"
-                  />
-                )}
-                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-sport truncate">
-                  {game.opponent}
-                </h3>
-                {formattedOpponentRank && (
-                  <span
-                    className="inline-flex items-center px-1.5 py-0.5 text-[11px] font-bold rounded bg-slate-200/80 text-slate-700 dark:bg-slate-700/80 dark:text-slate-300 border border-slate-300/50 dark:border-slate-600/50 flex-shrink-0"
-                    title={`Classement adversaire avant-match : ${formattedOpponentRank}`}
-                  >
-                    {formattedOpponentRank}
-                  </span>
-                )}
+                <Car className="w-3 h-3 text-blue-200" />
+                Extérieur
               </>
             )}
-            <span className="h-px bg-slate-200 dark:bg-slate-700 flex-1 min-w-[20px]"></span>
+          </span>
+        </div>
+      </div>
+
+      {/* Main Face-Off Section (Scoreboard / Versus Style) */}
+      <div className="relative z-10 py-1.5 px-0.5">
+        <div className="grid grid-cols-11 items-center gap-2">
+          {/* Team 1: SCBA (or Host) */}
+          <div className="col-span-4 flex flex-col items-center text-center min-w-0">
+            <div className="relative mb-2">
+              <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-white dark:bg-slate-800 p-1.5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center">
+                {game.teamLogo ? (
+                  <img
+                    src={game.teamLogo}
+                    alt={scbaTeamName}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span className="font-sport font-black text-lg text-[#3629e1]">SCBA</span>
+                )}
+              </div>
+              {formattedTeamRank && (
+                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.2 rounded-md bg-amber-500 text-white font-black text-[9px] shadow-xs">
+                  {formattedTeamRank}
+                </span>
+              )}
+            </div>
+            <h2 className="font-sport font-black text-sm sm:text-base text-slate-900 dark:text-white uppercase leading-tight tracking-tight line-clamp-2">
+              {scbaTeamName}
+            </h2>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+              {isHomeGame ? 'Hôte' : 'Visiteur'}
+            </span>
           </div>
 
-          {/* Ligne 2 : équipe visiteuse */}
-          <div className="group relative flex items-start gap-2.5 flex-wrap">
-            <span className="text-slate-300 dark:text-slate-600 text-lg italic mt-1.5 flex-shrink-0">
+          {/* Center: Match Time / Date Pill */}
+          <div className="col-span-3 flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center px-2 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs w-full max-w-[96px]">
+              <span className="font-sport font-black text-base sm:text-lg text-slate-900 dark:text-white tracking-tight leading-none">
+                {game.time}
+              </span>
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                {formatDateShort(game.dateISO, game.date)}
+              </span>
+            </div>
+            <span className="font-sport text-[10px] font-black text-slate-300 dark:text-slate-600 mt-1 uppercase tracking-widest">
               VS
             </span>
-            {isHomeGame ? (
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                {game.opponentLogo && (
+          </div>
+
+          {/* Team 2: Opponent */}
+          <div className="col-span-4 flex flex-col items-center text-center min-w-0">
+            <div className="relative mb-2">
+              <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-white dark:bg-slate-800 p-1.5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center">
+                {game.opponentLogo ? (
                   <img
                     src={game.opponentLogo}
-                    alt={game.opponent}
-                    className="w-7 h-7 object-contain rounded-full bg-white/80 dark:bg-slate-800/80 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-1"
+                    alt={opponentName}
+                    className="w-full h-full object-contain"
                   />
-                )}
-                <h3 className="text-base font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-sport mt-1 break-words">
-                  {game.opponent}
-                </h3>
-                {formattedOpponentRank && (
-                  <span
-                    className="inline-flex items-center px-1.5 py-0.5 text-[11px] font-bold rounded bg-slate-200/80 text-slate-700 dark:bg-slate-700/80 dark:text-slate-300 border border-slate-300/50 dark:border-slate-600/50 flex-shrink-0 mt-1"
-                    title={`Classement adversaire avant-match : ${formattedOpponentRank}`}
-                  >
-                    {formattedOpponentRank}
+                ) : (
+                  <span className="font-sport font-black text-sm text-slate-400 uppercase">
+                    {opponentName.substring(0, 3)}
                   </span>
                 )}
               </div>
-            ) : (
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                {game.teamLogo && (
-                  <img
-                    src={game.teamLogo}
-                    alt={game.team}
-                    className="w-9 h-9 object-contain rounded-full bg-white/85 dark:bg-slate-800/85 p-0.5 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0 mt-0.5"
-                  />
-                )}
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight font-sport tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 break-words">
-                  {game.team}
-                </h2>
-                {formattedTeamRank && (
-                  <span
-                    className="inline-flex items-center px-2 py-0.5 text-xs font-black rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 flex-shrink-0 shadow-sm mt-1"
-                    title={`Classement SCBA avant-match : ${formattedTeamRank}`}
-                  >
-                    {formattedTeamRank}
-                  </span>
-                )}
-              </div>
-            )}
+              {formattedOpponentRank && (
+                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.2 rounded-md bg-slate-600 text-white font-black text-[9px] shadow-xs">
+                  {formattedOpponentRank}
+                </span>
+              )}
+            </div>
+            <h3 className="font-sport font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 uppercase leading-tight tracking-tight line-clamp-2">
+              {opponentName}
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+              {!isHomeGame ? 'Hôte' : 'Visiteur'}
+            </span>
           </div>
         </div>
-
-        {/* Volunteer Completion Ring (Home Games) */}
-        {isHomeGame && totalCapacity > 0 && (
-          <div className="flex-shrink-0 pl-2">
-            <VolunteerCompletionRing
-              filled={filledSlots}
-              total={totalCapacity}
-              isFullyStaffed={isFullyStaffed}
-              size={58}
-              strokeWidth={5}
-              showLabel={false}
-            />
-          </div>
-        )}
       </div>
 
-      {/* Bottom: Info Pills Layout (Refined) */}
-      <div className="relative z-10 flex flex-col gap-2.5">
-        {/* Row 1: Date & Time */}
-        <div className="flex items-stretch gap-2">
-          {/* Date Pill */}
-          <div className="flex-1 min-w-0 flex items-center gap-2.5 px-3 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50">
-            <div className="flex-shrink-0 p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-lg">
-              <CalendarIcon className="w-4 h-4" />
-            </div>
-            {/* Format condensé sur mobile, long sur sm+ */}
-            <span className="sm:hidden text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight whitespace-nowrap">
-              {formatDateShort(game.dateISO, game.date)}
-            </span>
-            <span className="hidden sm:inline text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
-              {game.date}
-            </span>
-          </div>
-
-          {/* Time Pill */}
-          <div className="flex items-center gap-2.5 px-3 sm:px-4 py-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50 min-w-max">
-            <div className="flex-shrink-0 p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 rounded-lg">
-              <ClockIcon className="w-4 h-4" />
-            </div>
-            <span className="text-base font-black text-slate-900 dark:text-white tracking-tight">
-              {game.time}
-            </span>
-          </div>
+      {/* Bottom Info Strip: Location & Direct GPS */}
+      <div className="relative z-10 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+        {/* Short Date & Location Line */}
+        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 min-w-0 flex-1">
+          <Calendar className="w-3.5 h-3.5 text-[#3629e1] dark:text-indigo-400 flex-shrink-0" />
+          <span className="font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+            {formatDateShort(game.dateISO, game.date)}
+          </span>
+          <span className="text-slate-300 dark:text-slate-700">•</span>
+          <span className="truncate text-slate-500 dark:text-slate-400 font-medium">
+            {game.location}
+          </span>
         </div>
 
-        {/* Row 2: Location (Full Width) */}
+        {/* Waze / GPS Quick Action */}
         <a
           href={`https://waze.com/ul?q=${encodeURIComponent(game.location)}&navigate=yes`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between px-3 py-2.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-slate-200 dark:border-slate-700/50 group transition-all transform hover:-translate-y-0.5 active:scale-95"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-md border border-indigo-100 dark:border-indigo-900/50 transition-colors flex-shrink-0"
         >
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex-shrink-0 p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 rounded-lg group-hover:scale-110 transition-transform">
-              <LocationIcon className="w-4 h-4" />
-            </div>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate pr-2">
-              {game.location}
-            </span>
-          </div>
-          <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-600 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm transition-all flex-shrink-0">
-            Itinéraire
-          </span>
+          <Navigation className="w-3 h-3" />
+          Itinéraire
         </a>
       </div>
 
-      {/* Smart Carpool Status Line */}
+      {/* Smart Carpool summary for Away games */}
       {!isHomeGame && (
-        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/50 flex flex-wrap gap-2">
-          {(() => {
-            const remainingSeats = totalCarpoolSeats - totalPassengerRequests;
-            const hasActivity = totalCarpoolSeats > 0 || totalPassengerRequests > 0;
-
-            if (!hasActivity)
-              return (
-                <span className="text-xs text-slate-400 italic flex items-center gap-1.5">
-                  <Car className="w-3.5 h-3.5" /> Covoiturage non organisé
-                </span>
-              );
-
-            if (remainingSeats < 0) {
-              return (
-                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 animate-pulse">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Manque {Math.abs(remainingSeats)}{' '}
-                  place(s)
-                </span>
-              );
-            }
-            if (remainingSeats > 0) {
-              return (
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <Car className="w-3.5 h-3.5" /> {remainingSeats} place(s) dispo
-                </span>
-              );
-            }
-            return (
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <CheckIcon className="w-3.5 h-3.5" /> Covoit. complet
-              </span>
-            );
-          })()}
+        <div className="relative z-10 mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <Car className="w-3.5 h-3.5 text-blue-500" />
+            <span className="font-bold text-slate-700 dark:text-slate-300">Covoiturage :</span>
+            {(() => {
+              const remainingSeats = totalCarpoolSeats - totalPassengerRequests;
+              if (totalCarpoolSeats === 0 && totalPassengerRequests === 0) {
+                return <span className="italic text-slate-400">Pas encore d'offre</span>;
+              }
+              if (remainingSeats < 0) {
+                return (
+                  <span className="font-bold text-red-500">
+                    Manque {Math.abs(remainingSeats)} place(s)
+                  </span>
+                );
+              }
+              if (remainingSeats > 0) {
+                return (
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {remainingSeats} place(s) libre(s)
+                  </span>
+                );
+              }
+              return <span className="font-bold text-slate-600 dark:text-slate-400">Complet</span>;
+            })()}
+          </div>
+          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+            Voir détails →
+          </span>
         </div>
       )}
 
@@ -358,7 +269,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         <div className="absolute top-2 right-2 flex gap-1 z-50">
           <button
             onClick={onEditRequest}
-            className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:bg-blue-100"
+            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:bg-blue-100"
             aria-label="Modifier ce match"
           >
             <EditIcon className="w-4 h-4" />
@@ -368,7 +279,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               e.stopPropagation();
               setShowDeleteConfirm(true);
             }}
-            className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors active:bg-red-100"
+            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors active:bg-red-100"
             aria-label="Supprimer ce match"
           >
             <DeleteIcon className="w-4 h-4" />
@@ -376,7 +287,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <ConfirmModal
             isOpen={showDeleteConfirm}
             title="Supprimer ce match ?"
-            message={`Voulez-vous vraiment supprimer le match ?`}
+            message="Voulez-vous vraiment supprimer ce match ?"
             confirmText="Supprimer"
             cancelText="Annuler"
             confirmStyle="danger"
