@@ -109,12 +109,12 @@ const ReloadPrompt: React.FC = () => {
         {/* Mise à jour en cours */}
         {isUpdating && (
           <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            initial={{ opacity: 0, y: -40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-96 z-[99999]"
-            style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            className="fixed top-4 left-4 right-4 md:top-6 md:right-6 md:left-auto md:w-96 z-[99999]"
+            style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}
           >
             <div className="bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-blue-500/40 backdrop-blur-xl flex items-center gap-3.5">
               <RefreshCw className="w-6 h-6 text-blue-400 animate-spin flex-shrink-0" />
@@ -133,12 +133,12 @@ const ReloadPrompt: React.FC = () => {
         {/* Notification Mise à jour disponible (needRefresh) */}
         {needRefresh && !isUpdating && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            initial={{ opacity: 0, y: -50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            exit={{ opacity: 0, y: -30, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-[400px] z-[99999]"
-            style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            className="fixed top-4 left-4 right-4 md:top-6 md:right-6 md:left-auto md:w-[400px] z-[99999]"
+            style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}
           >
             <div className="bg-slate-900/95 text-white p-4.5 rounded-2xl shadow-2xl border border-indigo-500/40 backdrop-blur-xl flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3">
@@ -186,12 +186,12 @@ const ReloadPrompt: React.FC = () => {
         {/* Notification Prêt hors-ligne (offlineReady) */}
         {offlineReady && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            initial={{ opacity: 0, y: -50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            exit={{ opacity: 0, y: -30, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-96 z-[99998]"
-            style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            className="fixed top-4 left-4 right-4 md:top-6 md:right-6 md:left-auto md:w-96 z-[99998]"
+            style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}
           >
             <div className="bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-emerald-500/40 backdrop-blur-xl flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">

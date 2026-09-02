@@ -11,7 +11,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed-v6';
+const DISMISS_KEY = 'scba-pwa-install-v8';
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
@@ -65,7 +65,6 @@ const InstallPrompt: React.FC = () => {
     typeof window !== 'undefined' && window.__pwaInstallPrompt != null,
   );
   const [show, setShow] = useState(false);
-  const [reloadActive, setReloadActive] = useState(false);
   const [showManualGuide, setShowManualGuide] = useState(false);
   const [isBraveBrowser, setIsBraveBrowser] = useState(false);
   const [platform, setPlatform] = useState<Platform>('desktop');
@@ -76,7 +75,6 @@ const InstallPrompt: React.FC = () => {
     const detected = detectPlatform();
     setPlatform(detected);
 
-    // Détection de Brave (les boucliers Brave bloquent souvent beforeinstallprompt par défaut)
     if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
       navigator.brave.isBrave().then((brave) => {
         if (brave) setIsBraveBrowser(true);
@@ -108,12 +106,6 @@ const InstallPrompt: React.FC = () => {
     };
     window.addEventListener('appinstalled', onInstalled);
 
-    // Coordination avec ReloadPrompt
-    const onReloadVisible = () => setReloadActive(true);
-    const onReloadHidden = () => setReloadActive(false);
-    window.addEventListener('pwa-reload-visible', onReloadVisible);
-    window.addEventListener('pwa-reload-hidden', onReloadHidden);
-
     // Déclencheur manuel (footer / profil)
     const handleManualOpen = () => {
       setShow(true);
@@ -121,13 +113,12 @@ const InstallPrompt: React.FC = () => {
     };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Affichage automatique
+    // Affichage automatique rapide (400ms)
     let timer: NodeJS.Timeout | null = null;
     if (!wasDismissedRecently()) {
-      const delay = detected === 'desktop' ? 1500 : 1000;
       timer = setTimeout(() => {
         setShow(true);
-      }, delay);
+      }, 400);
     }
 
     return () => {
@@ -135,8 +126,6 @@ const InstallPrompt: React.FC = () => {
       window.removeEventListener('pwa-prompt-ready', handlePromptReady);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
       window.removeEventListener('appinstalled', onInstalled);
-      window.removeEventListener('pwa-reload-visible', onReloadVisible);
-      window.removeEventListener('pwa-reload-hidden', onReloadHidden);
       window.removeEventListener('pwa-open-install', handleManualOpen);
     };
   }, []);
@@ -157,7 +146,6 @@ const InstallPrompt: React.FC = () => {
         setShowManualGuide(true);
       }
     } else {
-      // Sur Brave mobile ou navigateurs bloquant le prompt natif, afficher l'assistance dédiée
       setShowManualGuide(true);
     }
   };
@@ -170,12 +158,10 @@ const InstallPrompt: React.FC = () => {
 
   if (isAlreadyInstalled()) return null;
 
-  const isVisible = show && !reloadActive;
-
   return (
     <aside aria-label="Installation de l'application SCBA Bénévoles">
       <AnimatePresence>
-        {isVisible && (
+        {show && (
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -185,7 +171,7 @@ const InstallPrompt: React.FC = () => {
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
             <div className="bg-slate-900/98 text-white p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-slate-700/80 backdrop-blur-2xl">
-              {/* En-tête */}
+              {/* En-tête : Logo + Titre + Bouton Fermer */}
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <picture>
@@ -240,7 +226,7 @@ const InstallPrompt: React.FC = () => {
                         Partager{' '}
                         <Share className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
                       </span>{' '}
-                      en bas de l'écran
+                      en bas de Safari
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -266,7 +252,7 @@ const InstallPrompt: React.FC = () => {
                 </div>
               ) : (
                 /* ============================================================ */
-                /* 2. CAS Android & Desktop                                    */
+                /* 2. CAS Android & Desktop : Bouton 1-Clic direct              */
                 /* ============================================================ */
                 <>
                   <button
@@ -277,7 +263,7 @@ const InstallPrompt: React.FC = () => {
                     Installer l'application
                   </button>
 
-                  {/* Assistance si Brave Mobile ou navigateur bloquant le prompt natif */}
+                  {/* Assistance si prompt bloqué par le navigateur */}
                   {showManualGuide && !hasNativePrompt && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
