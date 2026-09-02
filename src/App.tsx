@@ -242,7 +242,13 @@ function App() {
           <BottomNav
             currentView={currentView}
             onViewChange={handleViewChange}
-            onPlanningClick={() => setIsProfileModalOpen(true)}
+            onPlanningClick={() => {
+              if (isAuthenticated) {
+                setIsProfileModalOpen(true);
+              } else {
+                setIsAuthModalOpen(true);
+              }
+            }}
             isAuthenticated={isAuthenticated}
           />
         </>
