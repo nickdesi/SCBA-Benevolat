@@ -4,10 +4,26 @@
 
 ---
 
-## 1. Philosophie
+## 1. Philosophie & Accessibilité Universelle (Apple HIG + Material Design 3)
 
 L'interface SCBA Bénévoles est un **outil utilitaire sportif**, pas une landing page marketing.
 Chaque élément visuel doit répondre à une question simple : **"Est-ce que ça aide le bénévole à prendre une décision en moins de 3 secondes ?"**
+
+### 📐 Normes d'Accessibilité Obligatoires (Apple HIG iOS & Google M3 Android) :
+1. **Touch Targets (Cibles tactiles minimales)** :
+   - Minimum **44×44 pt** (Apple) et **48×48 dp** (Google).
+   - Tout élément cliquable (boutons de filtre, bottom nav, triggers, avatars) doit respecter `min-h-[44px]`.
+2. **Seuil de Lisibilité Typographique** :
+   - **Interdiction formelle des polices microscopiques** (`text-[10px]`, `text-[9px]`).
+   - Seuil minimum fixé à **`text-xs` (12px minimum)** avec graisse `font-bold`/`font-black` pour les métadonnées.
+3. **Arbre Sémantique & Lecteurs d'écran** :
+   - Déclarer `role="tablist"`, `role="tab"`, `aria-selected`, `aria-label` sur toutes les navigations par onglets.
+   - Déclarer `role="menu"`, `role="menuitem"`, `aria-haspopup="menu"`, `aria-expanded` sur les menus.
+   - `aria-hidden="true"` obligatoire sur toutes les icônes décoratives.
+4. **Ordre Sportif FFBB** :
+   - Hôte (qui reçoit) toujours à gauche en 1ère position, Visiteur à droite.
+5. **Scroll Reset SPA** :
+   - `window.scrollTo({ top: 0, left: 0, behavior: 'instant' })` obligatoire lors de tout basculement de vue principale.
 
 **Anti-patterns à ne jamais introduire :**
 - Glassmorphisme excessif (backdrop-blur sur tout)
