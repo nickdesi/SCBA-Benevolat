@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Share, PlusSquare, X, Smartphone, Sparkles } from 'lucide-react';
+import { Download, Share, PlusSquare, X, Smartphone, Sparkles, Laptop } from 'lucide-react';
 
-const DISMISS_KEY = 'scba-pwa-install-dismissed-v4';
-const DISMISS_DURATION_MS = 2 * 24 * 60 * 60 * 1000;
+const DISMISS_KEY = 'scba-pwa-install-dismissed-v5';
+const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000; // 24h de rappel si refusé
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -33,8 +33,9 @@ function detectPlatform(): Platform {
   if (
     /iPhone|iPad|iPod/.test(ua) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  )
+  ) {
     return 'ios';
+  }
   if (/Android/i.test(ua)) return 'android';
   return 'desktop';
 }
@@ -51,13 +52,18 @@ const InstallPrompt: React.FC = () => {
   );
   const [show, setShow] = useState(false);
   const [reloadActive, setReloadActive] = useState(false);
-  const [platform] = useState<Platform>(detectPlatform);
+  const [showDesktopHelp, setShowDesktopHelp] = useState(false);
+  const [platform, setPlatform] = useState<Platform>('desktop');
 
   useEffect(() => {
     if (isAlreadyInstalled()) return;
 
-    // Récupérer le prompt capturé tôt dans index.html
-    if (window.__pwaInstallPrompt) setHasNativePrompt(true);
+    const detected = detectPlatform();
+    setPlatform(detected);
+
+    if (window.__pwaInstallPrompt) {
+      setHasNativePrompt(true);
+    }
 
     const handlePromptReady = () => {
       if (window.__pwaInstallPrompt) setHasNativePrompt(true);
@@ -80,25 +86,26 @@ const InstallPrompt: React.FC = () => {
     };
     window.addEventListener('appinstalled', onInstalled);
 
-    // Coordination avec ReloadPrompt : se masquer si ReloadPrompt est visible
+    // Coordination avec ReloadPrompt
     const onReloadVisible = () => setReloadActive(true);
     const onReloadHidden = () => setReloadActive(false);
     window.addEventListener('pwa-reload-visible', onReloadVisible);
     window.addEventListener('pwa-reload-hidden', onReloadHidden);
 
-    // Déclencheur manuel (footer / menu profil)
-    const handleManualOpen = () => setShow(true);
+    // Déclencheur manuel (footer / profil)
+    const handleManualOpen = () => {
+      setShow(true);
+      setShowDesktopHelp(false);
+    };
     window.addEventListener('pwa-open-install', handleManualOpen);
 
-    // Affichage automatique :
-    // - iOS : toujours (guide Partager → Écran d'accueil)
-    // - Android/Desktop : uniquement si le prompt natif est capturé
+    // Affichage automatique dès 1s sur mobile et 2s sur desktop si non masqué récemment
     let timer: NodeJS.Timeout | null = null;
     if (!wasDismissedRecently()) {
-      if (platform === 'ios') {
-        timer = setTimeout(() => setShow(true), 1000);
-      }
-      // Android & Desktop : le show est déclenché par handleBeforeInstall ci-dessus
+      const delay = detected === 'desktop' ? 1500 : 1000;
+      timer = setTimeout(() => {
+        setShow(true);
+      }, delay);
     }
 
     return () => {
@@ -110,15 +117,9 @@ const InstallPrompt: React.FC = () => {
       window.removeEventListener('pwa-reload-hidden', onReloadHidden);
       window.removeEventListener('pwa-open-install', handleManualOpen);
     };
-  }, [platform]);
+  }, []);
 
   const handleInstallClick = async () => {
-    if (platform === 'ios') {
-      // Impossible de déclencher programmatiquement sur iOS
-      // Le guide est déjà affiché dans le rendu ci-dessous
-      return;
-    }
-
     const promptEvent = window.__pwaInstallPrompt;
     if (promptEvent) {
       try {
@@ -130,34 +131,29 @@ const InstallPrompt: React.FC = () => {
           setShow(false);
         }
       } catch {
-        // prompt() déjà consommé — rien à faire
+        // En cas d'exception prompt, afficher l'aide
+        setShowDesktopHelp(true);
       }
+    } else {
+      setShowDesktopHelp(true);
     }
   };
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setShow(false);
+    setShowDesktopHelp(false);
   };
 
   if (isAlreadyInstalled()) return null;
 
-  // Ne pas afficher si ReloadPrompt est actif (éviter la superposition)
+  // Masquer si la bannière de mise à jour ReloadPrompt est active
   const isVisible = show && !reloadActive;
-
-  // Sur Android et Desktop : ne montrer QUE si le prompt natif est disponible (1-clic direct)
-  // Sur iOS : toujours montrer le guide
-  if (platform !== 'ios' && !hasNativePrompt && show) {
-    // Pas de prompt natif → pas de popup (pas de guide "3 points")
-    // L'utilisateur peut toujours cliquer sur "Installer l'app" dans le footer/profil
-    // et ça réapparaîtra quand le prompt sera capturé
-  }
-  const shouldRender = platform === 'ios' || hasNativePrompt;
 
   return (
     <aside aria-label="Installation de l'application SCBA Bénévoles">
       <AnimatePresence>
-        {isVisible && shouldRender && (
+        {isVisible && (
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -167,7 +163,7 @@ const InstallPrompt: React.FC = () => {
             style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
             <div className="bg-slate-900/98 text-white p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-slate-700/80 backdrop-blur-2xl">
-              {/* En-tête */}
+              {/* En-tête : Logo + Titre + Fermer */}
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <picture>
@@ -189,7 +185,7 @@ const InstallPrompt: React.FC = () => {
                     </div>
                     <p className="text-xs text-slate-300 mt-0.5">
                       {platform === 'ios'
-                        ? "Ajoutez l'app sur votre écran d'accueil"
+                        ? "Ajoutez l'application sur votre écran d'accueil"
                         : "Installer l'application sur votre appareil ?"}
                     </p>
                   </div>
@@ -203,8 +199,10 @@ const InstallPrompt: React.FC = () => {
                 </button>
               </div>
 
-              {/* ========== iOS : Guide visuel (seule option possible) ========== */}
-              {platform === 'ios' && (
+              {/* ============================================================ */}
+              {/* 1. CAS iOS : Guide Apple avec Partager -> Écran d'accueil    */}
+              {/* ============================================================ */}
+              {platform === 'ios' ? (
                 <div className="bg-slate-800/95 rounded-2xl p-3.5 mb-3 text-xs text-slate-200 space-y-2.5 border border-blue-500/40">
                   <div className="font-bold text-white flex items-center gap-2">
                     <Smartphone className="w-4 h-4 text-blue-400" />
@@ -220,7 +218,7 @@ const InstallPrompt: React.FC = () => {
                         Partager{' '}
                         <Share className="inline-block w-3.5 h-3.5 mx-0.5 text-blue-400 -mt-0.5" />
                       </span>{' '}
-                      en bas de l'écran
+                      en bas de Safari
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -244,17 +242,37 @@ const InstallPrompt: React.FC = () => {
                     </span>
                   </div>
                 </div>
-              )}
+              ) : (
+                /* ============================================================ */
+                /* 2. CAS Android & Desktop : Bouton 1-Clic direct              */
+                /* ============================================================ */
+                <>
+                  <button
+                    onClick={handleInstallClick}
+                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
+                  >
+                    <Download className="w-4.5 h-4.5" />
+                    Installer l'application
+                  </button>
 
-              {/* ========== Android & Desktop : Bouton 1-clic natif ========== */}
-              {platform !== 'ios' && hasNativePrompt && (
-                <button
-                  onClick={handleInstallClick}
-                  className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 mb-2.5 text-sm cursor-pointer"
-                >
-                  <Download className="w-4.5 h-4.5" />
-                  Installer l'application
-                </button>
+                  {/* Message d'aide si prompt natif non supporté par le navigateur actuel */}
+                  {showDesktopHelp && !hasNativePrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="bg-slate-800/95 rounded-2xl p-3 mb-2.5 text-xs text-slate-200 border border-slate-700/60"
+                    >
+                      <div className="flex items-center gap-1.5 font-bold text-white mb-1">
+                        <Laptop className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Navigateur :</span>
+                      </div>
+                      <p className="text-slate-300 leading-snug">
+                        Cliquez sur l'icône d'installation dans la barre d'adresse de votre
+                        navigateur (Chrome, Edge, Brave) pour installer l'application.
+                      </p>
+                    </motion.div>
+                  )}
+                </>
               )}
 
               {/* Bouton secondaire */}
