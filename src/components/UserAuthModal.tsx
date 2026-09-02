@@ -86,8 +86,8 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       {/* Option 1: Google Login */}
       <button
         onClick={onGoogleLogin}
-        className="w-full group relative flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-slate-200
-                             hover:border-blue-500 hover:bg-blue-50 text-slate-700 hover:text-blue-700
+        className="w-full group relative flex items-center justify-center gap-3 px-6 py-4 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600
+                             hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-200 hover:text-blue-700 dark:hover:text-blue-300
                              rounded-xl transition-all duration-150 shadow-sm hover:shadow-md"
       >
         <div className="w-6 h-6 group-hover:scale-110 transition-transform">
@@ -103,11 +103,11 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => setView('login')}
-          className="flex flex-col items-center justify-center gap-2 p-4 bg-white border-2 border-slate-200
-                                 hover:border-indigo-500 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700
+          className="flex flex-col items-center justify-center gap-2 p-4 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600
+                                 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-200 hover:text-indigo-700 dark:hover:text-indigo-300
                                  rounded-xl transition-all duration-150 shadow-sm hover:shadow-md group"
         >
-          <div className="p-2.5 bg-indigo-100 rounded-full text-indigo-600 group-hover:scale-110 transition-transform">
+          <div className="p-2.5 bg-indigo-100 dark:bg-indigo-500/20 rounded-full text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
             <LogIn className="w-5 h-5" />
           </div>
           <span className="font-bold text-sm">Se connecter</span>
@@ -115,11 +115,11 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
 
         <button
           onClick={() => setView('signup')}
-          className="flex flex-col items-center justify-center gap-2 p-4 bg-white border-2 border-slate-200
-                                 hover:border-purple-500 hover:bg-purple-50 text-slate-700 hover:text-purple-700
+          className="flex flex-col items-center justify-center gap-2 p-4 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600
+                                 hover:border-purple-500 dark:hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-purple-300
                                  rounded-xl transition-all duration-150 shadow-sm hover:shadow-md group"
         >
-          <div className="p-2.5 bg-purple-100 rounded-full text-purple-600 group-hover:scale-110 transition-transform">
+          <div className="p-2.5 bg-purple-100 dark:bg-purple-500/20 rounded-full text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
             <UserPlus className="w-5 h-5" />
           </div>
           <span className="font-bold text-sm">Créer un compte</span>
@@ -127,22 +127,25 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       </div>
 
       <div className="relative flex py-2 items-center">
-        <div className="flex-grow border-t border-slate-200"></div>
-        <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider font-semibold">
+        <div className="flex-grow border-t border-slate-200 dark:border-slate-600"></div>
+        <span className="flex-shrink-0 mx-4 text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
           ou
         </span>
-        <div className="flex-grow border-t border-slate-200"></div>
+        <div className="flex-grow border-t border-slate-200 dark:border-slate-600"></div>
       </div>
 
       {/* Option 3: Guest */}
       <button
         onClick={handleClose}
-        className="w-full px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm rounded-xl transition-colors hover:shadow-inner"
+        className="w-full px-6 py-3.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-colors hover:shadow-inner"
       >
         Continuer en tant qu'invité
       </button>
     </div>
   );
+
+  const inputClasses =
+    'w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium bg-white dark:bg-slate-700';
 
   const renderForm = () => (
     <form
@@ -150,7 +153,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       className="space-y-4"
     >
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl border border-red-200 flex items-center gap-2">
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-red-200 dark:border-red-800/60 flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
           {error}
         </div>
@@ -158,16 +161,16 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
 
       {view === 'signup' && (
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
             Nom complet
           </label>
           <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all !text-slate-900 placeholder:text-slate-400 font-medium bg-white"
+              className={inputClasses}
               placeholder="Ex: Pierre Martin"
               required
             />
@@ -176,16 +179,16 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       )}
 
       <div>
-        <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all !text-slate-900 placeholder:text-slate-400 font-medium bg-white"
+            className={inputClasses}
             placeholder="votre@email.com"
             required
           />
@@ -194,16 +197,16 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
 
       {view !== 'forgot-password' && (
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
             Mot de passe
           </label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all !text-slate-900 placeholder:text-slate-400 font-medium bg-white"
+              className={inputClasses}
               placeholder="••••••••"
               required
               minLength={6}
@@ -220,7 +223,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
               setView('forgot-password');
               setError('');
             }}
-            className="text-slate-500 hover:text-blue-600 text-xs font-semibold px-2 py-1 transition-colors"
+            className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-semibold px-2 py-1 transition-colors"
           >
             Mot de passe oublié ?
           </button>
@@ -248,17 +251,17 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       {view !== 'forgot-password' && (
         <>
           <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <div className="flex-grow border-t border-slate-200 dark:border-slate-600"></div>
+            <span className="flex-shrink-0 mx-4 text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
               ou avec
             </span>
-            <div className="flex-grow border-t border-slate-200"></div>
+            <div className="flex-grow border-t border-slate-200 dark:border-slate-600"></div>
           </div>
 
           <button
             type="button"
             onClick={onGoogleLogin}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-all"
           >
             <div className="w-5 h-5">
               <GoogleIcon />
@@ -275,7 +278,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
             setView(view === 'forgot-password' ? 'login' : 'menu');
             setError('');
           }}
-          className="text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-bold flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Retour
         </button>
@@ -286,7 +289,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
               setView(view === 'login' ? 'signup' : 'login');
               setError('');
             }}
-            className="text-blue-600 hover:text-blue-700 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
           >
             {view === 'login' ? 'Créer un compte' : "J'ai déjà un compte"}
           </button>
@@ -303,7 +306,7 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       />
 
       <div
-        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl transform transition-all overflow-hidden border border-slate-100"
+        className="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-3xl shadow-2xl transform transition-all overflow-hidden border border-slate-100 dark:border-slate-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative px-8 py-8 bg-slate-900 text-white text-center overflow-hidden">

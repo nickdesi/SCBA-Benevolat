@@ -1,110 +1,214 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw, CheckCircle2, Sparkles, X } from 'lucide-react';
 
-const UPDATE_CHECK_INTERVAL_MS = 30 * 1000;
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
 const ReloadPrompt: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
-  const updateIntervalRef = useRef<number | null>(null);
   const shouldReloadOnControllerChangeRef = useRef(false);
   const hasReloadedRef = useRef(false);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [needRefresh],
+    needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
+    onRegisteredSW(swUrl, r) {
       if (!r) return;
 
+      // Vérification initiale des mises à jour
       r.update();
-      updateIntervalRef.current = window.setInterval(() => {
-        r.update();
-      }, UPDATE_CHECK_INTERVAL_MS);
+
+      // Polling régulier toutes les heures avec fetch no-store pour bypasser le cache
+      const intervalId = window.setInterval(async () => {
+        if (!navigator.onLine) return;
+        try {
+          if (swUrl) {
+            const resp = await fetch(swUrl, {
+              cache: 'no-store',
+              headers: {
+                cache: 'no-store',
+                'cache-control': 'no-cache',
+              },
+            });
+            if (resp?.status === 200) {
+              await r.update();
+            }
+          } else {
+            await r.update();
+          }
+        } catch (err) {
+          console.debug('[PWA] Échec vérification mise à jour:', err);
+        }
+      }, ONE_HOUR_MS);
+
+      return () => clearInterval(intervalId);
     },
     onRegisterError(error) {
-      console.warn('SW registration error', error);
+      console.warn('[PWA] Erreur enregistrement Service Worker:', error);
     },
   });
 
-  useEffect(() => {
-    return () => {
-      if (updateIntervalRef.current !== null) {
-        window.clearInterval(updateIntervalRef.current);
-      }
-    };
-  }, []);
-
+  // Rechargement automatique dès que le nouveau Service Worker prend le contrôle
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
-    const reloadOnControllerChange = () => {
+    const handleControllerChange = () => {
       if (!shouldReloadOnControllerChangeRef.current || hasReloadedRef.current) return;
-
       hasReloadedRef.current = true;
       window.location.reload();
     };
 
-    navigator.serviceWorker.addEventListener('controllerchange', reloadOnControllerChange);
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
     return () => {
-      navigator.serviceWorker.removeEventListener('controllerchange', reloadOnControllerChange);
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, []);
 
-  // Auto-refresh when update is available
+  // Auto-dismiss pour la notification offlineReady après 4 secondes
   useEffect(() => {
-    if (needRefresh && !isUpdating) {
-      shouldReloadOnControllerChangeRef.current = true;
-      setIsUpdating(true);
-      updateServiceWorker(true);
+    if (offlineReady) {
+      const timer = setTimeout(() => {
+        setOfflineReady(false);
+      }, 4000);
+      return () => clearTimeout(timer);
     }
-  }, [needRefresh, isUpdating, updateServiceWorker]);
+  }, [offlineReady, setOfflineReady]);
 
-  const closeOfflineReady = () => {
+  const handleUpdate = async () => {
+    shouldReloadOnControllerChangeRef.current = true;
+    setIsUpdating(true);
+    try {
+      await updateServiceWorker(true);
+    } catch {
+      window.location.reload();
+    }
+  };
+
+  const handleDismissOfflineReady = () => {
     setOfflineReady(false);
   };
 
-  // Show updating notification
-  if (isUpdating) {
-    return (
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 z-[99999] w-[90%] md:w-auto">
-        <div className="bg-slate-800 text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 animate-fade-in-up">
-          <div className="animate-spin text-2xl">🔄</div>
-          <div>
-            <h3 className="font-bold text-base">Mise à jour en cours...</h3>
-            <p className="text-sm text-slate-300">La page va se rafraîchir automatiquement.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleDismissNeedRefresh = () => {
+    setNeedRefresh(false);
+  };
 
-  // Show offline ready notification
-  if (offlineReady) {
-    return (
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 md:bottom-6 md:right-6 md:left-auto md:translate-x-0 z-[99999] w-[90%] md:w-auto">
-        <div className="bg-slate-800 text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex flex-col gap-3 animate-fade-in-up">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">✅</span>
-            <div>
-              <h3 className="font-bold text-base">Application prête hors ligne</h3>
-              <p className="text-sm text-slate-300 mt-0.5">
-                L'application peut être utilisée sans internet.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={closeOfflineReady}
-            className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
+  return (
+    <aside aria-label="Notifications de mise à jour PWA">
+      <AnimatePresence>
+        {/* Mise à jour en cours */}
+        {isUpdating && (
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-96 z-[99999]"
+            style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
           >
-            OK
-          </button>
-        </div>
-      </div>
-    );
-  }
+            <div className="bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-blue-500/40 backdrop-blur-xl flex items-center gap-3.5">
+              <RefreshCw className="w-6 h-6 text-blue-400 animate-spin flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-sm md:text-base text-white">
+                  Mise à jour en cours...
+                </h3>
+                <p className="text-xs md:text-sm text-slate-300 mt-0.5">
+                  La page va se rafraîchir automatiquement.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
-  return null;
+        {/* Notification Mise à jour disponible (needRefresh) */}
+        {needRefresh && !isUpdating && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-[400px] z-[99999]"
+            style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+          >
+            <div className="bg-slate-900/95 text-white p-4.5 rounded-2xl shadow-2xl border border-indigo-500/40 backdrop-blur-xl flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white shadow-md flex-shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm md:text-base text-white">
+                      Nouvelle version disponible !
+                    </h3>
+                    <p className="text-xs md:text-sm text-slate-300 mt-0.5 leading-relaxed">
+                      Une mise à jour de l'application SCBA Bénévoles est prête.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleDismissNeedRefresh}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={handleUpdate}
+                  className="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-[#272890] hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs md:text-sm py-2.5 px-4 rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Mettre à jour
+                </button>
+                <button
+                  onClick={handleDismissNeedRefresh}
+                  className="text-xs md:text-sm text-slate-400 hover:text-slate-200 py-2.5 px-3 rounded-xl hover:bg-slate-800/60 transition-colors cursor-pointer"
+                >
+                  Plus tard
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Notification Prêt hors-ligne (offlineReady) */}
+        {offlineReady && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="fixed bottom-24 left-4 right-4 md:bottom-6 md:right-6 md:left-auto md:w-96 z-[99998]"
+            style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+          >
+            <div className="bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl border border-emerald-500/40 backdrop-blur-xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl flex-shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">Prêt pour le mode hors-ligne</h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Consultation active sans connexion internet.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDismissOfflineReady}
+                className="bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 transition-colors cursor-pointer"
+              >
+                OK
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </aside>
+  );
 };
 
 export default ReloadPrompt;

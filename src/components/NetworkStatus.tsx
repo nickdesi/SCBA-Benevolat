@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wifi, WifiOff } from 'lucide-react';
 
@@ -6,7 +6,7 @@ import { Wifi, WifiOff } from 'lucide-react';
  * NetworkStatus - Displays online/offline status banner
  * Shows when connection is lost and auto-hides when restored
  */
-const NetworkStatus: React.FC = memo(() => {
+const NetworkStatus: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showReconnected, setShowReconnected] = useState(false);
 
@@ -77,8 +77,6 @@ const NetworkStatus: React.FC = memo(() => {
       )}
     </AnimatePresence>
   );
-});
-
-NetworkStatus.displayName = 'NetworkStatus';
+};
 
 export default NetworkStatus;

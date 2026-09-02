@@ -59,13 +59,19 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: [
         'logo-scba.webp',
+        'favicon.ico',
         'favicon-16x16.png',
         'favicon-32x32.png',
+        'favicon-48x48.png',
+        'favicon-96x96.png',
+        'favicon-192x192.png',
         'apple-touch-icon.webp',
         'apple-touch-icon.png',
+        'pwa-192x192.webp',
+        'pwa-512x512.webp',
       ],
       devOptions: {
         enabled: false,
@@ -100,68 +106,60 @@ export default defineConfig({
         ],
       },
       workbox: {
-        skipWaiting: true,
-        clientsClaim: true,
         cleanupOutdatedCaches: true,
-        navigationPreload: false, // Disabled to prevent preload warnings - NetworkFirst is sufficient
-        // Precache essential files for offline support
-        globPatterns: ['**/*.{html,js,css,woff2}'],
-        // Runtime caching: HTML/API stay fresh, hashed assets favor repeat-load speed
+        clientsClaim: true,
+        skipWaiting: false,
+        navigateFallback: 'index.html',
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB: ensure large bundles & fontsource fonts are precached
+        // Precache essential files for offline support including self-hosted fonts
+        globPatterns: ['**/*.{html,js,css,woff2,woff,ico,png,svg,webp,webmanifest}'],
+        // Runtime caching: FFBB data API resilient offline strategy + static assets (Firebase excluded)
         runtimeCaching: [
           {
-            // HTML pages - always fresh
-            urlPattern: /\.html$/,
+            // FFBB API - NetworkFirst with 3s timeout, 7 days TTL (network handles freshness, cache provides offline safety)
+            urlPattern:
+              /^https:\/\/ffbb-api\.desimone\.fr\/.*|^\/api\/(v1\/club\/|ffbb-matches).*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'html-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 5, // 5 minutes only
-              },
+              cacheName: 'ffbb-api-cache',
               networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 604800, // 7 days (604800s)
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {
-            // Versioned JS/CSS bundles - prefer local cache for hashed Vite assets
-            urlPattern: /\.(js|css)$/,
+            // Images & self-hosted fonts - CacheFirst for instant offline rendering
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|ico|webp|woff2?|woff|ttf|eot)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-assets-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Versioned JS/CSS bundles - StaleWhileRevalidate
+            urlPattern: /\.(?:js|css)$/i,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'assets-cache',
               expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
               cacheableResponse: {
                 statuses: [0, 200],
               },
-            },
-          },
-          {
-            // Images/fonts - can be cached longer
-            urlPattern: /\.(png|jpg|jpeg|svg|gif|ico|woff2?|webp)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'static-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            // Firebase/API - always network first
-            urlPattern: /^https:\/\/(firestore|firebase)\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'firebase-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5, // 5 minutes
-              },
-              networkTimeoutSeconds: 5,
             },
           },
         ],
