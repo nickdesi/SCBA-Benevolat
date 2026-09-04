@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = memo(
 
     return (
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl transition-all duration-200">
-        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3">
+        <div className="relative z-20 max-w-7xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3">
           <div className="flex items-center justify-between gap-3">
             {/* Club Brand identity - Mobile App Style */}
             <div className="flex items-center gap-2.5 min-w-0">
@@ -68,7 +68,7 @@ const Header: React.FC<HeaderProps> = memo(
 
             {/* Right Controls: Theme + User Capsule */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <div className="flex items-center bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-full border border-slate-200/80 dark:border-slate-800/80 shadow-xs backdrop-blur-md">
+              <div className="relative z-30 flex items-center bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-full border border-slate-200/80 dark:border-slate-800/80 shadow-xs backdrop-blur-md">
                 {!isPWAInstalled && (
                   <button
                     type="button"
@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = memo(
         {teams.length > 0 && (
           <nav
             aria-label="Filtres par équipe"
-            className="border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-950/40"
+            className="relative z-10 border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-950/40"
           >
             <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2">
               <div
