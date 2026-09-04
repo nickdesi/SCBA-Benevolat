@@ -103,7 +103,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               <span className="truncate">{shortCompetition || game.competition}</span>
             </span>
           ) : shortCompetition ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-white/80 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700/80 backdrop-blur-xs truncate shadow-2xs">
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700/80 truncate shadow-2xs">
               {shortCompetition}
             </span>
           ) : (
@@ -181,7 +181,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Large Circular Volunteer Progress Gauge for Home games */}
           {isHomeGame && totalCapacity > 0 && (
             <div
-              className="relative w-12 h-12 sm:w-13 sm:h-13 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full shadow-md border-2 border-white dark:border-slate-700 backdrop-blur-md flex-shrink-0"
+              className="relative w-12 h-12 sm:w-13 sm:h-13 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full shadow-md border-2 border-white dark:border-slate-700 flex-shrink-0"
               title={`Bénévoles : ${filledSlots}/${totalCapacity} (${progressPercent}%)`}
             >
               <svg className="w-11 h-11 sm:w-12 sm:h-12 transform -rotate-90" viewBox="0 0 44 44">
@@ -317,8 +317,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
       </div>
 
-      {/* Bottom Info Strip: Location & Direct GPS (Glass Capsule) */}
-      <div className="relative z-10 mt-3 px-3 py-2 rounded-xl bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-white/90 dark:border-slate-700/60 shadow-2xs flex items-center justify-between gap-2">
+      {/* Bottom Info Strip: Location & Direct GPS */}
+      <div className="relative z-10 mt-3 px-3 py-2 rounded-xl bg-white/95 dark:bg-slate-800/95 border border-white/90 dark:border-slate-700/60 shadow-2xs flex items-center justify-between gap-2">
         {/* Short Date & Location Line */}
         <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 min-w-0 flex-1">
           <Calendar className="w-4 h-4 text-[#3629e1] dark:text-indigo-400 flex-shrink-0" />
