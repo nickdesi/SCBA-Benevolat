@@ -1,12 +1,6 @@
 import React, { useState, useCallback, memo } from 'react';
 import { getFirebaseFunctions } from '../firebase';
-import {
-  parseCSV,
-  toGameFormData,
-  findMatchingGame,
-  enrichMatchAddress,
-  type ParsedMatch,
-} from '../utils/csvImport';
+import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
 import { CustomSelect } from './ui/CustomSelect';
@@ -137,19 +131,17 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         let updateCount = 0;
 
         fetchedMatches.forEach((match) => {
-          const location = enrichMatchAddress(match.location, match.opponent, match.isHome);
-          const enrichedMatch = { ...match, location };
-          const existing = findMatchingGame(enrichedMatch, existingGames);
+          const existing = findMatchingGame(match, existingGames);
           if (existing) {
             newMatches.push({
-              ...enrichedMatch,
+              ...match,
               id: existing.id,
               teamRank: match.teamRank ?? existing.teamRank,
               opponentRank: match.opponentRank ?? existing.opponentRank,
             });
             updateCount++;
           } else {
-            newMatches.push(enrichedMatch);
+            newMatches.push(match);
           }
         });
 
