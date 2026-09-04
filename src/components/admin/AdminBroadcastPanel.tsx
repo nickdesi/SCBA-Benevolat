@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { addDoc, collection, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 
@@ -44,6 +44,13 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
   const [type, setType] = useState<'info' | 'warning' | 'urgent'>('info');
   const [daysDuration, setDaysDuration] = useState(7);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const formattedAnnouncements = useMemo(() => {
+    return announcements.map((ann) => ({
+      ...ann,
+      _formattedExpiresAt: ann.expiresAt ? expiresAtFormatter.format(ann.expiresAt.toDate()) : '',
+    }));
+  }, [announcements]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,12 +248,12 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
       >
         <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2 px-1">
           <List className="w-4 h-4" />
-          En cours ({announcements.length})
+          En cours ({formattedAnnouncements.length})
         </h3>
 
         <div className="space-y-3">
           <AnimatePresence mode="popLayout">
-            {announcements.length === 0 ? (
+            {formattedAnnouncements.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -256,7 +263,7 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
                 <p className="text-slate-400 font-medium text-sm">Aucune annonce active</p>
               </motion.div>
             ) : (
-              announcements.map((item) => (
+              formattedAnnouncements.map((item) => (
                 <motion.div
                   key={item.id}
                   layout
@@ -281,10 +288,7 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
                       </p>
                       <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
                         <Clock className="w-3 h-3" />
-                        <span>
-                          Expire le{' '}
-                          {item.expiresAt ? expiresAtFormatter.format(item.expiresAt.toDate()) : ''}
-                        </span>
+                        <span>Expire le {item._formattedExpiresAt}</span>
                       </div>
                     </div>
                   </div>
