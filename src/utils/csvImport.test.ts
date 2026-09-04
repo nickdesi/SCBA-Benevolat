@@ -27,8 +27,17 @@ describe('enrichMatchAddress', () => {
     expect(loc).toBe(full);
   });
 
-  it('gère le cas où l\'adresse est juste "Extérieur"', () => {
-    const loc = enrichMatchAddress('Extérieur', 'RIORGES BC', false);
-    expect(loc).toBe('Parc Sportif Galliéni, 439 avenue Galliéni, 42153 Riorges');
+  it('complète avec Limonest pour Ouest Lyonnais sans inventer de ville spéculative', () => {
+    const loc = enrichMatchAddress(
+      'SALLE OMNISPORTS, 335 Route de Saint Didier',
+      'OUEST LYONNAIS BASKET - 2',
+      false,
+    );
+    expect(loc).toBe('SALLE OMNISPORTS, 335 Route de Saint Didier, 69760 Limonest');
+  });
+
+  it('ne déduit rien spéculativement si absent du registre', () => {
+    const loc = enrichMatchAddress('SALLE INCONNUE, 10 Rue du Basket', 'CLUB INCONNU - 1', false);
+    expect(loc).toBe('SALLE INCONNUE, 10 Rue du Basket');
   });
 });

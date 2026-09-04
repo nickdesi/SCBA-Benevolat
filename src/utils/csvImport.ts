@@ -368,19 +368,7 @@ export const enrichMatchAddress = (location: string, opponent: string, isHome: b
     }
   }
 
-  // 4. Fallback : inférence de la ville depuis le nom de l'adversaire
-  const city = inferCityFromTeam(opponent);
-  if (city && city.length > 2) {
-    if (!trimmedLoc || /^extérieur(\s*\(.*\))?$/i.test(trimmedLoc)) {
-      return `Extérieur (${city})`;
-    }
-    const normLoc = normalize(trimmedLoc);
-    const normCity = normalize(city);
-    if (!normLoc.includes(normCity)) {
-      return `${trimmedLoc}, ${city}`;
-    }
-  }
-
+  // Si non trouvé dans le registre vérifié, ne rien inventer ni déduire spéculativement
   return trimmedLoc || (opponent ? `Extérieur (${opponent})` : 'Extérieur');
 };
 

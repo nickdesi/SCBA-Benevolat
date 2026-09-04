@@ -17,6 +17,10 @@ export const GYM_REGISTRY: Record<string, string> = {
   TAIN: 'Gymnase J. Longo, Rue de Chapotte, 07300 Tournon-sur-Rhône',
   TOURNON: 'Gymnase J. Longo, Rue de Chapotte, 07300 Tournon-sur-Rhône',
   RVBC: 'Halle des Sports des Oudairies, Rue Giotto, 85000 La Roche-sur-Yon',
+  'OUEST LYONNAIS BASKET': 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
+  'OUEST LYONNAIS': 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
+  'SALLE OMNISPORTS': 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
+  LIMONEST: 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
 
   // Nouveaux ajouts (Feedback utilisateur)
   NEYRAT: 'Gymnase Jules Verne, Rue des Aulnes, 63100 Clermont-Ferrand',
