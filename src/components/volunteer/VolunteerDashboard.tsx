@@ -24,7 +24,6 @@ interface VolunteerDashboardProps {
   favoriteTeams: string[];
   onToggleFavorite: (team: string) => Promise<void>;
   onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
-  onDragStart?: (e: React.PointerEvent) => void;
 }
 
 export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
@@ -39,12 +38,12 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
   favoriteTeams,
   onToggleFavorite,
   onToast,
-  onDragStart,
 }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'communication'>('dashboard');
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans">
+      {/* Header / Nav */}
       {/* Header / Nav */}
       <DashboardHeader
         user={user}
@@ -52,7 +51,6 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
         setActiveTab={setActiveTab}
         onClose={onClose}
         onToast={onToast}
-        onDragStart={onDragStart}
       />
 
       {/* Content Area */}

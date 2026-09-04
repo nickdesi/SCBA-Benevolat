@@ -13,7 +13,6 @@ interface UseGameFiltersProps {
 
 // Pure helpers — defined at module level so they are never recreated on render
 import { sortTeamNames } from '../utils/gameUtils';
-import { SCBA_TEAMS } from '../constants';
 
 export const useGameFilters = ({
   games,
@@ -52,11 +51,9 @@ export const useGameFilters = ({
   }, [uniqueTeamsSet, favoriteTeams]);
 
   // 2. Full list of teams regardless of favorites (for ProfileModal)
-  // Combines official SCBA club categories, existing game teams, and any saved favorites
   const allTeams = useMemo(() => {
-    const combined = new Set<string>([...SCBA_TEAMS, ...uniqueTeamsSet, ...favoriteTeams]);
-    return sortTeamNames(Array.from(combined));
-  }, [uniqueTeamsSet, favoriteTeams]);
+    return sortTeamNames(Array.from(uniqueTeamsSet));
+  }, [uniqueTeamsSet]);
 
   // 3. Extract unique locations
   const uniqueLocations = useMemo(() => {

@@ -36,11 +36,9 @@ export const SCBA_TEAMS = [
   'U15 M1',
   'U15 M2',
   'U13 M1',
-  'U13 M2',
   'U11 M1',
   'U11 M2',
   'U9 M1',
-  'U9 M2',
 ];
 
 // Common venues for auto-completion

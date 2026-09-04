@@ -135,23 +135,26 @@ const GameCard: React.FC<GameCardProps> = memo(
     }
 
     return (
-      <div
+      <motion.div
         id={`game-${game.id}`}
         data-game-id={game.id}
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.04 }}
         className={`
-          game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-fit
+          game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-full
           bg-white dark:bg-slate-900
           border
           ${
             isCupCompetition(game.competition)
-              ? 'border-amber-400/50 dark:border-amber-500/40 shadow-sm'
+              ? 'border-amber-400/40 dark:border-amber-500/30 shadow-md shadow-amber-500/5 ring-1 ring-amber-400/20'
               : isFullyStaffed
                 ? 'border-emerald-500/20 dark:border-emerald-500/20 opacity-80 dark:opacity-70 shadow-xs'
                 : isUrgent
-                  ? 'border-red-500/40 dark:border-red-500/30 shadow-sm'
-                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-sm'
+                  ? 'border-red-500/40 dark:border-red-500/30 shadow-md shadow-red-500/10 ring-1 ring-red-500/20'
+                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-md shadow-slate-950/5'
           }
-          hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-700
         `}
       >
         {/* 1. Header Section */}
@@ -217,7 +220,7 @@ const GameCard: React.FC<GameCardProps> = memo(
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/90 dark:bg-emerald-900/80 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm"
+                  className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
                 >
                   <motion.span
                     initial={{ scale: 0 }}
@@ -396,7 +399,7 @@ const GameCard: React.FC<GameCardProps> = memo(
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     );
   },
 );
