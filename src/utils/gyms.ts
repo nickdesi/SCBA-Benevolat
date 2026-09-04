@@ -17,10 +17,6 @@ export const GYM_REGISTRY: Record<string, string> = {
   TAIN: 'Gymnase J. Longo, Rue de Chapotte, 07300 Tournon-sur-Rhône',
   TOURNON: 'Gymnase J. Longo, Rue de Chapotte, 07300 Tournon-sur-Rhône',
   RVBC: 'Halle des Sports des Oudairies, Rue Giotto, 85000 La Roche-sur-Yon',
-  'OUEST LYONNAIS BASKET': 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
-  'OUEST LYONNAIS': 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
-  'SALLE OMNISPORTS': 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
-  LIMONEST: 'Salle Omnisports, 335 Route de Saint Didier, 69760 Limonest',
 
   // Nouveaux ajouts (Feedback utilisateur)
   NEYRAT: 'Gymnase Jules Verne, Rue des Aulnes, 63100 Clermont-Ferrand',
@@ -71,7 +67,6 @@ export const GYM_REGISTRY: Record<string, string> = {
   'COTE ROANNAISE': 'Gymnase de Renaison, 152 Rue du Gruyère, 42370 Renaison',
   CUSSET: 'Complexe Sportif des Darcins, Rue des Darcins, 03300 Cusset', // ou Salle Louis Chambonnière selon match
   'SCA CUSSET': 'Complexe Sportif des Darcins, Rue des Darcins, 03300 Cusset',
-  'SALLE ALAIN MIMOUN': "Salle Alain Mimoun, 42 Avenue de l'Europe, 03300 Cusset",
   'ENFANTS DU FOREZ': 'Forezium André Delorme, Rue de la Paparelle, 42110 Feurs',
   FEURS: 'Forezium André Delorme, Rue de la Paparelle, 42110 Feurs',
   NEULISE: 'Le Neulizium, Route de la Digue, 42590 Neulise',

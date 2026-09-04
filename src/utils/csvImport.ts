@@ -304,76 +304,26 @@ const isSCBATeam = (team: string): boolean => {
  */
 const SORTED_GYM_REGISTRY_KEYS = Object.keys(GYM_REGISTRY).sort((a, b) => b.length - a.length);
 
-/**
- * Enrichit une adresse de match si le code postal ou la ville manque.
- * Utilise le registre des gymnases et l'inférence de ville par adversaire.
- */
-export const enrichMatchAddress = (location: string, opponent: string, isHome: boolean): string => {
-  const trimmedLoc = (location || '').trim();
-
-  // 1. Match à domicile
-  if (isHome) {
-    if (!trimmedLoc || trimmedLoc.toLowerCase() === 'domicile' || !/\b\d{5}\b/.test(trimmedLoc)) {
-      return 'Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand';
-    }
-    return trimmedLoc;
-  }
-
-  // 2. Si l'adresse contient déjà un code postal à 5 chiffres, elle est déjà complète
-  if (/\b\d{5}\b/.test(trimmedLoc)) {
-    return trimmedLoc;
-  }
-
-  // 3. Recherche dans le registre des gymnases (par salle ou par adversaire)
-  const upperLoc = trimmedLoc.toUpperCase();
-  const upperOpp = (opponent || '').toUpperCase();
-
-  let registryAddress: string | undefined;
-
-  // A. Par nom de salle dans le registre (ex: SALLE ALAIN MIMOUN, COSEC)
-  for (const key of SORTED_GYM_REGISTRY_KEYS) {
-    if (upperLoc.includes(key)) {
-      registryAddress = GYM_REGISTRY[key];
-      break;
-    }
-  }
-
-  // B. Par nom de l'adversaire dans le registre (ex: CS PONT DU CHATEAU, SCA CUSSET)
-  if (!registryAddress) {
-    for (const key of SORTED_GYM_REGISTRY_KEYS) {
-      if (upperOpp.includes(key)) {
-        registryAddress = GYM_REGISTRY[key];
-        break;
-      }
-    }
-  }
-
-  if (registryAddress) {
-    // Si l'adresse actuelle est vide ou juste "Extérieur"
-    if (!trimmedLoc || /^extérieur(\s*\(.*\))?$/i.test(trimmedLoc)) {
-      return registryAddress;
-    }
-
-    // Si l'adresse actuelle a déjà le nom et la rue (ex: "COSEC, Allee ste Marcelle"),
-    // extraire le "CP Ville" du registre pour compléter sans écraser la rue exacte
-    const cpCityMatch = registryAddress.match(/(\d{5}\s+[^,]+)$/);
-    if (cpCityMatch) {
-      const cpCity = cpCityMatch[1].trim();
-      const cp = cpCity.slice(0, 5);
-      if (!trimmedLoc.includes(cp)) {
-        return `${trimmedLoc}, ${cpCity}`;
-      }
-    } else {
-      return registryAddress;
-    }
-  }
-
-  // Si non trouvé dans le registre vérifié, ne rien inventer ni déduire spéculativement
-  return trimmedLoc || (opponent ? `Extérieur (${opponent})` : 'Extérieur');
-};
-
 const findAddressForOpponent = (opponent: string): string => {
-  return enrichMatchAddress('Extérieur', opponent, false);
+  // 1. Check Registry (Exact or Partial Match)
+  const upperOpponent = opponent.toUpperCase();
+
+  // Strategy A: Direct Lookup (Fast) using normalized keys
+  if (GYM_REGISTRY[upperOpponent]) {
+    return GYM_REGISTRY[upperOpponent];
+  }
+
+  // Strategy B: Partial Match (Iterate registry keys)
+  // Priority to LONGEST keys to ensure specific matches (e.g. "CTC ... NOHANENT") are found before generic ones (e.g. "BÉDAT")
+  for (const key of SORTED_GYM_REGISTRY_KEYS) {
+    if (upperOpponent.includes(key)) {
+      return GYM_REGISTRY[key];
+    }
+  }
+
+  // 2. Fallback to City inference
+  const city = inferCityFromTeam(opponent);
+  return city.length > 2 ? `Extérieur (${city})` : 'Extérieur';
 };
 
 /**
