@@ -710,12 +710,6 @@ input[type='button'],
   touch-action: manipulation;
 }
 
-/* Content-visibility for long lists - prevents off-screen rendering */
-.cv-auto {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 350px;
-}
-
 /* Scrollbar gutter to prevent layout shift */
 .scroll-stable {
   scrollbar-gutter: stable;
@@ -764,9 +758,3 @@ a:active,
 }
 
 /* Match Ticker: animation is JS-driven via requestAnimationFrame (see MatchTicker.tsx) */
-
-/* Mobile Optimization: Native virtual rendering for 60/120 FPS scrolling across iOS Safari, Android Chrome, Brave, Firefox */
-.game-card-container {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 240px;
-}
