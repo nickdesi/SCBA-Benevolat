@@ -216,7 +216,7 @@ const GameCard: React.FC<GameCardProps> = memo(
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/80 dark:bg-emerald-900/60 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm backdrop-blur-sm"
+                  className="shine-badge relative overflow-hidden flex items-center gap-2 py-1 px-3 bg-emerald-100/90 dark:bg-emerald-900/80 rounded-full border border-emerald-200 dark:border-emerald-800 shadow-sm"
                 >
                   <motion.span
                     initial={{ scale: 0 }}

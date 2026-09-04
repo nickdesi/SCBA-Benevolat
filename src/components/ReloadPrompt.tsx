@@ -72,7 +72,7 @@ const ReloadPrompt: React.FC = () => {
     if (!('serviceWorker' in navigator)) return;
 
     const handleControllerChange = () => {
-      if (!shouldReloadOnControllerChangeRef.current || hasReloadedRef.current) return;
+      if (hasReloadedRef.current) return;
       hasReloadedRef.current = true;
       window.location.reload();
     };
