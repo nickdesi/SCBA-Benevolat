@@ -139,18 +139,19 @@ const GameCard: React.FC<GameCardProps> = memo(
         id={`game-${game.id}`}
         data-game-id={game.id}
         className={`
-          game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-full
+          game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-fit
           bg-white dark:bg-slate-900
           border
           ${
             isCupCompetition(game.competition)
-              ? 'border-amber-400/40 dark:border-amber-500/30 shadow-md shadow-amber-500/5 ring-1 ring-amber-400/20'
+              ? 'border-amber-400/50 dark:border-amber-500/40 shadow-sm'
               : isFullyStaffed
                 ? 'border-emerald-500/20 dark:border-emerald-500/20 opacity-80 dark:opacity-70 shadow-xs'
                 : isUrgent
-                  ? 'border-red-500/40 dark:border-red-500/30 shadow-md shadow-red-500/10 ring-1 ring-red-500/20'
-                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-md shadow-slate-950/5'
+                  ? 'border-red-500/40 dark:border-red-500/30 shadow-sm'
+                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-sm'
           }
+          hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-700
         `}
       >
         {/* 1. Header Section */}
