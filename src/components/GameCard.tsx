@@ -135,13 +135,9 @@ const GameCard: React.FC<GameCardProps> = memo(
     }
 
     return (
-      <motion.div
+      <div
         id={`game-${game.id}`}
         data-game-id={game.id}
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-40px' }}
-        transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.04 }}
         className={`
           game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-full
           bg-white dark:bg-slate-900
@@ -399,7 +395,7 @@ const GameCard: React.FC<GameCardProps> = memo(
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     );
   },
 );
