@@ -1,9 +1,8 @@
 import React, { useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { X, LayoutDashboard, MessageCircle, Camera, Loader2 } from 'lucide-react';
+import { X, LayoutDashboard, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { triggerHaptic } from '../../utils/haptics';
-import { saveAvatarToFirestore } from '../../utils/userStore';
 import { useAvatars } from '../../hooks/useAvatars';
 
 interface DashboardHeaderProps {
@@ -12,6 +11,7 @@ interface DashboardHeaderProps {
   setActiveTab: (tab: 'dashboard' | 'communication') => void;
   onClose: () => void;
   onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
+  onDragStart?: (e: React.PointerEvent) => void;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -19,10 +19,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   activeTab,
   setActiveTab,
   onClose,
-  onToast,
+  onDragStart,
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = React.useState(false);
   const { getAvatar } = useAvatars();
 
   const handleTabChange = useCallback(
@@ -35,37 +33,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     [activeTab, setActiveTab],
   );
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    // Reset input so the same file can be re-selected after an error
-    e.target.value = '';
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      onToast?.('Veuillez sélectionner une image.', 'error');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      onToast?.("L'image est trop volumineuse (max 5Mo).", 'error');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      await saveAvatarToFirestore(file, user.uid, user.displayName ?? undefined);
-      onToast?.('Photo de profil mise à jour !', 'success');
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error('Error uploading avatar:', msg);
-      onToast?.(`Erreur upload : ${msg}`, 'error');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
-    <div className="relative flex-shrink-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 p-4 sm:p-5 shadow-xl z-20 overflow-hidden border-b border-white/5">
+    <div
+      onPointerDown={(e) => {
+        if (typeof window !== 'undefined' && window.innerWidth >= 640) return;
+        if ((e.target as HTMLElement).closest('button, a, input, [role="button"]')) return;
+        onDragStart?.(e);
+      }}
+      className="relative flex-shrink-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 p-4 sm:p-5 shadow-xl z-20 overflow-hidden border-b border-white/5 cursor-grab active:cursor-grabbing sm:cursor-default"
+    >
       {/* Elite Decorative Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Static blur — no animate-pulse to avoid costly GPU repaints */}
@@ -88,12 +64,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => fileInputRef.current?.click()}
-            className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-lg shadow-indigo-500/30 cursor-pointer group"
-          >
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shadow-lg shadow-indigo-500/30 flex-shrink-0">
             <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden border border-white/10 relative">
               {getAvatar(user.displayName ?? '') || user.photoURL ? (
                 <img
@@ -106,24 +77,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   {user.displayName?.charAt(0).toUpperCase()}
                 </div>
               )}
-
-              {/* Upload Overlay */}
-              <div className="absolute inset-0 bg-black/40 md:bg-black/0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-hover:bg-black/50 transition-all duration-300">
-                {uploading ? (
-                  <Loader2 className="w-5 h-5 md:w-4 md:h-4 text-white animate-spin" />
-                ) : (
-                  <Camera className="w-5 h-5 md:w-4 md:h-4 text-white/90 md:text-white drop-shadow-md" />
-                )}
-              </div>
             </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileChange}
-            />
-          </motion.div>
+          </div>
           <div className="hidden xs:block">
             <h2 className="text-base sm:text-lg font-black leading-tight text-white tracking-tight">
               {user.displayName}

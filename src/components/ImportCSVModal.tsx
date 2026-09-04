@@ -394,9 +394,11 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       { value: 'U15 M1', label: 'U15 M1' },
       { value: 'U15 M2', label: 'U15 M2' },
       { value: 'U13 M1', label: 'U13 M1' },
+      { value: 'U13 M2', label: 'U13 M2' },
       { value: 'U11 M1', label: 'U11 M1' },
       { value: 'U11 M2', label: 'U11 M2' },
       { value: 'U9 M1', label: 'U9 M1' },
+      { value: 'U9 M2', label: 'U9 M2' },
     ];
 
     return (
