@@ -25,7 +25,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const todayISO = getTodayISO();
   const now = Date.now();
 
-  // Prochain match dans les 72h (déjà filtré par App.tsx avant de rendre ce composant)
+  // Prochain match dans les 72h (return null if no game matches)
   const nextGame = useMemo<Game | null>(() => {
     for (const g of games) {
       const iso = g.dateISO ?? '';

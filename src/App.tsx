@@ -217,14 +217,7 @@ function App() {
           <AnnouncementBanner />
           <EventSchema games={sortedGames} />
           {/* Ticker : visible seulement s'il y a un match dans les 72h */}
-          {sortedGames.some((g) => {
-            const dateStr = g.dateISO ?? g.date;
-            if (!dateStr) return false;
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return false;
-            const diff = d.getTime() - Date.now();
-            return diff >= 0 && diff <= 72 * 60 * 60 * 1000;
-          }) && <MatchTicker games={sortedGames} />}
+          <MatchTicker games={sortedGames} />
         </>
       }
       toasts={
