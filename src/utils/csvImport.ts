@@ -89,6 +89,8 @@ export interface ParsedMatch {
   isHome: boolean; // true if SCBA is home team
   candidates?: string[]; // List of potential addresses found
   id?: string; // ID of existing match if found (for update)
+  matchStatus?: 'new' | 'modified' | 'unchanged';
+  diffs?: string[];
   competition?: string;
   teamLogo?: string;
   opponentLogo?: string;
@@ -96,6 +98,79 @@ export interface ParsedMatch {
   teamRank?: number | string;
   opponentRank?: number | string;
 }
+
+/**
+ * Détecte si un match importé contient des modifications réelles par rapport au match existant.
+ */
+export const hasGameChanged = (
+  newMatch: ParsedMatch,
+  existing: Game,
+): { changed: boolean; diffs: string[] } => {
+  const normalizeStr = (s?: string | number | null) =>
+    s !== undefined && s !== null ? String(s).trim() : '';
+
+  const diffs: string[] = [];
+
+  // 1. Identifiant FFBB
+  if (
+    newMatch.ffbbMatchId &&
+    normalizeStr(existing.ffbbMatchId) !== normalizeStr(newMatch.ffbbMatchId)
+  ) {
+    diffs.push(`ID FFBB`);
+  }
+
+  // 2. Équipes
+  if (normalizeStr(existing.team) !== normalizeStr(newMatch.team)) {
+    diffs.push(`Équipe: ${existing.team} → ${newMatch.team}`);
+  }
+  if (normalizeStr(existing.opponent) !== normalizeStr(newMatch.opponent)) {
+    diffs.push(`Adversaire: ${existing.opponent} → ${newMatch.opponent}`);
+  }
+
+  // 3. Date & Heure
+  if (normalizeStr(existing.dateISO) !== normalizeStr(newMatch.dateISO)) {
+    diffs.push(`Date: ${existing.dateISO} → ${newMatch.dateISO}`);
+  }
+  if (normalizeStr(existing.time) !== normalizeStr(newMatch.time)) {
+    diffs.push(`Heure: ${existing.time} → ${newMatch.time}`);
+  }
+
+  // 4. Lieu / Salle
+  if (normalizeStr(existing.location) !== normalizeStr(newMatch.location)) {
+    diffs.push(`Lieu: ${existing.location} → ${newMatch.location}`);
+  }
+
+  // 5. Compétition
+  if (
+    newMatch.competition &&
+    normalizeStr(existing.competition) !== normalizeStr(newMatch.competition)
+  ) {
+    diffs.push(`Compétition: ${existing.competition || 'aucune'} → ${newMatch.competition}`);
+  }
+
+  // 6. Domicile / Extérieur
+  if (existing.isHome !== newMatch.isHome) {
+    diffs.push(
+      `Statut: ${existing.isHome ? 'Domicile' : 'Extérieur'} → ${newMatch.isHome ? 'Domicile' : 'Extérieur'}`,
+    );
+  }
+
+  // 7. Logos
+  if (newMatch.teamLogo && normalizeStr(existing.teamLogo) !== normalizeStr(newMatch.teamLogo)) {
+    diffs.push('Logo SCBA');
+  }
+  if (
+    newMatch.opponentLogo &&
+    normalizeStr(existing.opponentLogo) !== normalizeStr(newMatch.opponentLogo)
+  ) {
+    diffs.push('Logo adversaire');
+  }
+
+  return {
+    changed: diffs.length > 0,
+    diffs,
+  };
+};
 
 interface ImportResult {
   success: ParsedMatch[];

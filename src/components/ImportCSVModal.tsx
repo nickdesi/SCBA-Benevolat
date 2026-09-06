@@ -1,6 +1,12 @@
 import React, { useState, useCallback, memo } from 'react';
 import { getFirebaseFunctions } from '../firebase';
-import { parseCSV, toGameFormData, findMatchingGame, type ParsedMatch } from '../utils/csvImport';
+import {
+  parseCSV,
+  toGameFormData,
+  findMatchingGame,
+  hasGameChanged,
+  type ParsedMatch,
+} from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
 import { CustomSelect } from './ui/CustomSelect';
@@ -133,15 +139,22 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         fetchedMatches.forEach((match) => {
           const existing = findMatchingGame(match, existingGames);
           if (existing) {
+            const { changed, diffs } = hasGameChanged(match, existing);
             newMatches.push({
               ...match,
               id: existing.id,
+              matchStatus: changed ? 'modified' : 'unchanged',
+              diffs,
               teamRank: match.teamRank ?? existing.teamRank,
               opponentRank: match.opponentRank ?? existing.opponentRank,
             });
-            updateCount++;
+            if (changed) updateCount++;
           } else {
-            newMatches.push(match);
+            newMatches.push({
+              ...match,
+              matchStatus: 'new',
+              diffs: [],
+            });
           }
         });
 
@@ -172,11 +185,20 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       result.success.forEach((match) => {
         const existing = findMatchingGame(match, existingGames);
         if (existing) {
-          // It's an update!
-          newMatches.push({ ...match, id: existing.id });
-          updateCount++;
+          const { changed, diffs } = hasGameChanged(match, existing);
+          newMatches.push({
+            ...match,
+            id: existing.id,
+            matchStatus: changed ? 'modified' : 'unchanged',
+            diffs,
+          });
+          if (changed) updateCount++;
         } else {
-          newMatches.push(match);
+          newMatches.push({
+            ...match,
+            matchStatus: 'new',
+            diffs: [],
+          });
         }
       });
 
@@ -370,12 +392,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       setIsEnriching(false);
     }, [parsedMatches]);
 
-    const handleImport = useCallback(() => {
-      const gameData = parsedMatches.map(toGameFormData);
-      onImport(gameData);
-      handleClose();
-    }, [parsedMatches, onImport]);
-
     const handleClose = useCallback(() => {
       setStep('input');
       setIsEnriching(false);
@@ -383,7 +399,23 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       onClose();
     }, [onClose]);
 
+    const handleImport = useCallback(() => {
+      const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
+      if (actionableMatches.length === 0) {
+        handleClose();
+        return;
+      }
+      const gameData = actionableMatches.map(toGameFormData);
+      onImport(gameData);
+      handleClose();
+    }, [parsedMatches, onImport, handleClose]);
+
     if (!isOpen) return null;
+
+    const newMatchesList = parsedMatches.filter((m) => m.matchStatus === 'new');
+    const modifiedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'modified');
+    const unchangedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'unchanged');
+    const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
 
     const teamOptions = [
       { value: 'ALL', label: '✨ Toutes les équipes (Club complet)' },
@@ -562,14 +594,30 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             {step === 'preview' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center flex-wrap gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
-                  <div className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 font-sport">
-                    <span className="text-emerald-600 dark:text-emerald-400">
-                      ✨ {parsedMatches.length - duplicatesCount} nouveau(x) match(s)
-                    </span>
-                    {duplicatesCount > 0 && (
-                      <span className="text-blue-500 dark:text-blue-400 ml-2">
-                        (🔄 {duplicatesCount} mise(s) à jour)
+                  <div className="text-xs sm:text-sm font-bold font-sport">
+                    {actionableMatches.length === 0 ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                        <span>✅</span> Tous les {unchangedMatchesList.length} matchs sont déjà à
+                        jour ! (0 action requise)
                       </span>
+                    ) : (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {newMatchesList.length > 0 && (
+                          <span className="text-emerald-600 dark:text-emerald-400">
+                            ✨ {newMatchesList.length} nouveau(x) match(s)
+                          </span>
+                        )}
+                        {modifiedMatchesList.length > 0 && (
+                          <span className="text-amber-500 dark:text-amber-400">
+                            🔄 {modifiedMatchesList.length} mise(s) à jour
+                          </span>
+                        )}
+                        {unchangedMatchesList.length > 0 && (
+                          <span className="text-slate-400 dark:text-slate-500 text-xs font-normal">
+                            (🔒 {unchangedMatchesList.length} inchangé(s))
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -616,9 +664,25 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                           )}
                         </div>
 
-                        {match.id && (
-                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/50 px-2 py-0.5 rounded-full">
-                            🔄 Mise à jour
+                        {match.matchStatus === 'new' && (
+                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                            ✨ Nouveau match
+                          </span>
+                        )}
+                        {match.matchStatus === 'modified' && (
+                          <span
+                            className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-800"
+                            title={match.diffs?.join(', ')}
+                          >
+                            🔄 Mise à jour{' '}
+                            {match.diffs && match.diffs.length > 0
+                              ? `(${match.diffs.join(', ')})`
+                              : ''}
+                          </span>
+                        )}
+                        {match.matchStatus === 'unchanged' && (
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600">
+                            🔒 Inchangé (Déjà à jour)
                           </span>
                         )}
                       </div>
@@ -711,10 +775,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
               <button
                 type="button"
                 onClick={handleImport}
-                disabled={parsedMatches.length === 0}
+                disabled={actionableMatches.length === 0}
                 className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/35 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-sport tracking-wide"
               >
-                ✓ Importer / Mettre à jour {parsedMatches.length} match(s)
+                {actionableMatches.length === 0
+                  ? '✓ Tous les matchs sont à jour (0 action requise)'
+                  : `✓ Enregistrer ${actionableMatches.length} match(s) (${newMatchesList.length > 0 ? `${newMatchesList.length} nouveau(x)` : ''}${newMatchesList.length > 0 && modifiedMatchesList.length > 0 ? ', ' : ''}${modifiedMatchesList.length > 0 ? `${modifiedMatchesList.length} mise(s) à jour` : ''})`}
               </button>
             )}
           </div>
