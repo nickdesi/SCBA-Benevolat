@@ -1,0 +1,67 @@
+name: 🏀 Sync FFBB Matches (Cron Auto-Import)
+
+on:
+  schedule:
+    # Tous les jeudis à 21:00 UTC (23:00 heure de Paris en été / 22:00 en hiver)
+    - cron: '0 21 * * 4'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Mode simulation (Dry Run)'
+        required: false
+        default: false
+        type: boolean
+      team:
+        description: 'Filtrer sur une équipe spécifique (laisser vide pour toutes)'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: sync-ffbb-matches
+  cancel-in-progress: false
+
+jobs:
+  sync-matches:
+    name: ⚡ Synchronisation FFBB -> Firestore
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install firebase-admin ffbb-data-client httpx
+
+      - name: 🔑 Configure Firebase Service Account
+        env:
+          SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY || secrets.SERVICE_ACCOUNT_KEY || secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        run: |
+          if [ -n "$SERVICE_KEY" ]; then
+            echo "$SERVICE_KEY" > serviceAccountKey.json
+            echo "GOOGLE_APPLICATION_CREDENTIALS=serviceAccountKey.json" >> $GITHUB_ENV
+          fi
+
+      - name: 🚀 Run FFBB Import Script
+        run: |
+          EXTRA_ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            EXTRA_ARGS="$EXTRA_ARGS --dry-run"
+          fi
+          if [ -n "${{ github.event.inputs.team }}" ]; then
+            EXTRA_ARGS="$EXTRA_ARGS --team '${{ github.event.inputs.team }}'"
+          fi
+          python scripts/import_ffbb_matches.py $EXTRA_ARGS
+
+      - name: 🧹 Cleanup Credentials
+        if: always()
+        run: |
+          rm -f serviceAccountKey.json

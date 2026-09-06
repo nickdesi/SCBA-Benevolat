@@ -70,7 +70,12 @@ def normalize_scba_team_name(team_raw: str, comp_name: str = "") -> str:
     raw = (team_raw or "").upper().strip()
     comp = (comp_name or "").upper().strip()
 
-    # Détection Catégories Jeunes U11, U13, U15, U18, U20
+    if "BABY" in raw or "BABY" in comp:
+        return "U7 M1"
+    if "MINI" in raw or "MINI" in comp:
+        return "U9 M1"
+
+    # Détection Catégories Jeunes U7 à U21
     m_cat = re.search(r'U\s*(\d+)', raw) or re.search(r'U\s*(\d+)', comp)
     if m_cat:
         cat = m_cat.group(1)
@@ -78,14 +83,14 @@ def normalize_scba_team_name(team_raw: str, comp_name: str = "") -> str:
         num = m_num.group(1) if m_num else "1"
         return f"U{cat} M{num}"
 
-    # Détection Senior (PNM, RM2, RM3, Pré Nationale, Régionale Senior, etc.)
+    # Détection Senior (PNM, RM2, RM3, DM1, DM2, DM3, PRM, etc.)
     m_num = re.search(r'[- ](\d+)$', raw)
     num = m_num.group(1) if m_num else None
 
     if not num:
         if "RM2" in comp or "DIVISION 2" in comp:
             num = "2"
-        elif "RM3" in comp or "DIVISION 3" in comp:
+        elif "RM3" in comp or "DIVISION 3" in comp or "DM2" in comp or "DM3" in comp or "PRM" in comp:
             num = "3"
         elif "PNM" in comp or "PRE NATIONALE" in comp or "PRÉ NATIONALE" in comp:
             num = "1"
