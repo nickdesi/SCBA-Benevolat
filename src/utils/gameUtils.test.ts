@@ -66,6 +66,7 @@ describe('formatCompetitionShort', () => {
   });
 
   it('shortens cup competitions', () => {
-    expect(formatCompetitionShort('U18 MASCULIN COUPE ARA')).toBe('Coupe ARA U18M');
+    expect(formatCompetitionShort('U18 MASCULIN COUPE ARA')).toBe('Coupe AURA U18M');
+    expect(formatCompetitionShort('U18 MASCULIN COUPE AURA')).toBe('Coupe AURA U18M');
   });
 });
