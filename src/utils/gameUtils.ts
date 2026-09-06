@@ -67,7 +67,7 @@ export const formatCompetitionShort = (competition?: string): string => {
   if (!competition) return '';
   const trimmed = competition.trim();
 
-  // Abréviations courantes basket FFBB
+  // 1. Abréviations directes
   const map: Record<string, string> = {
     'pré nationale masculine': 'PNM',
     'pre nationale masculine': 'PNM',
@@ -79,16 +79,8 @@ export const formatCompetitionShort = (competition?: string): string => {
     'nationale féminine 1': 'NF1',
     'nationale féminine 2': 'NF2',
     'nationale féminine 3': 'NF3',
-    'régionale masculine seniors - division 2': 'RM2',
-    'regionale masculine seniors - division 2': 'RM2',
-    'régionale masculine 2': 'RM2',
-    'régionale masculine 1': 'RM1',
-    'régionale masculine 3': 'RM3',
-    'régionale féminine seniors - division 2': 'RF2',
-    'régionale féminine 2': 'RF2',
-    'régionale féminine 1': 'RF1',
-    'régionale féminine 3': 'RF3',
-    'u18 masculin coupe ara': 'U18M Coupe ARA',
+    'u18 masculin coupe ara': 'Coupe ARA U18M',
+    'u15 masculin coupe ara': 'Coupe ARA U15M',
     'u18 masculin': 'U18M',
     'u18 féminin': 'U18F',
     'u15 masculin': 'U15M',
@@ -97,24 +89,97 @@ export const formatCompetitionShort = (competition?: string): string => {
     'u13 féminin': 'U13F',
     'u11 masculin': 'U11M',
     'u11 féminin': 'U11F',
+    'u9 masculin': 'U9M',
+    'u9 féminin': 'U9F',
+    'u7 masculin': 'U7M',
   };
 
   const lower = trimmed.toLowerCase();
   if (map[lower]) return map[lower];
 
-  return trimmed
-    .replace(/Pré\s*Nationale\s*Masculine/gi, 'PNM')
-    .replace(/Pré\s*Nationale\s*Féminine/gi, 'PNF')
-    .replace(/Pre\s*Nationale\s*Masculine/gi, 'PNM')
-    .replace(/Pre\s*Nationale\s*Feminine/gi, 'PNF')
-    .replace(/Régionale\s*Masculine\s*Seniors\s*-\s*Division\s*(\d+)/gi, 'RM$1')
-    .replace(/Régionale\s*Féminine\s*Seniors\s*-\s*Division\s*(\d+)/gi, 'RF$1')
-    .replace(/Nationale\s*Masculine\s*(\d+)/gi, 'NM$1')
-    .replace(/Nationale\s*Féminine\s*(\d+)/gi, 'NF$1')
-    .replace(/Départementale\s*Masculine\s*(\d+)/gi, 'DM$1')
-    .replace(/Départementale\s*Féminine\s*(\d+)/gi, 'DF$1')
-    .replace(/U(\d+)\s*Masculin/gi, 'U$1M')
-    .replace(/U(\d+)\s*Féminin/gi, 'U$1F');
+  let result = trimmed;
+
+  // 2. Catégories Jeunes avec Division (ex: "Départementale masculine U15 - Division 10" -> "DMU15 D10")
+  result = result.replace(
+    /D[ée]partementale\s+Masculine\s+U\s*(\d+)\s*[-–]\s*Division\s*(\d+)/gi,
+    'DMU$1 D$2',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]\s*Division\s*(\d+)/gi,
+    'DFU$1 D$2',
+  );
+  result = result.replace(
+    /R[ée]gionale\s+Masculine\s+U\s*(\d+)\s*[-–]\s*Division\s*(\d+)/gi,
+    'RMU$1 D$2',
+  );
+  result = result.replace(
+    /R[ée]gionale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]\s*Division\s*(\d+)/gi,
+    'RFU$1 D$2',
+  );
+
+  // 3. Catégories Jeunes avec Brassage (ex: "Régionale Masculine U18 Brassage" -> "RMU18 Brassage")
+  result = result.replace(
+    /R[ée]gionale\s+Masculine\s+U\s*(\d+)\s*[-–]?\s*Brassage/gi,
+    'RMU$1 Brassage',
+  );
+  result = result.replace(
+    /R[ée]gionale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]?\s*Brassage/gi,
+    'RFU$1 Brassage',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+Masculine\s+U\s*(\d+)\s*[-–]?\s*Brassage/gi,
+    'DMU$1 Brassage',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]?\s*Brassage/gi,
+    'DFU$1 Brassage',
+  );
+
+  // 4. Catégories Seniors avec Division (ex: "Régionale Masculine Seniors - Division 2" -> "RM2")
+  result = result.replace(
+    /R[ée]gionale\s+Masculine\s+(?:Seniors\s*)?[-–]\s*Division\s*(\d+)/gi,
+    'RM$1',
+  );
+  result = result.replace(
+    /R[ée]gionale\s+F[ée]minine\s+(?:Seniors\s*)?[-–]\s*Division\s*(\d+)/gi,
+    'RF$1',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+Masculine\s+(?:Seniors\s*)?[-–]\s*Division\s*(\d+)/gi,
+    'DM$1',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+F[ée]minine\s+(?:Seniors\s*)?[-–]\s*Division\s*(\d+)/gi,
+    'DF$1',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+Masculine\s+(?:Seniors\s*)?[-–]\s*Pr[ée]\s*R[ée]gionale/gi,
+    'PRM',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+F[ée]minine\s+(?:Seniors\s*)?[-–]\s*Pr[ée]\s*R[ée]gionale/gi,
+    'PRF',
+  );
+
+  // 5. Pré-Nationale & Nationale
+  result = result.replace(/Pr[ée]\s*Nationale\s*Masculine/gi, 'PNM');
+  result = result.replace(/Pr[ée]\s*Nationale\s*F[ée]minine/gi, 'PNF');
+  result = result.replace(/Nationale\s*Masculine\s*(\d+)/gi, 'NM$1');
+  result = result.replace(/Nationale\s*F[ée]minine\s*(\d+)/gi, 'NF$1');
+
+  // 6. Coupes
+  result = result.replace(/U\s*(\d+)\s*Masculin\s+Coupe\s+ARA/gi, 'Coupe ARA U$1M');
+  result = result.replace(/U\s*(\d+)\s*F[ée]minin\s+Coupe\s+ARA/gi, 'Coupe ARA U$1F');
+
+  // 7. Remplacements génériques résiduels
+  result = result.replace(/R[ée]gionale\s*Masculine\s*(\d+)/gi, 'RM$1');
+  result = result.replace(/R[ée]gionale\s*F[ée]minine\s*(\d+)/gi, 'RF$1');
+  result = result.replace(/D[ée]partementale\s*Masculine\s*(\d+)/gi, 'DM$1');
+  result = result.replace(/D[ée]partementale\s*F[ée]minine\s*(\d+)/gi, 'DF$1');
+  result = result.replace(/U\s*(\d+)\s*Masculin/gi, 'U$1M');
+  result = result.replace(/U\s*(\d+)\s*F[ée]minin/gi, 'U$1F');
+
+  return result.trim();
 };
 
 /**

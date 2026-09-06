@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatRank, isChampionshipCompetition } from './gameUtils';
+import { formatRank, isChampionshipCompetition, formatCompetitionShort } from './gameUtils';
 
 describe('formatRank', () => {
   it('formats numeric ranks correctly into French ordinal format', () => {
@@ -42,5 +42,30 @@ describe('isChampionshipCompetition', () => {
     expect(isChampionshipCompetition('Coupe du Puy-de-Dôme')).toBe(false);
     expect(isChampionshipCompetition('Trophée Coupe de France')).toBe(false);
     expect(isChampionshipCompetition('Challenge Crédit Agricole')).toBe(false);
+  });
+});
+
+describe('formatCompetitionShort', () => {
+  it('shortens departmental youth competitions with divisions', () => {
+    expect(formatCompetitionShort('Départementale Masculine U15 - Division 10')).toBe('DMU15 D10');
+    expect(formatCompetitionShort('Départementale Féminine U13 - Division 2')).toBe('DFU13 D2');
+    expect(formatCompetitionShort('Départementale masculine u15 - division 10')).toBe('DMU15 D10');
+  });
+
+  it('shortens regional youth competitions with divisions & brassage', () => {
+    expect(formatCompetitionShort('Régionale Masculine U18 - Division 1')).toBe('RMU18 D1');
+    expect(formatCompetitionShort('RMU18 Brassage')).toBe('RMU18 Brassage');
+    expect(formatCompetitionShort('Régionale Masculine U18 Brassage')).toBe('RMU18 Brassage');
+  });
+
+  it('shortens seniors regional and departmental championships', () => {
+    expect(formatCompetitionShort('Régionale masculine seniors - Division 2')).toBe('RM2');
+    expect(formatCompetitionShort('Départementale masculine seniors - Division 3')).toBe('DM3');
+    expect(formatCompetitionShort('Pré nationale masculine')).toBe('PNM');
+    expect(formatCompetitionShort('Pre nationale feminine')).toBe('PNF');
+  });
+
+  it('shortens cup competitions', () => {
+    expect(formatCompetitionShort('U18 MASCULIN COUPE ARA')).toBe('Coupe ARA U18M');
   });
 });

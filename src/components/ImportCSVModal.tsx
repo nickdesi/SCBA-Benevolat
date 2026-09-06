@@ -10,6 +10,7 @@ import {
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
 import { CustomSelect } from './ui/CustomSelect';
+import { formatCompetitionShort } from '../utils/gameUtils';
 
 interface ImportCSVModalProps {
   isOpen: boolean;
@@ -659,7 +660,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                           </span>
                           {match.competition && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 truncate max-w-[180px]">
-                              {match.competition}
+                              {formatCompetitionShort(match.competition) || match.competition}
                             </span>
                           )}
                         </div>
