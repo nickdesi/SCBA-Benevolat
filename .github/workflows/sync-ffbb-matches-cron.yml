@@ -43,11 +43,14 @@ jobs:
 
       - name: 🔑 Configure Firebase Service Account
         env:
-          SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY || secrets.SERVICE_ACCOUNT_KEY || secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          SERVICE_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT || secrets.FIREBASE_SERVICE_ACCOUNT_KEY || secrets.SERVICE_ACCOUNT_KEY || secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           if [ -n "$SERVICE_KEY" ]; then
             echo "$SERVICE_KEY" > serviceAccountKey.json
             echo "GOOGLE_APPLICATION_CREDENTIALS=serviceAccountKey.json" >> $GITHUB_ENV
+          else
+            echo "::error::Secret FIREBASE_SERVICE_ACCOUNT non trouvé dans les secrets du repository."
+            exit 1
           fi
 
       - name: 🚀 Run FFBB Import Script
