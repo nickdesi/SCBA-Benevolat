@@ -357,7 +357,12 @@ def process_match(client, item):
     # Salle & Lieu
     salle_id = getattr(m, 'salle', None)
     if is_home:
-        location = "Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand"
+        location = resolve_exact_salle_address(
+            client,
+            salle_id=salle_id,
+            org_id=SCBA_ORGANISME_ID,
+            default_name="Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand"
+        )
     else:
         location = resolve_exact_salle_address(
             client,
@@ -427,6 +432,8 @@ def sync_matches_to_firestore(db, games, dry_run=False):
             doc_id, existing_data = matched_doc
             update_payload = {
                 "ffbbMatchId": ffbb_id,
+                "date": g["date"],
+                "dateISO": g["dateISO"],
                 "time": g["time"],
                 "location": g["location"],
                 "competition": g["competition"],
