@@ -431,7 +431,9 @@ def sync_matches_to_firestore(db, games, dry_run=False):
         if matched_doc:
             doc_id, existing_data = matched_doc
             update_payload = {
-                "ffbbMatchId": ffbb_id,
+                "ffbbMatchId": str(ffbb_id),
+                "team": g["team"],
+                "opponent": g["opponent"],
                 "date": g["date"],
                 "dateISO": g["dateISO"],
                 "time": g["time"],
@@ -442,12 +444,22 @@ def sync_matches_to_firestore(db, games, dry_run=False):
             if g.get("opponentLogo"):
                 update_payload["opponentLogo"] = g["opponentLogo"]
 
-            differs = any(existing_data.get(k) != v for k, v in update_payload.items() if v is not None)
+            # Détection intelligente du delta : on ne met à jour que les champs réellement modifiés
+            changed_fields = {}
+            for k, v in update_payload.items():
+                if v is None:
+                    continue
+                old_val = existing_data.get(k)
+                old_str = str(old_val).strip() if old_val is not None else ""
+                new_str = str(v).strip()
+                if old_str != new_str:
+                    changed_fields[k] = v
 
-            if differs:
+            if changed_fields:
                 if not dry_run:
-                    db.collection('matches').document(doc_id).update(update_payload)
-                print(f"  🔄 [UPDATE] {g['team']} vs {g['opponent']} ({g['dateISO']} {g['time']}) -> ID: {doc_id}")
+                    db.collection('matches').document(doc_id).update(changed_fields)
+                diff_summary = ", ".join([f"{k}: '{existing_data.get(k)}' -> '{v}'" for k, v in changed_fields.items()])
+                print(f"  🔄 [UPDATE] {g['team']} vs {g['opponent']} ({g['dateISO']}) -> ID: {doc_id} | Modifié: {diff_summary}")
                 updated_count += 1
             else:
                 unchanged_count += 1
