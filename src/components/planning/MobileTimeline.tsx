@@ -133,7 +133,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
       (date: Date) => {
         return gamesByDay.get(toISODateString(date)) || { games: [], homeCount: 0, awayCount: 0 };
       },
-      [gamesByDay]
+      [gamesByDay],
     );
 
     // Filter out days with no games using pre-computed map
