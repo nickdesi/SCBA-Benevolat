@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Game, CarpoolEntry } from '../../types';
 import GameCard from '../GameCard';
@@ -129,12 +129,24 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
       return map;
     }, [games]);
 
-    const getGamesForDay = (date: Date) => {
-      return gamesByDay.get(toISODateString(date)) || { games: [], homeCount: 0, awayCount: 0 };
-    };
+    const getGamesForDay = useCallback(
+      (date: Date) => {
+        return gamesByDay.get(toISODateString(date)) || { games: [], homeCount: 0, awayCount: 0 };
+      },
+      [gamesByDay]
+    );
 
     // Filter out days with no games using pre-computed map
-    const activeDays = days.filter((day) => getGamesForDay(day).games.length > 0);
+    const activeDays = useMemo(
+      () =>
+        days
+          .filter((day) => getGamesForDay(day).games.length > 0)
+          .map((day) => ({
+            date: day,
+            dateLabel: dateFormatter.format(day),
+          })),
+      [days, getGamesForDay],
+    );
 
     // ⚡ Bolt Optimization: Hoist new Date() calculation outside the loop to prevent O(N) redundant Date object allocations and formatting during render.
     const todayISO = getTodayISO();
@@ -148,14 +160,14 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
       >
         <AnimatePresence mode="popLayout">
           {activeDays.length > 0 ? (
-            activeDays.map((day) => {
-              const dayStr = toISODateString(day);
-              const { games: dayGames, homeCount, awayCount } = getGamesForDay(day);
+            activeDays.map((dayItem) => {
+              const dayStr = toISODateString(dayItem.date);
+              const { games: dayGames, homeCount, awayCount } = getGamesForDay(dayItem.date);
               const isToday = dayStr === todayISO;
 
               return (
                 <motion.div
-                  key={day.toISOString()}
+                  key={dayItem.date.toISOString()}
                   className="relative"
                   variants={dayVariants}
                   initial="hidden"
@@ -183,7 +195,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
                       </span>
                       <div className="flex flex-col items-start leading-tight">
                         <span className="text-xs sm:text-sm font-sport font-black text-white tracking-wide uppercase">
-                          {isToday ? "Aujourd'hui" : dateFormatter.format(day)}
+                          {isToday ? "Aujourd'hui" : dayItem.dateLabel}
                         </span>
                         <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 opacity-90 mt-0.5">
                           <span className="text-emerald-300">{homeCount} Domicile</span>
@@ -207,7 +219,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = memo(
                     initial="hidden"
                     animate="visible"
                   >
-                    {dayGames.map((game) => (
+                    {dayGames.map((game: Game) => (
                       <motion.div key={game.id} variants={gameVariants} layout>
                         <GameCard
                           game={game}

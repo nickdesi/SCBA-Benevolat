@@ -185,3 +185,6 @@
 ## 2026-08-27 - Pre-compute date formatting to prevent Date instantiations during render (AdminBroadcastPanel)
 **Learning:** Instantiating `new Date()` and calling `Intl.DateTimeFormat.format()` directly inside a React component's JSX `.map()` rendering loop (like in `AdminBroadcastPanel`) causes redundant object allocations and garbage collection overhead on every single render cycle.
 **Action:** Hoist these formatting operations out of the render loop into a `useMemo` block. Pre-compute the formatted strings and store them as derived properties on the objects to be simply rendered as primitive strings in the JSX.
+## 2026-11-20 - Ensure valid dependency arrays in React hooks
+**Learning:** When extracting logic into `useMemo` for React rendering optimizations, ensure that any referenced local utility functions (like `getGamesForDay`) are either defined outside the component, or wrapped in `useCallback` with their own correct dependency arrays. Failing to include referenced functions in the `useMemo` dependency array, or including variables not actually used, violates the `exhaustive-deps` ESLint rule and can cause runtime reference errors.
+**Action:** Always verify `useMemo` dependencies strictly match the variables and functions used inside the callback block. Use `useCallback` for local helper functions passed into memoized hooks.
