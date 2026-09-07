@@ -13,12 +13,13 @@ interface UseGameFiltersProps {
 
 // Pure helpers — defined at module level so they are never recreated on render
 import { sortTeamNames } from '../utils/gameUtils';
+import { SCBA_TEAMS } from '../constants';
 
 export const useGameFilters = ({
   games,
   selectedTeam,
   currentView,
-  favoriteTeams,
+  favoriteTeams: _favoriteTeams,
   userRegistrations,
 }: UseGameFiltersProps) => {
   // ⚡ Bolt Optimization: Extract multiple unique property lists in a single O(N) pass
@@ -42,17 +43,15 @@ export const useGameFilters = ({
     };
   }, [games]);
 
-  // 1. Extract unique teams for dropdown (restricted to favorites if set)
+  // 1. Extract unique teams with matches for header filter bar (all teams present in active matches)
   const teams = useMemo(() => {
-    if (favoriteTeams && favoriteTeams.length > 0) {
-      return sortTeamNames([...favoriteTeams]);
-    }
     return sortTeamNames(Array.from(uniqueTeamsSet));
-  }, [uniqueTeamsSet, favoriteTeams]);
+  }, [uniqueTeamsSet]);
 
-  // 2. Full list of teams regardless of favorites (for ProfileModal)
+  // 2. Full list of teams for ProfileModal / preferences (all official SCBA teams + any custom teams from games)
   const allTeams = useMemo(() => {
-    return sortTeamNames(Array.from(uniqueTeamsSet));
+    const combined = new Set<string>([...SCBA_TEAMS, ...uniqueTeamsSet]);
+    return sortTeamNames(Array.from(combined));
   }, [uniqueTeamsSet]);
 
   // 3. Extract unique locations

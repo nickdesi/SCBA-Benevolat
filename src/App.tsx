@@ -123,7 +123,7 @@ function App() {
   useEffect(() => {
     const handleTickerNav = () => {
       if (selectedTeam) {
-        setSelectedTeam('');
+        setSelectedTeam(null);
       }
     };
     window.addEventListener('ticker:navigate', handleTickerNav);

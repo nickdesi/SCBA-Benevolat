@@ -269,13 +269,22 @@ export const isGameUrgent = (
  */
 const getTeamPriority = (team: string): number => {
   const t = team.toUpperCase();
-  if (t.includes('U9')) return 1;
+  if (t.includes('U9') || t.includes('U7')) return 1;
   if (t.includes('U11')) return 2;
   if (t.includes('U13')) return 3;
   if (t.includes('U15')) return 4;
-  if (t.includes('U18')) return 5;
-  if (t.includes('SENIOR')) return 6;
-  if (t.includes('VETERAN')) return 7;
+  if (t.includes('U18') || t.includes('U20')) return 5;
+  if (
+    t.includes('SENIOR') ||
+    t.includes('RM') ||
+    t.includes('DM') ||
+    t.includes('PNM') ||
+    t.includes('PNF') ||
+    t.includes('NM') ||
+    t.includes('NF')
+  )
+    return 6;
+  if (t.includes('VETERAN') || t.includes('LOISIR')) return 7;
   return 99;
 };
 
