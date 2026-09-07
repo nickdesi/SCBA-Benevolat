@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { formatRank, isChampionshipCompetition, formatCompetitionShort } from './gameUtils';
+import {
+  formatRank,
+  isChampionshipCompetition,
+  formatCompetitionShort,
+  sortTeamNames,
+} from './gameUtils';
 
 describe('formatRank', () => {
   it('formats numeric ranks correctly into French ordinal format', () => {
@@ -68,5 +73,37 @@ describe('formatCompetitionShort', () => {
   it('shortens cup competitions', () => {
     expect(formatCompetitionShort('U18 MASCULIN COUPE ARA')).toBe('Coupe AURA U18M');
     expect(formatCompetitionShort('U18 MASCULIN COUPE AURA')).toBe('Coupe AURA U18M');
+  });
+});
+
+describe('sortTeamNames', () => {
+  it('sorts teams logically from youngest categories to seniors and veterans', () => {
+    const raw = [
+      'SENIOR M2',
+      'U15 M1',
+      'U18 M2',
+      'U9 M1',
+      'U18 M1',
+      'U13 M1',
+      'U11 M1',
+      'VETERAN M1',
+    ];
+    const sorted = sortTeamNames(raw);
+    expect(sorted).toEqual([
+      'U9 M1',
+      'U11 M1',
+      'U13 M1',
+      'U15 M1',
+      'U18 M1',
+      'U18 M2',
+      'SENIOR M2',
+      'VETERAN M1',
+    ]);
+  });
+
+  it('handles senior division acronyms properly', () => {
+    const raw = ['RM2', 'U15 M1', 'PNM'];
+    const sorted = sortTeamNames(raw);
+    expect(sorted).toEqual(['U15 M1', 'PNM', 'RM2']);
   });
 });
