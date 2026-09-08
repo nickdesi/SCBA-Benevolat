@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import { getFirebaseFunctions } from '../firebase';
 import {
   parseCSV,
