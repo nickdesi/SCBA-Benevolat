@@ -26,6 +26,7 @@
     "@fontsource/inter": "^5.2.8",
     "@fontsource/oswald": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
+    "@vercel/analytics": "^2.0.1",
     "firebase": "^12.18.0",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.23.0",
