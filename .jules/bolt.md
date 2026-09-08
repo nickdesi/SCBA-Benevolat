@@ -185,3 +185,6 @@
 ## 2026-08-27 - Pre-compute date formatting to prevent Date instantiations during render (AdminBroadcastPanel)
 **Learning:** Instantiating `new Date()` and calling `Intl.DateTimeFormat.format()` directly inside a React component's JSX `.map()` rendering loop (like in `AdminBroadcastPanel`) causes redundant object allocations and garbage collection overhead on every single render cycle.
 **Action:** Hoist these formatting operations out of the render loop into a `useMemo` block. Pre-compute the formatted strings and store them as derived properties on the objects to be simply rendered as primitive strings in the JSX.
+## 2026-11-20 - Memoize multiple filter traversals instead of imperative loops
+**Learning:** When attempting to optimize multiple `.filter()` derivations (like categorizing `parsedMatches`) that run redundantly on every render, replacing them with a single imperative `for` loop sacrifices readability for a negligible micro-optimization.
+**Action:** Always prioritize readability by keeping declarative `.filter()` or `.map()` methods when the dataset is small, but wrap all of them together in a single `useMemo` block to ensure they only execute when dependencies change, completely eliminating the per-render CPU overhead while keeping code clean.
