@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import { getFirebaseFunctions } from '../firebase';
 import {
   parseCSV,
@@ -400,8 +400,18 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       onClose();
     }, [onClose]);
 
+    // ⚡ Bolt Optimization: Memoize multiple `.filter()` derivations to prevent redundant array traversals on every render
+    const { newMatchesList, modifiedMatchesList, unchangedMatchesList, actionableMatches } =
+      useMemo(() => {
+        return {
+          newMatchesList: parsedMatches.filter((m) => m.matchStatus === 'new'),
+          modifiedMatchesList: parsedMatches.filter((m) => m.matchStatus === 'modified'),
+          unchangedMatchesList: parsedMatches.filter((m) => m.matchStatus === 'unchanged'),
+          actionableMatches: parsedMatches.filter((m) => m.matchStatus !== 'unchanged'),
+        };
+      }, [parsedMatches]);
+
     const handleImport = useCallback(() => {
-      const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
       if (actionableMatches.length === 0) {
         handleClose();
         return;
@@ -409,14 +419,9 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       const gameData = actionableMatches.map(toGameFormData);
       onImport(gameData);
       handleClose();
-    }, [parsedMatches, onImport, handleClose]);
+    }, [actionableMatches, onImport, handleClose]);
 
     if (!isOpen) return null;
-
-    const newMatchesList = parsedMatches.filter((m) => m.matchStatus === 'new');
-    const modifiedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'modified');
-    const unchangedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'unchanged');
-    const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
 
     const teamOptions = [
       { value: 'ALL', label: '✨ Toutes les équipes (Club complet)' },
