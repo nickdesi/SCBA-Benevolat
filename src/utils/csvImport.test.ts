@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hasGameChanged, type ParsedMatch } from './csvImport';
+import { hasGameChanged, reconcileMatchesWithExisting, type ParsedMatch } from './csvImport';
 import type { Game } from '../types';
 
 describe('hasGameChanged', () => {
@@ -74,5 +74,70 @@ describe('hasGameChanged', () => {
     const res = hasGameChanged(baseParsed, gameWithoutLogo);
     expect(res.changed).toBe(true);
     expect(res.diffs).toContain('Logo adversaire');
+  });
+});
+
+describe('reconcileMatchesWithExisting', () => {
+  const existingGame: Game = {
+    id: 'g1',
+    team: 'SENIOR M1',
+    opponent: 'CLERMONT BASKET - 1',
+    date: 'Samedi 10 Octobre 2026',
+    dateISO: '2026-10-10',
+    time: '20:30',
+    location: 'Maison des Sports',
+    isHome: true,
+    ffbbMatchId: '12345',
+    roles: [],
+  };
+
+  it('correctly classifies new, modified, and unchanged matches', () => {
+    const unchangedMatch: ParsedMatch = {
+      team: 'SENIOR M1',
+      opponent: 'CLERMONT BASKET - 1',
+      date: 'Samedi 10 Octobre 2026',
+      dateISO: '2026-10-10',
+      time: '20:30',
+      location: 'Maison des Sports',
+      isHome: true,
+      ffbbMatchId: '12345',
+    };
+
+    const modifiedMatch: ParsedMatch = {
+      team: 'SENIOR M1',
+      opponent: 'CLERMONT BASKET - 1',
+      date: 'Samedi 10 Octobre 2026',
+      dateISO: '2026-10-10',
+      time: '21:00', // modified time
+      location: 'Maison des Sports',
+      isHome: true,
+      ffbbMatchId: '12345',
+    };
+
+    const newMatch: ParsedMatch = {
+      team: 'SENIOR M2',
+      opponent: 'ISSOIRE - 2',
+      date: 'Dimanche 11 Octobre 2026',
+      dateISO: '2026-10-11',
+      time: '15:00',
+      location: 'Extérieur',
+      isHome: false,
+    };
+
+    const result = reconcileMatchesWithExisting(
+      [unchangedMatch, modifiedMatch, newMatch],
+      [existingGame],
+    );
+
+    expect(result.newCount).toBe(1);
+    expect(result.reconciled[2].matchStatus).toBe('new');
+
+    expect(result.updateCount).toBe(1);
+    expect(result.reconciled[1].matchStatus).toBe('modified');
+    expect(result.reconciled[1].id).toBe('g1');
+
+    expect(result.unchangedCount).toBe(1);
+    expect(result.reconciled[0].matchStatus).toBe('unchanged');
+    expect(result.reconciled[0].id).toBe('g1');
   });
 });

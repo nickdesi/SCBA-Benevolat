@@ -1,16 +1,16 @@
 import React, { useState, useCallback, memo } from 'react';
-import { getFirebaseFunctions } from '../firebase';
 import {
   parseCSV,
   toGameFormData,
-  findMatchingGame,
-  hasGameChanged,
+  reconcileMatchesWithExisting,
   type ParsedMatch,
 } from '../utils/csvImport';
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
 import { CustomSelect } from './ui/CustomSelect';
-import { formatCompetitionShort } from '../utils/gameUtils';
+import { fetchClubMatchesFromFFBB } from '../services/ffbbService';
+import { enrichMatchesLocations } from '../utils/locationEnrichment';
+import { MatchPreviewCard } from './import/MatchPreviewCard';
 
 interface ImportCSVModalProps {
   isOpen: boolean;
@@ -19,6 +19,20 @@ interface ImportCSVModalProps {
   existingGames: Game[];
 }
 
+const TEAM_OPTIONS = [
+  { value: 'ALL', label: '✨ Toutes les équipes (Club complet)' },
+  { value: 'SENIOR M1', label: 'SENIOR M1' },
+  { value: 'SENIOR M2', label: 'SENIOR M2' },
+  { value: 'U18 M1', label: 'U18 M1' },
+  { value: 'U18 M2', label: 'U18 M2' },
+  { value: 'U15 M1', label: 'U15 M1' },
+  { value: 'U15 M2', label: 'U15 M2' },
+  { value: 'U13 M1', label: 'U13 M1' },
+  { value: 'U11 M1', label: 'U11 M1' },
+  { value: 'U11 M2', label: 'U11 M2' },
+  { value: 'U9 M1', label: 'U9 M1' },
+];
+
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
   ({ isOpen, onClose, onImport, existingGames = [] }) => {
     useScrollLock(isOpen);
@@ -26,141 +40,31 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
     const [csvContent, setCsvContent] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<string>('ALL');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
-    const [duplicatesCount, setDuplicatesCount] = useState(0);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
     const [ffbbError, setFfbbError] = useState<string | null>(null);
     const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
     const [isFetchingFFBB, setIsFetchingFFBB] = useState(false);
 
-    // ⚡ 1-Click Automated Import from FFBB (via ffbb-data-client)
+    // ⚡ 1-Click Automated Import from FFBB (via dedicated ffbbService)
     const handleFetchFFBB = useCallback(async () => {
       setIsFetchingFFBB(true);
       setFfbbError(null);
 
       try {
-        let fetchedMatches: ParsedMatch[] = [];
-        let localError: string | null = null;
-
-        // 1. Essai prioritaire en Same-Origin / proxy Nginx (/api/v1/club/9326/matches)
-        const teamParam = selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
-
-        try {
-          const sameOriginRes = await fetch(`/api/v1/club/9326/matches${teamParam}`);
-          if (sameOriginRes.ok) {
-            const data = await sameOriginRes.json();
-            if (Array.isArray(data?.matches) && data.matches.length > 0) {
-              fetchedMatches = data.matches;
-            }
-          }
-        } catch {
-          // Si same-origin échoue (ex: hébergé sur Firebase sans reverse proxy), continuer
-        }
-
-        // 2. Essai via l'API Dokploy directe (https://ffbb-api.desimone.fr)
-        if (fetchedMatches.length === 0) {
-          const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://ffbb-api.desimone.fr';
-          try {
-            const apiRes = await fetch(`${ffbbApiBase}/api/v1/club/9326/matches${teamParam}`);
-            if (apiRes.ok) {
-              const data = await apiRes.json();
-              if (Array.isArray(data?.matches) && data.matches.length > 0) {
-                fetchedMatches = data.matches;
-              }
-            }
-          } catch (apiErr) {
-            console.warn('API Dokploy directe non joignable:', apiErr);
-          }
-        }
-
-        // 2. Essai via l'API locale /api/ffbb-matches (ffbb-data-client) si en dev
-        if (fetchedMatches.length === 0) {
-          try {
-            const localRes = await fetch(`/api/ffbb-matches${teamParam}`);
-            if (localRes.ok) {
-              const data = await localRes.json();
-              if (Array.isArray(data?.matches)) {
-                fetchedMatches = data.matches;
-              }
-              if (data?.error && fetchedMatches.length === 0) {
-                localError = data.error;
-              }
-            }
-          } catch {
-            // Fallback sur Cloud Function si l'endpoint local n'est pas dispo
-          }
-        }
-
-        // 3. Si non récupéré, appel de la Cloud Function Firebase
-        if (fetchedMatches.length === 0 && !localError) {
-          try {
-            const [{ httpsCallable }, functionsInstance] = await Promise.all([
-              import('firebase/functions'),
-              getFirebaseFunctions(),
-            ]);
-            const fetchFn = httpsCallable<
-              { team?: string },
-              { matches: ParsedMatch[]; count: number }
-            >(functionsInstance, 'fetchFFBBMatches');
-            const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
-            fetchedMatches = res.data?.matches || [];
-          } catch (cloudErr: any) {
-            console.warn('Fallback Cloud Function échoué:', cloudErr);
-            if (
-              cloudErr?.code === 'functions/not-found' ||
-              cloudErr?.code === 'functions/internal' ||
-              cloudErr?.message?.includes('internal')
-            ) {
-              throw new Error(
-                'Impossible de joindre le service FFBB. Veuillez vérifier votre connexion ou réessayer.',
-                { cause: cloudErr },
-              );
-            }
-            throw cloudErr;
-          }
-        }
+        const fetchedMatches = await fetchClubMatchesFromFFBB(selectedTeam);
 
         if (fetchedMatches.length === 0) {
-          if (localError) {
-            setFfbbError(`Erreur API FFBB : ${localError}`);
-          } else {
-            setFfbbError(
-              selectedTeam === 'ALL'
-                ? 'Aucune rencontre trouvée sur la FFBB pour le SCBA actuellement (poules pas encore publiées).'
-                : `Aucune rencontre trouvée sur la FFBB pour l'équipe ${selectedTeam}.`,
-            );
-          }
-          setIsFetchingFFBB(false);
+          setFfbbError(
+            selectedTeam === 'ALL'
+              ? 'Aucune rencontre trouvée sur la FFBB pour le SCBA actuellement (poules pas encore publiées).'
+              : `Aucune rencontre trouvée sur la FFBB pour l'équipe ${selectedTeam}.`,
+          );
           return;
         }
 
-        const newMatches: ParsedMatch[] = [];
-        let updateCount = 0;
-
-        fetchedMatches.forEach((match) => {
-          const existing = findMatchingGame(match, existingGames);
-          if (existing) {
-            const { changed, diffs } = hasGameChanged(match, existing);
-            newMatches.push({
-              ...match,
-              id: existing.id,
-              matchStatus: changed ? 'modified' : 'unchanged',
-              diffs,
-              teamRank: match.teamRank ?? existing.teamRank,
-              opponentRank: match.opponentRank ?? existing.opponentRank,
-            });
-            if (changed) updateCount++;
-          } else {
-            newMatches.push({
-              ...match,
-              matchStatus: 'new',
-              diffs: [],
-            });
-          }
-        });
-
-        setParsedMatches(newMatches);
-        setDuplicatesCount(updateCount);
+        const { reconciled } = reconcileMatchesWithExisting(fetchedMatches, existingGames);
+        setParsedMatches(reconciled);
         setErrors([]);
         setStep('preview');
       } catch (err: any) {
@@ -179,35 +83,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
     const handleParseText = useCallback(() => {
       const teamForManual = selectedTeam === 'ALL' ? 'SENIOR M1' : selectedTeam;
       const result = parseCSV(csvContent, teamForManual);
+      const { reconciled } = reconcileMatchesWithExisting(result.success, existingGames);
 
-      const newMatches: ParsedMatch[] = [];
-      let updateCount = 0;
-
-      result.success.forEach((match) => {
-        const existing = findMatchingGame(match, existingGames);
-        if (existing) {
-          const { changed, diffs } = hasGameChanged(match, existing);
-          newMatches.push({
-            ...match,
-            id: existing.id,
-            matchStatus: changed ? 'modified' : 'unchanged',
-            diffs,
-          });
-          if (changed) updateCount++;
-        } else {
-          newMatches.push({
-            ...match,
-            matchStatus: 'new',
-            diffs: [],
-          });
-        }
-      });
-
-      setParsedMatches(newMatches);
-      setDuplicatesCount(updateCount);
+      setParsedMatches(reconciled);
       setErrors(result.errors);
 
-      if (newMatches.length > 0) {
+      if (reconciled.length > 0) {
         setStep('preview');
       }
     }, [csvContent, selectedTeam, existingGames]);
@@ -215,183 +96,25 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
     // Enrich locations with Nominatim + Data ES (for manual imports)
     const handleEnrichLocations = useCallback(async () => {
       setIsEnriching(true);
-      const updatedMatches = [...parsedMatches];
-      const matchesToEnrich = updatedMatches
-        .map((m, i) => ({ match: m, index: i }))
-        .filter(
-          ({ match }) =>
-            !match.isHome &&
-            (match.location === 'Extérieur' || match.location.startsWith('Extérieur (')),
-        );
-
-      const cityGroups = new Map<string, { match: ParsedMatch; index: number }[]>();
-      matchesToEnrich.forEach(({ match, index }) => {
-        const cityMatch = match.location.match(/Extérieur \((.+)\)/i);
-        if (cityMatch) {
-          const cityName = cityMatch[1];
-          if (cityName) {
-            const normCityName = cityName.trim();
-            if (!cityGroups.has(normCityName)) {
-              cityGroups.set(normCityName, []);
-            }
-            cityGroups.get(normCityName)!.push({ match, index });
-          }
-        }
-      });
-
-      const uniqueCities = Array.from(cityGroups.keys());
-      const CHUNK_SIZE = 3;
-
-      for (let i = 0; i < uniqueCities.length; i += CHUNK_SIZE) {
-        const chunkCities = uniqueCities.slice(i, i + CHUNK_SIZE);
-
-        await Promise.all(
-          chunkCities.map(async (cityName) => {
-            const cityNameLower = cityName
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '');
-
-            const fetchNominatim = async () => {
-              const results: string[] = [];
-              const queries = [
-                `gymnase ${cityName}`,
-                `salle polyvalente ${cityName}`,
-                `complexe sportif ${cityName}`,
-                `stade ${cityName}`,
-                `${cityName}`,
-              ];
-
-              for (const query of queries) {
-                try {
-                  const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?` +
-                      `q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=3&countrycodes=fr`,
-                    { headers: { 'Accept-Language': 'fr' } },
-                  );
-                  const data = await response.json();
-
-                  for (const result of data) {
-                    const addr = result.address || {};
-                    const resultCity = (
-                      addr.city ||
-                      addr.town ||
-                      addr.village ||
-                      addr.municipality ||
-                      ''
-                    ).toLowerCase();
-                    const resultCityNorm = resultCity
-                      .normalize('NFD')
-                      .replace(/[\u0300-\u036f]/g, '');
-
-                    if (
-                      resultCityNorm.includes(cityNameLower) ||
-                      cityNameLower.includes(resultCityNorm)
-                    ) {
-                      const name = result.name || 'Gymnase / Salle';
-                      const street = addr.road || addr.pedestrian || '';
-                      const houseNumber = addr.house_number || '';
-                      const postcode = addr.postcode || '';
-                      const city = addr.city || addr.town || addr.village || cityName;
-
-                      const fullAddress = [
-                        name,
-                        [houseNumber, street].filter(Boolean).join(' '),
-                        [postcode, city].filter(Boolean).join(' '),
-                      ]
-                        .filter(Boolean)
-                        .join(', ');
-
-                      results.push(fullAddress);
-                    }
-                  }
-                } catch {
-                  /* ignore */
-                }
-                if (results.length > 0 && queries.indexOf(query) < 2) break;
-              }
-              return results;
-            };
-
-            const fetchDataES = async () => {
-              const results: string[] = [];
-              try {
-                const response = await fetch(
-                  `https://equipements.sports.gouv.fr/api/explore/v2.1/catalog/datasets/data-es/records?` +
-                    `where=search(inst_nom, "${encodeURIComponent(cityName)}")` +
-                    `%20OR%20search(equip_nom, "${encodeURIComponent(cityName)}")` +
-                    `%20OR%20search(com_nom, "${encodeURIComponent(cityName)}")` +
-                    `&limit=8`,
-                );
-                const data = await response.json();
-
-                if (data.results) {
-                  for (const record of data.results) {
-                    const sports = record.aps_name || [];
-                    const isBasket = sports.some(
-                      (s: string) => s && s.toLowerCase().includes('basket'),
-                    );
-
-                    const recCity = (record.com_nom || record.lib_bdv || '').toLowerCase();
-                    const recCityNorm = recCity.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-                    if (
-                      recCityNorm.includes(cityNameLower) &&
-                      (isBasket ||
-                        record.equip_type_name?.includes('Gymnase') ||
-                        record.equip_type_name?.includes('Salle multisports'))
-                    ) {
-                      const name = record.equip_nom || record.inst_nom || 'Gymnase';
-                      const address = record.inst_adresse || '';
-                      const zip = record.inst_cp || '';
-                      const city = record.lib_bdv || record.com_nom || cityName;
-
-                      const fullAddress = [name, address, `${zip} ${city}`]
-                        .filter(Boolean)
-                        .join(', ');
-                      results.push(fullAddress);
-                    }
-                  }
-                }
-              } catch (e) {
-                console.error('Data ES error', e);
-              }
-              return results;
-            };
-
-            const [nominatimResults, dataEsResults] = await Promise.all([
-              fetchNominatim(),
-              fetchDataES(),
-            ]);
-
-            const candidates = Array.from(new Set([...dataEsResults, ...nominatimResults]));
-            const matchesForCity = cityGroups.get(cityName)!;
-
-            if (candidates.length > 0) {
-              matchesForCity.forEach(({ match, index }) => {
-                updatedMatches[index] = {
-                  ...match,
-                  location: candidates[0],
-                  candidates: candidates,
-                };
-              });
-            } else {
-              matchesForCity.forEach(({ match, index }) => {
-                updatedMatches[index] = {
-                  ...match,
-                  location: `À ${cityName} (adresse introuvable)`,
-                };
-              });
-            }
-          }),
-        );
-
-        setParsedMatches([...updatedMatches]);
-        if (i + CHUNK_SIZE < uniqueCities.length) await new Promise((r) => setTimeout(r, 600));
+      try {
+        const enriched = await enrichMatchesLocations(parsedMatches, (progressMatches) => {
+          setParsedMatches(progressMatches);
+        });
+        setParsedMatches(enriched);
+      } finally {
+        setIsEnriching(false);
       }
-
-      setIsEnriching(false);
     }, [parsedMatches]);
+
+    const handleLocationChange = useCallback((index: number, location: string) => {
+      setParsedMatches((prev) => {
+        const updated = [...prev];
+        if (updated[index]) {
+          updated[index] = { ...updated[index], location };
+        }
+        return updated;
+      });
+    }, []);
 
     const handleClose = useCallback(() => {
       setStep('input');
@@ -417,20 +140,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
     const modifiedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'modified');
     const unchangedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'unchanged');
     const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
-
-    const teamOptions = [
-      { value: 'ALL', label: '✨ Toutes les équipes (Club complet)' },
-      { value: 'SENIOR M1', label: 'SENIOR M1' },
-      { value: 'SENIOR M2', label: 'SENIOR M2' },
-      { value: 'U18 M1', label: 'U18 M1' },
-      { value: 'U18 M2', label: 'U18 M2' },
-      { value: 'U15 M1', label: 'U15 M1' },
-      { value: 'U15 M2', label: 'U15 M2' },
-      { value: 'U13 M1', label: 'U13 M1' },
-      { value: 'U11 M1', label: 'U11 M1' },
-      { value: 'U11 M2', label: 'U11 M2' },
-      { value: 'U9 M1', label: 'U9 M1' },
-    ];
 
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
@@ -461,7 +170,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                     label="Équipe concernée"
                     value={selectedTeam}
                     onChange={(val) => setSelectedTeam(val as string)}
-                    options={teamOptions}
+                    options={TEAM_OPTIONS}
                   />
                 </div>
 
@@ -545,9 +254,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                           <span>Récupération depuis la FFBB...</span>
                         </>
                       ) : (
-                        <>
-                          <span>⚡ Récupérer automatiquement depuis la FFBB</span>
-                        </>
+                        <span>⚡ Récupérer automatiquement depuis la FFBB</span>
                       )}
                     </button>
                   </div>
@@ -641,103 +348,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                     </div>
                   )}
                   {parsedMatches.map((match, i) => (
-                    <div
+                    <MatchPreviewCard
                       key={i}
-                      className={`p-3.5 rounded-2xl border transition-all ${
-                        match.isHome
-                          ? 'bg-emerald-50/70 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/40'
-                          : 'bg-blue-50/70 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/40'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                              match.isHome ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
-                            }`}
-                          >
-                            {match.isHome ? '🏠 Domicile' : '🚗 Extérieur'}
-                          </span>
-                          {match.competition && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 truncate max-w-[180px]">
-                              {formatCompetitionShort(match.competition) || match.competition}
-                            </span>
-                          )}
-                        </div>
-
-                        {match.matchStatus === 'new' && (
-                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
-                            ✨ Nouveau match
-                          </span>
-                        )}
-                        {match.matchStatus === 'modified' && (
-                          <span
-                            className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-800"
-                            title={match.diffs?.join(', ')}
-                          >
-                            🔄 Mise à jour{' '}
-                            {match.diffs && match.diffs.length > 0
-                              ? `(${match.diffs.join(', ')})`
-                              : ''}
-                          </span>
-                        )}
-                        {match.matchStatus === 'unchanged' && (
-                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/60 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600">
-                            🔒 Inchangé (Déjà à jour)
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Opponents & Logos */}
-                      <div className="flex items-center gap-2.5 mt-2">
-                        {match.teamLogo && (
-                          <img
-                            src={match.teamLogo}
-                            alt="Logo SCBA"
-                            className="w-6 h-6 object-contain rounded-full bg-white dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
-                          />
-                        )}
-                        <span className="font-bold text-xs text-slate-900 dark:text-white font-sport uppercase">
-                          {match.team}
-                        </span>
-                        <span className="text-slate-400 text-xs italic font-bold">vs</span>
-                        {match.opponentLogo && (
-                          <img
-                            src={match.opponentLogo}
-                            alt="Logo adversaire"
-                            className="w-6 h-6 object-contain rounded-full bg-white dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
-                          />
-                        )}
-                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200 font-sport truncate">
-                          {match.opponent}
-                        </span>
-                      </div>
-
-                      {/* Date, Time, Location */}
-                      <div className="mt-2.5 text-xs text-slate-600 dark:text-slate-400 flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 font-medium">
-                          <span>📅</span>
-                          <span>
-                            {match.date} à {match.time}
-                          </span>
-                        </div>
-
-                        <div className="flex items-start gap-1.5 mt-0.5">
-                          <span className="mt-0.5">📍</span>
-                          <input
-                            type="text"
-                            value={match.location}
-                            onChange={(e) => {
-                              const newMatches = [...parsedMatches];
-                              newMatches[i] = { ...match, location: e.target.value };
-                              setParsedMatches(newMatches);
-                            }}
-                            className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
-                            placeholder="Adresse du match"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                      match={match}
+                      index={i}
+                      onLocationChange={handleLocationChange}
+                    />
                   ))}
                 </div>
               </div>
