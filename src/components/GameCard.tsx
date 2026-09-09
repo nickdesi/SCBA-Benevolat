@@ -198,7 +198,9 @@ const GameCard: React.FC<GameCardProps> = memo(
           {/* Progress Bar Background */}
           {isHomeGame && (
             <div
-              className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-700 ease-out
+              className={`absolute left-0 top-0 bottom-0 z-0 transition-all duration-700 ease-out ${
+                !isExpanded ? 'rounded-b-2xl' : ''
+              }
                 ${
                   isFullyStaffed
                     ? 'bg-gradient-to-r from-emerald-500/12 to-emerald-500/25 dark:from-emerald-900/35 dark:to-emerald-900/55'
