@@ -104,10 +104,23 @@ const ReloadPrompt: React.FC = () => {
   const handleUpdate = async () => {
     shouldReloadOnControllerChangeRef.current = true;
     setIsUpdating(true);
+
+    // Fallback de sécurité : forcer le rechargement si controllerchange tarde plus de 1.2s
+    const fallbackTimeout = setTimeout(() => {
+      if (!hasReloadedRef.current) {
+        hasReloadedRef.current = true;
+        window.location.reload();
+      }
+    }, 1200);
+
     try {
       await updateServiceWorker(true);
     } catch {
-      window.location.reload();
+      clearTimeout(fallbackTimeout);
+      if (!hasReloadedRef.current) {
+        hasReloadedRef.current = true;
+        window.location.reload();
+      }
     }
   };
 
