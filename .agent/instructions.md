@@ -32,6 +32,12 @@ Ces principes doivent être suivis par tout agent travaillant sur ce projet pour
 - **Ne JAMAIS** exécuter `npm install` ou `npm update` sans que cela soit explicitement demandé. Utiliser `npm ci` pour les installations reproductibles.
 - **Après chaque modification de code**, vérifier localement : `npm run format && npx eslint . && npm run typecheck`.
 
+## 7. Recours Systématique au MCP Context7 (Best Practices Librairies)
+- **Zéro Code Spéculatif sur les Librairies** : Pour TOUTE implémentation ou modification faisant intervenir une bibliothèque, framework ou SDK externe (Framer Motion, React 19, Tailwind CSS v4, Vite, Workbox/PWA, Firebase, etc.) :
+  1. Appeler systématiquement `context7` (`resolve-library-id` avec `libraryName` et `query`).
+  2. Consulter la documentation officielle via `query-docs` pour extraire les API exactes, les conteneurs recommandés (ex. `<MotionConfig reducedMotion="user" />`), les options d'optimisation et les contraintes d'accessibilité.
+  3. Aligner rigoureusement l'implémentation sur les patterns officiels vérifiés avant de soumettre les modifications.
+
 ---
 
 > [!NOTE]
