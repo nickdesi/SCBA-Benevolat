@@ -172,6 +172,54 @@ export const hasGameChanged = (
   };
 };
 
+/**
+ * Réconcilie une liste de matchs importés avec les matchs existants en base.
+ * Identifie les matchs nouveaux, modifiés et inchangés.
+ */
+export const reconcileMatchesWithExisting = (
+  matches: ParsedMatch[],
+  existingGames: Game[] = [],
+): {
+  reconciled: ParsedMatch[];
+  updateCount: number;
+  newCount: number;
+  unchangedCount: number;
+} => {
+  const reconciled: ParsedMatch[] = [];
+  let updateCount = 0;
+  let newCount = 0;
+  let unchangedCount = 0;
+
+  for (const match of matches) {
+    const existing = findMatchingGame(match, existingGames);
+    if (existing) {
+      const { changed, diffs } = hasGameChanged(match, existing);
+      reconciled.push({
+        ...match,
+        id: existing.id,
+        matchStatus: changed ? 'modified' : 'unchanged',
+        diffs,
+        teamRank: match.teamRank ?? existing.teamRank,
+        opponentRank: match.opponentRank ?? existing.opponentRank,
+      });
+      if (changed) {
+        updateCount++;
+      } else {
+        unchangedCount++;
+      }
+    } else {
+      reconciled.push({
+        ...match,
+        matchStatus: 'new',
+        diffs: [],
+      });
+      newCount++;
+    }
+  }
+
+  return { reconciled, updateCount, newCount, unchangedCount };
+};
+
 interface ImportResult {
   success: ParsedMatch[];
   errors: { line: number; content: string; error: string }[];
