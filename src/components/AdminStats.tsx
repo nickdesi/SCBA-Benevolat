@@ -75,46 +75,46 @@ const KPICard = ({
 }) => {
   const colorStyles = {
     blue: {
-      bg: 'bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20',
-      border: 'border-blue-200/50 dark:border-blue-500/30',
+      bg: 'bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent dark:from-blue-500/20 dark:via-indigo-500/10 dark:to-slate-900/40',
+      border: 'border-blue-200/60 dark:border-blue-500/30',
       icon: 'text-blue-600 dark:text-blue-400',
-      text: 'text-blue-900 dark:text-blue-100',
-      glow: 'group-hover:shadow-blue-500/20',
+      text: 'text-blue-950 dark:text-blue-100',
+      glow: 'hover:shadow-blue-500/20 dark:hover:shadow-blue-500/30',
     },
     indigo: {
-      bg: 'bg-gradient-to-br from-indigo-500/10 to-violet-500/10 dark:from-indigo-500/20 dark:to-violet-500/20',
-      border: 'border-indigo-200/50 dark:border-indigo-500/30',
+      bg: 'bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent dark:from-indigo-500/20 dark:via-purple-500/10 dark:to-slate-900/40',
+      border: 'border-indigo-200/60 dark:border-indigo-500/30',
       icon: 'text-indigo-600 dark:text-indigo-400',
-      text: 'text-indigo-900 dark:text-indigo-100',
-      glow: 'group-hover:shadow-indigo-500/20',
+      text: 'text-indigo-950 dark:text-indigo-100',
+      glow: 'hover:shadow-indigo-500/20 dark:hover:shadow-indigo-500/30',
     },
     emerald: {
-      bg: 'bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20',
-      border: 'border-emerald-200/50 dark:border-emerald-500/30',
+      bg: 'bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent dark:from-emerald-500/20 dark:via-teal-500/10 dark:to-slate-900/40',
+      border: 'border-emerald-200/60 dark:border-emerald-500/30',
       icon: 'text-emerald-600 dark:text-emerald-400',
-      text: 'text-emerald-900 dark:text-emerald-100',
-      glow: 'group-hover:shadow-emerald-500/20',
+      text: 'text-emerald-950 dark:text-emerald-100',
+      glow: 'hover:shadow-emerald-500/20 dark:hover:shadow-emerald-500/30',
     },
     amber: {
-      bg: 'bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20',
-      border: 'border-amber-200/50 dark:border-amber-500/30',
+      bg: 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent dark:from-amber-500/20 dark:via-orange-500/10 dark:to-slate-900/40',
+      border: 'border-amber-200/60 dark:border-amber-500/30',
       icon: 'text-amber-600 dark:text-amber-400',
-      text: 'text-amber-900 dark:text-amber-100',
-      glow: 'group-hover:shadow-amber-500/20',
+      text: 'text-amber-950 dark:text-amber-100',
+      glow: 'hover:shadow-amber-500/20 dark:hover:shadow-amber-500/30',
     },
     red: {
-      bg: 'bg-gradient-to-br from-red-500/10 to-rose-500/10 dark:from-red-500/20 dark:to-rose-500/20',
-      border: 'border-red-200/50 dark:border-red-500/30',
+      bg: 'bg-gradient-to-br from-red-500/10 via-rose-500/5 to-transparent dark:from-red-500/20 dark:via-rose-500/10 dark:to-slate-900/40',
+      border: 'border-red-200/60 dark:border-red-500/30',
       icon: 'text-red-600 dark:text-red-400',
-      text: 'text-red-900 dark:text-red-100',
-      glow: 'group-hover:shadow-red-500/20',
+      text: 'text-red-950 dark:text-red-100',
+      glow: 'hover:shadow-red-500/20 dark:hover:shadow-red-500/30',
     },
     slate: {
-      bg: 'bg-gradient-to-br from-slate-500/10 to-gray-500/10 dark:from-slate-500/20 dark:to-gray-500/20',
-      border: 'border-slate-200/50 dark:border-slate-500/30',
+      bg: 'bg-gradient-to-br from-slate-500/10 via-gray-500/5 to-transparent dark:from-slate-500/20 dark:via-gray-500/10 dark:to-slate-900/40',
+      border: 'border-slate-200/60 dark:border-slate-500/30',
       icon: 'text-slate-600 dark:text-slate-400',
-      text: 'text-slate-900 dark:text-slate-100',
-      glow: 'group-hover:shadow-slate-500/20',
+      text: 'text-slate-950 dark:text-slate-100',
+      glow: 'hover:shadow-slate-500/20 dark:hover:shadow-slate-500/30',
     },
   };
 
@@ -144,13 +144,13 @@ const KPICard = ({
   return (
     <motion.div
       variants={itemVariants}
-      whileHover={{ scale: 1.02, y: -2 }}
+      whileHover={{ scale: 1.025, y: -3 }}
       whileTap={{ scale: 0.98 }}
       className={`
-                group relative p-4 rounded-2xl border
+                group relative p-4 rounded-2xl border backdrop-blur-md
                 ${styles.bg} ${styles.border}
-                transition-shadow duration-300 cursor-default
-                hover:shadow-lg ${styles.glow}
+                transition-all duration-300 cursor-default
+                shadow-sm hover:shadow-xl ${styles.glow}
                 ${isAlert ? 'ring-2 ring-red-500/50 ring-offset-2 ring-offset-white dark:ring-offset-slate-900' : ''}
             `}
     >
@@ -161,7 +161,9 @@ const KPICard = ({
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center text-center">
-        <div className={`p-2 rounded-xl bg-white/50 dark:bg-white/10 mb-2 ${styles.icon}`}>
+        <div
+          className={`p-2.5 rounded-xl bg-white/70 dark:bg-white/10 shadow-xs mb-2 ${styles.icon}`}
+        >
           <Icon className="w-5 h-5" />
         </div>
         <p className={`text-[10px] font-bold uppercase tracking-wider ${styles.icon} mb-1`}>
@@ -169,7 +171,9 @@ const KPICard = ({
         </p>
         <p className={`text-2xl md:text-3xl font-black ${styles.text}`}>{value}</p>
         {subValue && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subValue}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+            {subValue}
+          </p>
         )}
       </div>
 
