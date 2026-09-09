@@ -143,17 +143,18 @@ const GameCard: React.FC<GameCardProps> = memo(
         viewport={{ once: true, margin: '-40px' }}
         transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.04 }}
         className={`
-          game-card-container antigravity-card antigravity-card-hover relative rounded-2xl overflow-hidden h-full
-          bg-white/95 dark:bg-slate-900/95 backdrop-blur-md
+          game-card-container antigravity-card antigravity-card-hover relative rounded-2xl overflow-hidden h-full isolate
+          bg-gradient-to-b from-white to-slate-50/80 dark:from-slate-900 dark:to-[#0d1526]
           border transition-all duration-300
+          shadow-md shadow-slate-900/5 dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.5)]
           ${
             isCupCompetition(game.competition)
-              ? 'border-amber-400/50 dark:border-amber-500/40 shadow-sm shadow-amber-500/10 hover:shadow-amber-500/20 ring-1 ring-amber-400/30'
+              ? 'border-amber-400/60 dark:border-amber-500/50 hover:border-amber-400 dark:hover:border-amber-400 hover:shadow-amber-500/15'
               : isFullyStaffed
-                ? 'border-emerald-500/30 dark:border-emerald-500/30 opacity-90 dark:opacity-85 shadow-sm hover:shadow-emerald-500/20'
+                ? 'border-emerald-500/40 dark:border-emerald-500/40 hover:border-emerald-400 dark:hover:border-emerald-400 hover:shadow-emerald-500/15'
                 : isUrgent
-                  ? 'border-red-500/50 dark:border-red-500/40 shadow-md shadow-red-500/15 hover:shadow-red-500/25 ring-1 ring-red-500/30'
-                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:border-indigo-500/40 hover:shadow-indigo-500/15'
+                  ? 'border-red-500/60 dark:border-red-500/50 hover:border-red-500 dark:hover:border-red-400 hover:shadow-red-500/20'
+                  : 'border-slate-200 dark:border-slate-800 hover:border-[#3629e1]/50 dark:hover:border-indigo-400/50 hover:shadow-indigo-500/15'
           }
         `}
       >
@@ -186,11 +187,12 @@ const GameCard: React.FC<GameCardProps> = memo(
           className={`
             w-full px-4 flex items-center justify-between cursor-pointer
             min-h-[52px]
-            bg-slate-50/50 dark:bg-slate-900/30
-            border-t border-slate-200/60 dark:border-slate-800/60
-            hover:bg-slate-100/50 dark:hover:bg-slate-800/50
-            active:bg-slate-200/60 dark:active:bg-slate-700/60
-            transition-colors relative group
+            ${!isExpanded ? 'rounded-b-2xl' : ''}
+            bg-slate-50/80 dark:bg-slate-900/60
+            border-t border-slate-200/80 dark:border-slate-800/80
+            hover:bg-slate-100 dark:hover:bg-slate-800/80
+            active:bg-slate-200/80 dark:active:bg-slate-700/80
+            transition-colors relative group overflow-hidden
           `}
         >
           {/* Progress Bar Background */}
