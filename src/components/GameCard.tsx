@@ -143,17 +143,17 @@ const GameCard: React.FC<GameCardProps> = memo(
         viewport={{ once: true, margin: '-40px' }}
         transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.04 }}
         className={`
-          game-card-container relative rounded-2xl overflow-hidden transition-all duration-200 h-full
-          bg-white dark:bg-slate-900
-          border
+          game-card-container antigravity-card antigravity-card-hover relative rounded-2xl overflow-hidden h-full
+          bg-white/95 dark:bg-slate-900/95 backdrop-blur-md
+          border transition-all duration-300
           ${
             isCupCompetition(game.competition)
-              ? 'border-amber-400/40 dark:border-amber-500/30 shadow-md shadow-amber-500/5 ring-1 ring-amber-400/20'
+              ? 'border-amber-400/50 dark:border-amber-500/40 shadow-sm shadow-amber-500/10 hover:shadow-amber-500/20 ring-1 ring-amber-400/30'
               : isFullyStaffed
-                ? 'border-emerald-500/20 dark:border-emerald-500/20 opacity-80 dark:opacity-70 shadow-xs'
+                ? 'border-emerald-500/30 dark:border-emerald-500/30 opacity-90 dark:opacity-85 shadow-sm hover:shadow-emerald-500/20'
                 : isUrgent
-                  ? 'border-red-500/40 dark:border-red-500/30 shadow-md shadow-red-500/10 ring-1 ring-red-500/20'
-                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-md shadow-slate-950/5'
+                  ? 'border-red-500/50 dark:border-red-500/40 shadow-md shadow-red-500/15 hover:shadow-red-500/25 ring-1 ring-red-500/30'
+                  : 'border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:border-indigo-500/40 hover:shadow-indigo-500/15'
           }
         `}
       >
