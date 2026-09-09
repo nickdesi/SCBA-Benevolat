@@ -66,7 +66,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 
   return (
     <div
-      className={`relative p-4 sm:p-5 overflow-hidden transition-colors duration-300 ${
+      className={`relative p-4 sm:p-5 overflow-hidden transition-colors duration-300 before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-white/60 dark:before:via-white/20 before:to-transparent ${
         isCup
           ? 'bg-gradient-to-br from-amber-200/90 via-amber-100/70 to-amber-50/60 dark:from-amber-950/80 dark:via-amber-900/40 dark:to-slate-900'
           : isHomeGame
@@ -98,12 +98,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         {/* Left: Competition Badge */}
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isCup ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-md bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/40 truncate shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-lg bg-amber-500/25 text-amber-950 dark:text-amber-200 border border-amber-500/50 truncate shadow-xs">
               <Trophy className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <span className="truncate">{shortCompetition || game.competition}</span>
             </span>
           ) : shortCompetition ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-white/80 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-white dark:border-slate-700/80 backdrop-blur-xs truncate shadow-2xs">
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-white/90 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 border border-white/80 dark:border-slate-700/80 backdrop-blur-xs truncate shadow-xs">
               {shortCompetition}
             </span>
           ) : (
@@ -117,7 +117,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Admin Controls */}
           {isAdmin && (
-            <div className="flex items-center gap-0.5 mr-0.5 bg-white/80 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
+            <div className="flex items-center gap-0.5 mr-0.5 bg-white/90 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
               <button
                 type="button"
                 onClick={onEditRequest}
@@ -225,7 +225,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Team 1: HÔTE (TOUJOURS l'équipe qui reçoit à gauche) */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
-              <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 flex items-center justify-center overflow-hidden p-0">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-md shadow-slate-900/10 dark:shadow-black/50 border border-slate-200/90 dark:border-white/20 flex items-center justify-center overflow-hidden p-0 ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-200">
                 {hostTeam.logo ? (
                   <img
                     src={hostTeam.logo}
@@ -263,7 +263,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 
           {/* Center: Match Time / Date Pill */}
           <div className="col-span-3 flex flex-col items-center justify-center text-center">
-            <div className="flex flex-col items-center justify-center px-2 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs w-full max-w-[100px]">
+            <div className="flex flex-col items-center justify-center px-2 py-2 rounded-xl bg-white/90 dark:bg-slate-800/95 border border-white/80 dark:border-slate-700/80 shadow-md shadow-slate-900/5 backdrop-blur-md w-full max-w-[105px]">
               <span className="font-sport font-black text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight leading-none">
                 {game.time}
               </span>
@@ -279,7 +279,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           {/* Team 2: VISITEUR (TOUJOURS l'équipe qui se déplace à droite) */}
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
-              <div className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white shadow-sm border border-slate-200/90 dark:border-white/25 flex items-center justify-center overflow-hidden p-0">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-md shadow-slate-900/10 dark:shadow-black/50 border border-slate-200/90 dark:border-white/20 flex items-center justify-center overflow-hidden p-0 ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-200">
                 {guestTeam.logo ? (
                   <img
                     src={guestTeam.logo}

@@ -178,7 +178,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .antigravity-card-hover:hover {
-    transform: translateY(-3px) scale(1.006);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-antigravity-lg);
   }
 }

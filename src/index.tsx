@@ -12,6 +12,7 @@ import '@fontsource/outfit/latin-900.css';
 import '@fontsource/oswald/latin-500.css';
 import '@fontsource/oswald/latin-700.css';
 
+import { MotionConfig } from 'framer-motion';
 import App from './App';
 import { ThemeProvider } from './utils/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -26,7 +27,9 @@ root.render(
   <React.StrictMode>
     <ErrorBoundary>
       <ThemeProvider>
-        <App />
+        <MotionConfig reducedMotion="user">
+          <App />
+        </MotionConfig>
       </ThemeProvider>
     </ErrorBoundary>
   </React.StrictMode>,
