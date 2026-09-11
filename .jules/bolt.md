@@ -185,3 +185,11 @@
 ## 2026-08-27 - Pre-compute date formatting to prevent Date instantiations during render (AdminBroadcastPanel)
 **Learning:** Instantiating `new Date()` and calling `Intl.DateTimeFormat.format()` directly inside a React component's JSX `.map()` rendering loop (like in `AdminBroadcastPanel`) causes redundant object allocations and garbage collection overhead on every single render cycle.
 **Action:** Hoist these formatting operations out of the render loop into a `useMemo` block. Pre-compute the formatted strings and store them as derived properties on the objects to be simply rendered as primitive strings in the JSX.
+
+## 2026-11-20 - Group multiple inline array filterings into a single useMemo block
+**Learning:** In components handling large lists (like ), performing multiple declarative array operations () sequentially in the main render body causes severe O(N) array traversals to fire on every render cycle (e.g., location enrichment polling, tab switches).
+**Action:** Group these derivations into a single  block that returns an object containing the multiple filtered lists. This preserves the readability of declarative code while completely avoiding N+1 rendering bottlenecks when the underlying source array hasn't changed.
+
+## 2026-11-20 - Group multiple inline array filterings into a single useMemo block
+**Learning:** In components handling large lists (like `ImportCSVModal`), performing multiple declarative array operations (`.filter()`) sequentially in the main render body causes severe O(N) array traversals to fire on every render cycle (e.g., location enrichment polling, tab switches).
+**Action:** Group these derivations into a single `useMemo` block that returns an object containing the multiple filtered lists. This preserves the readability of declarative code while completely avoiding N+1 rendering bottlenecks when the underlying source array hasn't changed.
