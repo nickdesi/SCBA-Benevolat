@@ -251,14 +251,27 @@ export const isGameUrgent = (
   if (isComplete) return false;
 
   try {
-    // ⚡ Bolt Optimization: Use Date.parse to avoid redundant object allocation for gameDate.
+    if (!game.dateISO) return false;
     const nowMs = typeof now === 'number' ? now : now.getTime();
-    const gameDateMs = Date.parse(game.dateISO);
-    if (isNaN(gameDateMs)) return false;
 
-    const diffMs = gameDateMs - nowMs;
+    // Parse de la date et de l'heure précise du match
+    const [y, m, d] = game.dateISO.split('-').map(Number);
+    let hours = 14;
+    let minutes = 0;
+    if (game.time) {
+      const match = game.time.match(/(\d{1,2})[hH:](\d{2})/);
+      if (match) {
+        hours = parseInt(match[1], 10);
+        minutes = parseInt(match[2], 10);
+      }
+    }
+
+    const matchDate = new Date(y, m - 1, d, hours, minutes);
+    const diffMs = matchDate.getTime() - nowMs;
     const diffHours = diffMs / (1000 * 60 * 60);
-    return diffHours > 0 && diffHours < 48;
+
+    // Urgent si le match est dans les prochaines 48h et pas encore terminé (buffer 2h30)
+    return diffHours >= -2.5 && diffHours <= 48;
   } catch {
     return false;
   }

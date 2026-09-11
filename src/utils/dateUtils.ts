@@ -222,3 +222,76 @@ export const formatDateShort = (dateISO?: string, dateLong?: string): string => 
 
   return dateLong ?? '';
 };
+
+/**
+ * Calcule le délai relatif d'un match sous forme de libellé lisible :
+ * "Aujourd'hui", "Demain", "Dans 2j", "Dans 3j", etc.
+ * Basé sur les jours civils locaux pour éviter tout décalage horaire ou calcul d'heures erroné.
+ */
+export const getRelativeDateInfo = (
+  dateISO?: string,
+  todayISO: string = getTodayISO(),
+): {
+  diffDays: number;
+  label: string;
+  isToday: boolean;
+  isTomorrow: boolean;
+} => {
+  if (!dateISO || !ISO_DATE_REGEX.test(dateISO)) {
+    return { diffDays: 0, label: '', isToday: false, isTomorrow: false };
+  }
+
+  const [tY, tM, tD] = todayISO.split('-').map(Number);
+  const [gY, gM, gD] = dateISO.split('-').map(Number);
+  const today = new Date(tY, tM - 1, tD);
+  const gameDate = new Date(gY, gM - 1, gD);
+
+  const diffDays = Math.round((gameDate.getTime() - today.getTime()) / (24 * 3600 * 1000));
+
+  let label = '';
+  if (diffDays < 0) {
+    label = 'Terminé';
+  } else if (diffDays === 0) {
+    label = "Aujourd'hui";
+  } else if (diffDays === 1) {
+    label = 'Demain';
+  } else if (diffDays === 2) {
+    label = 'Dans 2j';
+  } else {
+    label = `Dans ${diffDays}j`;
+  }
+
+  return {
+    diffDays,
+    label,
+    isToday: diffDays === 0,
+    isTomorrow: diffDays === 1,
+  };
+};
+
+/**
+ * Vérifie si un match du jour est déjà terminé (coup d'envoi + 2h30 écoulé).
+ */
+export const isGamePast = (dateISO?: string, timeStr?: string, now: Date = new Date()): boolean => {
+  if (!dateISO || !ISO_DATE_REGEX.test(dateISO)) return false;
+  const todayISO = toISODateString(now);
+
+  if (dateISO < todayISO) return true;
+  if (dateISO > todayISO) return false;
+
+  // Même jour : vérification avec l'heure de coup d'envoi + buffer de 2h30
+  if (!timeStr) return false;
+  const match = timeStr.match(TIME_REGEX);
+  if (!match) return false;
+
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const gameEndTime = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hours + 2,
+    minutes + 30,
+  );
+  return now.getTime() > gameEndTime.getTime();
+};
