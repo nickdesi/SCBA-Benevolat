@@ -81,7 +81,14 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
 
     // Filter out days with no games using pre-computed map
     const activeDays = useMemo(
-      () => days.filter((day) => (gamesByDay.get(toISODateString(day))?.games.length ?? 0) > 0),
+      () =>
+        days
+          .filter((day) => (gamesByDay.get(toISODateString(day))?.games.length ?? 0) > 0)
+          .map((day) => ({
+            date: day,
+            weekdayLabel: weekdayFormatter.format(day),
+            monthLabel: monthFormatter.format(day),
+          })),
       [days, gamesByDay],
     );
 
@@ -92,8 +99,8 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
       <div className="hidden lg:block relative min-h-[600px] border-t border-slate-800/50 pt-6">
         {activeDays.length > 0 ? (
           <div className="flex justify-center gap-6 overflow-x-auto p-6 custom-scrollbar">
-            {activeDays.map((day) => {
-              const dayStr = toISODateString(day);
+            {activeDays.map((dayItem) => {
+              const dayStr = toISODateString(dayItem.date);
               const {
                 games: dayGames,
                 homeCount,
@@ -103,7 +110,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
 
               return (
                 <div
-                  key={day.toISOString()}
+                  key={dayItem.date.toISOString()}
                   className="flex flex-col gap-4 flex-1 min-w-[380px] max-w-[500px]"
                 >
                   {/* Column Header — Modern horizontal glassmorphism */}
@@ -128,18 +135,18 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(
                       <div
                         className={`text-3xl font-black leading-none ${isToday ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-white'}`}
                       >
-                        {day.getDate()}
+                        {dayItem.date.getDate()}
                       </div>
                       <div className="flex flex-col">
                         <span
                           className={`text-xs font-bold uppercase tracking-wider leading-tight ${isToday ? 'text-blue-600 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}
                         >
-                          {weekdayFormatter.format(day)}
+                          {dayItem.weekdayLabel}
                         </span>
                         <span
                           className={`text-[10px] font-medium uppercase tracking-wide ${isToday ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-slate-400 dark:text-slate-500'}`}
                         >
-                          {monthFormatter.format(day)}
+                          {dayItem.monthLabel}
                         </span>
                       </div>
                     </div>
