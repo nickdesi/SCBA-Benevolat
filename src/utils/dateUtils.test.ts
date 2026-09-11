@@ -8,6 +8,8 @@ import {
   isOffSeason,
   getSeasonInfo,
   getSeasonStartISO,
+  getRelativeDateInfo,
+  isGamePast,
 } from './dateUtils';
 import type { Game } from '../types';
 
@@ -240,6 +242,57 @@ describe('dateUtils', () => {
     it('returns Sep 1 of previous year during Jan–May', () => {
       expect(getSeasonStartISO(new Date(2027, 0, 10))).toBe('2026-09-01'); // January
       expect(getSeasonStartISO(new Date(2027, 4, 1))).toBe('2026-09-01'); // May
+    });
+  });
+
+  describe('getRelativeDateInfo', () => {
+    it('identifies today correctly', () => {
+      const res = getRelativeDateInfo('2026-09-11', '2026-09-11');
+      expect(res.diffDays).toBe(0);
+      expect(res.label).toBe("Aujourd'hui");
+      expect(res.isToday).toBe(true);
+      expect(res.isTomorrow).toBe(false);
+    });
+
+    it('identifies tomorrow correctly', () => {
+      const res = getRelativeDateInfo('2026-09-12', '2026-09-11');
+      expect(res.diffDays).toBe(1);
+      expect(res.label).toBe('Demain');
+      expect(res.isToday).toBe(false);
+      expect(res.isTomorrow).toBe(true);
+    });
+
+    it('identifies in 2 days correctly (Sunday from Friday)', () => {
+      // Cas utilisateur : vendredi 11 septembre vs dimanche 13 septembre
+      const res = getRelativeDateInfo('2026-09-13', '2026-09-11');
+      expect(res.diffDays).toBe(2);
+      expect(res.label).toBe('Dans 2j');
+      expect(res.isToday).toBe(false);
+      expect(res.isTomorrow).toBe(false);
+    });
+
+    it('handles future dates (> 2 days)', () => {
+      const res = getRelativeDateInfo('2026-09-15', '2026-09-11');
+      expect(res.diffDays).toBe(4);
+      expect(res.label).toBe('Dans 4j');
+    });
+  });
+
+  describe('isGamePast', () => {
+    it('returns true for past dates', () => {
+      expect(isGamePast('2026-09-10', '14h00', new Date(2026, 8, 11, 10, 0))).toBe(true);
+    });
+
+    it('returns false for future dates', () => {
+      expect(isGamePast('2026-09-13', '14h00', new Date(2026, 8, 11, 10, 0))).toBe(false);
+    });
+
+    it('detects if today game is past based on game time + 2h30', () => {
+      const nowBefore = new Date(2026, 8, 11, 15, 0); // 15h00, match à 14h00 (finit vers 16h30)
+      expect(isGamePast('2026-09-11', '14h00', nowBefore)).toBe(false);
+
+      const nowAfter = new Date(2026, 8, 11, 17, 0); // 17h00, match à 14h00 (terminé)
+      expect(isGamePast('2026-09-11', '14h00', nowAfter)).toBe(true);
     });
   });
 });
