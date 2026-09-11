@@ -4,7 +4,7 @@
   "version": "2.10.0",
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "vite",
@@ -56,5 +56,10 @@
   },
   "overrides": {
     "serialize-javascript": "^7.0.5"
+  },
+  "allowScripts": {
+    "@firebase/util@1.15.3": true,
+    "fsevents@2.3.3": true,
+    "protobufjs@7.6.6": true
   }
 }
