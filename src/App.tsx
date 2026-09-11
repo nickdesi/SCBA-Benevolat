@@ -219,7 +219,7 @@ function App() {
         <>
           <AnnouncementBanner />
           <EventSchema games={sortedGames} />
-          {/* Ticker : visible seulement s'il y a un match dans les 72h */}
+          {/* Ticker : visible exclusivement en cas d'urgence bénévole (< 48h domicile) */}
           <MatchTicker games={sortedGames} />
         </>
       }

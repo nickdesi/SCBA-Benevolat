@@ -1,192 +1,355 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { Game } from '../types';
-import { getTodayISO } from '../utils/dateUtils';
+import { getTodayISO, getRelativeDateInfo, isGamePast, formatDateShort } from '../utils/dateUtils';
 import { scrollToGameCard } from '../utils/scrollUtils';
-import { getGameRoleStats } from '../utils/gameUtils';
-import { Clock, MapPin, Flame, CheckCircle, Users } from 'lucide-react';
+import { getGameRoleStats, isGameUrgent } from '../utils/gameUtils';
+import { Clock, MapPin, Flame, Users } from 'lucide-react';
 
 interface MatchTickerProps {
   games: Game[];
 }
 
+const TICKER_SPEED = 40; // Vitesse de défilement (pixels par seconde)
+
 /**
- * MatchTicker Phase 4 — "Prochain match" sobre et utilitaire.
- *
- * Remplace le bandeau défilant animé (rAF) par une bannière statique,
- * sobre et dense en information :
- * - Prochain match dans les 72h
- * - Statut de couverture bénévoles (urgent / couvert / X/Y)
- * - Tap → scroll vers la GameCard correspondante
- *
- * Design : dark navy compact, identitaire SCBA, sans animation décorative.
+ * Item individuel de match pour le mode défilant des urgences
  */
-const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
-  const todayISO = getTodayISO();
-  const now = Date.now();
+const TickerItem: React.FC<{
+  game: Game;
+  onNavigate: (game: Game) => void;
+}> = memo(({ game, onNavigate }) => {
+  const relativeInfo = getRelativeDateInfo(game.dateISO);
+  const roleStats = getGameRoleStats(game);
 
-  // Prochain match dans les 72h (return null if no game matches)
-  const nextGame = useMemo<Game | null>(() => {
-    for (const g of games) {
-      const iso = g.dateISO ?? '';
-      if (!iso || iso < todayISO) continue;
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) continue;
-      const diff = d.getTime() - now;
-      if (diff >= 0 && diff <= 72 * 60 * 60 * 1000) return g;
-    }
-    return null;
-  }, [games, todayISO, now]);
+  const host = game.isHome ? game.team : game.opponent;
+  const visitor = game.isHome ? game.opponent : game.team;
 
-  const handleNavigate = useCallback(() => {
-    if (!nextGame) return;
-    if (nextGame.dateISO) {
-      window.dispatchEvent(
-        new CustomEvent('ticker:navigate', {
-          detail: { dateISO: nextGame.dateISO, gameId: nextGame.id },
-        }),
-      );
-    }
-    if (!scrollToGameCard(nextGame.id)) {
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts++;
-        if (scrollToGameCard(nextGame.id) || attempts >= 20) clearInterval(interval);
-      }, 60);
-    }
-  }, [nextGame]);
-
-  if (!nextGame) return null;
-
-  const roleStats = getGameRoleStats(nextGame);
-  const isFullyStaffed = roleStats.isFullyStaffed;
-  const filledSlots = roleStats.filledSlots;
-  const totalCapacity = roleStats.totalCapacity;
-
-  // Calcul du délai restant
-  const gameDate = nextGame.dateISO ? new Date(nextGame.dateISO) : null;
-  const diffMs = gameDate ? gameDate.getTime() - now : null;
-  const diffH = diffMs !== null ? Math.floor(diffMs / 3_600_000) : null;
-  const isToday = diffH !== null && diffH < 24;
-  const isTomorrow = diffH !== null && diffH >= 24 && diffH < 48;
-
-  const countdownLabel = isToday
-    ? diffH === 0
-      ? "Aujourd'hui"
-      : `J-0 · ${diffH}h`
-    : isTomorrow
-      ? 'Demain'
-      : diffH !== null
-        ? `Dans ${Math.ceil(diffH / 24)}j`
-        : '';
-
-  const isUrgent = nextGame.isHome && !isFullyStaffed && diffH !== null && diffH < 48;
-
-  const host = nextGame.isHome ? nextGame.team : nextGame.opponent;
-  const visitor = nextGame.isHome ? nextGame.opponent : nextGame.team;
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onNavigate(game);
+  };
 
   return (
-    <motion.button
-      onClick={handleNavigate}
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      aria-label={`Prochain match : ${host} contre ${visitor} — Voir le match`}
-      className={`
-        w-full min-h-[44px] flex items-center gap-3 px-4 py-2 text-left
-        border-b cursor-pointer group transition-colors duration-150
-        ${
-          isUrgent
-            ? 'bg-red-950/95 border-red-900/60 hover:bg-red-900/95 dark:bg-red-950/95 dark:border-red-800/60'
-            : 'bg-slate-900/95 border-slate-800/80 hover:bg-slate-800/95 dark:bg-[#0b1320]/95 dark:border-slate-700/60'
-        }
-      `}
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={`Match urgent : ${host} contre ${visitor} — Voir le match`}
+      className="inline-flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-white/10 transition-colors rounded-lg flex-shrink-0 group"
     >
-      {/* Countdown pill */}
-      <span
-        className={`flex-shrink-0 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-          isToday
-            ? 'bg-red-500/25 text-red-300 border border-red-500/30'
-            : 'bg-slate-700/60 text-slate-300 border border-slate-600/40'
-        }`}
-      >
-        {countdownLabel}
+      {/* Badge Urgent Pulsant */}
+      <span className="flex-shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-900/80 text-red-200 border border-red-700/60 animate-pulse">
+        <Flame className="w-3 h-3 text-red-400" aria-hidden="true" />
+        Urgent
       </span>
 
-      {/* Heure */}
-      <span className="flex-shrink-0 flex items-center gap-1.5 text-slate-300 text-xs font-bold">
-        <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-        {nextGame.time}
+      {/* Pastille délai relatif (Aujourd'hui, Demain, Dans 2j, etc.) */}
+      <span className="font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border bg-slate-800/80 text-slate-200 border-slate-700/60">
+        {relativeInfo.label}
       </span>
 
-      {/* Séparateur */}
-      <span className="flex-shrink-0 text-slate-600 text-xs" aria-hidden="true">
+      {/* Date courte & Heure */}
+      <span className="flex items-center gap-1 text-slate-200 text-xs font-bold flex-shrink-0">
+        <Clock className="w-3 h-3 text-slate-400" aria-hidden="true" />
+        <span>{formatDateShort(game.dateISO)}</span>
+        <span className="text-slate-500">·</span>
+        <span>{game.time}</span>
+      </span>
+
+      <span className="text-slate-600 text-xs" aria-hidden="true">
         ·
       </span>
 
       {/* Équipes */}
-      <span className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-        <span
-          className={`font-black text-xs uppercase tracking-wide truncate ${
-            nextGame.isHome ? 'text-emerald-400' : 'text-slate-100'
-          }`}
-        >
+      <span className="flex items-center gap-1.5 font-bold uppercase tracking-wide">
+        <span className={game.isHome ? 'text-emerald-400 font-black' : 'text-slate-100'}>
           {host}
         </span>
-        <span className="text-slate-500 text-[10px] font-black flex-shrink-0" aria-hidden="true">
+        <span className="text-slate-500 text-[10px] font-black" aria-hidden="true">
           VS
         </span>
-        <span className="font-bold text-xs uppercase tracking-wide text-slate-300 truncate">
+        <span className={!game.isHome ? 'text-emerald-400 font-black' : 'text-slate-300'}>
           {visitor}
         </span>
       </span>
 
-      {/* Lieu (desktop uniquement) */}
-      {nextGame.location && (
-        <span className="hidden sm:flex flex-shrink-0 items-center gap-1 text-slate-400 text-xs font-medium max-w-[140px] truncate">
-          <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" aria-hidden="true" />
-          {nextGame.location}
-        </span>
-      )}
-
-      {/* Statut couverture — matchs domicile uniquement */}
-      {nextGame.isHome && (
-        <span
-          className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-            isFullyStaffed
-              ? 'bg-emerald-900/50 text-emerald-300 border-emerald-700/40'
-              : isUrgent
-                ? 'bg-red-900/60 text-red-300 border-red-700/40 animate-pulse'
-                : 'bg-slate-800/60 text-slate-300 border-slate-600/40'
-          }`}
-        >
-          {isFullyStaffed ? (
-            <>
-              <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
-              Couvert
-            </>
-          ) : isUrgent ? (
-            <>
-              <Flame className="w-3.5 h-3.5" aria-hidden="true" />
-              Urgent
-            </>
-          ) : (
-            <>
-              <Users className="w-3.5 h-3.5" aria-hidden="true" />
-              {filledSlots}/{totalCapacity}
-            </>
-          )}
-        </span>
-      )}
-
-      {/* Flèche CTA hover */}
-      <span
-        className="flex-shrink-0 text-slate-500 group-hover:text-slate-300 transition-colors text-xs"
-        aria-hidden="true"
-      >
-        →
+      {/* Tag DOM */}
+      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border bg-emerald-950/60 text-emerald-300 border-emerald-700/50">
+        DOM
       </span>
-    </motion.button>
+
+      {/* Salle si disponible */}
+      {game.location && (
+        <span className="hidden md:flex items-center gap-1 text-slate-300 text-[11px] max-w-[140px] truncate">
+          <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" aria-hidden="true" />
+          <span className="truncate">{game.location}</span>
+        </span>
+      )}
+
+      {/* Postes bénévoles manquants */}
+      <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border bg-red-950/80 text-red-300 border-red-800/50">
+        <Users className="w-3 h-3 text-red-400" aria-hidden="true" />
+        {roleStats.filledSlots}/{roleStats.totalCapacity} bénévoles
+      </span>
+
+      {/* Séparateur entre matchs */}
+      <span className="text-red-800/60 mx-2 text-xs select-none" aria-hidden="true">
+        •
+      </span>
+    </button>
+  );
+});
+TickerItem.displayName = 'TickerItem';
+
+/**
+ * Composant MatchTicker :
+ * - EXCLUSIVEMENT RÉSERVÉ AUX URGENCES (matchs domicile dans les 48h non complets en bénévoles)
+ * - Si 0 urgence : composant masqué (return null)
+ * - Si 1 urgence : Bannière compacte et centrée sur PC (sans boucler inutilement sur le même match)
+ * - Si 2+ urgences : Ticker défilant fluide animé (Marquee avec pause au survol et clic de navigation)
+ * - Calcul calendaire strict : J = Aujourd'hui, J+1 = Demain, J+2 = Dans 2j, etc.
+ */
+const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
+  const todayISO = getTodayISO();
+
+  // Liste EXCLUSIVEMENT réservée aux matchs urgents
+  const urgentGames = useMemo<Game[]>(() => {
+    const now = new Date();
+    const list: Game[] = [];
+
+    for (const g of games) {
+      const iso = g.dateISO ?? '';
+      if (!iso || iso < todayISO) continue;
+      if (isGamePast(iso, g.time, now)) continue;
+      if (isGameUrgent(g, now)) {
+        list.push(g);
+      }
+    }
+
+    return list;
+  }, [games, todayISO]);
+
+  // Navigation fluide vers le match
+  const handleNavigate = useCallback((game: Game) => {
+    if (game.dateISO) {
+      window.dispatchEvent(
+        new CustomEvent('ticker:navigate', {
+          detail: { dateISO: game.dateISO, gameId: game.id },
+        }),
+      );
+    }
+    if (!scrollToGameCard(game.id)) {
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (scrollToGameCard(game.id) || attempts >= 25) clearInterval(interval);
+      }, 50);
+    }
+  }, []);
+
+  // Références d'animation pour le mode Ticker défilant
+  const trackRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
+  const rafRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const pausedRef = useRef(false);
+  const copyWidthRef = useRef(0);
+
+  const tick = useCallback((timestamp: number) => {
+    if (!trackRef.current) return;
+
+    if (lastTimeRef.current === 0) {
+      lastTimeRef.current = timestamp;
+    }
+
+    if (!pausedRef.current) {
+      const delta = (timestamp - lastTimeRef.current) / 1000;
+      offsetRef.current += delta * TICKER_SPEED;
+
+      if (copyWidthRef.current > 0 && offsetRef.current >= copyWidthRef.current) {
+        offsetRef.current -= copyWidthRef.current;
+      }
+
+      trackRef.current.style.transform = `translateX(${-offsetRef.current}px)`;
+    }
+
+    lastTimeRef.current = timestamp;
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => {
+    if (urgentGames.length < 2) return;
+
+    const measureAndStart = () => {
+      if (copyRef.current) {
+        copyWidthRef.current = copyRef.current.getBoundingClientRect().width;
+      }
+      lastTimeRef.current = 0;
+      offsetRef.current = 0;
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    const raf = requestAnimationFrame(measureAndStart);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [urgentGames.length, tick]);
+
+  // Pas d'urgence -> Aucun affichage
+  if (urgentGames.length === 0) return null;
+
+  // CAS 1 : UNE SEULE URGENCE -> Bannière élégante et compacte centrée sur PC
+  if (urgentGames.length === 1) {
+    const singleGame = urgentGames[0];
+    const relativeInfo = getRelativeDateInfo(singleGame.dateISO);
+    const roleStats = getGameRoleStats(singleGame);
+    const host = singleGame.isHome ? singleGame.team : singleGame.opponent;
+    const visitor = singleGame.isHome ? singleGame.opponent : singleGame.team;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="w-full min-h-[42px] border-b bg-red-950/95 border-red-900/60 dark:bg-red-950/95 dark:border-red-800/60 transition-colors duration-150"
+      >
+        <button
+          type="button"
+          onClick={() => handleNavigate(singleGame)}
+          aria-label={`Match urgent : ${host} contre ${visitor} — Voir le match`}
+          className="w-full max-w-5xl mx-auto px-4 py-2 flex items-center justify-center gap-2.5 sm:gap-3.5 flex-wrap sm:flex-nowrap cursor-pointer group text-xs text-left sm:text-center"
+        >
+          {/* Badge Urgent Clignotant */}
+          <span className="flex-shrink-0 flex items-center gap-1 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-900/80 text-red-200 border border-red-700/60 animate-pulse">
+            <Flame className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
+            Urgent
+          </span>
+
+          {/* Pastille compte à rebours (Aujourd'hui, Demain, Dans 2j, etc.) */}
+          <span className="flex-shrink-0 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-200 border border-slate-700/60">
+            {relativeInfo.label}
+          </span>
+
+          {/* Date courte & Heure */}
+          <span className="flex-shrink-0 flex items-center gap-1.5 text-slate-200 text-xs font-bold">
+            <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+            <span>{formatDateShort(singleGame.dateISO)}</span>
+            <span className="text-slate-500">·</span>
+            <span>{singleGame.time}</span>
+          </span>
+
+          <span className="hidden sm:inline text-red-800/70 text-xs" aria-hidden="true">
+            ·
+          </span>
+
+          {/* Équipes */}
+          <span className="flex items-center gap-1.5 flex-shrink-0">
+            <span
+              className={`font-black text-xs uppercase tracking-wide ${
+                singleGame.isHome ? 'text-emerald-400' : 'text-slate-100'
+              }`}
+            >
+              {host}
+            </span>
+            <span
+              className="text-slate-500 text-[10px] font-black flex-shrink-0"
+              aria-hidden="true"
+            >
+              VS
+            </span>
+            <span
+              className={`font-bold text-xs uppercase tracking-wide ${
+                !singleGame.isHome ? 'text-emerald-400' : 'text-slate-300'
+              }`}
+            >
+              {visitor}
+            </span>
+          </span>
+
+          {/* Tag DOM */}
+          <span className="flex-shrink-0 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border bg-emerald-950/60 text-emerald-300 border-emerald-700/50">
+            DOM
+          </span>
+
+          {/* Lieu */}
+          {singleGame.location && (
+            <span className="hidden md:flex flex-shrink-0 items-center gap-1 text-slate-300 text-xs font-medium max-w-[180px] truncate">
+              <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" aria-hidden="true" />
+              <span className="truncate">{singleGame.location}</span>
+            </span>
+          )}
+
+          {/* Statut bénévoles manquants */}
+          <span className="flex-shrink-0 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border bg-red-900/60 text-red-200 border-red-700/50">
+            <Users className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
+            {roleStats.filledSlots}/{roleStats.totalCapacity} bénévoles
+          </span>
+
+          {/* Flèche CTA */}
+          <span
+            className="flex-shrink-0 text-slate-400 group-hover:text-white transition-colors text-xs ml-1"
+            aria-hidden="true"
+          >
+            →
+          </span>
+        </button>
+      </motion.div>
+    );
+  }
+
+  // CAS 2 : PLUSIEURS URGENCES (>= 2) -> Ticker défilant fluide animé (Marquee)
+  return (
+    <div
+      role="region"
+      aria-label="Bandeau des matchs urgents"
+      className="relative z-30 border-b border-red-900/60 dark:border-red-800/60 bg-red-950/95 dark:bg-red-950/95 overflow-hidden h-[38px] flex items-center"
+    >
+      {/* Fondu de bord gauche */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-r from-red-950 to-transparent z-20 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Fondu de bord droit */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-l from-red-950 to-transparent z-20 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Piste de défilement requestAnimationFrame avec pause au hover sur PC */}
+      <div
+        ref={trackRef}
+        className="flex items-center will-change-transform"
+        onMouseEnter={() => {
+          if (
+            typeof window !== 'undefined' &&
+            window.matchMedia('(hover: hover) and (pointer: fine)').matches
+          ) {
+            pausedRef.current = true;
+          }
+        }}
+        onMouseLeave={() => {
+          pausedRef.current = false;
+        }}
+      >
+        {/* Copie 1 (mesurée pour la largeur) */}
+        <div ref={copyRef} className="flex items-center flex-shrink-0">
+          {urgentGames.map((game, idx) => (
+            <TickerItem key={`a-${game.id}-${idx}`} game={game} onNavigate={handleNavigate} />
+          ))}
+        </div>
+
+        {/* Copie 2 (clone pour boucle infinie transparente) */}
+        <div className="flex items-center flex-shrink-0" aria-hidden="true">
+          {urgentGames.map((game, idx) => (
+            <TickerItem key={`b-${game.id}-${idx}`} game={game} onNavigate={handleNavigate} />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 });
 
