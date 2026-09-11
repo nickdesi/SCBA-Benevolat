@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import {
   parseCSV,
   toGameFormData,
@@ -123,8 +123,33 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       onClose();
     }, [onClose]);
 
+    // ⚡ Bolt Optimization: Replace 4 chained .filter() array traversals with a single O(N) reduce pass
+    // inside useMemo. This drastically reduces CPU overhead and intermediate array GC pressure on every render pass.
+    const { newMatchesList, modifiedMatchesList, unchangedMatchesList, actionableMatches } =
+      useMemo(() => {
+        return parsedMatches.reduce(
+          (acc, m) => {
+            if (m.matchStatus === 'new') {
+              acc.newMatchesList.push(m);
+              acc.actionableMatches.push(m);
+            } else if (m.matchStatus === 'modified') {
+              acc.modifiedMatchesList.push(m);
+              acc.actionableMatches.push(m);
+            } else if (m.matchStatus === 'unchanged') {
+              acc.unchangedMatchesList.push(m);
+            }
+            return acc;
+          },
+          {
+            newMatchesList: [] as typeof parsedMatches,
+            modifiedMatchesList: [] as typeof parsedMatches,
+            unchangedMatchesList: [] as typeof parsedMatches,
+            actionableMatches: [] as typeof parsedMatches,
+          },
+        );
+      }, [parsedMatches]);
+
     const handleImport = useCallback(() => {
-      const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
       if (actionableMatches.length === 0) {
         handleClose();
         return;
@@ -132,14 +157,9 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
       const gameData = actionableMatches.map(toGameFormData);
       onImport(gameData);
       handleClose();
-    }, [parsedMatches, onImport, handleClose]);
+    }, [actionableMatches, onImport, handleClose]);
 
     if (!isOpen) return null;
-
-    const newMatchesList = parsedMatches.filter((m) => m.matchStatus === 'new');
-    const modifiedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'modified');
-    const unchangedMatchesList = parsedMatches.filter((m) => m.matchStatus === 'unchanged');
-    const actionableMatches = parsedMatches.filter((m) => m.matchStatus !== 'unchanged');
 
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
