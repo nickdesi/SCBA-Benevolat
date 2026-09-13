@@ -293,8 +293,23 @@ export const fetchFFBBMatches = onCall(
 
                         // Salle
                         let location = isHome ? "Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand" : `Extérieur (${opponent})`;
-                        const salleId = m?.salle;
-                        if (!isHome && salleId) {
+                        let salleId = m?.salle;
+
+                        if (!salleId && matchId) {
+                            try {
+                                const matchRes = await fetch(`https://api.ffbb.app/items/ffbbserver_rencontres/${matchId}?fields=salle`, {
+                                    headers: ffbbHeaders
+                                });
+                                if (matchRes.ok) {
+                                    const matchJson = await matchRes.json();
+                                    salleId = matchJson?.data?.salle;
+                                }
+                            } catch (e) {
+                                // Ignore
+                            }
+                        }
+
+                        if (salleId) {
                             const salleKey = String(salleId);
                             if (salleCache[salleKey]) {
                                 location = salleCache[salleKey];
@@ -318,7 +333,7 @@ export const fetchFFBBMatches = onCall(
                                         }
                                     }
                                 } catch (e) {
-                                    // Fallback to Extérieur
+                                    // Fallback to default
                                 }
                             }
                         }
