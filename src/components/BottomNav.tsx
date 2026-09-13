@@ -32,10 +32,10 @@ const BottomNav: React.FC<BottomNavProps> = memo(
     return (
       <nav
         aria-label="Navigation principale"
-        className="fixed bottom-3.5 left-4 right-4 z-50 md:hidden max-w-md mx-auto"
+        className="fixed bottom-[calc(0.875rem+env(safe-area-inset-bottom,0px))] left-4 right-4 z-50 md:hidden max-w-md mx-auto"
       >
         {/* Native Frosted Glass Shell with 1px border & soft elevation */}
-        <div className="relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/92 dark:bg-slate-900/92 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-2xl p-1.5 transition-all">
+        <div className="relative rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 shadow-[0_12px_36px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.5)] backdrop-blur-2xl p-1.5 transition-all">
           <div
             role="tablist"
             aria-label="Navigation principale"
