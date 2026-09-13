@@ -38,6 +38,11 @@ Ces principes doivent être suivis par tout agent travaillant sur ce projet pour
   2. Consulter la documentation officielle via `query-docs` pour extraire les API exactes, les conteneurs recommandés (ex. `<MotionConfig reducedMotion="user" />`), les options d'optimisation et les contraintes d'accessibilité.
   3. Aligner rigoureusement l'implémentation sur les patterns officiels vérifiés avant de soumettre les modifications.
 
+## 8. Résolution des Salles & Gymnases FFBB (Zéro Hypothèse Domicile)
+- **Priorité absolue à l'ID de salle officiel** : Ne JAMAIS court-circuiter l'attribut `salle` d'une rencontre FFBB pour les matchs à domicile. Le SCBA évolue dans plusieurs gymnases (Gymnase Fleury, Maison des Sports, Gymnase Autun, Gymnase Thévenet, etc.).
+- **Résolution obligatoire de l'ID** : Pour tout match (domicile ou extérieur), toujours appeler la résolution d'adresse sur le `salle_id` du match en priorité.
+- **Maison des Sports comme simple fallback** : L'adresse de la Maison des Sports ne doit servir STRICTEMENT que de valeur de repli (*fallback*) lorsqu'aucun `salle_id` n'est renseigné par la FFBB ou si l'API ne retourne aucun lieu.
+
 ---
 
 > [!NOTE]
