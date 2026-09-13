@@ -190,13 +190,9 @@
 **Learning:** Instantiating `new Date()` and calling `Intl.DateTimeFormat.format()` directly inside a React component's JSX `.map()` rendering loop (like in `AdminBroadcastPanel`) causes redundant object allocations and garbage collection overhead on every single render cycle.
 **Action:** Hoist these formatting operations out of the render loop into a `useMemo` block. Pre-compute the formatted strings and store them as derived properties on the objects to be simply rendered as primitive strings in the JSX.
 
-## 2026-11-20 - Group multiple inline array filterings into a single useMemo block
-**Learning:** In components handling large lists (like ), performing multiple declarative array operations () sequentially in the main render body causes severe O(N) array traversals to fire on every render cycle (e.g., location enrichment polling, tab switches).
-**Action:** Group these derivations into a single  block that returns an object containing the multiple filtered lists. This preserves the readability of declarative code while completely avoiding N+1 rendering bottlenecks when the underlying source array hasn't changed.
-
-## 2026-11-20 - Group multiple inline array filterings into a single useMemo block
-**Learning:** In components handling large lists (like `ImportCSVModal`), performing multiple declarative array operations (`.filter()`) sequentially in the main render body causes severe O(N) array traversals to fire on every render cycle (e.g., location enrichment polling, tab switches).
-**Action:** Group these derivations into a single `useMemo` block that returns an object containing the multiple filtered lists. This preserves the readability of declarative code while completely avoiding N+1 rendering bottlenecks when the underlying source array hasn't changed.
 ## 2026-11-20 - Ensure valid dependency arrays in React hooks
 **Learning:** When extracting logic into `useMemo` for React rendering optimizations, ensure that any referenced local utility functions (like `getGamesForDay`) are either defined outside the component, or wrapped in `useCallback` with their own correct dependency arrays. Failing to include referenced functions in the `useMemo` dependency array, or including variables not actually used, violates the `exhaustive-deps` ESLint rule and can cause runtime reference errors.
 **Action:** Always verify `useMemo` dependencies strictly match the variables and functions used inside the callback block. Use `useCallback` for local helper functions passed into memoized hooks.
+
+## 2026-11-20 - Group multiple inline array filterings into a single useMemo block
+**Learning:** In components handling large lists (like `ImportCSVModal`), performing multiple declarative array operations (`.filter()`) sequentially in the main render body causes severe O(N) array traversals to fire on every render cycle (e.g., location enrichment polling, tab switches).
