@@ -3,7 +3,13 @@ import type { Role } from '../types';
 import { CheckIcon } from 'lucide-react';
 import { StyledRoleIcon, getRoleConfig } from '../lib/iconMap';
 import ConfirmModal from './ConfirmModal';
-import { saveMyRegistration, removeMyRegistration, getMyRegistrations } from '../utils/storage';
+import {
+  saveMyRegistration,
+  removeMyRegistration,
+  getMyRegistrations,
+  getStoredName,
+  setStoredName,
+} from '../utils/storage';
 import { parseNames } from '../utils/textUtils';
 import VolunteerAvatar from './VolunteerAvatar';
 import EmptySlot from './EmptySlot';
@@ -90,6 +96,9 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
       return isAuthenticated ? [] : getMyRegistrations()[registrationKey] || [];
     }, [isAuthenticated, registrationKey, currentCount]);
 
+    // UX Peak Smart Defaults: récupérer le nom enregistré pour proposer l'inscription 1-tap
+    const storedUserName = React.useMemo(() => getStoredName(), [currentCount]);
+
     const handleSignUpClick = () => {
       if (newName.trim()) {
         setConfirmModal({ isOpen: true, type: 'add', name: newName.trim() });
@@ -114,6 +123,11 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
 
       if (!isAuthenticated) {
         names.forEach((n) => saveMyRegistration(registrationKey, n));
+      }
+
+      // UX Peak Smart Defaults: mémoriser automatiquement le nom pour les prochaines inscriptions
+      if (names[0]) {
+        setStoredName(names[0]);
       }
 
       setNewName('');
@@ -220,33 +234,68 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
             ))}
         </div>
 
-        {/* Inline Input Form */}
+        {/* Inline Input Form with Smart Defaults (UX Peak) */}
         {isInputVisible && (
-          <div className="px-4 pb-4 animate-fade-in-down">
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-blue-200 dark:border-blue-800 flex gap-2">
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Votre Prénom et Nom..."
-                className="flex-1 min-w-0 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2.5 min-h-[44px] text-base focus:ring-2 focus:ring-blue-500 outline-none"
-                autoFocus
-              />
-              <button
-                onClick={() => setIsInputVisible(false)}
-                className="w-11 h-11 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-                aria-label="Annuler"
-              >
-                ✕
-              </button>
-              <button
-                onClick={handleSignUpClick}
-                disabled={!newName.trim()}
-                className="px-5 py-2.5 min-h-[44px] flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Valider
-              </button>
+          <div className="pt-3 pb-1 animate-fade-in-down">
+            <div className="bg-slate-50/90 dark:bg-slate-900/70 p-3 sm:p-4 rounded-2xl border border-blue-200/80 dark:border-blue-800/60 shadow-xs space-y-2.5">
+              {/* Quick 1-tap preset if known (UX Peak 70-90% rule) */}
+              {storedUserName && !newName && (
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmModal({ isOpen: true, type: 'add', name: storedUserName });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-100/80 hover:bg-blue-200/80 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-[#3629e1] dark:text-blue-300 text-xs font-black border border-blue-200/80 dark:border-blue-700/60 transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <span>
+                      M'inscrire en tant que <strong>{storedUserName}</strong>
+                    </span>
+                    <span className="text-[10px] bg-[#3629e1] text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider font-black">
+                      1-clic
+                    </span>
+                  </button>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                    ou saisir un autre nom ci-dessous :
+                  </span>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    storedUserName
+                      ? `Autre nom (ex: ${storedUserName})...`
+                      : 'Votre Prénom et Nom...'
+                  }
+                  className="flex-1 min-w-0 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2.5 min-h-[44px] text-base focus:ring-2 focus:ring-[#3629e1] outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+                  autoFocus={!storedUserName}
+                />
+                <button
+                  onClick={() => setIsInputVisible(false)}
+                  className="w-11 h-11 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  aria-label="Annuler"
+                >
+                  ✕
+                </button>
+                <button
+                  onClick={handleSignUpClick}
+                  disabled={!newName.trim()}
+                  className="px-5 py-2.5 min-h-[44px] flex items-center justify-center bg-[#3629e1] hover:bg-[#2a21b4] text-white text-sm font-black uppercase tracking-wider rounded-xl shadow-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  Valider
+                </button>
+              </div>
+
+              {/* Reassurance copy under CTA (UX Peak - Resolving Objections) */}
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="text-emerald-500 font-black">✓</span>
+                Désistement possible à tout moment en 1 clic si imprévu.
+              </p>
             </div>
           </div>
         )}
@@ -257,10 +306,10 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
           title={confirmModal.type === 'add' ? "Rejoindre l'équipe" : 'Se désister'}
           message={
             confirmModal.type === 'add'
-              ? `Confirmer l'inscription de "${confirmModal.name}" en ${role.name} ?`
+              ? `Confirmer l'inscription de "${confirmModal.name}" en ${role.name} ? Un empêchement ? Vous pourrez vous désister à tout moment.`
               : `Voulez-vous libérer la place de ${confirmModal.name} ?`
           }
-          confirmText={confirmModal.type === 'add' ? "C'est parti !" : 'Libérer la place'}
+          confirmText={confirmModal.type === 'add' ? "Confirmer l'inscription" : 'Libérer la place'}
           confirmStyle={confirmModal.type === 'add' ? 'success' : 'danger'}
           onConfirm={confirmModal.type === 'add' ? confirmSignUp : confirmRemove}
           onCancel={() => setConfirmModal({ isOpen: false, type: 'add', name: '' })}

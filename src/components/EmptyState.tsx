@@ -80,7 +80,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <h3
         className={`
                 text-2xl font-bold mb-2
-                ${variant === 'fun' ? 'text-2xl sm:text-3xl font-black text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}
+                ${variant === 'fun' ? 'text-2xl sm:text-3xl font-black text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-100'}
             `}
       >
         {title}
@@ -89,8 +89,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {description && (
         <p
           className={`
-                    max-w-md mx-auto
-                    ${variant === 'fun' ? 'text-sm sm:text-base text-slate-500 dark:text-slate-400 mb-8' : 'text-slate-400 dark:text-slate-500 mb-6'}
+                    max-w-md mx-auto leading-relaxed
+                    ${variant === 'fun' ? 'text-sm sm:text-base text-slate-600 dark:text-slate-400 mb-8' : 'text-slate-500 dark:text-slate-400 mb-6'}
                 `}
         >
           {description}
@@ -102,15 +102,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mx-auto">
           {action && (
             <motion.button
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
               onClick={action.onClick}
               className={`
-                            w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold font-sport transition-all shadow-lg cursor-pointer
+                            w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all shadow-md cursor-pointer
                             ${
                               action.variant === 'gradient' || variant === 'fun'
-                                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200 dark:shadow-none'
+                                ? 'bg-[#3629e1] hover:bg-[#2a21b4] text-white shadow-[#3629e1]/25 hover:shadow-lg hover:shadow-[#3629e1]/35'
+                                : 'bg-[#3629e1] text-white hover:bg-[#2a21b4] shadow-[#3629e1]/20 dark:shadow-none'
                             }
                         `}
             >
@@ -121,10 +121,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
           {secondaryAction && (
             <motion.button
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
               onClick={secondaryAction.onClick}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold font-sport transition-all bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer shadow-xs"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer shadow-xs"
             >
               {secondaryAction.icon}
               {secondaryAction.label}
