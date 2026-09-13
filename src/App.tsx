@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
 import { User } from 'firebase/auth';
+import { Analytics } from '@vercel/analytics/react';
 import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Plus } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
@@ -198,7 +199,9 @@ function App() {
   // ---------------------------------------------------------------------------
 
   return (
-    <AppLayout
+    <>
+      <Analytics />
+      <AppLayout
       header={
         <Header
           isAdmin={isAdmin}
@@ -563,6 +566,7 @@ function App() {
         </PullToRefresh>
       </main>
     </AppLayout>
+    </>
   );
 }
 
