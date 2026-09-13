@@ -68,20 +68,20 @@ const GameHeader: React.FC<GameHeaderProps> = ({
     <div
       className={`relative p-4 sm:p-5 overflow-hidden transition-colors duration-300 before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-white/60 dark:before:via-white/20 before:to-transparent ${
         isCup
-          ? 'bg-gradient-to-br from-amber-200/90 via-amber-100/70 to-amber-50/60 dark:from-amber-950/80 dark:via-amber-900/40 dark:to-slate-900'
+          ? 'bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-white/90 dark:from-amber-950/40 dark:via-slate-900/90 dark:to-slate-900'
           : isHomeGame
-            ? 'bg-gradient-to-br from-emerald-200/90 via-emerald-100/70 to-emerald-50/60 dark:from-emerald-950/80 dark:via-emerald-900/40 dark:to-slate-900'
-            : 'bg-gradient-to-br from-blue-200/90 via-blue-100/70 to-blue-50/60 dark:from-blue-950/80 dark:via-blue-900/40 dark:to-slate-900'
+            ? 'bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-white/90 dark:from-emerald-950/40 dark:via-slate-900/90 dark:to-slate-900'
+            : 'bg-gradient-to-br from-[#3629e1]/10 via-[#3629e1]/5 to-white/90 dark:from-indigo-950/40 dark:via-slate-900/90 dark:to-slate-900'
       }`}
     >
       {/* Signature Watermark Icon - Subtle & Elegant (Plane for away, Home for home, Trophy for cup) */}
       <div
         className={`absolute -right-8 -top-8 pointer-events-none transform rotate-12 transition-opacity duration-300 ${
           isCup
-            ? 'text-amber-500/25 dark:text-amber-400/20'
+            ? 'text-amber-500/12 dark:text-amber-400/10'
             : isHomeGame
-              ? 'text-emerald-600/25 dark:text-emerald-400/20'
-              : 'text-blue-600/25 dark:text-blue-400/20'
+              ? 'text-emerald-600/12 dark:text-emerald-400/10'
+              : 'text-blue-600/12 dark:text-blue-400/10'
         }`}
       >
         {isCup ? (
@@ -98,12 +98,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         {/* Left: Competition Badge */}
         <div className="min-w-0 flex-1 flex items-center gap-1.5">
           {isCup ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-lg bg-amber-500/25 text-amber-950 dark:text-amber-200 border border-amber-500/50 truncate shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-lg bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/40 truncate shadow-2xs backdrop-blur-sm">
               <Trophy className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <span className="truncate">{shortCompetition || game.competition}</span>
             </span>
           ) : shortCompetition ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-white/90 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 border border-white/80 dark:border-slate-700/80 backdrop-blur-xs truncate shadow-xs">
+            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 border border-slate-200/70 dark:border-slate-700/80 backdrop-blur-sm truncate shadow-2xs">
               {shortCompetition}
             </span>
           ) : (
@@ -117,11 +117,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Admin Controls */}
           {isAdmin && (
-            <div className="flex items-center gap-0.5 mr-0.5 bg-white/90 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+            <div className="flex items-center gap-0.5 mr-0.5 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md rounded-xl p-0.5 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
               <button
                 type="button"
                 onClick={onEditRequest}
-                className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-[#3629e1] hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                 aria-label="Modifier ce match"
               >
                 <EditIcon className="w-4 h-4" />
@@ -132,7 +132,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                   e.stopPropagation();
                   setShowDeleteConfirm(true);
                 }}
-                className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-red-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                 aria-label="Supprimer ce match"
               >
                 <DeleteIcon className="w-4 h-4" />
@@ -318,7 +318,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </div>
 
       {/* Bottom Info Strip: Location & Direct GPS (Glass Capsule) */}
-      <div className="relative z-10 mt-3 px-3 py-2 rounded-xl bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-white/90 dark:border-slate-700/60 shadow-2xs flex items-center justify-between gap-2">
+      <div className="relative z-10 mt-3 px-3.5 py-2 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-xs flex items-center justify-between gap-2">
         {/* Short Date & Location Line */}
         <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 min-w-0 flex-1">
           <Calendar className="w-4 h-4 text-[#3629e1] dark:text-indigo-400 flex-shrink-0" />
@@ -336,7 +336,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           href={`https://waze.com/ul?q=${encodeURIComponent(game.location)}&navigate=yes`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 rounded-lg border border-indigo-100 dark:border-indigo-900/60 transition-colors flex-shrink-0 min-h-[32px]"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#3629e1] dark:text-indigo-400 bg-indigo-50/90 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 shadow-xs transition-all flex-shrink-0 min-h-[34px] cursor-pointer"
         >
           <Navigation className="w-3.5 h-3.5" />
           Itinéraire

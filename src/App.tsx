@@ -547,9 +547,9 @@ function App() {
                 <EmptyState
                   icon={<CalendarDays className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
                   title="Planning vide"
-                  description="Vous n'êtes inscrit à aucun match pour le moment. Retournez à l'accueil pour vous inscrire !"
+                  description="Vous n'êtes inscrit à aucun match pour le moment. Rejoignez un match pour soutenir nos équipes !"
                   variant="simple"
-                  className="mt-8 mb-20 animate-fade-in-up bg-white rounded-3xl shadow-lg border border-slate-100"
+                  className="mt-8 mb-20 animate-fade-in-up bg-white/90 dark:bg-slate-900/90 rounded-3xl shadow-lg border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md"
                   action={{
                     label: 'Voir tous les matchs',
                     onClick: () => handleViewChange('home'),

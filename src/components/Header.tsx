@@ -120,8 +120,8 @@ const Header: React.FC<HeaderProps> = memo(
                   onClick={() => onSelectTeam(null)}
                   className={`snap-center flex min-h-[44px] items-center justify-center rounded-full px-4.5 text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                     selectedTeam === null
-                      ? 'bg-[#3629e1] text-white shadow-sm shadow-[#3629e1]/40'
-                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'bg-[#3629e1] text-white shadow-sm shadow-[#3629e1]/30 ring-2 ring-[#3629e1]/20'
+                      : 'bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs'
                   }`}
                 >
                   Tous les matchs
@@ -136,8 +136,8 @@ const Header: React.FC<HeaderProps> = memo(
                     onClick={() => onSelectTeam(team)}
                     className={`snap-center flex min-h-[44px] items-center justify-center rounded-full px-4.5 text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                       selectedTeam === team
-                        ? 'bg-gradient-to-r from-[#3629e1] to-[#aa2e0f] text-white shadow-sm shadow-[#3629e1]/40'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-[#3629e1] text-white shadow-sm shadow-[#3629e1]/30 ring-2 ring-[#3629e1]/20'
+                        : 'bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-2xs'
                     }`}
                   >
                     {team}
