@@ -1,3 +1,7 @@
+## 2026-09-13 - Résolution dynamique des gymnases FFBB (Pas de salle par défaut à domicile)
+**Learning:** Hardcoder une salle par défaut pour un club hôte (ex: `if (isHome && org == 9326) location = "Maison des Sports"`) introduit des erreurs d'attribution majeures pour les clubs multisalles comme le SCBA (qui joue aussi au Gymnase Fleury, Autun, Thévenet). De plus, l'attribut `salle` est souvent absent de la liste sommaire de la poule et n'apparaît que dans le détail complet de la rencontre (`/items/ffbbserver_rencontres/${matchId}`).
+**Action:** Toujours extraire le `salle_id` de la rencontre (en requêtant le détail si manquant dans la poule) et résoudre l'adresse exacte via `resolve_exact_salle_address()`. La salle principale du club ne doit être injectée qu'en fallback si aucun identifiant de salle n'existe sur le match.
+
 ## 2026-04-17 - String Comparison vs Date Parsing in Filter Loops
 **Learning:** Instantiating `new Date()` and calling `setHours()` inside an `Array.prototype.filter` block for a large array is surprisingly expensive and can block the main thread.
 **Action:** When filtering future/past dates, use pre-calculated `YYYY-MM-DD` and `HHMM` string comparison instead of parsing and manipulating dates on each iteration. In benchmarks, this yielded a 20x performance speedup.
