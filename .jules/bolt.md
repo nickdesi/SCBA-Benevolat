@@ -193,3 +193,6 @@
 ## 2026-11-20 - Avoid chained filter operations when grouping arrays
 **Learning:** Performing multiple chained `.filter()` operations on the same array (e.g., `parsedMatches`) inside a component render loop or callback causes redundant O(N) array traversals, increasing CPU and GC overhead.
 **Action:** Replace multiple `.filter()` calls with a single `useMemo` pass (using `reduce` or a `for` loop) to group the data into distinct lists in a single O(N) iteration, preserving rendering performance.
+## 2026-11-20 - Ensure valid dependency arrays in React hooks
+**Learning:** When extracting logic into `useMemo` for React rendering optimizations, ensure that any referenced local utility functions (like `getGamesForDay`) are either defined outside the component, or wrapped in `useCallback` with their own correct dependency arrays. Failing to include referenced functions in the `useMemo` dependency array, or including variables not actually used, violates the `exhaustive-deps` ESLint rule and can cause runtime reference errors.
+**Action:** Always verify `useMemo` dependencies strictly match the variables and functions used inside the callback block. Use `useCallback` for local helper functions passed into memoized hooks.
