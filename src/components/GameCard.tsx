@@ -255,14 +255,14 @@ const GameCard: React.FC<GameCardProps> = memo(
                     </span>
                     {missingRolesNames.length > 0 && (
                       <span
-                        className={`text-xs font-bold ${
+                        className={`text-xs font-black ${
                           isUrgent
                             ? 'text-red-600 dark:text-red-400'
                             : 'text-amber-600 dark:text-amber-400'
                         } leading-none truncate`}
-                        title={`Manque : ${missingRolesNames.join(', ')}`}
+                        title={`Postes requis : ${missingRolesNames.join(', ')}`}
                       >
-                        Manque : {missingRolesNames[0]}
+                        Besoin {missingRolesNames[0]}
                         {missingRolesNames.length > 1 ? ` +${missingRolesNames.length - 1}` : ''}
                       </span>
                     )}
@@ -308,22 +308,22 @@ const GameCard: React.FC<GameCardProps> = memo(
             {/* Label CTA visible sur tablette et desktop */}
             {!isExpanded && isHomeGame && !isFullyStaffed && (
               <span
-                className={`text-xs font-black uppercase tracking-wider hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors ${
+                className={`text-xs font-black uppercase tracking-wider hidden sm:inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full transition-colors shadow-2xs ${
                   isUrgent
-                    ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400'
-                    : 'bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400'
+                    ? 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-200/60 dark:border-red-800/40'
+                    : 'bg-[#3629e1]/10 text-[#3629e1] dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/40'
                 }`}
               >
-                Voir les postes
+                {isUrgent ? "Rejoindre l'équipe" : 'Voir les postes'}
               </span>
             )}
             <div
               className={`
-                w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+                w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 border border-slate-200/80 dark:border-slate-700/80 shadow-xs
                 ${
                   isExpanded
                     ? 'bg-slate-200 dark:bg-slate-700 rotate-180'
-                    : 'bg-white dark:bg-slate-800 shadow-sm group-hover:bg-slate-50'
+                    : 'bg-white dark:bg-slate-800 group-hover:bg-slate-50'
                 }
               `}
             >
