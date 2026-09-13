@@ -196,3 +196,4 @@
 
 ## 2026-11-20 - Group multiple inline array filterings into a single useMemo block
 **Learning:** In components handling large lists (like `ImportCSVModal`), performing multiple declarative array operations (`.filter()`) sequentially in the main render body causes severe O(N) array traversals to fire on every render cycle (e.g., location enrichment polling, tab switches).
+**Action:** Group these derivations into a single `useMemo` block that returns an object containing the multiple filtered lists. This preserves the readability of declarative code while completely avoiding N+1 rendering bottlenecks when the underlying source array hasn't changed.

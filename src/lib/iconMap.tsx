@@ -16,15 +16,7 @@ import {
 // Replaces emoji usage with professional SVG icons
 
 type IconId =
-  | 'beer'
-  | 'timer'
-  | 'clipboard'
-  | 'cookie'
-  | 'home'
-  | 'plane'
-  | 'car'
-  | 'calendar'
-  | 'default';
+  'beer' | 'timer' | 'clipboard' | 'cookie' | 'home' | 'plane' | 'car' | 'calendar' | 'default';
 
 const iconMap: Record<IconId, LucideIcon> = {
   beer: Beer,
