@@ -202,294 +202,264 @@ function App() {
     <>
       <Analytics />
       <AppLayout
-      header={
-        <Header
-          isAdmin={isAdmin}
-          onLogout={handleLogout}
-          teams={teams}
-          selectedTeam={selectedTeam}
-          onSelectTeam={setSelectedTeam}
-          onToast={addToast}
-          onOpenAdminStats={() => setIsAdminStatsOpen(true)}
-          onOpenProfile={() => setIsProfileModalOpen(true)}
-          onOpenImport={() => setIsImportModalOpen(true)}
-        />
-      }
-      topElements={
-        <>
-          <AnnouncementBanner />
-          <EventSchema games={sortedGames} />
-          {/* Ticker : visible exclusivement en cas d'urgence bénévole (< 48h domicile) */}
-          <MatchTicker games={sortedGames} />
-        </>
-      }
-      toasts={
-        <>
-          <NetworkStatus />
-          <ToastContainer toasts={toasts} removeToast={removeToast} />
-        </>
-      }
-      footer={
-        <>
-          <InstallPrompt />
-          <ReloadPrompt />
-          <Footer />
-          {/* Bottom Navigation for Mobile */}
-          <BottomNav
-            currentView={currentView}
-            onViewChange={handleViewChange}
-            onPlanningClick={() => {
-              if (isAuthenticated) {
-                setIsProfileModalOpen(true);
-              } else {
-                setIsAuthModalOpen(true);
-              }
-            }}
-            isAuthenticated={isAuthenticated}
+        header={
+          <Header
+            isAdmin={isAdmin}
+            onLogout={handleLogout}
+            teams={teams}
+            selectedTeam={selectedTeam}
+            onSelectTeam={setSelectedTeam}
+            onToast={addToast}
+            onOpenAdminStats={() => setIsAdminStatsOpen(true)}
+            onOpenProfile={() => setIsProfileModalOpen(true)}
+            onOpenImport={() => setIsImportModalOpen(true)}
           />
-        </>
-      }
-      modals={
-        <>
-          {/* CSV Import Modal */}
-          <Suspense
-            fallback={
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            }
-          >
-            {isImportModalOpen && (
-              <ImportCSVModal
-                isOpen={isImportModalOpen}
-                onClose={() => setIsImportModalOpen(false)}
-                onImport={async (d) => {
-                  if (await importCSVWithToast(d)) setIsImportModalOpen(false);
-                }}
-                existingGames={sortedGames}
-              />
-            )}
-          </Suspense>
-
-          {/* Admin Stats Dashboard */}
-          <Suspense
-            fallback={
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            }
-          >
-            {isAdminStatsOpen && (
-              <AdminStats
-                games={games}
-                onClose={() => setIsAdminStatsOpen(false)}
-                onToast={addToast}
-                onOpenImport={() => setIsImportModalOpen(true)}
-              />
-            )}
-          </Suspense>
-
-          {/* Profile Modal - Triggered by Planning button on mobile */}
-          <Suspense
-            fallback={
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            }
-          >
-            {currentUser && isProfileModalOpen && (
-              <ProfileModal
-                isOpen={isProfileModalOpen}
-                onClose={() => setIsProfileModalOpen(false)}
-                user={currentUser}
-                registrations={userRegistrations}
-                games={games}
-                userCarpools={userCarpools}
-                onUnsubscribe={removeVolunteerWithToast}
-                onRemoveCarpool={handleRemoveCarpool}
-                onToast={addToast}
-                allTeams={allTeams}
-                favoriteTeams={favoriteTeams}
-                onToggleFavorite={toggleFavoriteTeam}
-              />
-            )}
-          </Suspense>
-
-          {/* Auth Modal - Triggered when guest tries to volunteer */}
-          <Suspense
-            fallback={
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            }
-          >
-            {isAuthModalOpen && (
-              <UserAuthModal
-                isOpen={isAuthModalOpen}
-                onClose={() => setIsAuthModalOpen(false)}
-                onGoogleLogin={async () => {
-                  try {
-                    await signInWithGoogle();
-                    setIsAuthModalOpen(false);
-                    addToast('Connexion !', 'success');
-                  } catch (error: any) {
-                    addToast(
-                      error?.message || 'Erreur de connexion Google. Veuillez réessayer.',
-                      'error',
-                    );
-                  }
-                }}
-                onToast={addToast}
-              />
-            )}
-          </Suspense>
-        </>
-      }
-    >
-      <main className="container mx-auto px-4 relative z-20 pt-4">
-        <PullToRefresh
-          onRefresh={async () => {
-            addToast('Données synchronisées', 'success');
-          }}
-        >
-          {/* Grid Stack Container for stable layout transition */}
-          <div className="grid grid-cols-1 min-h-[400px]">
-            {/* Skeleton Layer - Maintains height contribution to grid */}
-            <div
-              className={`col-start-1 row-start-1 transition-opacity duration-500 ease-out ${loading ? 'opacity-100 z-20' : 'opacity-0 -z-10 pointer-events-none'}`}
-              aria-hidden={!loading}
-            >
-              <SkeletonLoader />
-            </div>
-
-            {/* Content Layer - Superimposed in same grid cell */}
-            <div
-              className={`col-start-1 row-start-1 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100 z-30'}`}
-            >
-              {/* Desktop View Toggle - always rendered, visibility controlled by parent opacity */}
-              <div className="flex justify-center mb-8 hidden md:flex">
-                <div className="relative inline-flex rounded-2xl border border-white/60 bg-white/72 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/62">
-                  {/* Active Indicator Background */}
-                  <div
-                    className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] shadow-md transition-all duration-300 ease-out`}
-                    style={{
-                      left: currentView === 'home' ? '6px' : '50%',
-                      width: 'calc(50% - 6px)',
-                      transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)',
-                    }}
-                  />
-
-                  <button
-                    onClick={() => handleViewChange('home')}
-                    className={`relative z-10 flex min-w-[120px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-colors duration-200 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                  >
-                    <List className="w-4 h-4" /> Liste
-                  </button>
-                  <button
-                    onClick={() => handleViewChange('calendar')}
-                    className={`relative z-10 flex min-w-[120px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-colors duration-200 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                  >
-                    <Calendar className="w-4 h-4" /> Calendrier
-                  </button>
+        }
+        topElements={
+          <>
+            <AnnouncementBanner />
+            <EventSchema games={sortedGames} />
+            {/* Ticker : visible exclusivement en cas d'urgence bénévole (< 48h domicile) */}
+            <MatchTicker games={sortedGames} />
+          </>
+        }
+        toasts={
+          <>
+            <NetworkStatus />
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+          </>
+        }
+        footer={
+          <>
+            <InstallPrompt />
+            <ReloadPrompt />
+            <Footer />
+            {/* Bottom Navigation for Mobile */}
+            <BottomNav
+              currentView={currentView}
+              onViewChange={handleViewChange}
+              onPlanningClick={() => {
+                if (isAuthenticated) {
+                  setIsProfileModalOpen(true);
+                } else {
+                  setIsAuthModalOpen(true);
+                }
+              }}
+              isAuthenticated={isAuthenticated}
+            />
+          </>
+        }
+        modals={
+          <>
+            {/* CSV Import Modal */}
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-              </div>
-
-              {/* Admin Toolbar - always rendered, visibility controlled by parent opacity */}
-              <div className="flex justify-end mb-6 gap-4">
-                {isAdmin && (
-                  <AdminToolbar
-                    onImport={() => setIsImportModalOpen(true)}
-                    onAddGame={() => setIsAddingGame(true)}
-                  />
-                )}
-              </div>
-
-              {/* Empty State - conditional render (no space reservation needed) */}
-              {!loading && games.length === 0 && !isAddingGame && (
-                <div className="animate-fade-in-up">
-                  <EmptyState
-                    icon={emptyStateConfig.icon}
-                    title={emptyStateConfig.title}
-                    description={emptyStateConfig.description}
-                    variant="fun"
-                    action={
-                      isAdmin
-                        ? {
-                            label: '⚡ Synchroniser FFBB (1-Clic)',
-                            onClick: () => setIsImportModalOpen(true),
-                            variant: 'gradient',
-                          }
-                        : undefined
-                    }
-                    secondaryAction={
-                      isAdmin
-                        ? {
-                            label: 'Ajouter un match manuellement',
-                            onClick: () => setIsAddingGame(true),
-                            icon: <Plus className="w-4 h-4 text-emerald-500" />,
-                          }
-                        : undefined
-                    }
-                  />
-                </div>
+              }
+            >
+              {isImportModalOpen && (
+                <ImportCSVModal
+                  isOpen={isImportModalOpen}
+                  onClose={() => setIsImportModalOpen(false)}
+                  onImport={async (d) => {
+                    if (await importCSVWithToast(d)) setIsImportModalOpen(false);
+                  }}
+                  existingGames={sortedGames}
+                />
               )}
+            </Suspense>
 
-              {/* Add Game Form */}
-              {isAddingGame && (
-                <Suspense
-                  fallback={
-                    <div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse">
-                      <div className="h-64 bg-slate-200 rounded-xl"></div>
-                    </div>
-                  }
-                >
-                  <div className="mb-8">
-                    <GameForm
-                      onSave={async (d) => {
-                        if (await addGameWithToast(d)) setIsAddingGame(false);
+            {/* Admin Stats Dashboard */}
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }
+            >
+              {isAdminStatsOpen && (
+                <AdminStats
+                  games={games}
+                  onClose={() => setIsAdminStatsOpen(false)}
+                  onToast={addToast}
+                  onOpenImport={() => setIsImportModalOpen(true)}
+                />
+              )}
+            </Suspense>
+
+            {/* Profile Modal - Triggered by Planning button on mobile */}
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }
+            >
+              {currentUser && isProfileModalOpen && (
+                <ProfileModal
+                  isOpen={isProfileModalOpen}
+                  onClose={() => setIsProfileModalOpen(false)}
+                  user={currentUser}
+                  registrations={userRegistrations}
+                  games={games}
+                  userCarpools={userCarpools}
+                  onUnsubscribe={removeVolunteerWithToast}
+                  onRemoveCarpool={handleRemoveCarpool}
+                  onToast={addToast}
+                  allTeams={allTeams}
+                  favoriteTeams={favoriteTeams}
+                  onToggleFavorite={toggleFavoriteTeam}
+                />
+              )}
+            </Suspense>
+
+            {/* Auth Modal - Triggered when guest tries to volunteer */}
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }
+            >
+              {isAuthModalOpen && (
+                <UserAuthModal
+                  isOpen={isAuthModalOpen}
+                  onClose={() => setIsAuthModalOpen(false)}
+                  onGoogleLogin={async () => {
+                    try {
+                      await signInWithGoogle();
+                      setIsAuthModalOpen(false);
+                      addToast('Connexion !', 'success');
+                    } catch (error: any) {
+                      addToast(
+                        error?.message || 'Erreur de connexion Google. Veuillez réessayer.',
+                        'error',
+                      );
+                    }
+                  }}
+                  onToast={addToast}
+                />
+              )}
+            </Suspense>
+          </>
+        }
+      >
+        <main className="container mx-auto px-4 relative z-20 pt-4">
+          <PullToRefresh
+            onRefresh={async () => {
+              addToast('Données synchronisées', 'success');
+            }}
+          >
+            {/* Grid Stack Container for stable layout transition */}
+            <div className="grid grid-cols-1 min-h-[400px]">
+              {/* Skeleton Layer - Maintains height contribution to grid */}
+              <div
+                className={`col-start-1 row-start-1 transition-opacity duration-500 ease-out ${loading ? 'opacity-100 z-20' : 'opacity-0 -z-10 pointer-events-none'}`}
+                aria-hidden={!loading}
+              >
+                <SkeletonLoader />
+              </div>
+
+              {/* Content Layer - Superimposed in same grid cell */}
+              <div
+                className={`col-start-1 row-start-1 transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100 z-30'}`}
+              >
+                {/* Desktop View Toggle - always rendered, visibility controlled by parent opacity */}
+                <div className="flex justify-center mb-8 hidden md:flex">
+                  <div className="relative inline-flex rounded-2xl border border-white/60 bg-white/72 p-1.5 shadow-lg backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/62">
+                    {/* Active Indicator Background */}
+                    <div
+                      className={`absolute top-1.5 bottom-1.5 rounded-xl bg-gradient-to-r from-[#3629e1] via-[#272890] to-[#aa2e0f] shadow-md transition-all duration-300 ease-out`}
+                      style={{
+                        left: currentView === 'home' ? '6px' : '50%',
+                        width: 'calc(50% - 6px)',
+                        transform: currentView === 'home' ? 'translateX(0)' : 'translateX(2px)',
                       }}
-                      onCancel={() => setIsAddingGame(false)}
-                      existingLocations={uniqueLocations}
-                      existingOpponents={uniqueOpponents}
+                    />
+
+                    <button
+                      onClick={() => handleViewChange('home')}
+                      className={`relative z-10 flex min-w-[120px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-colors duration-200 ${currentView === 'home' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                    >
+                      <List className="w-4 h-4" /> Liste
+                    </button>
+                    <button
+                      onClick={() => handleViewChange('calendar')}
+                      className={`relative z-10 flex min-w-[120px] items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-colors duration-200 ${currentView === 'calendar' ? 'text-white' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                    >
+                      <Calendar className="w-4 h-4" /> Calendrier
+                    </button>
+                  </div>
+                </div>
+
+                {/* Admin Toolbar - always rendered, visibility controlled by parent opacity */}
+                <div className="flex justify-end mb-6 gap-4">
+                  {isAdmin && (
+                    <AdminToolbar
+                      onImport={() => setIsImportModalOpen(true)}
+                      onAddGame={() => setIsAddingGame(true)}
+                    />
+                  )}
+                </div>
+
+                {/* Empty State - conditional render (no space reservation needed) */}
+                {!loading && games.length === 0 && !isAddingGame && (
+                  <div className="animate-fade-in-up">
+                    <EmptyState
+                      icon={emptyStateConfig.icon}
+                      title={emptyStateConfig.title}
+                      description={emptyStateConfig.description}
+                      variant="fun"
+                      action={
+                        isAdmin
+                          ? {
+                              label: '⚡ Synchroniser FFBB (1-Clic)',
+                              onClick: () => setIsImportModalOpen(true),
+                              variant: 'gradient',
+                            }
+                          : undefined
+                      }
+                      secondaryAction={
+                        isAdmin
+                          ? {
+                              label: 'Ajouter un match manuellement',
+                              onClick: () => setIsAddingGame(true),
+                              icon: <Plus className="w-4 h-4 text-emerald-500" />,
+                            }
+                          : undefined
+                      }
                     />
                   </div>
-                </Suspense>
-              )}
+                )}
 
-              {/* Planning View - mounted only when active */}
-              {currentView === 'calendar' && (
-                <Suspense fallback={<SkeletonLoader />}>
-                  <PlanningView
-                    games={filteredGames}
-                    userRegistrations={userRegistrationsMap}
-                    isAdmin={isAdmin}
-                    isAuthenticated={isAuthenticated}
-                    editingGameId={editingGameId}
-                    onVolunteer={volunteerWithToast}
-                    onRemoveVolunteer={removeVolunteerWithToast}
-                    onUpdateVolunteer={updateVolunteerWithToast}
-                    onAddCarpool={addCarpoolWithToast}
-                    onRemoveCarpool={handleRemoveCarpool}
-                    onRequestSeat={requestSeatWithToast}
-                    onAcceptPassenger={acceptPassengerWithToast}
-                    onRejectPassenger={rejectPassengerWithToast}
-                    onCancelRequest={cancelRequestWithToast}
-                    onToast={addToast}
-                    onEditRequest={setEditingGameId}
-                    onCancelEdit={() => setEditingGameId(null)}
-                    onDeleteRequest={deleteGameWithToast}
-                    onUpdateRequest={async (g) => {
-                      if (await updateGameWithToast(g)) setEditingGameId(null);
-                    }}
-                  />
-                </Suspense>
-              )}
+                {/* Add Game Form */}
+                {isAddingGame && (
+                  <Suspense
+                    fallback={
+                      <div className="mb-8 p-8 bg-white rounded-3xl shadow animate-pulse">
+                        <div className="h-64 bg-slate-200 rounded-xl"></div>
+                      </div>
+                    }
+                  >
+                    <div className="mb-8">
+                      <GameForm
+                        onSave={async (d) => {
+                          if (await addGameWithToast(d)) setIsAddingGame(false);
+                        }}
+                        onCancel={() => setIsAddingGame(false)}
+                        existingLocations={uniqueLocations}
+                        existingOpponents={uniqueOpponents}
+                      />
+                    </div>
+                  </Suspense>
+                )}
 
-              {/* Grouped Games List - mounted only when active */}
-              {currentView === 'home' && (
-                <>
-                  {filteredGames.length > 0 ? (
-                    <GameList
+                {/* Planning View - mounted only when active */}
+                {currentView === 'calendar' && (
+                  <Suspense fallback={<SkeletonLoader />}>
+                    <PlanningView
                       games={filteredGames}
                       userRegistrations={userRegistrationsMap}
                       isAdmin={isAdmin}
@@ -512,60 +482,90 @@ function App() {
                         if (await updateGameWithToast(g)) setEditingGameId(null);
                       }}
                     />
-                  ) : (
-                    !loading &&
-                    games.length > 0 && (
-                      <EmptyState
-                        icon={<Search className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
-                        title="Aucun résultat"
-                        description="Aucun match ne correspond à vos filtres actuels."
-                        variant="simple"
-                        className="mt-8 mb-20 animate-fade-in-up rounded-3xl border border-white/60 bg-white/78 shadow-[0_16px_35px_rgba(17,24,39,0.12)] dark:border-slate-700/60 dark:bg-slate-900/62"
-                        action={{
-                          label: 'Effacer les filtres',
-                          onClick: () => setSelectedTeam(null),
-                          icon: (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={2}
-                              stroke="currentColor"
-                              className="w-4 h-4"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          ),
+                  </Suspense>
+                )}
+
+                {/* Grouped Games List - mounted only when active */}
+                {currentView === 'home' && (
+                  <>
+                    {filteredGames.length > 0 ? (
+                      <GameList
+                        games={filteredGames}
+                        userRegistrations={userRegistrationsMap}
+                        isAdmin={isAdmin}
+                        isAuthenticated={isAuthenticated}
+                        editingGameId={editingGameId}
+                        onVolunteer={volunteerWithToast}
+                        onRemoveVolunteer={removeVolunteerWithToast}
+                        onUpdateVolunteer={updateVolunteerWithToast}
+                        onAddCarpool={addCarpoolWithToast}
+                        onRemoveCarpool={handleRemoveCarpool}
+                        onRequestSeat={requestSeatWithToast}
+                        onAcceptPassenger={acceptPassengerWithToast}
+                        onRejectPassenger={rejectPassengerWithToast}
+                        onCancelRequest={cancelRequestWithToast}
+                        onToast={addToast}
+                        onEditRequest={setEditingGameId}
+                        onCancelEdit={() => setEditingGameId(null)}
+                        onDeleteRequest={deleteGameWithToast}
+                        onUpdateRequest={async (g) => {
+                          if (await updateGameWithToast(g)) setEditingGameId(null);
                         }}
                       />
-                    )
-                  )}
-                </>
-              )}
-              {!loading && currentView === 'planning' && filteredGames.length === 0 && (
-                <EmptyState
-                  icon={<CalendarDays className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
-                  title="Planning vide"
-                  description="Vous n'êtes inscrit à aucun match pour le moment. Rejoignez un match pour soutenir nos équipes !"
-                  variant="simple"
-                  className="mt-8 mb-20 animate-fade-in-up bg-white/90 dark:bg-slate-900/90 rounded-3xl shadow-lg border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md"
-                  action={{
-                    label: 'Voir tous les matchs',
-                    onClick: () => handleViewChange('home'),
-                  }}
-                />
-              )}
+                    ) : (
+                      !loading &&
+                      games.length > 0 && (
+                        <EmptyState
+                          icon={<Search className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
+                          title="Aucun résultat"
+                          description="Aucun match ne correspond à vos filtres actuels."
+                          variant="simple"
+                          className="mt-8 mb-20 animate-fade-in-up rounded-3xl border border-white/60 bg-white/78 shadow-[0_16px_35px_rgba(17,24,39,0.12)] dark:border-slate-700/60 dark:bg-slate-900/62"
+                          action={{
+                            label: 'Effacer les filtres',
+                            onClick: () => setSelectedTeam(null),
+                            icon: (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="w-4 h-4"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            ),
+                          }}
+                        />
+                      )
+                    )}
+                  </>
+                )}
+                {!loading && currentView === 'planning' && filteredGames.length === 0 && (
+                  <EmptyState
+                    icon={<CalendarDays className="w-12 h-12 text-slate-400" strokeWidth={1.5} />}
+                    title="Planning vide"
+                    description="Vous n'êtes inscrit à aucun match pour le moment. Rejoignez un match pour soutenir nos équipes !"
+                    variant="simple"
+                    className="mt-8 mb-20 animate-fade-in-up bg-white/90 dark:bg-slate-900/90 rounded-3xl shadow-lg border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md"
+                    action={{
+                      label: 'Voir tous les matchs',
+                      onClick: () => handleViewChange('home'),
+                    }}
+                  />
+                )}
+              </div>
+              {/* End content layer */}
             </div>
-            {/* End content layer */}
-          </div>
-          {/* End grid container */}
-        </PullToRefresh>
-      </main>
-    </AppLayout>
+            {/* End grid container */}
+          </PullToRefresh>
+        </main>
+      </AppLayout>
     </>
   );
 }
