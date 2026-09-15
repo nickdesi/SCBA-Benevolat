@@ -15,7 +15,7 @@
  */
 
 import type { GameFormData, Game } from '../types';
-import { toISODateString } from './dateUtils';
+import { toISODateString, isGamePast } from './dateUtils';
 import { GYM_REGISTRY } from './gyms';
 
 /**
@@ -179,6 +179,7 @@ export const hasGameChanged = (
 export const reconcileMatchesWithExisting = (
   matches: ParsedMatch[],
   existingGames: Game[] = [],
+  filterPastGames: boolean = true,
 ): {
   reconciled: ParsedMatch[];
   updateCount: number;
@@ -189,8 +190,14 @@ export const reconcileMatchesWithExisting = (
   let updateCount = 0;
   let newCount = 0;
   let unchangedCount = 0;
+  const now = new Date();
 
   for (const match of matches) {
+    // Exclure les matchs déjà passés (ex: match de coupe ou de championnat déjà joué)
+    if (filterPastGames && isGamePast(match.dateISO, match.time, now)) {
+      continue;
+    }
+
     const existing = findMatchingGame(match, existingGames);
     if (existing) {
       const { changed, diffs } = hasGameChanged(match, existing);

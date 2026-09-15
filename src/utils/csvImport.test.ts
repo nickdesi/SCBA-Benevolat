@@ -140,4 +140,55 @@ describe('reconcileMatchesWithExisting', () => {
     expect(result.reconciled[0].matchStatus).toBe('unchanged');
     expect(result.reconciled[0].id).toBe('g1');
   });
+
+  it('excludes already played past matches by default', () => {
+    const pastMatch: ParsedMatch = {
+      team: 'U18 M1',
+      opponent: 'ST JEAN BONNEFONDS AVANT GARDE BASKET',
+      date: 'Dimanche 13 Septembre 2026',
+      dateISO: '2026-09-13',
+      time: '14:00',
+      location: 'Gymnase Fleury',
+      isHome: true,
+      competition: 'U18 MASCULIN COUPE ARA',
+      ffbbMatchId: '200000014648496',
+    };
+
+    const futureMatch: ParsedMatch = {
+      team: 'U18 M1',
+      opponent: 'US CHAURIAT VERTAIZON',
+      date: 'Dimanche 20 Septembre 2026',
+      dateISO: '2026-09-20',
+      time: '15:30',
+      location: 'Gymnase Fleury',
+      isHome: true,
+      competition: 'RMU18 Brassage',
+      ffbbMatchId: '200000014578908',
+    };
+
+    // Supposons que le match passé existe ou non en base
+    const result = reconcileMatchesWithExisting([pastMatch, futureMatch], []);
+
+    // Le match passé du 13 septembre ne doit pas être réconcilié ni proposé comme nouveau match
+    expect(result.reconciled).toHaveLength(1);
+    expect(result.reconciled[0].ffbbMatchId).toBe('200000014578908');
+    expect(result.newCount).toBe(1);
+  });
+
+  it('allows including past matches when filterPastGames is explicitly false', () => {
+    const pastMatch: ParsedMatch = {
+      team: 'U18 M1',
+      opponent: 'ST JEAN BONNEFONDS',
+      date: 'Dimanche 13 Septembre 2026',
+      dateISO: '2026-09-13',
+      time: '14:00',
+      location: 'Gymnase Fleury',
+      isHome: true,
+      ffbbMatchId: '200000014648496',
+    };
+
+    const result = reconcileMatchesWithExisting([pastMatch], [], false);
+    expect(result.reconciled).toHaveLength(1);
+    expect(result.reconciled[0].ffbbMatchId).toBe('200000014648496');
+  });
 });

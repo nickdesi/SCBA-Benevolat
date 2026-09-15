@@ -1,5 +1,14 @@
 import { getFirebaseFunctions } from '../firebase';
 import type { ParsedMatch } from '../utils/csvImport';
+import { isGamePast } from '../utils/dateUtils';
+
+/**
+ * Filtre les matchs pour n'inclure que les rencontres à venir (exclut les matchs déjà passés).
+ */
+const filterUpcomingMatches = (matches: ParsedMatch[]): ParsedMatch[] => {
+  const now = new Date();
+  return matches.filter((m) => !isGamePast(m.dateISO, m.time, now));
+};
 
 /**
  * Service pour récupérer les rencontres officielles depuis la FFBB.
@@ -12,16 +21,21 @@ import type { ParsedMatch } from '../utils/csvImport';
 export const fetchClubMatchesFromFFBB = async (
   selectedTeam: string = 'ALL',
 ): Promise<ParsedMatch[]> => {
-  const teamParam = selectedTeam === 'ALL' ? '' : `?team=${encodeURIComponent(selectedTeam)}`;
+  const params = new URLSearchParams();
+  if (selectedTeam !== 'ALL') {
+    params.set('team', selectedTeam);
+  }
+  params.set('upcoming_only', 'true');
+  const queryString = `?${params.toString()}`;
   let localError: string | null = null;
 
   // 1. Essai prioritaire en Same-Origin / proxy Nginx (/api/v1/club/9326/matches)
   try {
-    const sameOriginRes = await fetch(`/api/v1/club/9326/matches${teamParam}`);
+    const sameOriginRes = await fetch(`/api/v1/club/9326/matches${queryString}`);
     if (sameOriginRes.ok) {
       const data = await sameOriginRes.json();
       if (Array.isArray(data?.matches) && data.matches.length > 0) {
-        return data.matches;
+        return filterUpcomingMatches(data.matches);
       }
     }
   } catch {
@@ -31,11 +45,11 @@ export const fetchClubMatchesFromFFBB = async (
   // 2. Essai via l'API Dokploy directe (https://ffbb-api.desimone.fr)
   const ffbbApiBase = import.meta.env.VITE_FFBB_API_URL || 'https://ffbb-api.desimone.fr';
   try {
-    const apiRes = await fetch(`${ffbbApiBase}/api/v1/club/9326/matches${teamParam}`);
+    const apiRes = await fetch(`${ffbbApiBase}/api/v1/club/9326/matches${queryString}`);
     if (apiRes.ok) {
       const data = await apiRes.json();
       if (Array.isArray(data?.matches) && data.matches.length > 0) {
-        return data.matches;
+        return filterUpcomingMatches(data.matches);
       }
     }
   } catch (apiErr) {
@@ -44,11 +58,11 @@ export const fetchClubMatchesFromFFBB = async (
 
   // 3. Essai via l'API locale /api/ffbb-matches (ffbb-data-client) si en dev
   try {
-    const localRes = await fetch(`/api/ffbb-matches${teamParam}`);
+    const localRes = await fetch(`/api/ffbb-matches${queryString}`);
     if (localRes.ok) {
       const data = await localRes.json();
       if (Array.isArray(data?.matches) && data.matches.length > 0) {
-        return data.matches;
+        return filterUpcomingMatches(data.matches);
       }
       if (data?.error) {
         localError = data.error;
@@ -71,7 +85,7 @@ export const fetchClubMatchesFromFFBB = async (
       );
       const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
       if (res.data?.matches) {
-        return res.data.matches;
+        return filterUpcomingMatches(res.data.matches);
       }
     } catch (cloudErr: any) {
       console.warn('Fallback Cloud Function échoué:', cloudErr);

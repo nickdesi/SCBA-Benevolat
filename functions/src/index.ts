@@ -280,6 +280,12 @@ export const fetchFFBBMatches = onCall(
                             dateISO = dateRaw.substring(0, 10);
                         }
 
+                        // Ignorer les matchs passés (exclut les matchs déjà joués)
+                        const todayISO = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date());
+                        if (dateISO && dateISO < todayISO) {
+                            continue;
+                        }
+
                         let timeStr = "15:00";
                         const horaire = String(m?.horaire || "");
                         if (horaire) {
