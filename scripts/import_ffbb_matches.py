@@ -229,13 +229,14 @@ def build_default_roles(team_name: str):
         role_id += 1
     return roles
 
-def fetch_all_scba_matches(client):
+def fetch_all_scba_matches(client, include_past=False):
     """Parcourt les engagements et poules du SCBA pour extraire l'ensemble des rencontres détaillées"""
     print("🔍 Récupération des engagements SCBA depuis l'API FFBB...", file=sys.stderr)
     org = client.get_organisme(SCBA_ORGANISME_ID)
     engagements = getattr(org, 'engagements', []) or []
     print(f"✅ {len(engagements)} engagements trouvés pour le club.", file=sys.stderr)
 
+    today_iso = datetime.now().strftime("%Y-%m-%d")
     candidate_matches = []
     seen_match_ids = set()
 
@@ -257,6 +258,11 @@ def fetch_all_scba_matches(client):
             for m in rencontres:
                 m_id = str(getattr(m, 'id', ''))
                 if m_id in seen_match_ids:
+                    continue
+
+                # Ignorer les matchs déjà passés
+                date_raw = str(getattr(m, 'date_rencontre', '') or getattr(m, 'date', '') or '')
+                if not include_past and date_raw and len(date_raw) >= 10 and date_raw[:10] < today_iso:
                     continue
 
                 nom_eq1 = getattr(m, 'nomEquipe1', '') or ''
@@ -487,13 +493,14 @@ def main():
     parser = argparse.ArgumentParser(description="Synchronisation 1-clic FFBB -> SCBA Bénévolat")
     parser.add_argument("--dry-run", action="store_true", help="Prévisualiser sans écrire dans Firebase")
     parser.add_argument("--team", type=str, default=None, help="Filtrer sur une équipe (ex: 'SENIOR M1')")
+    parser.add_argument("--include-past", action="store_true", help="Inclure également les matchs déjà joués/passés")
     args = parser.parse_args()
 
     print("🚀 Démarrage de l'import automatisé FFBB...")
     client = init_ffbb()
     db = init_firebase()
 
-    raw_items = fetch_all_scba_matches(client)
+    raw_items = fetch_all_scba_matches(client, include_past=args.include_past)
     if not raw_items:
         print("ℹ️ Aucune rencontre trouvée sur la FFBB pour le moment (poules non encore publiées).")
         return

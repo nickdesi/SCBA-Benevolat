@@ -2,8 +2,8 @@ name: 🏀 Sync FFBB Matches (Cron Auto-Import)
 
 on:
   schedule:
-    # Tous les jeudis à 21:00 UTC (23:00 heure de Paris en été / 22:00 en hiver)
-    - cron: '0 21 * * 4'
+    # Tous les jours à 06:00 UTC (08:00 heure de Paris en été / 07:00 en hiver)
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
