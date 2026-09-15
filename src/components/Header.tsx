@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = memo(
 
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-sport text-lg sm:text-2xl font-black italic tracking-tight text-slate-900 dark:text-white uppercase leading-none truncate">
+                  <span className="font-sport text-lg sm:text-2xl font-black italic tracking-tight text-slate-900 dark:text-white uppercase leading-none pr-2 truncate">
                     SCBA BÉNÉVOLES
                   </span>
                 </div>
