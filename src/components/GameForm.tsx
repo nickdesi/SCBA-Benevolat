@@ -1,8 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import type { Game, Role, GameFormData } from '../types';
 import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS, MONTH_MAP } from '../constants';
+import { getTodayISO } from '../utils/dateUtils';
 import { PlusIcon, CheckIcon } from './Icons';
 import { CustomSelect } from './ui/CustomSelect';
+
+// ⚡ Bolt Optimization: Hoist Intl.DateTimeFormat out of the change handler
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 
 interface GameFormProps {
   gameToEdit?: Game;
@@ -28,6 +37,9 @@ const GameForm: React.FC<GameFormProps> = ({
   const uniqueLocations = useMemo(() => {
     return Array.from(new Set([...COMMON_LOCATIONS, ...existingLocations])).sort();
   }, [existingLocations]);
+
+  // ⚡ Bolt Optimization: Memoize today's ISO date string to prevent new Date() allocations on every keystroke
+  const todayISO = useMemo(() => getTodayISO(), []);
 
   const [formData, setFormData] = useState({
     team: gameToEdit?.team || '',
@@ -124,42 +136,12 @@ const GameForm: React.FC<GameFormProps> = ({
     const localDate = new Date(y, m - 1, d);
 
     // Formatting to "Samedi 15 Novembre 2025"
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    };
-    const formatted = new Intl.DateTimeFormat('fr-FR', options).format(localDate);
+    const formatted = dateFormatter.format(localDate);
     // Capitalize first letter (Samedi)
     const capitalized = formatted.charAt(0).toUpperCase() + formatted.slice(1);
 
     // Store both ISO (for sorting) and display format
     setFormData((prev) => ({ ...prev, date: capitalized, dateISO: isoDate }));
-  };
-
-  // Helper to sync hidden inputs with formatted state
-  const getISODate = (formattedDate: string): string => {
-    if (!formattedDate) return '';
-    try {
-      // Expected: "Samedi 15 Novembre 2025"
-      const parts = formattedDate.split(' ');
-      if (parts.length < 4) return '';
-
-      const day = parts[1];
-      const monthName = parts[2].toLowerCase();
-      const year = parts[3];
-
-      const monthIndex = MONTH_MAP[monthName as keyof typeof MONTH_MAP];
-      if (monthIndex === undefined) return '';
-
-      // Format to YYYY-MM-DD
-      const m = (monthIndex + 1).toString().padStart(2, '0');
-      const d = day.padStart(2, '0');
-      return `${year}-${m}-${d}`;
-    } catch {
-      return '';
-    }
   };
 
   return (
@@ -300,8 +282,8 @@ const GameForm: React.FC<GameFormProps> = ({
               <input
                 type="date"
                 id="date-picker"
-                value={getISODate(formData.date)}
-                min={new Date().toISOString().split('T')[0]}
+                value={formData.dateISO}
+                min={todayISO}
                 onChange={handleDateChange}
                 onClick={(e) => (e.target as HTMLInputElement).showPicker()}
                 onKeyDown={(e) => e.preventDefault()}
