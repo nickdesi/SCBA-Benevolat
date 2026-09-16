@@ -27,7 +27,7 @@ def init_firebase():
         sys.exit(1)
     return firestore.client()
 
-def init_ffbb():
+def init_ffbb(exit_on_error: bool = True):
     try:
         tokens = TokenManager.get_tokens(use_cache=False)
         client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
@@ -35,7 +35,9 @@ def init_ffbb():
         return client
     except Exception as e:
         print(f"Failed to init FFBB Client: {e}")
-        sys.exit(1)
+        if exit_on_error:
+            sys.exit(1)
+        return None
 
 def normalize_team_name(name):
     return name.lower().replace("-", " ").replace(" ", "")

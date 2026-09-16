@@ -494,25 +494,59 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Prévisualiser sans écrire dans Firebase")
     parser.add_argument("--team", type=str, default=None, help="Filtrer sur une équipe (ex: 'SENIOR M1')")
     parser.add_argument("--include-past", action="store_true", help="Inclure également les matchs déjà joués/passés")
+    parser.add_argument("--api-url", type=str, default=os.getenv("FFBB_API_URL", "https://ffbb-api.desimone.fr"), help="URL de l'API REST FFBB (défaut: https://ffbb-api.desimone.fr)")
+    parser.add_argument("--force-sdk", action="store_true", help="Forcer l'utilisation directe du SDK FFBB plutôt que l'API REST")
     args = parser.parse_args()
 
     print("🚀 Démarrage de l'import automatisé FFBB...")
-    client = init_ffbb()
     db = init_firebase()
 
-    raw_items = fetch_all_scba_matches(client, include_past=args.include_past)
-    if not raw_items:
-        print("ℹ️ Aucune rencontre trouvée sur la FFBB pour le moment (poules non encore publiées).")
+    games = []
+    today_iso = datetime.now().strftime("%Y-%m-%d")
+
+    # 1. Tentative prioritaire via l'API REST ffbb-api (ultra-rapide, adresses résolues, immunisé contre les blocages Cloudflare de GitHub Actions)
+    if not args.force_sdk and args.api_url:
+        try:
+            endpoint = f"{args.api_url.rstrip('/')}/api/v1/club/{SCBA_ORGANISME_ID}/matches"
+            print(f"📡 Récupération des rencontres depuis l'API REST ({endpoint})...", file=sys.stderr)
+            import httpx
+            with httpx.Client(timeout=15.0) as http_client:
+                resp = http_client.get(endpoint)
+            if resp.status_code == 200:
+                data = resp.json()
+                raw_matches = data.get("matches", [])
+                print(f"✅ {len(raw_matches)} rencontres récupérées depuis l'API REST.", file=sys.stderr)
+                for m in raw_matches:
+                    date_iso = m.get("dateISO", "")
+                    if not args.include_past and date_iso and len(date_iso) >= 10 and date_iso[:10] < today_iso:
+                        continue
+                    if args.team and args.team.upper() not in m.get("team", "").upper():
+                        continue
+                    games.append(m)
+            else:
+                print(f"⚠️ API REST a répondu avec le statut {resp.status_code}, bascule sur le SDK direct...", file=sys.stderr)
+        except Exception as e:
+            print(f"⚠️ Échec de récupération via l'API REST ({e}), bascule sur le SDK direct...", file=sys.stderr)
+
+    # 2. Fallback sur le SDK FFBB direct si l'API REST n'a rien renvoyé ou en mode force-sdk
+    if not games:
+        print("🔍 Tentative via le SDK FFBB direct...", file=sys.stderr)
+        client = init_ffbb(exit_on_error=False)
+        if client:
+            raw_items = fetch_all_scba_matches(client, include_past=args.include_past)
+            if raw_items:
+                print(f"\n⚙️ Traitement de {len(raw_items)} rencontres brutes...", file=sys.stderr)
+                for item in raw_items:
+                    g = process_match(client, item)
+                    if args.team and args.team.upper() not in g["team"].upper():
+                        continue
+                    games.append(g)
+
+    if not games:
+        print("ℹ️ Aucune rencontre à synchroniser pour le moment.")
         return
 
-    print(f"\n⚙️ Traitement de {len(raw_items)} rencontres...")
-    games = []
-    for item in raw_items:
-        g = process_match(client, item)
-        if args.team and args.team.upper() not in g["team"].upper():
-            continue
-        games.append(g)
-
+    print(f"\n⚙️ {len(games)} rencontres prêtes pour la synchronisation.")
     games.sort(key=lambda x: (x.get("dateISO", ""), x.get("time", "")))
     sync_matches_to_firestore(db, games, dry_run=args.dry_run)
 

@@ -2,8 +2,9 @@ name: 🏀 Sync FFBB Matches (Cron Auto-Import)
 
 on:
   schedule:
-    # Tous les jours à 06:00 UTC (08:00 heure de Paris en été / 07:00 en hiver)
-    - cron: '0 6 * * *'
+    # Tous les jours à 06:17 UTC (08:17 heure de Paris en été / 07:17 en hiver)
+    # Minute décalée (17) pour éviter l'engorgement des runners GitHub Actions à heure pile (:00)
+    - cron: '17 6 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -54,6 +55,8 @@ jobs:
           fi
 
       - name: 🚀 Run FFBB Import Script
+        env:
+          FFBB_API_URL: https://ffbb-api.desimone.fr
         run: |
           EXTRA_ARGS=""
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
