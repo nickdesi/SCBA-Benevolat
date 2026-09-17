@@ -147,7 +147,13 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         updateCount: modifiedMatchesList.length,
       });
       handleClose();
-    }, [actionableMatches, newMatchesList.length, modifiedMatchesList.length, onImport, handleClose]);
+    }, [
+      actionableMatches,
+      newMatchesList.length,
+      modifiedMatchesList.length,
+      onImport,
+      handleClose,
+    ]);
 
     if (!isOpen) return null;
 
