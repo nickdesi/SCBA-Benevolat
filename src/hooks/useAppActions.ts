@@ -92,10 +92,18 @@ export const useAppActions = (props: UseAppActionsProps) => {
   );
 
   const importCSVWithToast = useCallback(
-    async (data: GameFormData[]) => {
+    async (data: GameFormData[], summary?: { newCount: number; updateCount: number }) => {
       try {
         await importGames(data);
-        addToast(`${data.length} match(s) importé(s) !`, 'success');
+        const label = summary
+          ? (
+              [
+                summary.newCount > 0 ? `${summary.newCount} nouveau(x)` : null,
+                summary.updateCount > 0 ? `${summary.updateCount} mise(s) à jour` : null,
+              ].filter(Boolean) as string[]
+            ).join(', ') || 'aucun changement (déjà à jour)'
+          : `${data.length} match(s) importé(s)`;
+        addToast(`${label} !`, 'success');
         return true;
       } catch (err) {
         console.error('Import error:', err);

@@ -64,6 +64,59 @@ export const cleanupExpiredAnnouncements = onSchedule(
 );
 
 /**
+ * Scheduled function: Clean up past matches
+ *
+ * Runs every day at 3:00 AM (Europe/Paris timezone).
+ * Deletes all documents in the "matches" collection with dateISO < today.
+ * Same-day matches are kept (client hides them after tip-off + 2h30 buffer).
+ * Documents without dateISO are ignored (handled separately, not auto-deleted).
+ * Volunteer history is preserved: users/{uid}/registrations embed their own
+ * snapshot (date, opponent, location), so deleting past matches loses nothing.
+ */
+export const cleanupPastMatches = onSchedule(
+    {
+        schedule: "0 3 * * *", // Cron: 3 AM daily
+        timeZone: "Europe/Paris",
+        retryCount: 3,
+        region: "europe-west1",
+    },
+    async (event) => {
+        logger.info("Starting cleanup of past matches", {
+            scheduleTime: event.scheduleTime,
+        });
+
+        const todayISO = new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris" }).format(new Date());
+
+        try {
+            const pastSnapshot = await db
+                .collection("matches")
+                .where("dateISO", "<", todayISO)
+                .get();
+
+            if (pastSnapshot.empty) {
+                logger.info("No past matches found");
+                return;
+            }
+
+            // Batch deletes (max 500 writes per batch)
+            const docs = pastSnapshot.docs;
+            for (let i = 0; i < docs.length; i += 500) {
+                const batch = db.batch();
+                docs.slice(i, i + 500).forEach((doc: QueryDocumentSnapshot) => batch.delete(doc.ref));
+                await batch.commit();
+            }
+
+            logger.info("Cleanup completed successfully", {
+                deletedCount: pastSnapshot.size,
+            });
+        } catch (error) {
+            logger.error("Error during past matches cleanup", { error });
+            throw error; // Re-throw to trigger retry
+        }
+    }
+);
+
+/**
  * Authentication Trigger: Set Admin Role
  *
  * Automatically assigns the 'admin' custom claim to specific users upon creation.

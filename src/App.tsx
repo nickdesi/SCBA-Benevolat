@@ -263,8 +263,8 @@ function App() {
                 <ImportCSVModal
                   isOpen={isImportModalOpen}
                   onClose={() => setIsImportModalOpen(false)}
-                  onImport={async (d) => {
-                    if (await importCSVWithToast(d)) setIsImportModalOpen(false);
+                  onImport={async (d, summary) => {
+                    if (await importCSVWithToast(d, summary)) setIsImportModalOpen(false);
                   }}
                   existingGames={sortedGames}
                 />

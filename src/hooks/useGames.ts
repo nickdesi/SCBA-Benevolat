@@ -89,11 +89,15 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
   // ---------------------------------------------------------------------------
   useEffect(() => {
     const todayISO = getTodayISO();
+    // NOTE: la limite doit couvrir toute la saison à venir. Avec limit(50),
+    // les matchs de fin de saison (ex. décembre, positions 52+/58) étaient
+    // exclus du snapshot -> invisibles dans l'UI + recréés en doublons à
+    // chaque import car absents de `existingGames` lors de la réconciliation.
     const matchesQuery = query(
       collection(db, 'matches'),
       where('dateISO', '>=', todayISO),
       orderBy('dateISO', 'asc'),
-      limit(50),
+      limit(500),
     );
 
     const unsubscribe = onSnapshot(
