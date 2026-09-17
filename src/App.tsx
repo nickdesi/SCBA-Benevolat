@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, Suspense, lazy, startTransition } from 'react';
+import { useState, useEffect, useCallback, Suspense, startTransition } from 'react';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 import { User } from 'firebase/auth';
 import { Analytics } from '@vercel/analytics/react';
 import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Plus } from 'lucide-react';
@@ -18,15 +19,15 @@ import { useUserProfile } from './hooks/useUserProfile';
 import EventSchema from './components/EventSchema';
 import { isOffSeason, getSeasonInfo } from './utils/dateUtils';
 
-// Lazy-loaded components (code-splitting for reduced initial bundle)
-const ImportCSVModal = lazy(() => import('./components/ImportCSVModal'));
-const GameForm = lazy(() => import('./components/GameForm'));
-const ProfileModal = lazy(() => import('./components/ProfileModal'));
-const UserAuthModal = lazy(() => import('./components/UserAuthModal'));
-const PlanningView = lazy(() => import('./components/planning/PlanningView'));
+// Lazy-loaded components with automatic retry on new build deployment (code-splitting)
+const ImportCSVModal = lazyWithRetry(() => import('./components/ImportCSVModal'));
+const GameForm = lazyWithRetry(() => import('./components/GameForm'));
+const ProfileModal = lazyWithRetry(() => import('./components/ProfileModal'));
+const UserAuthModal = lazyWithRetry(() => import('./components/UserAuthModal'));
+const PlanningView = lazyWithRetry(() => import('./components/planning/PlanningView'));
 // AdminStats must be declared at module level — NOT inside App() to avoid
 // creating a new lazy reference on every render (which remounts the component).
-const AdminStats = lazy(() => import('./components/AdminStats'));
+const AdminStats = lazyWithRetry(() => import('./components/AdminStats'));
 
 import AdminToolbar from './components/AdminToolbar';
 import PullToRefresh from './components/PullToRefresh';

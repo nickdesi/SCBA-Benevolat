@@ -19,7 +19,7 @@ export const useGameFilters = ({
   games,
   selectedTeam,
   currentView,
-  favoriteTeams: _favoriteTeams,
+  favoriteTeams,
   userRegistrations,
 }: UseGameFiltersProps) => {
   // ⚡ Bolt Optimization: Extract multiple unique property lists in a single O(N) pass
@@ -106,8 +106,16 @@ export const useGameFilters = ({
       }
 
       // 2. Team Filter
-      if (selectedTeam && game.team !== selectedTeam) {
-        return false;
+      if (selectedTeam) {
+        if (game.team !== selectedTeam) {
+          return false;
+        }
+      } else if (favoriteTeams && favoriteTeams.length > 0 && currentView === 'calendar') {
+        // En vue calendrier/planning, si des équipes favorites sont définies dans l'espace bénévole,
+        // filtrer automatiquement pour n'afficher que les matchs de ces équipes favorites.
+        if (!favoriteTeams.includes(game.team)) {
+          return false;
+        }
       }
 
       // 3. Planning View Filter
@@ -125,7 +133,7 @@ export const useGameFilters = ({
 
       return true;
     });
-  }, [games, selectedTeam, currentView, userRegistrations]);
+  }, [games, selectedTeam, currentView, userRegistrations, favoriteTeams]);
 
   return {
     teams,

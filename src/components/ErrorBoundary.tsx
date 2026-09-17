@@ -21,6 +21,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[ErrorBoundary] Uncaught error:', error, info.componentStack);
+    const msg = error?.message || error?.toString() || '';
+    if (
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Loading chunk') ||
+      error?.name === 'ChunkLoadError'
+    ) {
+      if (sessionStorage.getItem('chunk_reload_retry') !== 'true') {
+        sessionStorage.setItem('chunk_reload_retry', 'true');
+        window.location.reload();
+      }
+    }
   }
 
   render() {

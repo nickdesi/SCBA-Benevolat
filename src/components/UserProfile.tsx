@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import { User } from 'firebase/auth';
 import { signInWithGoogle, signOut, onAuthStateChanged } from '../utils/authStore';
 import { LogoutIcon, UserIcon } from './Icons';
 import { useIsPWAInstalled } from '../hooks/useIsPWAInstalled';
 
-const UserAuthModal = lazy(() => import('./UserAuthModal'));
+const UserAuthModal = lazyWithRetry(() => import('./UserAuthModal'));
 
 interface UserProfileProps {
   onLogin?: (user: User) => void;
