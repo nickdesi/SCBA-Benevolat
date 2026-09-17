@@ -15,7 +15,7 @@ import { MatchPreviewCard } from './import/MatchPreviewCard';
 interface ImportCSVModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (matches: GameFormData[]) => void;
+  onImport: (matches: GameFormData[], summary: { newCount: number; updateCount: number }) => void;
   existingGames: Game[];
 }
 
@@ -142,9 +142,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         return;
       }
       const gameData = actionableMatches.map(toGameFormData);
-      onImport(gameData);
+      onImport(gameData, {
+        newCount: newMatchesList.length,
+        updateCount: modifiedMatchesList.length,
+      });
       handleClose();
-    }, [actionableMatches, onImport, handleClose]);
+    }, [actionableMatches, newMatchesList.length, modifiedMatchesList.length, onImport, handleClose]);
 
     if (!isOpen) return null;
 
