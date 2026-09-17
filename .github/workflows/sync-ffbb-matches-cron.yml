@@ -5,6 +5,8 @@ on:
     # Tous les jours à 06:17 UTC (08:17 heure de Paris en été / 07:17 en hiver)
     # Minute décalée (17) pour éviter l'engorgement des runners GitHub Actions à heure pile (:00)
     - cron: '17 6 * * *'
+    # Filet de sécurité si GitHub drop le créneau du matin (10:17 heure de Paris en été)
+    - cron: '17 8 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -17,6 +19,11 @@ on:
         required: false
         default: ''
         type: string
+  # Un push sur ce fichier relance la sync (sert aussi à réenregistrer le schedule GitHub)
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-ffbb-matches-cron.yml'
 
 concurrency:
   group: sync-ffbb-matches
@@ -26,7 +33,6 @@ jobs:
   sync-matches:
     name: ⚡ Synchronisation FFBB -> Firestore
     runs-on: ubuntu-latest
-    timeout-minutes: 10
 
     steps:
       - name: 📥 Checkout Repository
