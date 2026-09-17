@@ -43,10 +43,19 @@ export const useGameFilters = ({
     };
   }, [games]);
 
-  // 1. Extract unique teams with matches for header filter bar (all teams present in active matches)
+  // 1. Extract unique teams with matches for header filter bar
+  // Si l'utilisateur a défini des équipes favorites dans son profil, la barre de filtres
+  // affiche uniquement ses équipes favorites (+ Tous les matchs).
+  // Sinon, elle affiche l'intégralité des équipes du club ayant des matchs.
   const teams = useMemo(() => {
-    return sortTeamNames(Array.from(uniqueTeamsSet));
-  }, [uniqueTeamsSet]);
+    const allActiveTeams = sortTeamNames(Array.from(uniqueTeamsSet));
+    if (favoriteTeams && favoriteTeams.length > 0) {
+      const favSet = new Set(favoriteTeams);
+      const matched = allActiveTeams.filter((t) => favSet.has(t));
+      return matched.length > 0 ? matched : sortTeamNames(favoriteTeams);
+    }
+    return allActiveTeams;
+  }, [uniqueTeamsSet, favoriteTeams]);
 
   // 2. Full list of teams for ProfileModal / preferences (all official SCBA teams + any custom teams from games)
   const allTeams = useMemo(() => {
@@ -110,12 +119,6 @@ export const useGameFilters = ({
         if (game.team !== selectedTeam) {
           return false;
         }
-      } else if (favoriteTeams && favoriteTeams.length > 0 && currentView === 'calendar') {
-        // En vue calendrier/planning, si des équipes favorites sont définies dans l'espace bénévole,
-        // filtrer automatiquement pour n'afficher que les matchs de ces équipes favorites.
-        if (!favoriteTeams.includes(game.team)) {
-          return false;
-        }
       }
 
       // 3. Planning View Filter
@@ -133,7 +136,7 @@ export const useGameFilters = ({
 
       return true;
     });
-  }, [games, selectedTeam, currentView, userRegistrations, favoriteTeams]);
+  }, [games, selectedTeam, currentView, userRegistrations]);
 
   return {
     teams,

@@ -121,6 +121,13 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // Reset selectedTeam if it is no longer available in the active filter list (e.g. after editing favorite teams)
+  useEffect(() => {
+    if (selectedTeam && !teams.includes(selectedTeam)) {
+      setSelectedTeam(null);
+    }
+  }, [teams, selectedTeam]);
+
   // When clicking a match in ticker, clear any active team filter to ensure the target game is visible
   useEffect(() => {
     const handleTickerNav = () => {
