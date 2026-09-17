@@ -10,21 +10,34 @@ interface MatchTickerProps {
   games: Game[];
 }
 
+interface UrgentGame extends Game {
+  _relativeInfo: {
+    diffDays: number;
+    label: string;
+    isToday: boolean;
+    isTomorrow: boolean;
+  };
+  _roleStats: {
+    filledSlots: number;
+    totalCapacity: number;
+    isFullyStaffed: boolean;
+    missingRoles: string[];
+    hasUnlimited: boolean;
+  };
+  _formattedDateShort: string;
+  _host: string;
+  _visitor: string;
+}
+
 const TICKER_SPEED = 40; // Vitesse de défilement (pixels par seconde)
 
 /**
  * Item individuel de match pour le mode défilant des urgences
  */
 const TickerItem: React.FC<{
-  game: Game;
+  game: UrgentGame;
   onNavigate: (game: Game) => void;
 }> = memo(({ game, onNavigate }) => {
-  const relativeInfo = getRelativeDateInfo(game.dateISO);
-  const roleStats = getGameRoleStats(game);
-
-  const host = game.isHome ? game.team : game.opponent;
-  const visitor = game.isHome ? game.opponent : game.team;
-
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     onNavigate(game);
@@ -34,7 +47,7 @@ const TickerItem: React.FC<{
     <button
       type="button"
       onClick={handleClick}
-      aria-label={`Match urgent : ${host} contre ${visitor} — Voir le match`}
+      aria-label={`Match urgent : ${game._host} contre ${game._visitor} — Voir le match`}
       className="inline-flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-white/10 transition-colors rounded-lg flex-shrink-0 group"
     >
       {/* Badge Urgent Pulsant */}
@@ -45,13 +58,13 @@ const TickerItem: React.FC<{
 
       {/* Pastille délai relatif (Aujourd'hui, Demain, Dans 2j, etc.) */}
       <span className="font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border bg-slate-800/80 text-slate-200 border-slate-700/60">
-        {relativeInfo.label}
+        {game._relativeInfo.label}
       </span>
 
       {/* Date courte & Heure */}
       <span className="flex items-center gap-1 text-slate-200 text-xs font-bold flex-shrink-0">
         <Clock className="w-3 h-3 text-slate-400" aria-hidden="true" />
-        <span>{formatDateShort(game.dateISO)}</span>
+        <span>{game._formattedDateShort}</span>
         <span className="text-slate-500">·</span>
         <span>{game.time}</span>
       </span>
@@ -63,13 +76,13 @@ const TickerItem: React.FC<{
       {/* Équipes */}
       <span className="flex items-center gap-1.5 font-bold uppercase tracking-wide">
         <span className={game.isHome ? 'text-emerald-400 font-black' : 'text-slate-100'}>
-          {host}
+          {game._host}
         </span>
         <span className="text-slate-500 text-[10px] font-black" aria-hidden="true">
           VS
         </span>
         <span className={!game.isHome ? 'text-emerald-400 font-black' : 'text-slate-300'}>
-          {visitor}
+          {game._visitor}
         </span>
       </span>
 
@@ -89,7 +102,7 @@ const TickerItem: React.FC<{
       {/* Postes bénévoles manquants */}
       <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border bg-red-950/80 text-red-300 border-red-800/50">
         <Users className="w-3 h-3 text-red-400" aria-hidden="true" />
-        {roleStats.filledSlots}/{roleStats.totalCapacity} bénévoles
+        {game._roleStats.filledSlots}/{game._roleStats.totalCapacity} bénévoles
       </span>
 
       {/* Séparateur entre matchs */}
@@ -113,16 +126,28 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   const todayISO = getTodayISO();
 
   // Liste EXCLUSIVEMENT réservée aux matchs urgents
-  const urgentGames = useMemo<Game[]>(() => {
+  // ⚡ Bolt Optimization: Pre-compute derived properties (date formatting, role stats, teams)
+  // inside this useMemo pass. This prevents redundant O(N) recalculations and Date allocations
+  // on every render cycle of MatchTicker and its TickerItem children, significantly reducing CPU overhead.
+  const urgentGames = useMemo<UrgentGame[]>(() => {
     const now = new Date();
-    const list: Game[] = [];
+    const list: UrgentGame[] = [];
 
     for (const g of games) {
       const iso = g.dateISO ?? '';
       if (!iso || iso < todayISO) continue;
       if (isGamePast(iso, g.time, now)) continue;
+
       if (isGameUrgent(g, now)) {
-        list.push(g);
+        const roleStats = getGameRoleStats(g);
+        list.push({
+          ...g,
+          _relativeInfo: getRelativeDateInfo(g.dateISO),
+          _roleStats: roleStats,
+          _formattedDateShort: formatDateShort(g.dateISO),
+          _host: g.isHome ? g.team : g.opponent,
+          _visitor: g.isHome ? g.opponent : g.team,
+        });
       }
     }
 
@@ -204,10 +229,6 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
   // CAS 1 : UNE SEULE URGENCE -> Bannière élégante et compacte centrée sur PC
   if (urgentGames.length === 1) {
     const singleGame = urgentGames[0];
-    const relativeInfo = getRelativeDateInfo(singleGame.dateISO);
-    const roleStats = getGameRoleStats(singleGame);
-    const host = singleGame.isHome ? singleGame.team : singleGame.opponent;
-    const visitor = singleGame.isHome ? singleGame.opponent : singleGame.team;
 
     return (
       <motion.div
@@ -219,7 +240,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         <button
           type="button"
           onClick={() => handleNavigate(singleGame)}
-          aria-label={`Match urgent : ${host} contre ${visitor} — Voir le match`}
+          aria-label={`Match urgent : ${singleGame._host} contre ${singleGame._visitor} — Voir le match`}
           className="w-full max-w-5xl mx-auto px-4 py-2 flex items-center justify-center gap-2.5 sm:gap-3.5 flex-wrap sm:flex-nowrap cursor-pointer group text-xs text-left sm:text-center"
         >
           {/* Badge Urgent Clignotant */}
@@ -230,13 +251,13 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
 
           {/* Pastille compte à rebours (Aujourd'hui, Demain, Dans 2j, etc.) */}
           <span className="flex-shrink-0 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-200 border border-slate-700/60">
-            {relativeInfo.label}
+            {singleGame._relativeInfo.label}
           </span>
 
           {/* Date courte & Heure */}
           <span className="flex-shrink-0 flex items-center gap-1.5 text-slate-200 text-xs font-bold">
             <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-            <span>{formatDateShort(singleGame.dateISO)}</span>
+            <span>{singleGame._formattedDateShort}</span>
             <span className="text-slate-500">·</span>
             <span>{singleGame.time}</span>
           </span>
@@ -252,7 +273,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
                 singleGame.isHome ? 'text-emerald-400' : 'text-slate-100'
               }`}
             >
-              {host}
+              {singleGame._host}
             </span>
             <span
               className="text-slate-500 text-[10px] font-black flex-shrink-0"
@@ -265,7 +286,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
                 !singleGame.isHome ? 'text-emerald-400' : 'text-slate-300'
               }`}
             >
-              {visitor}
+              {singleGame._visitor}
             </span>
           </span>
 
@@ -285,7 +306,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
           {/* Statut bénévoles manquants */}
           <span className="flex-shrink-0 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border bg-red-900/60 text-red-200 border-red-700/50">
             <Users className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
-            {roleStats.filledSlots}/{roleStats.totalCapacity} bénévoles
+            {singleGame._roleStats.filledSlots}/{singleGame._roleStats.totalCapacity} bénévoles
           </span>
 
           {/* Flèche CTA */}
