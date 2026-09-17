@@ -64,10 +64,13 @@ export const cleanupExpiredAnnouncements = onSchedule(
 );
 
 /**
- * Scheduled function: Clean up past matches
+ * Scheduled function: Clean up past matches + deduplicate upcoming ones
  *
  * Runs every day at 3:00 AM (Europe/Paris timezone).
- * Deletes all documents in the "matches" collection with dateISO < today.
+ * Phase 1: deletes all documents in the "matches" collection with dateISO < today.
+ * Phase 2: collapses upcoming documents sharing the same ffbbMatchId
+ * (re-imports created duplicates while the UI query was capped at 50).
+ * Survivor priority: document with volunteers first, then most recently created.
  * Same-day matches are kept (client hides them after tip-off + 2h30 buffer).
  * Documents without dateISO are ignored (handled separately, not auto-deleted).
  * Volunteer history is preserved: users/{uid}/registrations embed their own
@@ -86,6 +89,7 @@ export const cleanupPastMatches = onSchedule(
         });
 
         const todayISO = new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris" }).format(new Date());
+        const toDelete: QueryDocumentSnapshot[] = [];
 
         try {
             const pastSnapshot = await db
@@ -93,21 +97,62 @@ export const cleanupPastMatches = onSchedule(
                 .where("dateISO", "<", todayISO)
                 .get();
 
-            if (pastSnapshot.empty) {
-                logger.info("No past matches found");
+            pastSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => toDelete.push(doc));
+            logger.info("Past matches found", { count: pastSnapshot.size });
+
+            // Deduplicate upcoming matches sharing the same ffbbMatchId
+            const upcomingSnapshot = await db
+                .collection("matches")
+                .where("dateISO", ">=", todayISO)
+                .get();
+
+            const byFfbbId = new Map<string, QueryDocumentSnapshot[]>();
+            for (const doc of upcomingSnapshot.docs) {
+                const ffbbId = String(doc.data()?.ffbbMatchId || "");
+                if (!ffbbId) continue;
+                const group = byFfbbId.get(ffbbId) || [];
+                group.push(doc);
+                byFfbbId.set(ffbbId, group);
+            }
+
+            const hasVolunteers = (doc: QueryDocumentSnapshot): boolean => {
+                const roles = doc.data()?.roles;
+                return (
+                    Array.isArray(roles) &&
+                    roles.some((r) => Array.isArray(r?.volunteers) && r.volunteers.length > 0)
+                );
+            };
+
+            let duplicateCount = 0;
+            for (const group of byFfbbId.values()) {
+                if (group.length < 2) continue;
+                const sorted = [...group].sort((a, b) => {
+                    const volDiff = Number(hasVolunteers(b)) - Number(hasVolunteers(a));
+                    if (volDiff !== 0) return volDiff;
+                    return b.createTime.toMillis() - a.createTime.toMillis();
+                });
+                // Keep the first (volunteers, then newest), delete the rest
+                for (const dup of sorted.slice(1)) {
+                    toDelete.push(dup);
+                    duplicateCount++;
+                }
+            }
+            logger.info("Duplicate upcoming matches found", { count: duplicateCount });
+
+            if (toDelete.length === 0) {
+                logger.info("Nothing to clean up");
                 return;
             }
 
             // Batch deletes (max 500 writes per batch)
-            const docs = pastSnapshot.docs;
-            for (let i = 0; i < docs.length; i += 500) {
+            for (let i = 0; i < toDelete.length; i += 500) {
                 const batch = db.batch();
-                docs.slice(i, i + 500).forEach((doc: QueryDocumentSnapshot) => batch.delete(doc.ref));
+                toDelete.slice(i, i + 500).forEach((doc: QueryDocumentSnapshot) => batch.delete(doc.ref));
                 await batch.commit();
             }
 
             logger.info("Cleanup completed successfully", {
-                deletedCount: pastSnapshot.size,
+                deletedCount: toDelete.length,
             });
         } catch (error) {
             logger.error("Error during past matches cleanup", { error });

@@ -111,7 +111,19 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             }) as Game,
         );
 
-        setGames(matchesData);
+        // Déduplication d'affichage : un seul doc par ffbbMatchId.
+        // La base est assainie chaque nuit par cleanupPastMatches
+        // (garde le doc avec bénévoles, sinon le plus récent).
+        const seenFfbb = new Set<string>();
+        const deduped = matchesData.filter((g) => {
+          if (!g.ffbbMatchId) return true;
+          const key = String(g.ffbbMatchId);
+          if (seenFfbb.has(key)) return false;
+          seenFfbb.add(key);
+          return true;
+        });
+
+        setGames(deduped);
         setLoading(false);
       },
       (error) => {
