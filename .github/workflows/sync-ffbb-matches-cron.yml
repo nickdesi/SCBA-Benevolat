@@ -2,11 +2,13 @@ name: 🏀 Sync FFBB Matches (Cron Auto-Import)
 
 on:
   schedule:
-    # Tous les jours à 06:17 UTC (08:17 heure de Paris en été / 07:17 en hiver)
-    # Minute décalée (17) pour éviter l'engorgement des runners GitHub Actions à heure pile (:00)
-    - cron: '17 6 * * *'
-    # Filet de sécurité si GitHub drop le créneau du matin (10:17 heure de Paris en été)
-    - cron: '17 8 * * *'
+    # Créneau nocturne hors-pic garanti sans délai (03:23 UTC = 05:23 Paris en été / 04:23 en hiver)
+    # Les runners GitHub Actions sont inoccupés : synchronisation garantie prête avant 07h00
+    - cron: '23 3 * * *'
+    # Créneau début d'après-midi après décongestion européenne (12:41 UTC = 14:41 Paris)
+    - cron: '41 12 * * *'
+    # Créneau début de soirée (18:19 UTC = 20:19 Paris)
+    - cron: '19 18 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
