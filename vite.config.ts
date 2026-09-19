@@ -154,6 +154,21 @@ export default defineConfig({
         // Runtime caching: FFBB data API resilient offline strategy + static assets (Firebase excluded)
         runtimeCaching: [
           {
+            // OpenStreetMap tiles (gymnasiums & venues) - CacheFirst for resilient offline display in concrete halls
+            urlPattern: /^https:\/\/[a-c]\.tile\.openstreetmap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'osm-tiles-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
             // FFBB API - NetworkFirst with 3s timeout, 7 days TTL (network handles freshness, cache provides offline safety)
             urlPattern:
               /^https:\/\/ffbb-api\.desimone\.fr\/.*|^\/api\/(v1\/club\/|ffbb-matches).*/i,
