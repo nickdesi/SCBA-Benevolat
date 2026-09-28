@@ -340,11 +340,12 @@ function App() {
                       await signInWithGoogle();
                       setIsAuthModalOpen(false);
                       addToast('Connexion !', 'success');
-                    } catch (error: any) {
-                      addToast(
-                        error?.message || 'Erreur de connexion Google. Veuillez réessayer.',
-                        'error',
-                      );
+                    } catch (error: unknown) {
+                      const errorMsg =
+                        error instanceof Error
+                          ? error.message
+                          : 'Erreur de connexion Google. Veuillez réessayer.';
+                      addToast(errorMsg, 'error');
                     }
                   }}
                   onToast={addToast}

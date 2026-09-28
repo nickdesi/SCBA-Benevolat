@@ -75,9 +75,11 @@ const UserProfile: React.FC<UserProfileProps> = ({
       await signInWithGoogle();
       setIsAuthModalOpen(false); // Close modal on success
       onToast('Connexion réussie !', 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed', error);
-      onToast(error?.message || 'Erreur de connexion Google. Veuillez réessayer.', 'error');
+      const errorMsg =
+        error instanceof Error ? error.message : 'Erreur de connexion Google. Veuillez réessayer.';
+      onToast(errorMsg, 'error');
     }
   };
 

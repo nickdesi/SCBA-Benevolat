@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Game, Role, GameFormData } from '../types';
-import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS, MONTH_MAP } from '../constants';
+import { DEFAULT_ROLES, SCBA_TEAMS, COMMON_LOCATIONS } from '../constants';
 import { getTodayISO } from '../utils/dateUtils';
 import { PlusIcon, CheckIcon } from './Icons';
 import { CustomSelect } from './ui/CustomSelect';

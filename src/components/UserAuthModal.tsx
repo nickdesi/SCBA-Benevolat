@@ -58,8 +58,8 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       }
       onToast('Connexion réussie !', 'success');
       handleClose(); // Close on success
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
       setLoading(false);
     }
   };
@@ -74,8 +74,8 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
       await resetUserPassword(email);
       onToast('Un email de réinitialisation vous a été envoyé.', 'success');
       setView('login');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setLoading(false);
     }
