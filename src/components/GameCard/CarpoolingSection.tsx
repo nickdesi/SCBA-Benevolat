@@ -133,7 +133,10 @@ const CarpoolingSection: React.FC<CarpoolingSectionProps> = memo(
 
     // ⚡ Bolt Optimization: Hoist storedName.toLowerCase() outside of iteration loops (e.g. .map)
     // to prevent redundant O(N) string memory reallocations during array traversals and renders.
-    const normalizedStoredName = useMemo(() => storedName ? storedName.toLowerCase() : '', [storedName]);
+    const normalizedStoredName = useMemo(
+      () => (storedName ? storedName.toLowerCase() : ''),
+      [storedName],
+    );
 
     const currentUserEntry = useMemo(() => {
       if (!normalizedStoredName) return undefined;
