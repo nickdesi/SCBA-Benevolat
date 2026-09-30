@@ -204,3 +204,7 @@
 ## 2026-09-17 - Pre-compute date formatting and logic evaluations in Ticker useMemo
 **Learning:** Functions like `getRelativeDateInfo` internally instantiate `new Date()` by default when optional parameters (like `todayISO`) aren't provided. Calling these, alongside multiple condition checks and formatting functions (`formatDateShort`, `getGameRoleStats`), directly inside the render loop for lists creates significant redundant overhead and O(N) evaluations during every React re-render cycle.
 **Action:** Pre-compute derived properties (like formatted strings, relative time labels, and string variables for team names) inside the parent `useMemo` block using an extended interface (`UrgentGame`). Supply explicitly cached variables (like `todayISO`) to avoid hidden Date allocations. Bind these flat, pre-computed properties directly to the rendered elements.
+
+## 2025-05-18 - Prevent O(N) string reallocations inside list rendering map loops
+**Learning:** In React components rendering lists (e.g. `drivers.map` or `passengers.map`), computing dynamic values that rely on static state (like `storedName.toLowerCase()`) inside the mapping loop causes severe O(N) garbage collection overhead and reallocations on every render.
+**Action:** Always hoist invariant string operations (like `.toLowerCase()`) into a single `useMemo` block or functional scope outside the render loops to ensure O(1) evaluation, and always include a safety guard (`str ? str.toLowerCase() : ''`) when accessing the value.

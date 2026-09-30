@@ -192,8 +192,9 @@ export const useAppActions = (props: UseAppActionsProps) => {
       try {
         await handleAcceptPassenger(gId, dId, pId);
         addToast('✅ Passager accepté !', 'success');
-      } catch (err: any) {
-        addToast(err.message || 'Erreur acceptation', 'error');
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : 'Erreur acceptation';
+        addToast(errorMsg, 'error');
       }
     },
     rejectPassengerWithToast: async (gId: string, dId: string, pId: string) => {

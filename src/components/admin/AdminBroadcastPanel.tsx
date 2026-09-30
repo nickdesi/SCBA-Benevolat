@@ -159,7 +159,7 @@ export const AdminBroadcastPanel: React.FC<AdminBroadcastPanelProps> = ({ onToas
                   <button
                     key={t}
                     type="button"
-                    onClick={() => setType(t as any)}
+                    onClick={() => setType(t as 'info' | 'warning' | 'urgent')}
                     className={`
                                             px-2 py-2.5 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all border
                                             ${

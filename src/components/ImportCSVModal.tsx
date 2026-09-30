@@ -67,12 +67,13 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
         setParsedMatches(reconciled);
         setErrors([]);
         setStep('preview');
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Erreur lors de la récupération FFBB:', err);
+        const errorMessage = err instanceof Error ? err.message : '';
         const msg =
-          err?.message === 'internal'
+          errorMessage === 'internal'
             ? 'Erreur interne lors de la communication avec la FFBB. Veuillez réessayer.'
-            : err?.message || 'Erreur lors de la récupération des matchs depuis la FFBB.';
+            : errorMessage || 'Erreur lors de la récupération des matchs depuis la FFBB.';
         setFfbbError(msg);
       } finally {
         setIsFetchingFFBB(false);

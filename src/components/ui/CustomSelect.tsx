@@ -9,7 +9,7 @@ interface Option {
 
 interface CustomSelectProps {
   value: string | number;
-  onChange: (value: any) => void;
+  onChange: (value: string | number) => void;
   options: Option[];
   icon?: React.ReactNode;
   className?: string;

@@ -163,7 +163,7 @@ const VolunteerSlot: React.FC<VolunteerSlotProps> = memo(
     };
 
     // Role Styling
-    const roleConfig = getRoleConfig(role.name);
+    getRoleConfig(role.name); // Called for side-effects or potentially unused depending on further logic
 
     return (
       <div

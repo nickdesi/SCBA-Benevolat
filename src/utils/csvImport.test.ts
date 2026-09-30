@@ -157,8 +157,8 @@ describe('reconcileMatchesWithExisting', () => {
     const futureMatch: ParsedMatch = {
       team: 'U18 M1',
       opponent: 'US CHAURIAT VERTAIZON',
-      date: 'Dimanche 20 Septembre 2026',
-      dateISO: '2026-09-20',
+      date: 'Dimanche 20 Septembre 2030',
+      dateISO: '2030-09-20',
       time: '15:30',
       location: 'Gymnase Fleury',
       isHome: true,
