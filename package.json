@@ -56,7 +56,8 @@
     "vitest": "^4.1.11"
   },
   "overrides": {
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "@grpc/grpc-js": "^1.14.5"
   },
   "allowScripts": {
     "@firebase/util@1.15.3": true,
