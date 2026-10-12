@@ -287,6 +287,34 @@ const CITY_MAPPINGS: Record<string, string> = {
 };
 const CITY_MAPPINGS_ENTRIES = Object.entries(CITY_MAPPINGS);
 
+// ⚡ Bolt Optimization: Hoist noise words array, RegEx, and small words Set to module scope
+// to avoid recreating array objects and recompiling RegEx on every iteration when processing large lists.
+const NOISE_WORDS = [
+  'BASKET',
+  'BC',
+  'CLUB',
+  'CS',
+  'US',
+  'AL',
+  'AS',
+  'ES',
+  'BB',
+  'SPORT',
+  'SPORTS',
+  'ASSOCIATION',
+  'AMICALE',
+  'UMS',
+  'U.M.S',
+  'LOIRE',
+  'SUD',
+  'NORD',
+  'EST',
+  'OUEST',
+  'AG', // Avant-Garde (often in Tain Tournon AG)
+];
+const NOISE_WORDS_REGEX = new RegExp(`\\b(${NOISE_WORDS.join('|')})\\b`, 'gi');
+const SMALL_WORDS_SET = new Set(['le', 'la', 'les', 'du', 'de', 'sur']);
+
 /**
  * Extract likely City name from Opponent team name
  * Used to provide better "Extérieur" location context
@@ -306,31 +334,7 @@ const inferCityFromTeam = (opponent: string): string => {
   );
 
   // 2. Remove common suffixes/words
-  const noiseWords = [
-    'BASKET',
-    'BC',
-    'CLUB',
-    'CS',
-    'US',
-    'AL',
-    'AS',
-    'ES',
-    'BB',
-    'SPORT',
-    'SPORTS',
-    'ASSOCIATION',
-    'AMICALE',
-    'UMS',
-    'U.M.S',
-    'LOIRE',
-    'SUD',
-    'NORD',
-    'EST',
-    'OUEST',
-    'AG', // Avant-Garde (often in Tain Tournon AG)
-  ];
-
-  cleanName = cleanName.replace(new RegExp(`\\b(${noiseWords.join('|')})\\b`, 'gi'), '');
+  cleanName = cleanName.replace(NOISE_WORDS_REGEX, '');
 
   // 3. Remove trailing numbers/characters
   cleanName = cleanName.replace(/[-]?\s*\d+$/, '');
@@ -345,9 +349,7 @@ const inferCityFromTeam = (opponent: string): string => {
   // 5. Filter garbage
   const parts = cleanName
     .split(' ')
-    .filter(
-      (p) => p.length > 2 || ['le', 'la', 'les', 'du', 'de', 'sur'].includes(p.toLowerCase()),
-    );
+    .filter((p) => p.length > 2 || SMALL_WORDS_SET.has(p.toLowerCase()));
 
   return parts.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 };
