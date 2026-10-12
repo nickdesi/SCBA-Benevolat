@@ -191,10 +191,11 @@ export const reconcileMatchesWithExisting = (
   let newCount = 0;
   let unchangedCount = 0;
   const now = new Date();
+  const todayISO = toISODateString(now);
 
   for (const match of matches) {
     // Exclure les matchs déjà passés (ex: match de coupe ou de championnat déjà joué)
-    if (filterPastGames && isGamePast(match.dateISO, match.time, now)) {
+    if (filterPastGames && isGamePast(match.dateISO, match.time, now, todayISO)) {
       continue;
     }
 

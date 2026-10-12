@@ -136,7 +136,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
     for (const g of games) {
       const iso = g.dateISO ?? '';
       if (!iso || iso < todayISO) continue;
-      if (isGamePast(iso, g.time, now)) continue;
+      if (isGamePast(iso, g.time, now, todayISO)) continue;
 
       if (isGameUrgent(g, now)) {
         const roleStats = getGameRoleStats(g);
