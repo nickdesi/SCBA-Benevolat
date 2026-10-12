@@ -7,8 +7,8 @@ describe('hasGameChanged', () => {
     id: 'g1',
     team: 'SENIOR M1',
     opponent: 'CLERMONT BASKET - 1',
-    date: 'Samedi 10 Octobre 2026',
-    dateISO: '2026-10-10',
+    date: 'Samedi 10 Octobre 2030',
+    dateISO: '2030-10-10',
     time: '20:30',
     location: 'Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand',
     isHome: true,
@@ -22,8 +22,8 @@ describe('hasGameChanged', () => {
   const baseParsed: ParsedMatch = {
     team: 'SENIOR M1',
     opponent: 'CLERMONT BASKET - 1',
-    date: 'Samedi 10 Octobre 2026',
-    dateISO: '2026-10-10',
+    date: 'Samedi 10 Octobre 2030',
+    dateISO: '2030-10-10',
     time: '20:30',
     location: 'Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand',
     isHome: true,
@@ -61,12 +61,12 @@ describe('hasGameChanged', () => {
   it('detects date reschedulings', () => {
     const modified: ParsedMatch = {
       ...baseParsed,
-      dateISO: '2026-10-11',
-      date: 'Dimanche 11 Octobre 2026',
+      dateISO: '2030-10-11',
+      date: 'Dimanche 11 Octobre 2030',
     };
     const res = hasGameChanged(modified, baseGame);
     expect(res.changed).toBe(true);
-    expect(res.diffs).toContain('Date: 2026-10-10 → 2026-10-11');
+    expect(res.diffs).toContain('Date: 2030-10-10 → 2030-10-11');
   });
 
   it('detects new opponent logo', () => {
@@ -82,8 +82,8 @@ describe('reconcileMatchesWithExisting', () => {
     id: 'g1',
     team: 'SENIOR M1',
     opponent: 'CLERMONT BASKET - 1',
-    date: 'Samedi 10 Octobre 2026',
-    dateISO: '2026-10-10',
+    date: 'Samedi 10 Octobre 2030',
+    dateISO: '2030-10-10',
     time: '20:30',
     location: 'Maison des Sports',
     isHome: true,
@@ -95,8 +95,8 @@ describe('reconcileMatchesWithExisting', () => {
     const unchangedMatch: ParsedMatch = {
       team: 'SENIOR M1',
       opponent: 'CLERMONT BASKET - 1',
-      date: 'Samedi 10 Octobre 2026',
-      dateISO: '2026-10-10',
+      date: 'Samedi 10 Octobre 2030',
+      dateISO: '2030-10-10',
       time: '20:30',
       location: 'Maison des Sports',
       isHome: true,
@@ -106,8 +106,8 @@ describe('reconcileMatchesWithExisting', () => {
     const modifiedMatch: ParsedMatch = {
       team: 'SENIOR M1',
       opponent: 'CLERMONT BASKET - 1',
-      date: 'Samedi 10 Octobre 2026',
-      dateISO: '2026-10-10',
+      date: 'Samedi 10 Octobre 2030',
+      dateISO: '2030-10-10',
       time: '21:00', // modified time
       location: 'Maison des Sports',
       isHome: true,
@@ -117,8 +117,8 @@ describe('reconcileMatchesWithExisting', () => {
     const newMatch: ParsedMatch = {
       team: 'SENIOR M2',
       opponent: 'ISSOIRE - 2',
-      date: 'Dimanche 11 Octobre 2026',
-      dateISO: '2026-10-11',
+      date: 'Dimanche 11 Octobre 2030',
+      dateISO: '2030-10-11',
       time: '15:00',
       location: 'Extérieur',
       isHome: false,
@@ -145,8 +145,8 @@ describe('reconcileMatchesWithExisting', () => {
     const pastMatch: ParsedMatch = {
       team: 'U18 M1',
       opponent: 'ST JEAN BONNEFONDS AVANT GARDE BASKET',
-      date: 'Dimanche 13 Septembre 2026',
-      dateISO: '2026-09-13',
+      date: 'Dimanche 13 Septembre 2024',
+      dateISO: '2024-09-13',
       time: '14:00',
       location: 'Gymnase Fleury',
       isHome: true,
@@ -179,8 +179,8 @@ describe('reconcileMatchesWithExisting', () => {
     const pastMatch: ParsedMatch = {
       team: 'U18 M1',
       opponent: 'ST JEAN BONNEFONDS',
-      date: 'Dimanche 13 Septembre 2026',
-      dateISO: '2026-09-13',
+      date: 'Dimanche 13 Septembre 2024',
+      dateISO: '2024-09-13',
       time: '14:00',
       location: 'Gymnase Fleury',
       isHome: true,
