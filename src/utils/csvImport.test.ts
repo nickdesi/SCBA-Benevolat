@@ -127,6 +127,7 @@ describe('reconcileMatchesWithExisting', () => {
     const result = reconcileMatchesWithExisting(
       [unchangedMatch, modifiedMatch, newMatch],
       [existingGame],
+      false,
     );
 
     expect(result.newCount).toBe(1);

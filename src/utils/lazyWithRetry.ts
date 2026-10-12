@@ -8,6 +8,7 @@ import { lazy, ComponentType } from 'react';
  * This wrapper catches dynamic import errors, checks if a reload was already
  * attempted in this session, and reloads the page once to pull the fresh index HTML.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazyWithRetry<T extends ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>,
 ) {
@@ -19,12 +20,13 @@ export function lazyWithRetry<T extends ComponentType<any>>(
       // Reset retry flag upon successful chunk resolution
       sessionStorage.removeItem('chunk_reload_retry');
       return component;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       const isChunkError =
-        error?.message?.includes('Failed to fetch dynamically imported module') ||
-        error?.message?.includes('Loading chunk') ||
-        error?.name === 'ChunkLoadError' ||
-        error?.toString().includes('dynamically imported module');
+        err?.message?.includes('Failed to fetch dynamically imported module') ||
+        err?.message?.includes('Loading chunk') ||
+        err?.name === 'ChunkLoadError' ||
+        (error && error.toString().includes('dynamically imported module'));
 
       if (isChunkError && !pageHasBeenRefreshed) {
         sessionStorage.setItem('chunk_reload_retry', 'true');

@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export interface Role {
   id: string;
   name: string;
@@ -84,8 +86,8 @@ export interface Announcement {
   type: 'info' | 'warning' | 'urgent'; // Détermine la couleur/style
   message: string; // Le contenu, support Markdown basique si besoin
   active: boolean; // Soft delete / switch on-off rapide
-  expiresAt: any; // Timestamp Firestore
-  createdAt: any; // Timestamp Firestore
+  expiresAt: Timestamp; // Timestamp Firestore
+  createdAt: Timestamp; // Timestamp Firestore
   createdBy: string; // User ID de l'admin
   target?: 'all' | 'volunteers' | 'admins'; // (Optionnel pour le futur, default 'all')
 }

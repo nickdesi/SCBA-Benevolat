@@ -87,12 +87,13 @@ export const fetchClubMatchesFromFFBB = async (
       if (res.data?.matches) {
         return filterUpcomingMatches(res.data.matches);
       }
-    } catch (cloudErr: any) {
+    } catch (cloudErr: unknown) {
+      const err = cloudErr as Record<string, unknown>;
       console.warn('Fallback Cloud Function échoué:', cloudErr);
       if (
-        cloudErr?.code === 'functions/not-found' ||
-        cloudErr?.code === 'functions/internal' ||
-        cloudErr?.message?.includes('internal')
+        err?.code === 'functions/not-found' ||
+        err?.code === 'functions/internal' ||
+        (typeof err?.message === 'string' && err.message.includes('internal'))
       ) {
         throw new Error(
           'Impossible de joindre le service FFBB. Veuillez vérifier votre connexion ou réessayer.',

@@ -62,8 +62,9 @@ export const signIn = async (email: string, password: string): Promise<User> => 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
-  } catch (error: any) {
-    const code = error?.code || '';
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    const code = err?.code || '';
     const message = AUTH_ERRORS[code] || 'Erreur de connexion. Veuillez réessayer.';
     throw new Error(message, { cause: error });
   }
@@ -80,8 +81,9 @@ export const signUp = async (email: string, password: string, name: string): Pro
       displayName: name,
     });
     return userCredential.user;
-  } catch (error: any) {
-    const code = error?.code || '';
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    const code = err?.code || '';
     const message = AUTH_ERRORS[code] || "Erreur lors de l'inscription.";
     throw new Error(message, { cause: error });
   }
@@ -95,9 +97,10 @@ export const signInWithGoogle = async (): Promise<User> => {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
     return userCredential.user;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Google Sign-In Error:', error);
-    const code = error?.code || '';
+    const err = error as { code?: string };
+    const code = err?.code || '';
     const message = AUTH_ERRORS[code] || 'Erreur de connexion Google. Veuillez réessayer.';
     throw new Error(message, { cause: error });
   }
@@ -125,8 +128,9 @@ export const resetUserPassword = async (email: string): Promise<void> => {
   try {
     auth.languageCode = 'fr';
     await sendPasswordResetEmail(auth, email);
-  } catch (error: any) {
-    const code = error?.code || '';
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    const code = err?.code || '';
     const message = AUTH_ERRORS[code] || 'Erreur lors de la réinitialisation du mot de passe.';
     throw new Error(message, { cause: error });
   }

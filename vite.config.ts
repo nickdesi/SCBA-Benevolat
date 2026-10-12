@@ -37,7 +37,10 @@ export default defineConfig({
     {
       name: 'ffbb-matches-dev-api',
       configureServer(server) {
-        const handleFfbbRequest = async (req: any, res: any) => {
+        const handleFfbbRequest = async (
+          req: import('http').IncomingMessage,
+          res: import('http').ServerResponse,
+        ) => {
           try {
             const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
             const team = url.searchParams.get('team') || '';
@@ -45,10 +48,11 @@ export default defineConfig({
             const output = execSync(pythonCmd, { encoding: 'utf8' });
             res.setHeader('Content-Type', 'application/json');
             res.end(output);
-          } catch (err: any) {
+          } catch (err: unknown) {
+            const error = err as Error;
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: err?.message || 'Erreur FFBB Data Client' }));
+            res.end(JSON.stringify({ error: error?.message || 'Erreur FFBB Data Client' }));
           }
         };
 

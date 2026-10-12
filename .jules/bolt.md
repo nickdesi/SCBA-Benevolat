@@ -208,3 +208,7 @@
 ## 2025-05-18 - Prevent O(N) string reallocations inside list rendering map loops
 **Learning:** In React components rendering lists (e.g. `drivers.map` or `passengers.map`), computing dynamic values that rely on static state (like `storedName.toLowerCase()`) inside the mapping loop causes severe O(N) garbage collection overhead and reallocations on every render.
 **Action:** Always hoist invariant string operations (like `.toLowerCase()`) into a single `useMemo` block or functional scope outside the render loops to ensure O(1) evaluation, and always include a safety guard (`str ? str.toLowerCase() : ''`) when accessing the value.
+
+## 2026-11-20 - Cache pure date formatting functions called inside React render cycles
+**Learning:** Pure utility functions like `formatDateShort` that instantiate `new Date()` and re-allocate invariant arrays (`DAY_SHORT`, `MONTH_SHORT`) internally cause significant O(N) GC pressure and CPU overhead when called repeatedly inside React list rendering components (e.g. `GameCard` or `MatchTicker`).
+**Action:** Hoist invariant array allocations to module scope outside of utility functions. Introduce a module-level `Map` cache inside the utility function to memoize formatted outputs based on their input string (like `dateISO`), instantly bypassing redundant `new Date()` and regex parsing on subsequent renders.

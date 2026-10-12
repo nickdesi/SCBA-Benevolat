@@ -194,11 +194,11 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
       for (const gameData of matchesData) {
         const cleanData = Object.fromEntries(
           Object.entries(gameData).filter(([_, v]) => v !== undefined),
-        ) as any;
+        ) as Record<string, unknown>;
 
         if (cleanData.id) {
           const { id, ...data } = cleanData;
-          const docRef = doc(db, 'matches', id);
+          const docRef = doc(db, 'matches', id as string);
           batch.set(docRef, data, { merge: true });
         } else {
           const newGame = {
