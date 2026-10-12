@@ -1,13 +1,14 @@
 import { getFirebaseFunctions } from '../firebase';
 import type { ParsedMatch } from '../utils/csvImport';
-import { isGamePast } from '../utils/dateUtils';
+import { isGamePast, toISODateString } from '../utils/dateUtils';
 
 /**
  * Filtre les matchs pour n'inclure que les rencontres à venir (exclut les matchs déjà passés).
  */
 const filterUpcomingMatches = (matches: ParsedMatch[]): ParsedMatch[] => {
   const now = new Date();
-  return matches.filter((m) => !isGamePast(m.dateISO, m.time, now));
+  const todayISO = toISODateString(now);
+  return matches.filter((m) => !isGamePast(m.dateISO, m.time, now, todayISO));
 };
 
 /**

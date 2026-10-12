@@ -272,9 +272,14 @@ export const getRelativeDateInfo = (
 /**
  * Vérifie si un match du jour est déjà terminé (coup d'envoi + 2h30 écoulé).
  */
-export const isGamePast = (dateISO?: string, timeStr?: string, now: Date = new Date()): boolean => {
+export const isGamePast = (
+  dateISO?: string,
+  timeStr?: string,
+  now: Date = new Date(),
+  todayISOParam?: string,
+): boolean => {
   if (!dateISO || !ISO_DATE_REGEX.test(dateISO)) return false;
-  const todayISO = toISODateString(now);
+  const todayISO = todayISOParam ?? toISODateString(now);
 
   if (dateISO < todayISO) return true;
   if (dateISO > todayISO) return false;
