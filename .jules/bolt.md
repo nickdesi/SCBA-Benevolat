@@ -211,3 +211,7 @@
 ## 2026-11-20 - Prevent redundant string parsing and Date allocations inside isGamePast helper
 **Learning:** When a utility function like `isGamePast` internally calculates `toISODateString(now)` and is called repeatedly inside a `.filter()` or `for` loop over hundreds of elements (like in `csvImport.ts`, `MatchTicker.tsx`, or `ffbbService.ts`), it triggers O(N) redundant string memory allocations and string formatting (`padStart`) operations, significantly increasing garbage collection pressure.
 **Action:** Extend the signature of loop-invoked helper functions to optionally accept pre-computed expensive derived properties (e.g., `todayISOParam?: string`). Hoist the calculation of this parameter out of the loops at the call sites to ensure it is evaluated in O(1) time instead of O(N) time.
+
+## 2026-11-20 - Hoist static RegEx and Sets out of processing loops
+**Learning:** Initializing arrays and calling `new RegExp(..., 'gi')` inside a data processing function (like `inferCityFromTeam`) creates significant CPU and garbage collection overhead, especially when parsing large datasets like CSV imports. O(N) array `.includes()` is also inefficient compared to O(1) `Set.has()`.
+**Action:** Hoist invariant static arrays, pre-compiled RegEx patterns, and `Set` collections to the module scope so they are only allocated and compiled once, allowing O(1) reference and execution inside repeated function calls.
