@@ -215,3 +215,7 @@
 ## 2026-11-20 - Hoist static RegEx and Sets out of processing loops
 **Learning:** Initializing arrays and calling `new RegExp(..., 'gi')` inside a data processing function (like `inferCityFromTeam`) creates significant CPU and garbage collection overhead, especially when parsing large datasets like CSV imports. O(N) array `.includes()` is also inefficient compared to O(1) `Set.has()`.
 **Action:** Hoist invariant static arrays, pre-compiled RegEx patterns, and `Set` collections to the module scope so they are only allocated and compiled once, allowing O(1) reference and execution inside repeated function calls.
+
+## 2026-11-20 - Cache pure date formatting functions called inside React render cycles
+**Learning:** Pure utility functions like `formatDateShort` that instantiate `new Date()` and re-allocate invariant arrays (`DAY_SHORT`, `MONTH_SHORT`) internally cause significant O(N) GC pressure and CPU overhead when called repeatedly inside React list rendering components (e.g. `GameCard` or `MatchTicker`).
+**Action:** Hoist invariant array allocations to module scope outside of utility functions. Introduce a module-level `Map` cache inside the utility function to memoize formatted outputs based on their input string (like `dateISO`), instantly bypassing redundant `new Date()` and regex parsing on subsequent renders.
