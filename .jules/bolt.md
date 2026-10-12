@@ -208,3 +208,7 @@
 ## 2025-05-18 - Prevent O(N) string reallocations inside list rendering map loops
 **Learning:** In React components rendering lists (e.g. `drivers.map` or `passengers.map`), computing dynamic values that rely on static state (like `storedName.toLowerCase()`) inside the mapping loop causes severe O(N) garbage collection overhead and reallocations on every render.
 **Action:** Always hoist invariant string operations (like `.toLowerCase()`) into a single `useMemo` block or functional scope outside the render loops to ensure O(1) evaluation, and always include a safety guard (`str ? str.toLowerCase() : ''`) when accessing the value.
+
+## 2026-11-20 - Hoist static RegEx and Sets out of processing loops
+**Learning:** Initializing arrays and calling `new RegExp(..., 'gi')` inside a data processing function (like `inferCityFromTeam`) creates significant CPU and garbage collection overhead, especially when parsing large datasets like CSV imports. O(N) array `.includes()` is also inefficient compared to O(1) `Set.has()`.
+**Action:** Hoist invariant static arrays, pre-compiled RegEx patterns, and `Set` collections to the module scope so they are only allocated and compiled once, allowing O(1) reference and execution inside repeated function calls.
