@@ -278,7 +278,7 @@ export const fetchFFBBMatches = onCall(
 
         try {
             // 1. Récupération du token dynamique FFBB
-            const configRes = await fetch("https://api.ffbb.app/items/configuration", {
+            const configRes = await fetch("https://bo.ffbb.com/items/configuration", {
                 headers: { "User-Agent": "okhttp/4.12.0" }
             });
             if (!configRes.ok) {
@@ -296,7 +296,7 @@ export const fetchFFBBMatches = onCall(
             };
 
             // 2. Récupération des engagements du SCBA
-            const orgRes = await fetch(`https://api.ffbb.app/items/ffbbserver_organismes/${SCBA_ORGANISME_ID}?fields=*.*`, {
+            const orgRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_organismes/${SCBA_ORGANISME_ID}?fields=*.*`, {
                 headers: ffbbHeaders
             });
             if (!orgRes.ok) {
@@ -319,7 +319,7 @@ export const fetchFFBBMatches = onCall(
                 if (!pouleId) continue;
 
                 try {
-                    const pouleRes = await fetch(`https://api.ffbb.app/items/ffbbserver_poules/${pouleId}?fields=*.*`, {
+                    const pouleRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_poules/${pouleId}?fields=*.*`, {
                         headers: ffbbHeaders
                     });
                     if (!pouleRes.ok) continue;
@@ -401,7 +401,7 @@ export const fetchFFBBMatches = onCall(
 
                         if (!salleId && matchId) {
                             try {
-                                const matchRes = await fetch(`https://api.ffbb.app/items/ffbbserver_rencontres/${matchId}?fields=salle`, {
+                                const matchRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_rencontres/${matchId}?fields=salle`, {
                                     headers: ffbbHeaders
                                 });
                                 if (matchRes.ok) {
@@ -419,7 +419,7 @@ export const fetchFFBBMatches = onCall(
                                 location = salleCache[salleKey];
                             } else {
                                 try {
-                                    const salleRes = await fetch(`https://api.ffbb.app/items/ffbbserver_salles/${salleKey}?fields=*.*`, {
+                                    const salleRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_salles/${salleKey}?fields=*.*`, {
                                         headers: ffbbHeaders
                                     });
                                     if (salleRes.ok) {
@@ -449,7 +449,7 @@ export const fetchFFBBMatches = onCall(
                                 opponentLogo = logoCache[oppOrgId] || undefined;
                             } else {
                                 try {
-                                    const oppRes = await fetch(`https://api.ffbb.app/items/ffbbserver_organismes/${oppOrgId}?fields=logo.*`, {
+                                    const oppRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_organismes/${oppOrgId}?fields=logo.*`, {
                                         headers: ffbbHeaders
                                     });
                                     if (oppRes.ok) {
