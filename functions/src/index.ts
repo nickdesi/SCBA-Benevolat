@@ -218,7 +218,7 @@ export const setAdminClaim = onCall(
  * leurs horaires, adresses précises de salles et logos officiels.
  */
 const SCBA_ORGANISME_ID = 9326;
-const SCBA_LOGO_URL = "https://api.ffbb.com/assets/2784a7b8-1c06-4334-aa6e-16a371475971";
+const SCBA_LOGO_URL = "https://bo.ffbb.com/assets/2784a7b8-1c06-4334-aa6e-16a371475971";
 
 const WEEKDAYS_FR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MONTHS_FR = [
@@ -456,7 +456,7 @@ export const fetchFFBBMatches = onCall(
                                         const oppJson = await oppRes.json();
                                         const logoId = oppJson?.data?.logo?.id || oppJson?.data?.logo;
                                         if (logoId) {
-                                            const url = `https://api.ffbb.com/assets/${logoId}`;
+                                            const url = `https://bo.ffbb.com/assets/${logoId}`;
                                             logoCache[oppOrgId] = url;
                                             opponentLogo = url;
                                         } else {

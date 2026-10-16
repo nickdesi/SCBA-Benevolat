@@ -13,8 +13,8 @@ describe('hasGameChanged', () => {
     location: 'Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand',
     isHome: true,
     competition: 'Pré nationale masculine',
-    teamLogo: 'https://api.ffbb.com/assets/scba',
-    opponentLogo: 'https://api.ffbb.com/assets/cb',
+    teamLogo: 'https://bo.ffbb.com/assets/scba',
+    opponentLogo: 'https://bo.ffbb.com/assets/cb',
     ffbbMatchId: '12345',
     roles: [],
   };
@@ -28,8 +28,8 @@ describe('hasGameChanged', () => {
     location: 'Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand',
     isHome: true,
     competition: 'Pré nationale masculine',
-    teamLogo: 'https://api.ffbb.com/assets/scba',
-    opponentLogo: 'https://api.ffbb.com/assets/cb',
+    teamLogo: 'https://bo.ffbb.com/assets/scba',
+    opponentLogo: 'https://bo.ffbb.com/assets/cb',
     ffbbMatchId: '12345',
   };
 

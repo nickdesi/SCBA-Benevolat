@@ -24,7 +24,7 @@ except ImportError:
     from scripts.shared import init_firebase, init_ffbb
 
 SCBA_ORGANISME_ID = 9326
-SCBA_LOGO_URL = "https://api.ffbb.com/assets/2784a7b8-1c06-4334-aa6e-16a371475971"
+SCBA_LOGO_URL = "https://bo.ffbb.com/assets/2784a7b8-1c06-4334-aa6e-16a371475971"
 
 # Caches
 ORGANISME_CACHE = {}
@@ -135,7 +135,7 @@ def get_club_logo_url(client, organisme_id) -> str | None:
     if org and getattr(org, 'logo', None):
         logo_id = getattr(org.logo, 'id', None) or org.logo
         if logo_id:
-            url = f"https://api.ffbb.com/assets/{logo_id}"
+            url = f"https://bo.ffbb.com/assets/{logo_id}"
             ORGANISME_LOGOS_CACHE[org_id_str] = url
             return url
 
