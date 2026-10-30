@@ -219,3 +219,7 @@
 ## 2026-11-20 - Cache pure date formatting functions called inside React render cycles
 **Learning:** Pure utility functions like `formatDateShort` that instantiate `new Date()` and re-allocate invariant arrays (`DAY_SHORT`, `MONTH_SHORT`) internally cause significant O(N) GC pressure and CPU overhead when called repeatedly inside React list rendering components (e.g. `GameCard` or `MatchTicker`).
 **Action:** Hoist invariant array allocations to module scope outside of utility functions. Introduce a module-level `Map` cache inside the utility function to memoize formatted outputs based on their input string (like `dateISO`), instantly bypassing redundant `new Date()` and regex parsing on subsequent renders.
+
+## 2026-11-20 - Replace O(M) Map.keys() iteration with O(1) Map.has() lookup in render loop
+**Learning:** Iterating over all keys of a global Map (like `userRegistrations.keys()`) inside a component rendered in a list (like `GameCard`) creates an $O(N \times M)$ iteration bottleneck.
+**Action:** Leverage known entity relationships (like iterating over a game's specific roles) to replace the $O(M)$ key search with a constant time $O(1)$ `Map.has()` lookup, significantly reducing CPU overhead during list rendering.
