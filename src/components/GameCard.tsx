@@ -107,14 +107,15 @@ const GameCard: React.FC<GameCardProps> = memo(
 
     // P0 Phase 3 : badge "Mon engagement" visible sans ouvrir l'accordéon.
     // True si userRegistrations contient au moins un rôle pour ce match.
+    // ⚡ Bolt Optimization: Replace O(M) Map.keys() iteration with O(1) Map.has() lookup
+    // by iterating over the game's specific roles instead, preventing O(N*M) list rendering bottleneck.
     const isUserRegistered = useMemo(() => {
       if (!userRegistrations) return false;
-      // userRegistrations keys = "gameId_roleId"
-      for (const key of userRegistrations.keys()) {
-        if (key.startsWith(game.id + '_')) return true;
+      for (const role of game.roles) {
+        if (userRegistrations.has(`${game.id}_${role.id}`)) return true;
       }
       return false;
-    }, [userRegistrations, game.id]);
+    }, [userRegistrations, game.id, game.roles]);
 
     if (isEditing) {
       return (
