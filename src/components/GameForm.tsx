@@ -132,7 +132,10 @@ const GameForm: React.FC<GameFormProps> = ({
     if (!isoDate) return;
 
     // Create date from input string to avoid timezone shifts (YYYY-MM-DD is local)
-    const [y, m, d] = isoDate.split('-').map(Number);
+    // ⚡ Bolt Optimization: Use string slicing to avoid array allocation overhead
+    const y = +isoDate.substring(0, 4);
+    const m = +isoDate.substring(5, 7);
+    const d = +isoDate.substring(8, 10);
     const localDate = new Date(y, m - 1, d);
 
     // Formatting to "Samedi 15 Novembre 2025"

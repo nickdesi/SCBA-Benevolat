@@ -223,7 +223,10 @@ export const formatDateShort = (dateISO?: string, dateLong?: string): string => 
 
   // Prefer ISO date (most reliable)
   if (dateISO && ISO_DATE_REGEX.test(dateISO)) {
-    const [year, month, day] = dateISO.split('-').map(Number);
+    // ⚡ Bolt Optimization: Use string slicing to avoid array allocation overhead in render loops
+    const year = +dateISO.substring(0, 4);
+    const month = +dateISO.substring(5, 7);
+    const day = +dateISO.substring(8, 10);
     const d = new Date(year, month - 1, day);
     if (!isNaN(d.getTime())) {
       result = `${DAY_SHORT[d.getDay()]} ${day} ${MONTH_SHORT[month - 1]}`;

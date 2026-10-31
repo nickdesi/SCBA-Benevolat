@@ -255,7 +255,10 @@ export const isGameUrgent = (
     const nowMs = typeof now === 'number' ? now : now.getTime();
 
     // Parse de la date et de l'heure précise du match
-    const [y, m, d] = game.dateISO.split('-').map(Number);
+    // ⚡ Bolt Optimization: Use string slicing to avoid array allocation overhead in render loops
+    const y = +game.dateISO.substring(0, 4);
+    const m = +game.dateISO.substring(5, 7);
+    const d = +game.dateISO.substring(8, 10);
     let hours = 14;
     let minutes = 0;
     if (game.time) {
