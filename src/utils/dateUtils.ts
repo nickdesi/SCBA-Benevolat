@@ -223,7 +223,10 @@ export const formatDateShort = (dateISO?: string, dateLong?: string): string => 
 
   // Prefer ISO date (most reliable)
   if (dateISO && ISO_DATE_REGEX.test(dateISO)) {
-    const [year, month, day] = dateISO.split('-').map(Number);
+    // ⚡ Bolt Optimization: Use string slicing to avoid array allocation overhead in render loops
+    const year = +dateISO.substring(0, 4);
+    const month = +dateISO.substring(5, 7);
+    const day = +dateISO.substring(8, 10);
     const d = new Date(year, month - 1, day);
     if (!isNaN(d.getTime())) {
       result = `${DAY_SHORT[d.getDay()]} ${day} ${MONTH_SHORT[month - 1]}`;
@@ -257,8 +260,13 @@ export const getRelativeDateInfo = (
     return { diffDays: 0, label: '', isToday: false, isTomorrow: false };
   }
 
-  const [tY, tM, tD] = todayISO.split('-').map(Number);
-  const [gY, gM, gD] = dateISO.split('-').map(Number);
+  // ⚡ Bolt Optimization: Use string slicing to avoid array allocation overhead in render loops
+  const tY = +todayISO.substring(0, 4);
+  const tM = +todayISO.substring(5, 7);
+  const tD = +todayISO.substring(8, 10);
+  const gY = +dateISO.substring(0, 4);
+  const gM = +dateISO.substring(5, 7);
+  const gD = +dateISO.substring(8, 10);
   const today = new Date(tY, tM - 1, tD);
   const gameDate = new Date(gY, gM - 1, gD);
 

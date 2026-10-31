@@ -60,7 +60,9 @@ const groupGamesByMonth = (games: Game[]): GameGroup[] => {
       } else {
         // Construct a safe local date using the 15th of the month to avoid timezone boundaries
         // where new Date('YYYY-MM-DD') parses as UTC midnight and shifts to the previous day locally.
-        const [year, month] = cacheKey.split('-').map(Number);
+        // ⚡ Bolt Optimization: Use string slicing to avoid array allocation overhead
+        const year = +cacheKey.substring(0, 4);
+        const month = +cacheKey.substring(5, 7);
         const date = new Date(year, month - 1, 15);
 
         if (!isNaN(date.getTime())) {
