@@ -1,14 +1,22 @@
 import { getFirebaseFunctions } from '../firebase';
 import type { ParsedMatch } from '../utils/csvImport';
 import { isGamePast, toISODateString } from '../utils/dateUtils';
+import { resolveTeamLogoUrl } from '../utils/gameUtils';
 
 /**
- * Filtre les matchs pour n'inclure que les rencontres à venir (exclut les matchs déjà passés).
+ * Filtre les matchs pour n'inclure que les rencontres à venir (exclut les matchs déjà passés)
+ * et normalise les URLs de logos pour passer par le proxy anti-BunnyCDN (/api/v1/assets/...).
  */
 const filterUpcomingMatches = (matches: ParsedMatch[]): ParsedMatch[] => {
   const now = new Date();
   const todayISO = toISODateString(now);
-  return matches.filter((m) => !isGamePast(m.dateISO, m.time, now, todayISO));
+  return matches
+    .filter((m) => !isGamePast(m.dateISO, m.time, now, todayISO))
+    .map((m) => ({
+      ...m,
+      teamLogo: resolveTeamLogoUrl(m.teamLogo, true),
+      opponentLogo: resolveTeamLogoUrl(m.opponentLogo, false),
+    }));
 };
 
 /**

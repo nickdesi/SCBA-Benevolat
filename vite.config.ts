@@ -169,16 +169,31 @@ export default defineConfig({
             },
           },
           {
-            // FFBB API - NetworkFirst with 3s timeout, 7 days TTL (network handles freshness, cache provides offline safety)
+            // FFBB API - NetworkFirst with 8s timeout, 7 days TTL (network handles freshness, cache provides offline safety)
             urlPattern:
               /^https:\/\/ffbb-api\.desimone\.fr\/.*|^\/api\/(v1\/club\/|ffbb-matches).*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'ffbb-api-cache',
-              networkTimeoutSeconds: 3,
+              networkTimeoutSeconds: 8,
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 604800, // 7 days (604800s)
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // FFBB Club Logos Proxy (/api/v1/assets/<uuid>) - CacheFirst for instant rendering & offline support
+            urlPattern: /\/api\/v1\/assets\/[0-9a-fA-F-]{36}/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ffbb-assets-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
               cacheableResponse: {
                 statuses: [0, 200],
