@@ -28,9 +28,11 @@ const TEAM_OPTIONS = [
   { value: 'U15 M1', label: 'U15 M1' },
   { value: 'U15 M2', label: 'U15 M2' },
   { value: 'U13 M1', label: 'U13 M1' },
+  { value: 'U13 M2', label: 'U13 M2' },
   { value: 'U11 M1', label: 'U11 M1' },
   { value: 'U11 M2', label: 'U11 M2' },
-  { value: 'U9 M1', label: 'U9 M1' },
+  { value: 'U9 MIXTE', label: 'U9 MIXTE' },
+  { value: 'U9 MIXTE 2', label: 'U9 MIXTE 2' },
 ];
 
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(

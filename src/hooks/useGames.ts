@@ -18,7 +18,7 @@ import type { Game, GameFormData, CarpoolEntry, UserRegistration } from '../type
 import { getTodayISO } from '../utils/dateUtils';
 import { useVolunteers } from './useVolunteers';
 import { useCarpool } from './useCarpool';
-import { sortGames } from '../utils/gameUtils';
+import { normalizeScbaMatchesTeams, sortGames } from '../utils/gameUtils';
 import { useGameFilters } from './useGameFilters';
 
 interface UseGamesReturn {
@@ -123,7 +123,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
           return true;
         });
 
-        setGames(deduped);
+        setGames(normalizeScbaMatchesTeams(deduped));
         setLoading(false);
       },
       (error) => {

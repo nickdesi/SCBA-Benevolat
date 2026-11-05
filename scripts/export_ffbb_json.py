@@ -16,6 +16,7 @@ from import_ffbb_matches import (
     init_ffbb,
     fetch_all_scba_matches,
     process_match,
+    resolve_matches_teams_by_division,
 )
 
 def main():
@@ -30,9 +31,10 @@ def main():
             client = init_ffbb()
             raw_items = fetch_all_scba_matches(client)
 
+            all_games = [process_match(client, item) for item in raw_items]
+            all_games = resolve_matches_teams_by_division(all_games)
             games = []
-            for item in raw_items:
-                g = process_match(client, item)
+            for g in all_games:
                 if args.team and args.team != "ALL" and args.team.upper() not in g["team"].upper():
                     continue
                 games.append(g)

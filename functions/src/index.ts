@@ -241,24 +241,38 @@ function formatFrenchDate(isoDateStr: string): string {
 function normalizeScbaTeam(teamRaw: string, compName: string = ""): string {
     const raw = (teamRaw || "").toUpperCase().trim();
     const comp = (compName || "").toUpperCase().trim();
+    const combined = `${raw} ${comp}`.trim();
+
+    let gender = "M";
+    if (combined.includes("MIXTE") || combined.includes("MIXED") || /\bDXU\d+/.test(combined)) {
+        gender = "MIXTE";
+    } else if (/\b(FEMININ|FÉMININ|FEMININE|FÉMININE|NF\d*|RF\d*|DF\d*|PNF|PRF|U\d+F\d*|SENIOR F\d*|SF\d*)\b/.test(combined)) {
+        gender = "F";
+    }
 
     const mCat = raw.match(/U\s*(\d+)/i) || comp.match(/U\s*(\d+)/i);
     if (mCat) {
-        const cat = mCat[1];
+        const cat = `U${mCat[1]}`;
         const mNum = raw.match(/[- ](\d+)$/);
-        const num = mNum ? mNum[1] : "1";
-        return `U${cat} M${num}`;
+        let num = mNum ? mNum[1] : "1";
+        if (comp.includes("REGIONALE") || comp.includes("RÉGIONALE") || comp.includes("DIVISION 10") || comp.includes("COUPE") || comp.includes("BRASSAGE")) {
+            num = "1";
+        }
+        if (gender === "MIXTE") {
+            return num === "1" ? `${cat} MIXTE` : `${cat} MIXTE ${num}`;
+        }
+        return `${cat} ${gender}${num}`;
     }
 
     const mNum = raw.match(/[- ](\d+)$/);
     let num = mNum ? mNum[1] : "";
     if (!num) {
-        if (comp.includes("RM2") || comp.includes("DIVISION 2")) num = "2";
-        else if (comp.includes("RM3") || comp.includes("DIVISION 3")) num = "3";
-        else if (comp.includes("PNM") || comp.includes("PRE NATIONALE") || comp.includes("PRÉ NATIONALE")) num = "1";
+        if (comp.includes("RM2") || comp.includes("RF2") || comp.includes("DIVISION 2")) num = "2";
+        else if (comp.includes("RM3") || comp.includes("RF3") || comp.includes("DIVISION 3")) num = "3";
+        else if (comp.includes("PNM") || comp.includes("PNF") || comp.includes("PRE NATIONALE") || comp.includes("PRÉ NATIONALE")) num = "1";
         else num = "1";
     }
-    return `SENIOR M${num}`;
+    return `SENIOR ${gender}${num}`;
 }
 
 function cleanOpponentName(raw: string): string {

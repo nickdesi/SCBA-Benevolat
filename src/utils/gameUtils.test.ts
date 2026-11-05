@@ -5,6 +5,8 @@ import {
   formatCompetitionShort,
   sortTeamNames,
   resolveTeamLogoUrl,
+  getCompetitionDivisionRank,
+  normalizeScbaMatchesTeams,
 } from './gameUtils';
 
 describe('formatRank', () => {
@@ -132,5 +134,77 @@ describe('resolveTeamLogoUrl', () => {
     expect(resolveTeamLogoUrl('/custom-logo.png')).toBe('/custom-logo.png');
     expect(resolveTeamLogoUrl(undefined)).toBeUndefined();
     expect(resolveTeamLogoUrl('')).toBeUndefined();
+  });
+});
+
+describe('getCompetitionDivisionRank & normalizeScbaMatchesTeams', () => {
+  it('ranks regional divisions higher than departmental divisions', () => {
+    expect(getCompetitionDivisionRank('Pré nationale masculine')).toBeGreaterThan(
+      getCompetitionDivisionRank('Régionale masculine seniors - Division 2'),
+    );
+    expect(getCompetitionDivisionRank('Régionale masculine U13 - Division 2')).toBeGreaterThan(
+      getCompetitionDivisionRank('Départementale masculine U13 - Phase 2'),
+    );
+    expect(getCompetitionDivisionRank('Régionale masculine U15 - Division 2')).toBeGreaterThan(
+      getCompetitionDivisionRank('Départementale masculine U15 - Phase 2'),
+    );
+    expect(getCompetitionDivisionRank('Régionale masculine U18')).toBeGreaterThan(
+      getCompetitionDivisionRank('Départementale masculine U18 - Phase 2'),
+    );
+  });
+
+  it('assigns M1 to the higher division (R2) and M2 to the lower division (Départementale) for U13, U15, U18', () => {
+    const rawMatches = [
+      {
+        team: 'U13 M2',
+        competition: 'Régionale masculine U13 - Division 2',
+        opponent: 'BASKET CLUB ARBRESLOIS - 1',
+      },
+      {
+        team: 'U13 M2',
+        competition: 'Départementale masculine U13 - Phase 2',
+        opponent: "JEANNE D'ARC DE VICHY - 2",
+      },
+      {
+        team: 'U15 M2',
+        competition: 'Régionale masculine U15 - Division 2',
+        opponent: 'CLERMONT BASKET - 2',
+      },
+      {
+        team: 'U15 M2',
+        competition: 'Départementale masculine U15 - Phase 2',
+        opponent: 'AL PERIGNAT',
+      },
+      {
+        team: 'U18 M2',
+        competition: 'Régionale masculine U18',
+        opponent: 'OUEST LYONNAIS BASKET',
+      },
+      {
+        team: 'U18 M2',
+        competition: 'Départementale masculine U18 - Phase 2',
+        opponent: 'SBC DESERTINES',
+      },
+    ];
+
+    const normalized = normalizeScbaMatchesTeams(rawMatches);
+    expect(normalized.map((m) => m.team)).toEqual([
+      'U13 M1',
+      'U13 M2',
+      'U15 M1',
+      'U15 M2',
+      'U18 M1',
+      'U18 M2',
+    ]);
+  });
+
+  it('assigns M1 to a single youth team playing in R2 even when filtered alone', () => {
+    const singleR2 = [
+      {
+        team: 'U13 M2',
+        competition: 'Régionale masculine U13 - Division 2',
+      },
+    ];
+    expect(normalizeScbaMatchesTeams(singleR2)[0].team).toBe('U13 M1');
   });
 });

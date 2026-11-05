@@ -63,41 +63,191 @@ def normalize_string(s: str) -> str:
     n = "".join(c for c in n if unicodedata.category(c) != 'Mn')
     return re.sub(r'\s+', ' ', n).strip()
 
+def get_competition_division_rank(comp_name: str = "", poule_name: str = "") -> int:
+    """
+    Calcule le rang hiérarchique sportif d'une division (plus le score est élevé, plus la division est haute) :
+    - Nationale (NM1/2/3, Élite, Championnat de France) : 3000+
+    - Pré-Nationale (PNM, PNF) : 2500
+    - Régionale (R1 / RMU18 : 2300, Brassage régional : 2250, R2 / Division 2 : 2200, R3 / Division 3 : 2100)
+    - Pré-Régionale (PRM, PRF) : 1500
+    - Départementale (Division 10 pré-région : 1400, Poule Confirmés : 1350, D1 : 1300, Standard/Phase 2 : 1250, D2 : 1200, D3 : 1100, Poule Initiés : 1050)
+    """
+    comp = normalize_string(comp_name).upper()
+    poule = normalize_string(poule_name).upper()
+    if not comp:
+        return 0
+    if "COUPE" in comp or "TROPHEE" in comp or "CHALLENGE" in comp:
+        return 0
+
+    if (
+        "CHAMPIONNAT DE FRANCE" in comp
+        or ("NATIONALE" in comp and "PRE NATIONALE" not in comp and "PRE-NATIONALE" not in comp)
+        or re.search(r"\bN[MF]?\d+\b", comp)
+        or "ELITE" in comp
+    ):
+        if "ELITE" in comp:
+            return 3500
+        if "DIVISION 1" in comp or re.search(r"\bN[MF]?1\b", comp):
+            return 3300
+        if "DIVISION 2" in comp or re.search(r"\bN[MF]?2\b", comp):
+            return 3200
+        if "DIVISION 3" in comp or re.search(r"\bN[MF]?3\b", comp):
+            return 3100
+        return 3000
+
+    if "PRE NATIONALE" in comp or "PRE-NATIONALE" in comp or re.search(r"\bPN[MF]\b", comp):
+        return 2500
+
+    if "REGIONALE" in comp or "REGIONAL" in comp or re.search(r"\bR[MF]U?\d+", comp):
+        if "BRASSAGE" in comp:
+            return 2250
+        if "DIVISION 1" in comp or re.search(r"\bR[MF]?1\b", comp):
+            return 2300
+        if "DIVISION 2" in comp or re.search(r"\bR[MF]?2\b", comp):
+            return 2200
+        if "DIVISION 3" in comp or re.search(r"\bR[MF]?3\b", comp):
+            return 2100
+        return 2300
+
+    if "PRE REGIONALE" in comp or "PRE-REGIONALE" in comp or re.search(r"\bPR[MF]\b", comp):
+        return 1500
+
+    if "DEPARTEMENTALE" in comp or "DEPARTEMENTAL" in comp or re.search(r"\bD[MFX]U?\d+", comp):
+        if "DIVISION 10" in comp or "-10" in comp:
+            return 1400
+        if "CONFIRME" in poule or "CONFIRME" in comp:
+            return 1350
+        if "INITIE" in poule or "INITIE" in comp:
+            return 1050
+        if "DIVISION 1" in comp or re.search(r"\bD[MF]?1\b", comp):
+            return 1300
+        if "DIVISION 2" in comp or re.search(r"\bD[MF]?2\b", comp):
+            return 1200
+        if "DIVISION 3" in comp or re.search(r"\bD[MF]?3\b", comp):
+            return 1100
+        return 1250
+
+    return 0
+
+
 def normalize_scba_team_name(team_raw: str, comp_name: str = "") -> str:
     """
-    Normalise le nom de l'équipe SCBA au format standard de l'app (ex: 'SENIOR M1', 'SENIOR M2', 'U18 M1', etc.)
+    Normalise le nom de l'équipe SCBA au format standard de l'app (ex: 'SENIOR M1', 'SENIOR M2', 'U18 M1', etc.).
+    Pour les catégories jeunes, le numéro d'équipe provient uniquement du suffixe explicite du nom d'équipe
+    (ex: 'STADE CLERMONTOIS - 2' -> 2) ou de la hiérarchie de division, jamais du numéro de division/phase.
     """
     raw = (team_raw or "").upper().strip()
     comp = (comp_name or "").upper().strip()
+    combined = f"{raw} {comp}".strip()
 
-    if "BABY" in raw or "BABY" in comp:
+    gender = "M"
+    if "MIXTE" in combined or "MIXED" in combined or re.search(r"\bDXU\d+", combined):
+        gender = "MIXTE"
+    elif re.search(r"\b(FEMININ|FÉMININ|FEMININE|FÉMININE|NF\d*|RF\d*|DF\d*|PNF|PRF|U\d+F\d*|SENIOR F\d*|SF\d*)\b", combined):
+        gender = "F"
+
+    if "BABY" in combined:
         return "U7 M1"
-    if "MINI" in raw or "MINI" in comp:
+    if "MINI" in combined and not re.search(r"U\s*\d+", combined):
         return "U9 M1"
 
     # Détection Catégories Jeunes U7 à U21
-    m_cat = re.search(r'U\s*(\d+)', raw) or re.search(r'U\s*(\d+)', comp)
+    m_cat = re.search(r"U\s*(\d+)", raw) or re.search(r"U\s*(\d+)", comp)
     if m_cat:
-        cat = m_cat.group(1)
-        m_num = re.search(r'[- ](\d+)$', raw)
-        num = m_num.group(1) if m_num else "1"
-        return f"U{cat} M{num}"
+        cat = f"U{m_cat.group(1)}"
+        m_num = re.search(r"\b(?:M|F|MIXTE)\s*(\d+)$", raw) or re.search(r"[- ](\d+)$", raw)
+        num = int(m_num.group(1)) if m_num else 1
+        rank = get_competition_division_rank(comp)
+        if rank >= 1400 or "COUPE" in comp:
+            num = 1
+        if gender == "MIXTE":
+            return f"{cat} MIXTE" if num == 1 else f"{cat} MIXTE {num}"
+        return f"{cat} {gender}{num}"
 
     # Détection Senior (PNM, RM2, RM3, DM1, DM2, DM3, PRM, etc.)
-    m_num = re.search(r'[- ](\d+)$', raw)
-    num = m_num.group(1) if m_num else None
+    m_num = re.search(r"\b(?:M|F)\s*(\d+)$", raw) or re.search(r"[- ](\d+)$", raw)
+    num_str = m_num.group(1) if m_num else None
 
-    if not num:
-        if "RM2" in comp or "DIVISION 2" in comp:
-            num = "2"
-        elif "RM3" in comp or "DIVISION 3" in comp or "DM2" in comp or "DM3" in comp or "PRM" in comp:
-            num = "3"
-        elif "PNM" in comp or "PRE NATIONALE" in comp or "PRÉ NATIONALE" in comp:
-            num = "1"
+    if not num_str:
+        if "RM2" in comp or "RF2" in comp or "DIVISION 2" in comp:
+            num_str = "2"
+        elif "RM3" in comp or "RF3" in comp or "DIVISION 3" in comp or "DM2" in comp or "DM3" in comp or "PRM" in comp:
+            num_str = "3"
+        elif "PNM" in comp or "PNF" in comp or "PRE NATIONALE" in comp or "PRÉ NATIONALE" in comp:
+            num_str = "1"
         else:
-            num = "1"
+            num_str = "1"
 
-    return f"SENIOR M{num}"
+    return f"SENIOR {gender}{num_str}"
+
+
+def resolve_matches_teams_by_division(matches: list[dict]) -> list[dict]:
+    """
+    Règle sportive : s'il y a plusieurs équipes dans la même catégorie, l'équipe 1
+    est dans la division la plus haute et l'équipe 2 dans la division inférieure.
+    """
+    if not matches:
+        return matches
+
+    category_ranks: dict[str, set[int]] = {}
+    parsed_meta = []
+
+    for m in matches:
+        initial_team = normalize_scba_team_name(m.get("team", ""), m.get("competition", ""))
+        comp = m.get("competition", "") or ""
+        poule = m.get("poule", "") or ""
+        rank = get_competition_division_rank(comp, poule)
+
+        m_cat = re.search(r"\b(U\d+|SENIOR)\b", initial_team)
+        category = m_cat.group(1) if m_cat else "SENIOR"
+        gender = "MIXTE" if "MIXTE" in initial_team else ("F" if " F" in initial_team else "M")
+        m_num = re.search(r"(\d+)$", initial_team)
+        explicit_num = int(m_num.group(1)) if m_num else 1
+
+        effective_tier = rank
+        if category.startswith("U") and rank >= 1400:
+            effective_tier = 2300 if rank in (2250, 1400) else rank
+
+        group_key = f"{category}_{gender}"
+        if effective_tier > 0:
+            category_ranks.setdefault(group_key, set()).add(effective_tier)
+
+        parsed_meta.append((category, gender, explicit_num, rank, effective_tier, group_key, comp))
+
+    sorted_tiers_by_group: dict[str, list[int]] = {}
+    for group_key, tiers_set in category_ranks.items():
+        tiers = sorted(tiers_set, reverse=True)
+        has_regional = any(t >= 2000 for t in tiers)
+        has_departemental = any(t < 1400 for t in tiers)
+        if group_key.startswith("U") and has_regional and has_departemental:
+            sorted_tiers_by_group[group_key] = [2000] + [t for t in tiers if t < 1400]
+        else:
+            sorted_tiers_by_group[group_key] = tiers
+
+    for m, (category, gender, explicit_num, rank, effective_tier, group_key, comp) in zip(matches, parsed_meta):
+        sorted_tiers = sorted_tiers_by_group.get(group_key, [])
+        resolved_num = explicit_num
+
+        if category.startswith("U"):
+            if "COUPE" in comp.upper():
+                resolved_num = 1
+            elif len(sorted_tiers) >= 2 and effective_tier > 0:
+                lookup_tier = 2000 if (sorted_tiers[0] == 2000 and effective_tier >= 2000) else effective_tier
+                if lookup_tier in sorted_tiers:
+                    resolved_num = sorted_tiers.index(lookup_tier) + 1
+            elif rank >= 1400:
+                resolved_num = 1
+        elif len(sorted_tiers) >= 2 and effective_tier > 0:
+            if effective_tier in sorted_tiers:
+                resolved_num = sorted_tiers.index(effective_tier) + 1
+
+        if category.startswith("U") and gender == "MIXTE":
+            m["team"] = f"{category} MIXTE" if resolved_num == 1 else f"{category} MIXTE {resolved_num}"
+        else:
+            m["team"] = f"{category} {gender}{resolved_num}"
+        m["teamLogo"] = SCBA_LOGO_URL
+
+    return matches
 
 def clean_opponent_name(opp_raw: str) -> str:
     """Nettoie le nom de l'adversaire pour un affichage plus lisible"""
@@ -514,7 +664,7 @@ def main():
                 resp = http_client.get(endpoint)
             if resp.status_code == 200:
                 data = resp.json()
-                raw_matches = data.get("matches", [])
+                raw_matches = resolve_matches_teams_by_division(data.get("matches", []))
                 print(f"✅ {len(raw_matches)} rencontres récupérées depuis l'API REST.", file=sys.stderr)
                 for m in raw_matches:
                     date_iso = m.get("dateISO", "")
@@ -536,8 +686,9 @@ def main():
             raw_items = fetch_all_scba_matches(client, include_past=args.include_past)
             if raw_items:
                 print(f"\n⚙️ Traitement de {len(raw_items)} rencontres brutes...", file=sys.stderr)
-                for item in raw_items:
-                    g = process_match(client, item)
+                all_sdk_games = [process_match(client, item) for item in raw_items]
+                all_sdk_games = resolve_matches_teams_by_division(all_sdk_games)
+                for g in all_sdk_games:
                     if args.team and args.team.upper() not in g["team"].upper():
                         continue
                     games.append(g)

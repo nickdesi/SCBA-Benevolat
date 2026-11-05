@@ -134,7 +134,7 @@ export const formatCompetitionShort = (competition?: string): string => {
 
   let result = trimmed;
 
-  // 2. Catégories Jeunes avec Division (ex: "Départementale masculine U15 - Division 10" -> "DMU15 D10")
+  // 2. Catégories Jeunes avec Division ou Phase (ex: "Régionale masculine U13 - Division 2" -> "RMU13 D2")
   result = result.replace(
     /D[ée]partementale\s+Masculine\s+U\s*(\d+)\s*[-–]\s*Division\s*(\d+)/gi,
     'DMU$1 D$2',
@@ -151,8 +151,20 @@ export const formatCompetitionShort = (competition?: string): string => {
     /R[ée]gionale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]\s*Division\s*(\d+)/gi,
     'RFU$1 D$2',
   );
+  result = result.replace(
+    /D[ée]partementale\s+Masculine\s+U\s*(\d+)\s*[-–]\s*Phase\s*(\d+)/gi,
+    'DMU$1 P$2',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]\s*Phase\s*(\d+)/gi,
+    'DFU$1 P$2',
+  );
+  result = result.replace(
+    /D[ée]partementale\s+Mixte\s+U\s*(\d+)\s*[-–]\s*Phase\s*(\d+)/gi,
+    'DXU$1 P$2',
+  );
 
-  // 3. Catégories Jeunes avec Brassage (ex: "Régionale Masculine U18 Brassage" -> "RMU18 Brassage")
+  // 3. Catégories Jeunes avec Brassage ou sans division (ex: "Régionale masculine U18" -> "RMU18")
   result = result.replace(
     /R[ée]gionale\s+Masculine\s+U\s*(\d+)\s*[-–]?\s*Brassage/gi,
     'RMU$1 Brassage',
@@ -169,6 +181,11 @@ export const formatCompetitionShort = (competition?: string): string => {
     /D[ée]partementale\s+F[ée]minine\s+U\s*(\d+)\s*[-–]?\s*Brassage/gi,
     'DFU$1 Brassage',
   );
+  result = result.replace(/^R[ée]gionale\s+Masculine\s+U\s*(\d+)$/gi, 'RMU$1');
+  result = result.replace(/^R[ée]gionale\s+F[ée]minine\s+U\s*(\d+)$/gi, 'RFU$1');
+  result = result.replace(/^D[ée]partementale\s+Masculine\s+U\s*(\d+)$/gi, 'DMU$1');
+  result = result.replace(/^D[ée]partementale\s+F[ée]minine\s+U\s*(\d+)$/gi, 'DFU$1');
+  result = result.replace(/^D[ée]partementale\s+Mixte\s+U\s*(\d+)$/gi, 'DXU$1');
 
   // 4. Catégories Seniors avec Division (ex: "Régionale Masculine Seniors - Division 2" -> "RM2")
   result = result.replace(
@@ -419,4 +436,229 @@ export const formatRank = (rank?: number | string | null): string | null => {
   if (isNaN(num) || num <= 0) return null;
 
   return num === 1 ? '1er' : `${num}e`;
+};
+
+const stripAccentsUpper = (s?: string | null): string =>
+  (s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .trim();
+
+/**
+ * Calcule le rang hiérarchique sportif d'une division (plus le score est élevé, plus la division est haute) :
+ * - Nationale (NM1/2/3, Élite, Championnat de France) : 3000+
+ * - Pré-Nationale (PNM, PNF) : 2500
+ * - Régionale (R1 / RMU18 : 2300, Brassage régional : 2250, R2 / Division 2 : 2200, R3 / Division 3 : 2100)
+ * - Pré-Régionale (PRM, PRF) : 1500
+ * - Départementale (Division 10 pré-région : 1400, Poule Confirmés/Haute : 1350, D1 : 1300, Standard/Phase 2 : 1250, D2 : 1200, D3 : 1100, Poule Initiés/Basse : 1050)
+ * - Coupe / Non renseigné : 0 (neutre pour le classement hiérarchique de championnat)
+ */
+export const getCompetitionDivisionRank = (
+  competition?: string | null,
+  poule?: string | null,
+): number => {
+  const comp = stripAccentsUpper(competition);
+  const pouleUp = stripAccentsUpper(poule);
+  if (!comp) return 0;
+  if (comp.includes('COUPE') || comp.includes('TROPHEE') || comp.includes('CHALLENGE')) {
+    return 0;
+  }
+
+  // 1. Niveau National (3000+)
+  if (
+    comp.includes('CHAMPIONNAT DE FRANCE') ||
+    (comp.includes('NATIONALE') &&
+      !comp.includes('PRE NATIONALE') &&
+      !comp.includes('PRE-NATIONALE')) ||
+    /\bN[MF]?\d+\b/.test(comp) ||
+    comp.includes('ELITE')
+  ) {
+    if (comp.includes('ELITE')) return 3500;
+    if (comp.includes('DIVISION 1') || /\bN[MF]?1\b/.test(comp)) return 3300;
+    if (comp.includes('DIVISION 2') || /\bN[MF]?2\b/.test(comp)) return 3200;
+    if (comp.includes('DIVISION 3') || /\bN[MF]?3\b/.test(comp)) return 3100;
+    return 3000;
+  }
+
+  // 2. Niveau Pré-National (2500)
+  if (comp.includes('PRE NATIONALE') || comp.includes('PRE-NATIONALE') || /\bPN[MF]\b/.test(comp)) {
+    return 2500;
+  }
+
+  // 3. Niveau Régional (2000+)
+  if (comp.includes('REGIONALE') || comp.includes('REGIONAL') || /\bR[MF]U?\d+/.test(comp)) {
+    if (comp.includes('BRASSAGE')) return 2250;
+    if (comp.includes('DIVISION 1') || /\bR[MF]?1\b/.test(comp)) return 2300;
+    if (comp.includes('DIVISION 2') || /\bR[MF]?2\b/.test(comp)) return 2200;
+    if (comp.includes('DIVISION 3') || /\bR[MF]?3\b/.test(comp)) return 2100;
+    return 2300;
+  }
+
+  // 4. Niveau Pré-Régional (1500)
+  if (comp.includes('PRE REGIONALE') || comp.includes('PRE-REGIONALE') || /\bPR[MF]\b/.test(comp)) {
+    return 1500;
+  }
+
+  // 5. Niveau Départemental (1000+)
+  if (
+    comp.includes('DEPARTEMENTALE') ||
+    comp.includes('DEPARTEMENTAL') ||
+    /\bD[MFX]U?\d+/.test(comp)
+  ) {
+    if (comp.includes('DIVISION 10') || comp.includes('-10')) return 1400;
+    if (pouleUp.includes('CONFIRME') || comp.includes('CONFIRME')) return 1350;
+    if (pouleUp.includes('INITIE') || comp.includes('INITIE')) return 1050;
+    if (comp.includes('DIVISION 1') || /\bD[MF]?1\b/.test(comp)) return 1300;
+    if (comp.includes('DIVISION 2') || /\bD[MF]?2\b/.test(comp)) return 1200;
+    if (comp.includes('DIVISION 3') || /\bD[MF]?3\b/.test(comp)) return 1100;
+    return 1250;
+  }
+
+  return 0;
+};
+
+const extractCategoryAndGender = (
+  team?: string | null,
+  competition?: string | null,
+): { category: string; gender: 'M' | 'F' | 'MIXTE'; explicitNum: number } => {
+  const t = stripAccentsUpper(team);
+  const c = stripAccentsUpper(competition);
+  const combined = `${t} ${c}`.trim();
+
+  let category = 'SENIOR';
+  if (combined.includes('BABY')) {
+    category = 'U7';
+  } else if (combined.includes('MINI')) {
+    category = 'U9';
+  } else {
+    const mCat = t.match(/\bU\s*(\d{1,2})\b/) || c.match(/\bU\s*(\d{1,2})\b/);
+    if (mCat) {
+      category = `U${mCat[1]}`;
+    }
+  }
+
+  let gender: 'M' | 'F' | 'MIXTE' = 'M';
+  if (combined.includes('MIXTE') || combined.includes('MIXED') || /\bDXU\d+/.test(combined)) {
+    gender = 'MIXTE';
+  } else if (
+    /\b(FEMININ|FEMININE|NF\d*|RF\d*|DF\d*|PNF|PRF|U\d+F\d*|SENIOR F\d*|SF\d*)\b/.test(combined)
+  ) {
+    gender = 'F';
+  }
+
+  // Numéro d'équipe actuel dans `team` (ex: "U13 M2" -> 2, "U9 MIXTE 2" -> 2, "STADE CLERMONTOIS - 2" -> 2)
+  let explicitNum = 1;
+  const mTeamNum = t.match(/\b(?:M|F|MIXTE)\s*(\d+)$/) || t.match(/[- ]\s*(\d+)$/);
+  if (mTeamNum) {
+    const parsed = parseInt(mTeamNum[1], 10);
+    if (!isNaN(parsed) && parsed >= 1 && parsed <= 5) {
+      explicitNum = parsed;
+    }
+  }
+
+  return { category, gender, explicitNum };
+};
+
+const formatCanonicalTeamLabel = (
+  category: string,
+  gender: 'M' | 'F' | 'MIXTE',
+  teamNum: number,
+): string => {
+  if (category.startsWith('U') && gender === 'MIXTE') {
+    return teamNum === 1 ? `${category} MIXTE` : `${category} MIXTE ${teamNum}`;
+  }
+  return `${category} ${gender}${teamNum}`;
+};
+
+/**
+ * Règle sportive : s'il y a plusieurs équipes dans la même catégorie, l'équipe 1
+ * est dans la division la plus haute et l'équipe 2 dans la division inférieure.
+ * Par ailleurs, une équipe jeune évoluant au niveau Régional (même en R2 / Division 2)
+ * est l'équipe 1 (M1/F1) dès lors qu'aucune autre équipe de la même catégorie n'évolue plus haut.
+ */
+export const normalizeScbaMatchesTeams = <
+  T extends { team: string; competition?: string; poule?: string },
+>(
+  matches: T[],
+): T[] => {
+  if (!matches || matches.length === 0) return matches;
+
+  // 1. Collecter les rangs de division par (catégorie, genre)
+  const categoryRanks = new Map<string, Set<number>>();
+
+  const parsedMeta = matches.map((m) => {
+    const { category, gender, explicitNum } = extractCategoryAndGender(m.team, m.competition);
+    const rank = getCompetitionDivisionRank(m.competition, m.poule);
+    const groupKey = `${category}_${gender}`;
+
+    // Normalisation du palier pour regrouper les phases successives d'une même équipe :
+    // - En jeunes, Brassage régional (2250), Division 10 pré-région (1400) et Régionale (2200/2300)
+    //   appartiennent à l'équipe fanion (M1) face à une équipe Départementale (< 1400).
+    let effectiveTier = rank;
+    if (category.startsWith('U') && rank >= 1400) {
+      effectiveTier = rank === 2250 || rank === 1400 ? 2300 : rank;
+    }
+
+    if (effectiveTier > 0) {
+      if (!categoryRanks.has(groupKey)) {
+        categoryRanks.set(groupKey, new Set());
+      }
+      categoryRanks.get(groupKey)!.add(effectiveTier);
+    }
+    return { category, gender, explicitNum, rank, effectiveTier, groupKey };
+  });
+
+  // Si un groupe jeune contient à la fois du Régional (>=2000) et du Pré-Région D10 (fusionné à 2300),
+  // s'assurer qu'un même palier régional (ex: Brassage 2300 + R2 2200) ne crée pas 2 équipes régionales
+  // quand il existe déjà une équipe départementale (<1400).
+  const sortedTiersByGroup = new Map<string, number[]>();
+  for (const [groupKey, tiersSet] of categoryRanks.entries()) {
+    const tiers = Array.from(tiersSet).sort((a, b) => b - a);
+    const hasRegional = tiers.some((t) => t >= 2000);
+    const hasDepartemental = tiers.some((t) => t < 1400);
+    if (groupKey.startsWith('U') && hasRegional && hasDepartemental) {
+      // Toutes les phases régionales (>=2000) correspondent à l'équipe 1, les phases départementales (<1400) à l'équipe 2+
+      const collapsed = [2000, ...tiers.filter((t) => t < 1400)];
+      sortedTiersByGroup.set(groupKey, collapsed);
+    } else {
+      sortedTiersByGroup.set(groupKey, tiers);
+    }
+  }
+
+  return matches.map((m, idx) => {
+    const { category, gender, explicitNum, rank, effectiveTier, groupKey } = parsedMeta[idx];
+    const sortedTiers = sortedTiersByGroup.get(groupKey) || [];
+    let resolvedNum = explicitNum;
+
+    if (category.startsWith('U')) {
+      if (isCupCompetition(m.competition)) {
+        resolvedNum = 1;
+      } else if (sortedTiers.length >= 2 && effectiveTier > 0) {
+        const lookupTier = sortedTiers[0] === 2000 && effectiveTier >= 2000 ? 2000 : effectiveTier;
+        const tierIndex = sortedTiers.indexOf(lookupTier);
+        if (tierIndex !== -1) {
+          resolvedNum = tierIndex + 1;
+        }
+      } else if (rank >= 1400) {
+        // Une seule division connue et elle est Régionale (ex: R2) ou Pré-Région (D10) -> Équipe 1
+        resolvedNum = 1;
+      }
+    } else if (sortedTiers.length >= 2 && effectiveTier > 0) {
+      // Senior : la division la plus haute (ex: PNM 2500) est M1, la suivante (ex: RM2 2200) est M2
+      const tierIndex = sortedTiers.indexOf(effectiveTier);
+      if (tierIndex !== -1) {
+        resolvedNum = tierIndex + 1;
+      }
+    }
+
+    const newTeam = formatCanonicalTeamLabel(category, gender, resolvedNum);
+    if (newTeam === m.team) {
+      return m;
+    }
+    return {
+      ...m,
+      team: newTeam,
+    };
+  });
 };

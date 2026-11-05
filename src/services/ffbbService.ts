@@ -1,17 +1,29 @@
 import { getFirebaseFunctions } from '../firebase';
 import type { ParsedMatch } from '../utils/csvImport';
 import { isGamePast, toISODateString } from '../utils/dateUtils';
-import { resolveTeamLogoUrl } from '../utils/gameUtils';
+import { normalizeScbaMatchesTeams, resolveTeamLogoUrl } from '../utils/gameUtils';
 
 /**
- * Filtre les matchs pour n'inclure que les rencontres à venir (exclut les matchs déjà passés)
+ * Filtre les matchs pour n'inclure que les rencontres à venir (exclut les matchs déjà passés),
+ * applique la hiérarchie sportive des divisions (Équipe 1 dans la division la plus haute, Équipe 2 en dessous)
  * et normalise les URLs de logos pour passer par le proxy anti-BunnyCDN (/api/v1/assets/...).
  */
-const filterUpcomingMatches = (matches: ParsedMatch[]): ParsedMatch[] => {
+const filterUpcomingMatches = (
+  matches: ParsedMatch[],
+  selectedTeam: string = 'ALL',
+): ParsedMatch[] => {
   const now = new Date();
   const todayISO = toISODateString(now);
-  return matches
-    .filter((m) => !isGamePast(m.dateISO, m.time, now, todayISO))
+  const normalized = normalizeScbaMatchesTeams(matches);
+  const teamFilter =
+    selectedTeam && selectedTeam !== 'ALL' ? selectedTeam.toUpperCase().trim() : null;
+
+  return normalized
+    .filter((m) => {
+      if (isGamePast(m.dateISO, m.time, now, todayISO)) return false;
+      if (teamFilter && !m.team.toUpperCase().includes(teamFilter)) return false;
+      return true;
+    })
     .map((m) => ({
       ...m,
       teamLogo: resolveTeamLogoUrl(m.teamLogo, true),
@@ -31,9 +43,6 @@ export const fetchClubMatchesFromFFBB = async (
   selectedTeam: string = 'ALL',
 ): Promise<ParsedMatch[]> => {
   const params = new URLSearchParams();
-  if (selectedTeam !== 'ALL') {
-    params.set('team', selectedTeam);
-  }
   params.set('upcoming_only', 'true');
   const queryString = `?${params.toString()}`;
   let localError: string | null = null;
@@ -44,7 +53,7 @@ export const fetchClubMatchesFromFFBB = async (
     if (sameOriginRes.ok) {
       const data = await sameOriginRes.json();
       if (Array.isArray(data?.matches) && data.matches.length > 0) {
-        return filterUpcomingMatches(data.matches);
+        return filterUpcomingMatches(data.matches, selectedTeam);
       }
     }
   } catch {
@@ -58,7 +67,7 @@ export const fetchClubMatchesFromFFBB = async (
     if (apiRes.ok) {
       const data = await apiRes.json();
       if (Array.isArray(data?.matches) && data.matches.length > 0) {
-        return filterUpcomingMatches(data.matches);
+        return filterUpcomingMatches(data.matches, selectedTeam);
       }
     }
   } catch (apiErr) {
@@ -71,7 +80,7 @@ export const fetchClubMatchesFromFFBB = async (
     if (localRes.ok) {
       const data = await localRes.json();
       if (Array.isArray(data?.matches) && data.matches.length > 0) {
-        return filterUpcomingMatches(data.matches);
+        return filterUpcomingMatches(data.matches, selectedTeam);
       }
       if (data?.error) {
         localError = data.error;
@@ -92,9 +101,9 @@ export const fetchClubMatchesFromFFBB = async (
         functionsInstance,
         'fetchFFBBMatches',
       );
-      const res = await fetchFn({ team: selectedTeam === 'ALL' ? undefined : selectedTeam });
+      const res = await fetchFn({});
       if (res.data?.matches) {
-        return filterUpcomingMatches(res.data.matches);
+        return filterUpcomingMatches(res.data.matches, selectedTeam);
       }
     } catch (cloudErr: any) {
       console.warn('Fallback Cloud Function échoué:', cloudErr);
