@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Plane, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'lucide-react';
+import { Home, Plane, Trophy, BadgeCheck, Navigation, Calendar } from 'lucide-react';
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { EditIcon, DeleteIcon } from '../Icons';
@@ -155,14 +155,6 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             >
               <BadgeCheck className="w-3.5 h-3.5" />
               Inscrit
-            </span>
-          )}
-
-          {/* Urgent Badge */}
-          {isUrgent && !isFullyStaffed && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full bg-red-600 text-white shadow-xs animate-pulse">
-              <Flame className="w-3.5 h-3.5" />
-              Urgent
             </span>
           )}
 

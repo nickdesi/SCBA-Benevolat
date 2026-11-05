@@ -78,7 +78,7 @@ const GameCard: React.FC<GameCardProps> = memo(
     isAuthenticated,
     index = 0,
   }) => {
-    // Accordéon — auto-ouvert pour les matchs urgents (P0 Phase 4)
+    // Accordéon fermé par défaut — s'ouvre uniquement sur action explicite de l'utilisateur
     const [isExpanded, setIsExpanded] = useState(false);
 
     const roleStats = useMemo(() => getGameRoleStats(game), [game]);
@@ -97,13 +97,6 @@ const GameCard: React.FC<GameCardProps> = memo(
       () => isGameUrgent(game, Date.now(), isFullyStaffed),
       [game, isFullyStaffed],
     );
-
-    // P0 Phase 4 : auto-expansion des matchs urgents
-    React.useEffect(() => {
-      if (isUrgent && !isFullyStaffed) {
-        setIsExpanded(true);
-      }
-    }, [isUrgent, isFullyStaffed]);
 
     // P0 Phase 3 : badge "Mon engagement" visible sans ouvrir l'accordéon.
     // True si userRegistrations contient au moins un rôle pour ce match.
