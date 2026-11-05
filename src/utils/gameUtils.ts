@@ -15,6 +15,39 @@ const normalizeTime = (t: string): string => {
   return `${h.padStart(2, '0')}${m.padStart(2, '0')}`;
 };
 
+// ---------------------------------------------------------------------------
+// FFBB Asset URL Resolution (BunnyCDN WAF Bypass)
+// ---------------------------------------------------------------------------
+const SCBA_ASSET_UUID = '2784a7b8-1c06-4334-aa6e-16a371475971';
+const FFBB_ASSET_REGEX =
+  /^https?:\/\/(?:api|bo)\.ffbb\.(?:com|app)\/assets\/([0-9a-fA-F-]{36})(?:[/?#].*)?$/i;
+
+/**
+ * Réécrit les URLs d'assets FFBB (`api.ffbb.com/assets/...` ou `bo.ffbb.com/assets/...`)
+ * bloquées en 403 / ERR_BLOCKED_BY_ORB par BunnyCDN WAF en France :
+ * - Le logo officiel du SCBA utilise directement l'asset local `/logo-scba.webp`.
+ * - Les logos adverses passent par le proxy same-origin `/api/v1/assets/<uuid>`.
+ */
+export const resolveTeamLogoUrl = (url?: string | null, isScba?: boolean): string | undefined => {
+  if (isScba) {
+    return '/logo-scba.webp';
+  }
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+
+  if (trimmed.includes(SCBA_ASSET_UUID)) {
+    return '/logo-scba.webp';
+  }
+
+  const match = FFBB_ASSET_REGEX.exec(trimmed);
+  if (match?.[1]) {
+    return `/api/v1/assets/${match[1].toLowerCase()}`;
+  }
+
+  return trimmed;
+};
+
 /**
  * Pure function to sort games by Date then Time.
  * Uses getGameDateValue (ISO date) and normalizeTime for sorting.

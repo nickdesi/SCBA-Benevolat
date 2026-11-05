@@ -4,6 +4,7 @@ import {
   isChampionshipCompetition,
   formatCompetitionShort,
   sortTeamNames,
+  resolveTeamLogoUrl,
 } from './gameUtils';
 
 describe('formatRank', () => {
@@ -105,5 +106,31 @@ describe('sortTeamNames', () => {
     const raw = ['RM2', 'U15 M1', 'PNM'];
     const sorted = sortTeamNames(raw);
     expect(sorted).toEqual(['U15 M1', 'PNM', 'RM2']);
+  });
+});
+
+describe('resolveTeamLogoUrl', () => {
+  it('returns local /logo-scba.webp for SCBA team or SCBA asset UUID', () => {
+    expect(
+      resolveTeamLogoUrl('https://api.ffbb.com/assets/2784a7b8-1c06-4334-aa6e-16a371475971', true),
+    ).toBe('/logo-scba.webp');
+    expect(
+      resolveTeamLogoUrl('https://bo.ffbb.com/assets/2784a7b8-1c06-4334-aa6e-16a371475971', false),
+    ).toBe('/logo-scba.webp');
+  });
+
+  it('rewrites FFBB CDN asset URLs to same-origin /api/v1/assets/<uuid>', () => {
+    expect(
+      resolveTeamLogoUrl('https://api.ffbb.com/assets/1fc9ccfb-9dea-43fc-99b3-74539ef39a37'),
+    ).toBe('/api/v1/assets/1fc9ccfb-9dea-43fc-99b3-74539ef39a37');
+    expect(
+      resolveTeamLogoUrl('https://bo.ffbb.com/assets/a27fae43-1823-4c81-b14c-c67920d1d056'),
+    ).toBe('/api/v1/assets/a27fae43-1823-4c81-b14c-c67920d1d056');
+  });
+
+  it('preserves non-FFBB URLs and handles empty values', () => {
+    expect(resolveTeamLogoUrl('/custom-logo.png')).toBe('/custom-logo.png');
+    expect(resolveTeamLogoUrl(undefined)).toBeUndefined();
+    expect(resolveTeamLogoUrl('')).toBeUndefined();
   });
 });

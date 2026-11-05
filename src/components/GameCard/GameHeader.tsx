@@ -3,7 +3,12 @@ import { Home, Plane, Flame, Trophy, BadgeCheck, Navigation, Calendar } from 'lu
 import type { Game } from '../../types';
 import ConfirmModal from '../ConfirmModal';
 import { EditIcon, DeleteIcon } from '../Icons';
-import { formatRank, isCupCompetition, formatCompetitionShort } from '../../utils/gameUtils';
+import {
+  formatRank,
+  isCupCompetition,
+  formatCompetitionShort,
+  resolveTeamLogoUrl,
+} from '../../utils/gameUtils';
 import { formatDateShort } from '../../utils/dateUtils';
 
 interface GameHeaderProps {
@@ -36,6 +41,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   onDeleteRequest,
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [hostLogoFailed, setHostLogoFailed] = useState(false);
+  const [guestLogoFailed, setGuestLogoFailed] = useState(false);
   const isCup = isCupCompetition(game.competition);
   const isChampionship = !isCup;
   const formattedTeamRank = isChampionship ? formatRank(game.teamRank) : null;
@@ -45,14 +52,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   // Règle sportive absolue : l'équipe qui reçoit (HÔTE) est TOUJOURS en 1ère position (gauche)
   const hostTeam = {
     name: isHomeGame ? game.team : game.opponent,
-    logo: isHomeGame ? game.teamLogo : game.opponentLogo,
+    logo: resolveTeamLogoUrl(isHomeGame ? game.teamLogo : game.opponentLogo, isHomeGame),
     rank: isHomeGame ? formattedTeamRank : formattedOpponentRank,
     isScba: isHomeGame,
   };
 
   const guestTeam = {
     name: isHomeGame ? game.opponent : game.team,
-    logo: isHomeGame ? game.opponentLogo : game.teamLogo,
+    logo: resolveTeamLogoUrl(isHomeGame ? game.opponentLogo : game.teamLogo, !isHomeGame),
     rank: isHomeGame ? formattedOpponentRank : formattedTeamRank,
     isScba: !isHomeGame,
   };
@@ -226,12 +233,13 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-md shadow-slate-900/10 dark:shadow-black/50 border border-slate-200/90 dark:border-white/20 flex items-center justify-center overflow-hidden p-0 ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-200">
-                {hostTeam.logo ? (
+                {hostTeam.logo && !hostLogoFailed ? (
                   <img
                     src={hostTeam.logo}
                     alt={hostTeam.name}
                     className="w-full h-full object-contain transform scale-135"
                     loading="lazy"
+                    onError={() => setHostLogoFailed(true)}
                   />
                 ) : (
                   <span
@@ -280,12 +288,13 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <div className="col-span-4 flex flex-col items-center text-center min-w-0">
             <div className="relative mb-2">
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-md shadow-slate-900/10 dark:shadow-black/50 border border-slate-200/90 dark:border-white/20 flex items-center justify-center overflow-hidden p-0 ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-200">
-                {guestTeam.logo ? (
+                {guestTeam.logo && !guestLogoFailed ? (
                   <img
                     src={guestTeam.logo}
                     alt={guestTeam.name}
                     className="w-full h-full object-contain transform scale-135"
                     loading="lazy"
+                    onError={() => setGuestLogoFailed(true)}
                   />
                 ) : (
                   <span

@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import type { ParsedMatch } from '../../utils/csvImport';
-import { formatCompetitionShort } from '../../utils/gameUtils';
+import { formatCompetitionShort, resolveTeamLogoUrl } from '../../utils/gameUtils';
 
 interface MatchPreviewCardProps {
   match: ParsedMatch;
@@ -10,6 +10,11 @@ interface MatchPreviewCardProps {
 
 export const MatchPreviewCard: React.FC<MatchPreviewCardProps> = memo(
   ({ match, index, onLocationChange }) => {
+    const [teamLogoFailed, setTeamLogoFailed] = useState(false);
+    const [opponentLogoFailed, setOpponentLogoFailed] = useState(false);
+    const resolvedTeamLogo = resolveTeamLogoUrl(match.teamLogo, true);
+    const resolvedOpponentLogo = resolveTeamLogoUrl(match.opponentLogo, false);
+
     return (
       <div
         className={`p-3.5 rounded-2xl border transition-all ${
@@ -57,22 +62,24 @@ export const MatchPreviewCard: React.FC<MatchPreviewCardProps> = memo(
 
         {/* Opponents & Logos */}
         <div className="flex items-center gap-2.5 mt-2">
-          {match.teamLogo && (
+          {resolvedTeamLogo && !teamLogoFailed && (
             <img
-              src={match.teamLogo}
+              src={resolvedTeamLogo}
               alt="Logo SCBA"
               className="w-6 h-6 object-contain rounded-full bg-white dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
+              onError={() => setTeamLogoFailed(true)}
             />
           )}
           <span className="font-bold text-xs text-slate-900 dark:text-white font-sport uppercase">
             {match.team}
           </span>
           <span className="text-slate-400 text-xs italic font-bold">vs</span>
-          {match.opponentLogo && (
+          {resolvedOpponentLogo && !opponentLogoFailed && (
             <img
-              src={match.opponentLogo}
+              src={resolvedOpponentLogo}
               alt="Logo adversaire"
               className="w-6 h-6 object-contain rounded-full bg-white dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 flex-shrink-0"
+              onError={() => setOpponentLogoFailed(true)}
             />
           )}
           <span className="font-bold text-xs text-slate-800 dark:text-slate-200 font-sport truncate">
