@@ -226,3 +226,7 @@
 ## 2026-11-20 - Replace O(M) Map.keys() iteration with O(1) Map.has() lookup in render loop
 **Learning:** Iterating over all keys of a global Map (like `userRegistrations.keys()`) inside a component rendered in a list (like `GameCard`) creates an $O(N \times M)$ iteration bottleneck.
 **Action:** Leverage known entity relationships (like iterating over a game's specific roles) to replace the $O(M)$ key search with a constant time $O(1)$ `Map.has()` lookup, significantly reducing CPU overhead during list rendering.
+
+## 2026-11-05 - Prevent redundant Date allocations inside getRelativeDateInfo loop
+**Learning:** When calling `getRelativeDateInfo` inside a render loop, it defaults to calculating `todayISO` via `getTodayISO()` if not explicitly provided. This internally allocates a `new Date()` object for every item, creating O(N) GC pressure during React rendering (like in `MatchTicker`).
+**Action:** Since `todayISO` is already pre-computed earlier in the component (for early filtering), explicitly pass it as the second argument to `getRelativeDateInfo(g.dateISO, todayISO)` to eliminate the redundant Date allocation.

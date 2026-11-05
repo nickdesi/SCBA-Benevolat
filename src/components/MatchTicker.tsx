@@ -136,7 +136,7 @@ const MatchTicker: React.FC<MatchTickerProps> = memo(({ games }) => {
         const roleStats = getGameRoleStats(g);
         list.push({
           ...g,
-          _relativeInfo: getRelativeDateInfo(g.dateISO),
+          _relativeInfo: getRelativeDateInfo(g.dateISO, todayISO),
           _roleStats: roleStats,
           _formattedDateShort: formatDateShort(g.dateISO),
           _host: g.isHome ? g.team : g.opponent,
