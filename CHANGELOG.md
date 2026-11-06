@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.11.0] - 2026-11-05
+
+### Nouveautés & Améliorations
+
+- **Hiérarchie Sportive des Équipes (`M1` / `M2`)** : Affectation déterministe des équipes d'une même catégorie selon leur niveau de division (ex. `Régionale R2` en `M1`, `Départementale` en `M2` pour `U13`, `U15`, `U18` et `Seniors`).
+- **Résilience des Logos FFBB (Anti-WAF BunnyCDN)** : Utilisation directe du blason local `/logo-scba.webp` pour le SCBA et routage des logos adverses via le proxy same-origin `/api/v1/assets/<uuid>` avec repli automatique `onError` sur l'écusson d'initiales.
+- **Ergonomie des Cartes de Match (`GameCard`)** : Suppression de la mention `Urgent` et désactivation de l'ouverture automatique des cartes à l'arrivée sur le site.
+- **Mode Hors-Ligne en Gymnase (PWA Workbox)** : Mise en cache `CacheFirst` (30 jours) des tuiles OpenStreetMap et des logos d'équipes.
+- **Optimisations de Performance (Bolt)** : Suppression des allocations `Date` et tableaux intermédiaires dans `MatchTicker`, `GameCard`, `dateUtils` et `csvImport`.
+
+## [2.10.0] - 2026-09-14
+
+### Nouveautés & Stabilité
+
+- **Filtres Équipes Favorites (`useGameFilters`)** : Personnalisation des capsules d'équipes dans l'en-tête tout en garantissant l'affichage de 100 % des rencontres sur « Tous les matchs ».
+- **Déduplication Automatique (`useGames` & Cloud Functions)** : Regroupement par `ffbbMatchId` avec conservation prioritaire des rencontres ayant des bénévoles inscrits.
+- **Résilience des Déploiements (`lazyWithRetry`)** : Auto-rechargement transparent en cas de `ChunkLoadError` après un déploiement Vercel.
+- **Télémétrie & CI** : Intégration de Vercel Web Analytics, planification des crons FFBB hors heures de pointe et passage sur Node.js 24 LTS.
+
 ## [2.9.0] - 2026-08-21
 
 ### Nouveautés & Fonctionnalités

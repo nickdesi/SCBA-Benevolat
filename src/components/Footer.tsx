@@ -11,6 +11,27 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.11.0',
+    date: '05 Novembre 2026',
+    changes: [
+      '🏀 Hiérarchie Sportive des Équipes : Affectation automatique M1 / M2 selon le niveau de division (Régionale R2 en M1, Départementale en M2 pour U13, U15, U18 et Seniors)',
+      '🛡️ Résilience Logos FFBB : Contournement des blocages WAF BunnyCDN via le blason SCBA local et le proxy same-origin /api/v1/assets avec repli automatique',
+      '✨ Ergonomie Cartes de Match : Suppression de la mention "Urgent" et désactivation du déroulement automatique des cartes au chargement',
+      '🗺️ Mode Hors-Ligne Gymnases : Mise en cache CacheFirst des tuiles OpenStreetMap et cache longue durée des logos de clubs',
+      '⚡ Optimisations Bolt : Suppression des allocations Date et regex redondantes dans MatchTicker, GameCard, dateUtils et csvImport',
+    ],
+  },
+  {
+    version: 'v2.10.0',
+    date: '14 Septembre 2026',
+    changes: [
+      '⭐ Filtres Équipes Favorites : Personnalisation des raccourcis de la barre de navigation tout en conservant 100 % des rencontres sur "Tous les matchs"',
+      '🧹 Déduplication Automatique : Regroupement intelligent par ffbbMatchId en préservant prioritairement les créneaux avec bénévoles inscrits',
+      '🔄 Résilience Déploiements PWA : Rechargement transparent des chunks dynamiques (lazyWithRetry) après mise à jour Vercel',
+      '📊 Télémétrie & CI : Intégration Vercel Web Analytics, synchronisation FFBB décalée hors heures de pointe et Node 24 LTS',
+    ],
+  },
+  {
     version: 'v2.9.0',
     date: '21 Août 2026',
     changes: [
@@ -424,12 +445,12 @@ const Footer: React.FC = memo(() => {
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
   return (
-    <footer className="mt-20 py-10 border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white">
+    <footer className="mt-20 py-10 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 transition-colors">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Left: Copyright */}
-          <p className="text-slate-500 text-sm flex items-center gap-1">
+          <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center gap-1">
             Fait avec{' '}
             <span className="text-red-500 animate-pulse" aria-hidden="true">
               ❤️
@@ -442,13 +463,13 @@ const Footer: React.FC = memo(() => {
             {/* Version Badge with Changelog Toggle */}
             <button
               onClick={() => setIsChangelogOpen(!isChangelogOpen)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200
-                                     text-slate-600 text-xs font-mono font-bold rounded-full transition-colors group"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700
+                                     text-slate-600 dark:text-slate-300 text-xs font-mono font-bold rounded-full transition-colors group cursor-pointer"
               title="Voir le changelog"
             >
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               <span>Version {APP_VERSION}</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300 dark:text-slate-600">•</span>
               <span title={new Date(__APP_BUILD_DATE__).toLocaleString('fr-FR')}>
                 {BUILD_LABEL}
               </span>
@@ -473,7 +494,7 @@ const Footer: React.FC = memo(() => {
               href="https://github.com/nickdesi/SCBA-Benevolat"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600
                                      text-white text-xs font-bold rounded-full transition-all hover:scale-105 shadow-md"
               title="Voir sur GitHub"
             >
@@ -491,18 +512,22 @@ const Footer: React.FC = memo(() => {
 
         {/* Changelog Dropdown */}
         {isChangelogOpen && (
-          <div className="mt-6 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up max-w-xl mx-auto">
-            <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-              <span>📋</span> Changelog
+          <div className="mt-6 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up max-w-xl mx-auto">
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2">
+              <span aria-hidden="true">📋</span> Journal des mises à jour (Changelog)
             </h4>
-            <div className="space-y-3">
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
               {CHANGELOG.map((release) => (
                 <div key={release.version} className="text-sm">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono font-bold text-slate-700">{release.version}</span>
-                    <span className="text-slate-400 text-xs">• {release.date}</span>
+                    <span className="font-mono font-bold text-[#3629e1] dark:text-indigo-400">
+                      {release.version}
+                    </span>
+                    <span className="text-slate-400 dark:text-slate-400 text-xs">
+                      • {release.date}
+                    </span>
                   </div>
-                  <ul className="text-slate-500 text-xs space-y-0.5 ml-4">
+                  <ul className="text-slate-600 dark:text-slate-300 text-xs space-y-1 ml-4">
                     {release.changes.map((change, idx) => (
                       <li key={idx}>{change}</li>
                     ))}
