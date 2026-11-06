@@ -37,9 +37,12 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://www.googletagmanager.com https://apis.google.com https://*.googleapis.com https://static.cloudflareinsights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://ffbb-api.desimone.fr https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://apis.google.com https://cloudflareinsights.com https://*.google-analytics.com https://region1.google-analytics.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.firebaseapp.com https://apis.google.com https://accounts.google.com;"
+      content="default-src 'self'; script-src 'self' https://www.googletagmanager.com https://apis.google.com https://*.googleapis.com https://static.cloudflareinsights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://ffbb-api.desimone.fr https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://apis.google.com https://cloudflareinsights.com https://*.google-analytics.com https://region1.google-analytics.com https://nominatim.openstreetmap.org https://equipements.sports.gouv.fr; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.firebaseapp.com https://apis.google.com https://accounts.google.com;"
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
+    />
     <meta
       name="description"
       content="Gestion du bénévolat pour le Stade Clermontois Basket Auvergne - Inscrivez-vous pour aider lors des matchs"
@@ -50,17 +53,22 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="SCBA Bénévoles" />
     <meta property="og:title" content="SCBA Bénévoles : Stade Clermontois Basket Auvergne" />
-    <meta property="og:description" content="Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne (SCBA) : inscrivez-vous pour aider lors des matchs et événements." />
+    <meta
+      property="og:description"
+      content="Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne (SCBA) : inscrivez-vous pour aider lors des matchs et événements."
+    />
     <meta property="og:url" content="https://scba.desimone.fr/" />
     <meta property="og:image" content="https://scba.desimone.fr/apple-touch-icon.png" />
     <meta property="og:locale" content="fr_FR" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="SCBA Bénévoles : Stade Clermontois Basket Auvergne" />
-    <meta name="twitter:description" content="Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne (SCBA)." />
+    <meta
+      name="twitter:description"
+      content="Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne (SCBA)."
+    />
     <meta name="twitter:image" content="https://scba.desimone.fr/apple-touch-icon.png" />
 
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/manifest.webmanifest?v=2.10.0" />
+    <!-- PWA Meta Tags (manifest injected by vite-plugin-pwa) -->
     <meta name="theme-color" content="#272890" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -86,35 +94,39 @@
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebSite",
-          "@id": "https://scba.desimone.fr/#website",
-          "url": "https://scba.desimone.fr/",
-          "name": "SCBA Bénévoles",
-          "alternateName": ["SCBA", "Stade Clermontois Basket Auvergne Bénévoles", "Bénévolat SCBA"],
-          "description": "Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne.",
-          "inLanguage": "fr-FR"
-        },
-        {
-          "@type": "SportsClub",
-          "@id": "https://scba.desimone.fr/#club",
-          "name": "Stade Clermontois Basket Auvergne",
-          "alternateName": "SCBA",
-          "url": "https://scba.desimone.fr/",
-          "logo": "https://scba.desimone.fr/apple-touch-icon.png",
-          "sport": "Basketball",
-          "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "Clermont-Ferrand",
-            "postalCode": "63000",
-            "addressCountry": "FR"
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://scba.desimone.fr/#website",
+            "url": "https://scba.desimone.fr/",
+            "name": "SCBA Bénévoles",
+            "alternateName": [
+              "SCBA",
+              "Stade Clermontois Basket Auvergne Bénévoles",
+              "Bénévolat SCBA"
+            ],
+            "description": "Plateforme de gestion du bénévolat pour le Stade Clermontois Basket Auvergne.",
+            "inLanguage": "fr-FR"
+          },
+          {
+            "@type": "SportsClub",
+            "@id": "https://scba.desimone.fr/#club",
+            "name": "Stade Clermontois Basket Auvergne",
+            "alternateName": "SCBA",
+            "url": "https://scba.desimone.fr/",
+            "logo": "https://scba.desimone.fr/apple-touch-icon.png",
+            "sport": "Basketball",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Clermont-Ferrand",
+              "postalCode": "63000",
+              "addressCountry": "FR"
+            }
           }
-        }
-      ]
-    }
+        ]
+      }
     </script>
 
     <!-- Fonts: Self-hosted via @fontsource (imported in index.tsx) -->

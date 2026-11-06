@@ -7,6 +7,7 @@ import { UserProfile } from '../utils/userStore';
 let globalAvatars: Record<string, string> = {};
 let listeners: ((avatars: Record<string, string>) => void)[] = [];
 let unsubscribeFirestore: (() => void) | null = null;
+let unsubscribeAuth: (() => void) | null = null;
 
 const subscribeToFirestore = () => {
   if (unsubscribeFirestore) return; // Already subscribed
@@ -37,10 +38,33 @@ const subscribeToFirestore = () => {
   );
 };
 
-const unsubscribeFromFirestore = () => {
-  if (listeners.length === 0 && unsubscribeFirestore) {
+const stopFirestoreSubscription = () => {
+  if (unsubscribeFirestore) {
     unsubscribeFirestore();
     unsubscribeFirestore = null;
+  }
+};
+
+const ensureAuthSubscription = () => {
+  if (unsubscribeAuth) return;
+  unsubscribeAuth = auth.onAuthStateChanged((user) => {
+    if (user && listeners.length > 0) {
+      subscribeToFirestore();
+    } else if (!user) {
+      stopFirestoreSubscription();
+      globalAvatars = {};
+      listeners.forEach((listener) => listener(globalAvatars));
+    }
+  });
+};
+
+const cleanupSubscriptionsIfIdle = () => {
+  if (listeners.length === 0) {
+    stopFirestoreSubscription();
+    if (unsubscribeAuth) {
+      unsubscribeAuth();
+      unsubscribeAuth = null;
+    }
   }
 };
 
@@ -48,32 +72,28 @@ export const useAvatars = () => {
   const [avatars, setAvatars] = useState<Record<string, string>>(globalAvatars);
 
   useEffect(() => {
-    // Only subscribe when authenticated — guests can't read the users collection
-    // (Firestore rules) and avatars are non-essential for browsing the schedule.
-    if (!auth.currentUser) return;
-
     // Register listener for this component
     const listener = (newAvatars: Record<string, string>) => {
       setAvatars(newAvatars);
     };
     listeners.push(listener);
 
-    // Ensure Firestore connection is active
-    if (!unsubscribeFirestore) {
-      subscribeToFirestore();
-    } else {
-      // Immediate update in case we missed one
-      setAvatars(globalAvatars);
+    ensureAuthSubscription();
+
+    // Only subscribe to Firestore when authenticated — guests can't read the
+    // users collection (Firestore rules) and avatars are non-essential for browsing.
+    if (auth.currentUser) {
+      if (!unsubscribeFirestore) {
+        subscribeToFirestore();
+      } else {
+        setAvatars(globalAvatars);
+      }
     }
 
     return () => {
       // Unregister listener
       listeners = listeners.filter((l) => l !== listener);
-
-      // Clean up Firestore connection if no more components are interested
-      if (listeners.length === 0) {
-        unsubscribeFromFirestore();
-      }
+      cleanupSubscriptionsIfIdle();
     };
   }, []);
 

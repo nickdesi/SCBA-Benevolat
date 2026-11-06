@@ -99,14 +99,9 @@ export const getGoogleCalendarUrl = (game: Game): string | null => {
   const dateTime = parseGameDateTime(game);
   if (!dateTime) return null;
 
-  const formatGoogleDate = (date: Date): string => {
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
-  };
-
   const title = `🏀 ${game.team} vs ${game.opponent}`;
   const details = `Match de basket - ${game.team} contre ${game.opponent}\nBénévolat SCBA`;
-  const dates = `${formatGoogleDate(dateTime.start)}/${formatGoogleDate(dateTime.end)}`;
+  const dates = `${formatICSDate(dateTime.start)}/${formatICSDate(dateTime.end)}`;
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
