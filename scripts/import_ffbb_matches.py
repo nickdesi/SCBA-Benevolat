@@ -431,7 +431,10 @@ def fetch_all_scba_matches(client, include_past=False):
         except Exception as e:
             print(f"⚠️ Erreur lors de la lecture de la poule {poule_id}: {e}", file=sys.stderr)
 
-    # Récupération détaillée en parallèle des rencontres pour obtenir la salle exacte
+    # Récupération détaillée séquentielle avec jitter (1.2s à 2.8s) anti-BunnyCDN
+    import random
+    import time
+
     def fetch_full_rencontre(item):
         m_id, comp_nom, is_scba_1, is_scba_2 = item
         try:
@@ -445,10 +448,15 @@ def fetch_all_scba_matches(client, include_past=False):
         except Exception:
             return None
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        results = list(executor.map(fetch_full_rencontre, candidate_matches))
+    results = []
+    for idx, item in enumerate(candidate_matches):
+        if idx > 0:
+            time.sleep(random.uniform(1.2, 2.8))
+        res = fetch_full_rencontre(item)
+        if res is not None:
+            results.append(res)
 
-    return [r for r in results if r is not None]
+    return results
 
 def process_match(client, item):
     """Transforme une rencontre FFBB brute en objet Game prêt pour Firestore"""
@@ -660,7 +668,13 @@ def main():
             endpoint = f"{args.api_url.rstrip('/')}/api/v1/club/{SCBA_ORGANISME_ID}/matches"
             print(f"📡 Récupération des rencontres depuis l'API REST ({endpoint})...", file=sys.stderr)
             import httpx
-            with httpx.Client(timeout=15.0) as http_client:
+            browser_headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+                "Accept": "application/json",
+                "Accept-Language": "fr-FR,fr;q=0.9",
+                "Referer": "https://scba.desimone.fr/",
+            }
+            with httpx.Client(timeout=15.0, headers=browser_headers) as http_client:
                 resp = http_client.get(endpoint)
             if resp.status_code == 200:
                 data = resp.json()

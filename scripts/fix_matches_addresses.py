@@ -118,26 +118,29 @@ def fix_address(db, ffbb_client, dry_run=True):
             POULE_CACHE[poule_id] = matches
         return matches
 
-    # Use ThreadPool to fetch poules faster
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(fetch_poule_matches, eng): eng for eng in org.engagements}
-        for future in as_completed(futures):
-            matches = future.result()
-            for m in matches:
-                # m is RencontresHit or dict?
-                # It's from GetPouleResponse, so it's a model object.
-                # Access fields directly
-                d = getattr(m, 'date_rencontre', '')
-                if d:
-                    # Check if d is datetime or string
-                    if isinstance(d, datetime):
-                        date_str = d.strftime("%Y-%m-%d")
-                    else:
-                        date_str = str(d).split("T")[0]
+    # Fetch poules sequentially with jitter (anti-BunnyCDN burst protection)
+    import random
+    import time
 
-                    if date_str not in ffbb_matches_by_date:
-                        ffbb_matches_by_date[date_str] = []
-                    ffbb_matches_by_date[date_str].append(m)
+    for idx, eng in enumerate(org.engagements):
+        if idx > 0:
+            time.sleep(random.uniform(1.2, 2.8))
+        matches = fetch_poule_matches(eng)
+        for m in matches:
+            # m is RencontresHit or dict?
+            # It's from GetPouleResponse, so it's a model object.
+            # Access fields directly
+            d = getattr(m, 'date_rencontre', '')
+            if d:
+                # Check if d is datetime or string
+                if isinstance(d, datetime):
+                    date_str = d.strftime("%Y-%m-%d")
+                else:
+                    date_str = str(d).split("T")[0]
+
+                if date_str not in ffbb_matches_by_date:
+                    ffbb_matches_by_date[date_str] = []
+                ffbb_matches_by_date[date_str].append(m)
 
     print(f"Indexed {sum(len(v) for v in ffbb_matches_by_date.values())} matches from FFBB.")
 

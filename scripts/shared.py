@@ -29,7 +29,7 @@ def init_firebase():
 
 def init_ffbb(exit_on_error: bool = True):
     try:
-        tokens = TokenManager.get_tokens(use_cache=False)
+        tokens = TokenManager.get_tokens(use_cache=True)
         client = FFBBDataClient.create(api_bearer_token=tokens.api_token, meilisearch_bearer_token=tokens.meilisearch_token)
         print("Initialized FFBB Client.")
         return client

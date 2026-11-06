@@ -280,6 +280,20 @@ function cleanOpponentName(raw: string): string {
     return raw.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*)/i, "").trim();
 }
 
+const FFBB_BROWSER_HEADERS: Record<string, string> = {
+    "User-Agent": "FFBB/2.4.1 (iPhone; iOS 18.0; Scale/3.00)",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://competitions.ffbb.com/",
+    "Origin": "https://competitions.ffbb.com",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
+};
+
+const sleepWithJitter = () =>
+    new Promise((resolve) => setTimeout(resolve, 1200 + Math.random() * 1600));
+
 export const fetchFFBBMatches = onCall(
     { region: "europe-west1" },
     async (request) => {
@@ -290,29 +304,61 @@ export const fetchFFBBMatches = onCall(
         const teamFilter = (request.data?.team as string | undefined)?.toUpperCase().trim();
         logger.info("Fetching FFBB Matches for SCBA", { teamFilter });
 
+        // 0. Essai prioritaire via l'API Cache-First ffbb-api.desimone.fr (0 appel Directus direct)
         try {
-            // 1. Récupération du token dynamique FFBB
-            const configRes = await fetch("https://bo.ffbb.com/items/configuration", {
-                headers: { "User-Agent": "okhttp/4.12.0" }
-            });
-            if (!configRes.ok) {
-                throw new Error(`Échec de récupération de la configuration FFBB (status: ${configRes.status})`);
+            const proxyUrl = new URL(`https://ffbb-api.desimone.fr/api/v1/club/${SCBA_ORGANISME_ID}/matches`);
+            if (teamFilter && teamFilter !== "ALL") {
+                proxyUrl.searchParams.set("team", teamFilter);
             }
-            const configJson = await configRes.json();
-            const bearerToken = configJson?.data?.key_dh;
-            if (!bearerToken) {
-                throw new Error("Token d'authentification FFBB introuvable.");
+            const proxyRes = await fetch(proxyUrl.toString(), {
+                headers: FFBB_BROWSER_HEADERS,
+                signal: AbortSignal.timeout(10000),
+            });
+            if (proxyRes.ok) {
+                const proxyJson = await proxyRes.json();
+                if (Array.isArray(proxyJson?.matches) && proxyJson.matches.length > 0) {
+                    logger.info("FFBB Matches fetched via ffbb-api.desimone.fr", { count: proxyJson.matches.length });
+                    return {
+                        matches: proxyJson.matches,
+                        count: proxyJson.matches.length,
+                    };
+                }
+            }
+        } catch (proxyErr) {
+            logger.warn("Proxy ffbb-api.desimone.fr injoignable, bascule sur fallback Directus durci", { error: proxyErr });
+        }
+
+        try {
+            // 1. Récupération du token FFBB (avec fallback résilient si /items/configuration est bloqué par BunnyCDN)
+            let bearerToken = process.env.API_FFBB_APP_BEARER_TOKEN || "bvBdsqADOnQmvFNzDRQnzYYw2g2J1ad6";
+            try {
+                const configRes = await fetch("https://bo.ffbb.com/items/configuration", {
+                    headers: FFBB_BROWSER_HEADERS,
+                    signal: AbortSignal.timeout(5000),
+                });
+                if (configRes.ok) {
+                    const configJson = await configRes.json();
+                    if (configJson?.data?.key_dh) {
+                        bearerToken = configJson.data.key_dh;
+                    }
+                }
+            } catch {
+                // Utiliser le jeton résilient par défaut
             }
 
             const ffbbHeaders = {
-                "User-Agent": "okhttp/4.12.0",
+                ...FFBB_BROWSER_HEADERS,
                 "Authorization": `Bearer ${bearerToken}`
             };
 
-            // 2. Récupération des engagements du SCBA
+            // 2. Récupération des engagements du SCBA (Circuit-Breaker 0-retry sur 403/429)
             const orgRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_organismes/${SCBA_ORGANISME_ID}?fields=*.*`, {
-                headers: ffbbHeaders
+                headers: ffbbHeaders,
+                signal: AbortSignal.timeout(8000),
             });
+            if (orgRes.status === 403 || orgRes.status === 429) {
+                throw new Error(`Circuit-Breaker WAF/CDN activé (HTTP ${orgRes.status}) — arrêt immédiat sans retry.`);
+            }
             if (!orgRes.ok) {
                 throw new Error(`Échec de récupération du club SCBA (status: ${orgRes.status})`);
             }
@@ -326,16 +372,22 @@ export const fetchFFBBMatches = onCall(
                 [String(SCBA_ORGANISME_ID)]: SCBA_LOGO_URL
             };
 
-            // 3. Parcours de chaque poule
+            // 3. Parcours séquentiel de chaque poule avec jitter (1.2s à 2.8s)
             for (const eng of engagements) {
                 const pouleId = eng?.idPoule?.id || (typeof eng?.idPoule === "string" || typeof eng?.idPoule === "number" ? eng.idPoule : null);
                 const compNom = eng?.idCompetition?.nom || "";
                 if (!pouleId) continue;
 
                 try {
+                    await sleepWithJitter();
                     const pouleRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_poules/${pouleId}?fields=*.*`, {
-                        headers: ffbbHeaders
+                        headers: ffbbHeaders,
+                        signal: AbortSignal.timeout(8000),
                     });
+                    if (pouleRes.status === 403 || pouleRes.status === 429) {
+                        logger.warn(`Circuit-Breaker WAF/CDN sur poule ${pouleId} (${pouleRes.status}) — arrêt de la boucle.`);
+                        break;
+                    }
                     if (!pouleRes.ok) continue;
 
                     const pouleJson = await pouleRes.json();

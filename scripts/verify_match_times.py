@@ -58,22 +58,24 @@ def verify_times(db, ffbb_client, fix=False):
         except:
             return ([], cat_code, gender_code)
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(fetch_poule_matches, eng): eng for eng in org.engagements}
-        for future in as_completed(futures):
-            matches, cat_code, gender_code = future.result()
-            for m in matches:
-                d = getattr(m, 'date_rencontre', '')
-                if d:
-                    if isinstance(d, datetime):
-                        date_str = d.strftime("%Y-%m-%d")
-                    else:
-                        date_str = str(d).split("T")[0]
+    import random
 
-                    if date_str not in ffbb_matches_by_date:
-                        ffbb_matches_by_date[date_str] = []
+    for idx, eng in enumerate(org.engagements):
+        if idx > 0:
+            time.sleep(random.uniform(1.2, 2.8))
+        matches, cat_code, gender_code = fetch_poule_matches(eng)
+        for m in matches:
+            d = getattr(m, 'date_rencontre', '')
+            if d:
+                if isinstance(d, datetime):
+                    date_str = d.strftime("%Y-%m-%d")
+                else:
+                    date_str = str(d).split("T")[0]
 
-                    ffbb_matches_by_date[date_str].append((m, cat_code, gender_code))
+                if date_str not in ffbb_matches_by_date:
+                    ffbb_matches_by_date[date_str] = []
+
+                ffbb_matches_by_date[date_str].append((m, cat_code, gender_code))
 
     print(f"Indexed {sum(len(v) for v in ffbb_matches_by_date.values())} matches from FFBB.")
 
