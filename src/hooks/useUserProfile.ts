@@ -11,36 +11,58 @@ export const useUserProfile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let unsubscribe = () => {};
+    let unsubscribeSnapshot = () => {};
+    // Incremented on every auth change so a pending getDoc/setDoc from a previous
+    // user cannot attach a listener after sign-out (would trigger permission-denied).
+    let authGeneration = 0;
 
-    const listenToProfile = async () => {
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          const profileRef = doc(db, `users/${user.uid}/profile`, 'settings');
+    const unsubscribeAuth = auth.onAuthStateChanged(async (user) => {
+      unsubscribeSnapshot();
+      unsubscribeSnapshot = () => {};
+      const generation = ++authGeneration;
 
-          // Explicitly create profile document if it doesn't exist to avoid empty states
-          const docSnap = await getDoc(profileRef);
-          if (!docSnap.exists()) {
-            await setDoc(profileRef, { favoriteTeams: [] }, { merge: true });
-          }
+      if (!user) {
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
 
-          unsubscribe = onSnapshot(profileRef, (snapshot) => {
-            if (snapshot.exists()) {
-              setProfile(snapshot.data() as UserProfile);
-            } else {
-              setProfile({ favoriteTeams: [] });
-            }
-            setLoading(false);
-          });
-        } else {
-          setProfile(null);
-          setLoading(false);
+      const profileRef = doc(db, `users/${user.uid}/profile`, 'settings');
+
+      try {
+        // Explicitly create profile document if it doesn't exist to avoid empty states
+        const docSnap = await getDoc(profileRef);
+        if (!docSnap.exists()) {
+          await setDoc(profileRef, { favoriteTeams: [] }, { merge: true });
         }
-      });
-    };
+      } catch (error) {
+        console.warn('[useUserProfile] Profile init error:', error);
+      }
 
-    listenToProfile();
-    return () => unsubscribe();
+      if (generation !== authGeneration) return;
+
+      unsubscribeSnapshot = onSnapshot(
+        profileRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            setProfile(snapshot.data() as UserProfile);
+          } else {
+            setProfile({ favoriteTeams: [] });
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.warn('[useUserProfile] Snapshot error:', error.code || error.message);
+          setLoading(false);
+        },
+      );
+    });
+
+    return () => {
+      authGeneration++;
+      unsubscribeAuth();
+      unsubscribeSnapshot();
+    };
   }, []);
 
   const updateFavoriteTeams = useCallback(async (teams: string[]) => {

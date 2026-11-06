@@ -37,26 +37,34 @@ export const useVolunteers = (): UseVolunteersReturn => {
 
       if (user) {
         const q = query(collection(db, `users/${user.uid}/registrations`));
-        unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-          const regs: UserRegistration[] = snapshot.docs.map((d) => {
-            const data = d.data();
-            return {
-              id: d.id,
-              gameId: data.gameId,
-              roleId: data.roleId,
-              roleName: data.roleName,
-              gameDate: data.gameDate,
-              gameDateISO: data.gameDateISO,
-              gameTime: data.gameTime,
-              location: data.location,
-              team: data.team,
-              opponent: data.opponent,
-              volunteerName: data.volunteerName,
-              isValid: true,
-            } as UserRegistration;
-          });
-          setUserRegistrations(regs);
-        });
+        unsubscribeSnapshot = onSnapshot(
+          q,
+          (snapshot) => {
+            const regs: UserRegistration[] = snapshot.docs.map((d) => {
+              const data = d.data();
+              return {
+                id: d.id,
+                gameId: data.gameId,
+                roleId: data.roleId,
+                roleName: data.roleName,
+                gameDate: data.gameDate,
+                gameDateISO: data.gameDateISO,
+                gameTime: data.gameTime,
+                location: data.location,
+                team: data.team,
+                opponent: data.opponent,
+                volunteerName: data.volunteerName,
+                isValid: true,
+              } as UserRegistration;
+            });
+            setUserRegistrations(regs);
+          },
+          (error) => {
+            // Expected briefly on sign-out: Firestore may re-listen without auth
+            // before this auth callback tears the listener down.
+            console.warn('[useVolunteers] Snapshot error:', error.code || error.message);
+          },
+        );
       } else {
         setUserRegistrations([]);
       }
