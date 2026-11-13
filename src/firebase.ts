@@ -26,9 +26,16 @@ if (missing.length > 0) {
   );
 }
 
+// En production, le handler d'auth est proxifié par Vercel (/__/auth/*) : servir la popup
+// depuis le domaine de l'app évite le blocage du stockage tiers (Brave, Safari) et l'URL firebaseapp.com.
+const APP_AUTH_HOST = 'scba.desimone.fr';
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  authDomain:
+    typeof window !== 'undefined' && window.location.hostname === APP_AUTH_HOST
+      ? APP_AUTH_HOST
+      : import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,

@@ -148,6 +148,8 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         navigateFallback: 'index.html',
+        // Le handler Firebase Auth (/__/auth/*) doit atteindre le réseau (rewrite Vercel).
+        navigateFallbackDenylist: [/^\/__\//],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB: ensure large bundles & fontsource fonts are precached
         // Precache essential files for offline support including self-hosted fonts
         globPatterns: ['**/*.{html,js,css,woff2,ico,png,svg,webp,webmanifest}'],
