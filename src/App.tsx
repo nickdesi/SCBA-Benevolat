@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, Suspense, startTransition } from 'rea
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { User } from 'firebase/auth';
 import { Analytics } from '@vercel/analytics/react';
-import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Plus } from 'lucide-react';
+import { List, Calendar, Trophy, Search, CalendarDays, Palmtree, Plus, Upload } from 'lucide-react';
 import Header from './components/Header';
 import GameList from './components/GameList';
 import MatchTicker from './components/MatchTicker';
@@ -424,8 +424,9 @@ function App() {
                       action={
                         isAdmin
                           ? {
-                              label: '⚡ Synchroniser FFBB (1-Clic)',
-                              onClick: () => setIsImportModalOpen(true),
+                              label: 'Ajouter un match',
+                              onClick: () => setIsAddingGame(true),
+                              icon: <Plus className="w-4 h-4" />,
                               variant: 'gradient',
                             }
                           : undefined
@@ -433,9 +434,9 @@ function App() {
                       secondaryAction={
                         isAdmin
                           ? {
-                              label: 'Ajouter un match manuellement',
-                              onClick: () => setIsAddingGame(true),
-                              icon: <Plus className="w-4 h-4 text-emerald-500" />,
+                              label: 'Import manuel (CSV)',
+                              onClick: () => setIsImportModalOpen(true),
+                              icon: <Upload className="w-4 h-4 text-blue-500" />,
                             }
                           : undefined
                       }

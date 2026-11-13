@@ -8,7 +8,6 @@ import {
 import type { GameFormData, Game } from '../types';
 import useScrollLock from '../hooks/useScrollLock';
 import { CustomSelect } from './ui/CustomSelect';
-import { fetchClubMatchesFromFFBB } from '../services/ffbbService';
 import { enrichMatchesLocations } from '../utils/locationEnrichment';
 import { MatchPreviewCard } from './import/MatchPreviewCard';
 
@@ -38,49 +37,12 @@ const TEAM_OPTIONS = [
 const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
   ({ isOpen, onClose, onImport, existingGames = [] }) => {
     useScrollLock(isOpen);
-    const [activeTab, setActiveTab] = useState<'ffbb' | 'manual'>('ffbb');
     const [csvContent, setCsvContent] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<string>('ALL');
     const [parsedMatches, setParsedMatches] = useState<ParsedMatch[]>([]);
     const [errors, setErrors] = useState<{ line: number; content: string; error: string }[]>([]);
-    const [ffbbError, setFfbbError] = useState<string | null>(null);
     const [step, setStep] = useState<'input' | 'preview'>('input');
     const [isEnriching, setIsEnriching] = useState(false);
-    const [isFetchingFFBB, setIsFetchingFFBB] = useState(false);
-
-    // ⚡ 1-Click Automated Import from FFBB (via dedicated ffbbService)
-    const handleFetchFFBB = useCallback(async () => {
-      setIsFetchingFFBB(true);
-      setFfbbError(null);
-
-      try {
-        const fetchedMatches = await fetchClubMatchesFromFFBB(selectedTeam);
-
-        if (fetchedMatches.length === 0) {
-          setFfbbError(
-            selectedTeam === 'ALL'
-              ? 'Aucune rencontre trouvée sur la FFBB pour le SCBA actuellement (poules pas encore publiées).'
-              : `Aucune rencontre trouvée sur la FFBB pour l'équipe ${selectedTeam}.`,
-          );
-          return;
-        }
-
-        const { reconciled } = reconcileMatchesWithExisting(fetchedMatches, existingGames);
-        setParsedMatches(reconciled);
-        setErrors([]);
-        setStep('preview');
-      } catch (err: unknown) {
-        console.error('Erreur lors de la récupération FFBB:', err);
-        const errorMessage = err instanceof Error ? err.message : '';
-        const msg =
-          errorMessage === 'internal'
-            ? 'Erreur interne lors de la communication avec la FFBB. Veuillez réessayer.'
-            : errorMessage || 'Erreur lors de la récupération des matchs depuis la FFBB.';
-        setFfbbError(msg);
-      } finally {
-        setIsFetchingFFBB(false);
-      }
-    }, [selectedTeam, existingGames]);
 
     // Parse from CSV/paste with Deduplication/Update detection
     const handleParseText = useCallback(() => {
@@ -122,7 +84,6 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
     const handleClose = useCallback(() => {
       setStep('input');
       setIsEnriching(false);
-      setFfbbError(null);
       onClose();
     }, [onClose]);
 
@@ -171,7 +132,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             </h2>
             <p className="text-blue-100 text-sm mt-1">
               {step === 'input'
-                ? 'Synchronisez directement depuis la FFBB ou collez un calendrier.'
+                ? 'Collez un calendrier ou tableau de matchs FFBB pour importer ou mettre à jour des rencontres.'
                 : 'Vérifiez les matchs détectés avant de confirmer.'}
             </p>
           </div>
@@ -180,6 +141,20 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             {step === 'input' && (
               <>
+                {/* Info Sync Cron Automatique */}
+                <div className="p-4 bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 rounded-2xl flex items-start gap-3">
+                  <span className="text-xl">🤖</span>
+                  <div className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
+                    <p className="font-bold font-sport">Synchronisation automatique active</p>
+                    <p className="text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+                      Les rencontres officielles FFBB du club sont automatiquement synchronisées 3
+                      fois par jour (nuit, midi et soir) via le cron automatisé GitHub Actions.
+                      Utilisez cette saisie uniquement pour des ajouts ou ajustements manuels
+                      ponctuels.
+                    </p>
+                  </div>
+                </div>
+
                 {/* Team Selector */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5 font-sport">
@@ -193,127 +168,39 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                   />
                 </div>
 
-                {/* Mode Selector Tabs */}
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-700/60 rounded-2xl">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('ffbb')}
-                    className={`flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-                      activeTab === 'ffbb'
-                        ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                    }`}
-                  >
-                    <span>⚡</span> Synchronisation 1-Clic FFBB
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('manual')}
-                    className={`flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-                      activeTab === 'manual'
-                        ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                    }`}
-                  >
-                    <span>📋</span> Saisie manuelle
-                  </button>
-                </div>
-
-                {/* TAB 1: 1-CLICK FFBB AUTOMATION */}
-                {activeTab === 'ffbb' && (
-                  <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-white dark:from-slate-700/60 dark:via-slate-800/40 dark:to-slate-800 border border-blue-100 dark:border-blue-900/30 text-center space-y-4">
-                    <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20">
-                      ⚡
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-slate-800 dark:text-white font-sport">
-                        Import Officiel FFBB en 1-Clic
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
-                        Interroge l'API officielle pour récupérer automatiquement les matchs, dates,
-                        horaires, salles exactes et logos des clubs adverses.
-                      </p>
-                    </div>
-
-                    {ffbbError && (
-                      <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-xl text-left">
-                        <p className="text-xs font-semibold text-red-600 dark:text-red-400">
-                          ⚠️ {ffbbError}
-                        </p>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleFetchFFBB}
-                      disabled={isFetchingFFBB}
-                      className="w-full py-3.5 px-6 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-600 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-sport tracking-wide"
-                    >
-                      {isFetchingFFBB ? (
-                        <>
-                          <svg
-                            className="animate-spin h-5 w-5 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            />
-                          </svg>
-                          <span>Récupération depuis la FFBB...</span>
-                        </>
-                      ) : (
-                        <span>⚡ Récupérer automatiquement depuis la FFBB</span>
-                      )}
-                    </button>
+                {/* Manual CSV / Copy-Paste */}
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600">
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      📋 Instructions :
+                    </p>
+                    <ul className="text-xs text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
+                      <li>Allez sur la page FFBB de l'équipe</li>
+                      <li>Sélectionnez et copiez (Ctrl+C) le tableau des matchs</li>
+                      <li>Collez ci-dessous (Ctrl+V) puis cliquez sur Analyser</li>
+                    </ul>
                   </div>
-                )}
 
-                {/* TAB 2: MANUAL CSV / COPY-PASTE */}
-                {activeTab === 'manual' && (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600">
-                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                        📋 Instructions :
+                  <textarea
+                    value={csvContent}
+                    onChange={(e) => setCsvContent(e.target.value)}
+                    placeholder="Collez le tableau FFBB ici..."
+                    className="w-full h-36 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl font-mono text-xs bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  />
+
+                  {errors.length > 0 && (
+                    <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-2xl">
+                      <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">
+                        ⚠️ Erreurs d'analyse :
                       </p>
-                      <ul className="text-xs text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
-                        <li>Allez sur la page FFBB de l'équipe</li>
-                        <li>Sélectionnez et copiez (Ctrl+C) le tableau des matchs</li>
-                        <li>Collez ci-dessous (Ctrl+V) puis cliquez sur Analyser</li>
+                      <ul className="text-xs text-red-600 dark:text-red-300 space-y-1 list-disc list-inside">
+                        {errors.map((err, i) => (
+                          <li key={i}>{err.error}</li>
+                        ))}
                       </ul>
                     </div>
-
-                    <textarea
-                      value={csvContent}
-                      onChange={(e) => setCsvContent(e.target.value)}
-                      placeholder="Collez le tableau FFBB ici..."
-                      className="w-full h-36 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-2xl font-mono text-xs bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                    />
-
-                    {errors.length > 0 && (
-                      <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-2xl">
-                        <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider mb-1">
-                          ⚠️ Erreurs d'analyse :
-                        </p>
-                        <ul className="text-xs text-red-600 dark:text-red-300 space-y-1 list-disc list-inside">
-                          {errors.map((err, i) => (
-                            <li key={i}>{err.error}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             )}
 
@@ -348,16 +235,14 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
                     )}
                   </div>
 
-                  {activeTab === 'manual' && (
-                    <button
-                      type="button"
-                      onClick={handleEnrichLocations}
-                      disabled={isEnriching}
-                      className="text-xs px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
-                    >
-                      {isEnriching ? <>⏳ Recherche...</> : <>🔍 Trouver les gymnases</>}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={handleEnrichLocations}
+                    disabled={isEnriching}
+                    className="text-xs px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    {isEnriching ? <>⏳ Recherche...</> : <>🔍 Trouver les gymnases</>}
+                  </button>
                 </div>
 
                 <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
@@ -397,7 +282,7 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = memo(
             >
               Annuler
             </button>
-            {step === 'input' && activeTab === 'manual' && (
+            {step === 'input' && (
               <button
                 type="button"
                 onClick={handleParseText}

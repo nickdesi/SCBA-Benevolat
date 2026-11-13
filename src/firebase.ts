@@ -7,7 +7,6 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import type { Functions } from 'firebase/functions';
 
 const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',
@@ -53,15 +52,3 @@ try {
 
 export const db = firestoreDb;
 export const auth = getAuth(app);
-
-// Cloud Functions is only used by the admin CSV import flow (ImportCSVModal, already
-// lazy-loaded). Loading & initializing it eagerly here would ship it in the critical
-// bundle for every visitor. Lazy-init on first use instead.
-let functionsInstance: Functions | null = null;
-export async function getFirebaseFunctions(): Promise<Functions> {
-  if (!functionsInstance) {
-    const { getFunctions } = await import('firebase/functions');
-    functionsInstance = getFunctions(app, 'europe-west1');
-  }
-  return functionsInstance;
-}
