@@ -440,6 +440,76 @@ textarea::placeholder {
   background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
 }
 
+/* Guirlande lumineuse "Équipe au complet" : 3 couches de points décalés qui scintillent en alternance */
+.garland {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.garland-layer {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  overflow: visible;
+  opacity: 0.35;
+  filter: drop-shadow(0 0 2px currentColor);
+  animation: garland-twinkle 2.4s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.garland-layer rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.5px;
+  stroke-linecap: round;
+  stroke-dasharray: 0 21px;
+}
+
+.garland-a {
+  color: #34d399;
+  animation-delay: 0s;
+}
+
+.garland-b {
+  color: #fbbf24;
+  animation-delay: -0.8s;
+}
+
+.garland-b rect {
+  stroke-dashoffset: -7px;
+}
+
+.garland-c {
+  color: #e0f2fe;
+  animation-delay: -1.6s;
+}
+
+.garland-c rect {
+  stroke-dashoffset: -14px;
+}
+
+@keyframes garland-twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garland-layer {
+    animation: none !important;
+    opacity: 0.7;
+  }
+}
+
 @keyframes slideInRight {
   from {
     opacity: 0;

@@ -152,6 +152,16 @@ const GameCard: React.FC<GameCardProps> = memo(
           }
         `}
       >
+        {isFullyStaffed && (
+          <div className="garland" aria-hidden="true">
+            {(['a', 'b', 'c'] as const).map((variant) => (
+              <svg key={variant} className={`garland-layer garland-${variant}`}>
+                <rect x="0" y="0" width="100%" height="100%" rx="14" />
+              </svg>
+            ))}
+          </div>
+        )}
+
         {/* 1. Header Section */}
         <div className="relative z-10">
           <GameHeader
