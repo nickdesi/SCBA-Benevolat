@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Game } from '../types';
 import GameCard from './GameCard';
+
+vi.mock('../hooks/useAvatars', () => ({
+  useAvatars: () => ({ getAvatar: () => undefined }),
+}));
 
 const game: Game = {
   id: 'test-game',
