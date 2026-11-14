@@ -1,7 +1,7 @@
-import React, { memo, useState, Suspense, lazy, useMemo } from 'react';
+import React, { memo, useState, Suspense, lazy, useMemo, useRef } from 'react';
 import { CheckIcon, Car } from 'lucide-react';
 import type { Game, CarpoolEntry } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 
 // Sub-components
 import GameHeader from './GameCard/GameHeader';
@@ -54,6 +54,17 @@ const ChevronIcon: React.FC<{ className?: string; isOpen: boolean }> = ({ classN
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
   </motion.svg>
 );
+
+const CompleteGarland = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { amount: 0.1 });
+
+  return (
+    <div ref={ref} className="garland" aria-hidden="true">
+      {isInView && <div className="garland-light" />}
+    </div>
+  );
+};
 
 const GameCard: React.FC<GameCardProps> = memo(
   ({
@@ -152,15 +163,7 @@ const GameCard: React.FC<GameCardProps> = memo(
           }
         `}
       >
-        {isFullyStaffed && (
-          <div className="garland" aria-hidden="true">
-            {(['a', 'b', 'c'] as const).map((variant) => (
-              <svg key={variant} className={`garland-layer garland-${variant}`}>
-                <rect x="0" y="0" width="100%" height="100%" rx="14" />
-              </svg>
-            ))}
-          </div>
-        )}
+        {isHomeGame && isFullyStaffed && totalCapacity > 0 && <CompleteGarland />}
 
         {/* 1. Header Section */}
         <div className="relative z-10">
