@@ -6,8 +6,10 @@ import {
   sortTeamNames,
   resolveTeamLogoUrl,
   getCompetitionDivisionRank,
+  mergeDuplicateGames,
   normalizeScbaMatchesTeams,
 } from './gameUtils';
+import type { Game } from '../types';
 
 describe('formatRank', () => {
   it('formats numeric ranks correctly into French ordinal format', () => {
@@ -134,6 +136,66 @@ describe('resolveTeamLogoUrl', () => {
     expect(resolveTeamLogoUrl('/custom-logo.png')).toBe('/custom-logo.png');
     expect(resolveTeamLogoUrl(undefined)).toBeUndefined();
     expect(resolveTeamLogoUrl('')).toBeUndefined();
+  });
+});
+
+describe('mergeDuplicateGames', () => {
+  it('merges volunteer and carpool data from duplicate FFBB documents', () => {
+    const games = [
+      {
+        id: 'old',
+        ffbbMatchId: '123',
+        team: 'U13 M1',
+        opponent: 'A',
+        date: 'Samedi 1 Novembre 2026',
+        dateISO: '2026-11-01',
+        time: '14:00',
+        location: 'Ancienne salle',
+        isHome: true,
+        roles: [{ id: '1', name: 'Table', capacity: 1, volunteers: ['Alice'] }],
+        carpool: [{ id: 'driver-1', type: 'driver', name: 'Nicolas', seats: 2 }],
+      },
+      {
+        id: 'new',
+        ffbbMatchId: '123',
+        team: 'U13 M1',
+        opponent: 'A',
+        date: 'Samedi 1 Novembre 2026',
+        dateISO: '2026-11-01',
+        time: '15:00',
+        location: 'Nouvelle salle',
+        isHome: true,
+        roles: [{ id: '1', name: 'Table', capacity: 2, volunteers: ['Bob'] }],
+        carpool: [{ id: 'passenger-1', type: 'passenger', name: 'Marie', seats: 1 }],
+      },
+      {
+        id: 'legacy',
+        team: 'U13 M1',
+        opponent: 'A',
+        date: 'Samedi 1 Novembre 2026',
+        dateISO: '2026-11-01',
+        time: '15:00',
+        location: 'Ancienne salle legacy',
+        isHome: true,
+        roles: [{ id: '2', name: 'Chrono', capacity: 1, volunteers: ['Paul'] }],
+      },
+    ] as Game[];
+
+    expect(mergeDuplicateGames(games)).toEqual([
+      expect.objectContaining({
+        id: 'new',
+        time: '15:00',
+        location: 'Nouvelle salle',
+        roles: [
+          expect.objectContaining({ capacity: 2, volunteers: ['Alice', 'Bob'] }),
+          expect.objectContaining({ name: 'Chrono', volunteers: ['Paul'] }),
+        ],
+        carpool: [
+          expect.objectContaining({ id: 'driver-1', name: 'Nicolas' }),
+          expect.objectContaining({ id: 'passenger-1', name: 'Marie' }),
+        ],
+      }),
+    ]);
   });
 });
 

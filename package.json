@@ -17,7 +17,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "audit:root": "npm audit --audit-level=moderate",
-    "audit:functions": "npm --prefix functions audit --audit-level=critical",
+    "audit:functions": "npm --prefix functions audit --audit-level=moderate",
     "import:ffbb": "./.venv/bin/python scripts/import_ffbb_matches.py",
     "import:ffbb:dry": "./.venv/bin/python scripts/import_ffbb_matches.py --dry-run",
     "knip": "knip"
@@ -57,7 +57,9 @@
   },
   "overrides": {
     "serialize-javascript": "^7.0.5",
-    "@grpc/grpc-js": "^1.14.5"
+    "@grpc/grpc-js": "^1.14.5",
+    "glob": "^14.0.6",
+    "minimatch": "^11.0.9"
   },
   "allowScripts": {
     "@firebase/util@1.15.3": true,

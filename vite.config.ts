@@ -1,5 +1,5 @@
 import path from 'path';
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import babel from '@rolldown/plugin-babel';
@@ -41,8 +41,15 @@ export default defineConfig({
           try {
             const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
             const team = url.searchParams.get('team') || '';
-            const pythonCmd = `./.venv/bin/python scripts/export_ffbb_json.py ${team ? `--team "${team}"` : ''}`;
-            const output = execSync(pythonCmd, { encoding: 'utf8' });
+            if (team && !/^[\p{L}\p{N}\s_-]{1,80}$/u.test(team)) {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Filtre équipe invalide' }));
+              return;
+            }
+            const args = ['scripts/export_ffbb_json.py'];
+            if (team) args.push('--team', team);
+            const output = execFileSync('./.venv/bin/python', args, { encoding: 'utf8' });
             res.setHeader('Content-Type', 'application/json');
             res.end(output);
           } catch (err: any) {

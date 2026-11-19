@@ -79,12 +79,13 @@ export const useCarpool = (): UseCarpoolReturn => {
           if (entryToRemove?.type === 'driver') {
             updatedCarpool = updatedCarpool.map((e) => {
               if (e.type === 'passenger' && e.requestedDriverId === entryId) {
-                return {
+                const resetPassenger = {
                   ...e,
                   status: 'available' as const,
-                  requestedDriverId: undefined,
-                  matchedWith: undefined,
                 };
+                delete resetPassenger.requestedDriverId;
+                delete resetPassenger.matchedWith;
+                return resetPassenger;
               }
               return e;
             });
@@ -121,8 +122,19 @@ export const useCarpool = (): UseCarpoolReturn => {
           }
           const gameData = gameDoc.data() as Game;
           const carpool = gameData.carpool || [];
+          const driver = carpool.find((e) => e.id === driverId && e.type === 'driver');
+          const passenger = carpool.find((e) => e.id === passengerId && e.type === 'passenger');
 
-          // Update the passenger's status to pending
+          if (!driver || !passenger) {
+            throw new Error('Conducteur ou passager introuvable');
+          }
+          if (passenger.status && passenger.status !== 'available') {
+            throw new Error('Cette demande est déjà en cours ou confirmée');
+          }
+          if (getRemainingSeats(driver, carpool) < (passenger.seats || 1)) {
+            throw new Error('Plus assez de places disponibles');
+          }
+
           const updatedCarpool = carpool.map((e) => {
             if (e.id === passengerId) {
               return { ...e, status: 'pending' as const, requestedDriverId: driverId };
@@ -155,8 +167,11 @@ export const useCarpool = (): UseCarpoolReturn => {
           const driver = carpool.find((e) => e.id === driverId);
           const passenger = carpool.find((e) => e.id === passengerId);
 
-          if (!driver || !passenger) {
+          if (!driver || driver.type !== 'driver' || !passenger || passenger.type !== 'passenger') {
             throw new Error('Driver or passenger not found');
+          }
+          if (passenger.status !== 'pending' || passenger.requestedDriverId !== driverId) {
+            throw new Error('La demande ne correspond pas à ce conducteur');
           }
 
           // Check if driver has enough remaining seats
@@ -196,7 +211,7 @@ export const useCarpool = (): UseCarpoolReturn => {
   );
 
   const handleRejectPassenger = useCallback(
-    async (gameId: string, _driverId: string, passengerId: string): Promise<void> => {
+    async (gameId: string, driverId: string, passengerId: string): Promise<void> => {
       const gameRef = doc(db, 'matches', gameId);
       try {
         await runTransaction(db, async (transaction) => {
@@ -206,15 +221,22 @@ export const useCarpool = (): UseCarpoolReturn => {
           }
           const gameData = gameDoc.data() as Game;
           const carpool = gameData.carpool || [];
+          const driver = carpool.find((entry) => entry.id === driverId && entry.type === 'driver');
+          const passenger = carpool.find(
+            (entry) => entry.id === passengerId && entry.type === 'passenger',
+          );
+          if (!driver || !passenger || passenger.requestedDriverId !== driverId) {
+            throw new Error('Demande de covoiturage introuvable');
+          }
 
-          // Reset passenger to available status, remove requestedDriverId
           const updatedCarpool = carpool.map((e) => {
             if (e.id === passengerId) {
-              return {
+              const rejectedPassenger = {
                 ...e,
                 status: 'available' as const,
-                requestedDriverId: undefined,
               };
+              delete rejectedPassenger.requestedDriverId;
+              return rejectedPassenger;
             }
             return e;
           });
@@ -240,15 +262,21 @@ export const useCarpool = (): UseCarpoolReturn => {
           }
           const gameData = gameDoc.data() as Game;
           const carpool = gameData.carpool || [];
+          const passenger = carpool.find(
+            (entry) => entry.id === passengerId && entry.type === 'passenger',
+          );
+          if (!passenger || passenger.status !== 'pending') {
+            throw new Error('Aucune demande en attente à annuler');
+          }
 
-          // Reset passenger to available status
           const updatedCarpool = carpool.map((e) => {
             if (e.id === passengerId) {
-              return {
+              const cancelledPassenger = {
                 ...e,
                 status: 'available' as const,
-                requestedDriverId: undefined,
               };
+              delete cancelledPassenger.requestedDriverId;
+              return cancelledPassenger;
             }
             return e;
           });

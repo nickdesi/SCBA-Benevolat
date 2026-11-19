@@ -18,7 +18,7 @@ import type { Game, GameFormData, CarpoolEntry, UserRegistration } from '../type
 import { getTodayISO } from '../utils/dateUtils';
 import { useVolunteers } from './useVolunteers';
 import { useCarpool } from './useCarpool';
-import { normalizeScbaMatchesTeams, sortGames } from '../utils/gameUtils';
+import { mergeDuplicateGames, normalizeScbaMatchesTeams, sortGames } from '../utils/gameUtils';
 import { useGameFilters } from './useGameFilters';
 
 interface UseGamesReturn {
@@ -111,19 +111,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
             }) as Game,
         );
 
-        // Déduplication d'affichage : un seul doc par ffbbMatchId.
-        // La base est assainie chaque nuit par cleanupPastMatches
-        // (garde le doc avec bénévoles, sinon le plus récent).
-        const seenFfbb = new Set<string>();
-        const deduped = matchesData.filter((g) => {
-          if (!g.ffbbMatchId) return true;
-          const key = String(g.ffbbMatchId);
-          if (seenFfbb.has(key)) return false;
-          seenFfbb.add(key);
-          return true;
-        });
-
-        setGames(normalizeScbaMatchesTeams(deduped));
+        setGames(normalizeScbaMatchesTeams(mergeDuplicateGames(matchesData)));
         setLoading(false);
       },
       (error) => {
@@ -160,7 +148,7 @@ export const useGames = (options: UseGamesOptions): UseGamesReturn => {
     return applicableRoles.map((role, idx) => ({
       id: String(idx + 1),
       name: role.name,
-      capacity: role.capacity === 0 ? Infinity : role.capacity,
+      capacity: role.capacity,
       volunteers: [],
     }));
   };

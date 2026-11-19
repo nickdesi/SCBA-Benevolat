@@ -10,11 +10,33 @@ import * as logger from "firebase-functions/logger";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, Timestamp, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
+import {
+    countMatchCarpoolEntries,
+    countMatchVolunteers,
+    groupDuplicateRecordIndices,
+    mergeDuplicateMatchData,
+} from "./matchDedup";
 
 // Initialize Firebase Admin SDK
 initializeApp();
 
 const db = getFirestore();
+const ADMIN_EMAIL = "benevole@scba.fr";
+
+const isAdminRequest = (request: { auth?: { token: Record<string, unknown> } | null }): boolean => {
+    const token = request.auth?.token;
+    return token?.admin === true || (
+        token?.email === ADMIN_EMAIL
+    );
+};
+
+const commitDeleteChunks = async (documents: QueryDocumentSnapshot[]): Promise<void> => {
+    for (let i = 0; i < documents.length; i += 500) {
+        const batch = db.batch();
+        documents.slice(i, i + 500).forEach((document) => batch.delete(document.ref));
+        await batch.commit();
+    }
+};
 
 /**
  * Scheduled function: Clean up expired announcements
@@ -48,10 +70,7 @@ export const cleanupExpiredAnnouncements = onSchedule(
                 return;
             }
 
-            // Batch delete (max 500 per batch)
-            const batch = db.batch();
-            expiredSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => batch.delete(doc.ref));
-            await batch.commit();
+            await commitDeleteChunks(expiredSnapshot.docs);
 
             logger.info("Cleanup completed successfully", {
                 deletedCount: expiredSnapshot.size,
@@ -68,9 +87,9 @@ export const cleanupExpiredAnnouncements = onSchedule(
  *
  * Runs every day at 3:00 AM (Europe/Paris timezone).
  * Phase 1: deletes all documents in the "matches" collection with dateISO < today.
- * Phase 2: collapses upcoming documents sharing the same ffbbMatchId
- * (re-imports created duplicates while the UI query was capped at 50).
- * Survivor priority: document with volunteers first, then most recently created.
+ * Phase 2: collapses upcoming documents sharing the same ffbbMatchId or
+ * the same logical match signature (including legacy documents without FFBB ID).
+ * Survivor priority: document with participant data first, then most recently updated.
  * Same-day matches are kept (client hides them after tip-off + 2h30 buffer).
  * Documents without dateISO are ignored (handled separately, not auto-deleted).
  * Volunteer history is preserved: users/{uid}/registrations embed their own
@@ -100,38 +119,43 @@ export const cleanupPastMatches = onSchedule(
             pastSnapshot.docs.forEach((doc: QueryDocumentSnapshot) => toDelete.push(doc));
             logger.info("Past matches found", { count: pastSnapshot.size });
 
-            // Deduplicate upcoming matches sharing the same ffbbMatchId
+            // Deduplicate FFBB matches and legacy equivalents before deleting them.
             const upcomingSnapshot = await db
                 .collection("matches")
                 .where("dateISO", ">=", todayISO)
                 .get();
 
-            const byFfbbId = new Map<string, QueryDocumentSnapshot[]>();
-            for (const doc of upcomingSnapshot.docs) {
-                const ffbbId = String(doc.data()?.ffbbMatchId || "");
-                if (!ffbbId) continue;
-                const group = byFfbbId.get(ffbbId) || [];
-                group.push(doc);
-                byFfbbId.set(ffbbId, group);
-            }
-
-            const hasVolunteers = (doc: QueryDocumentSnapshot): boolean => {
-                const roles = doc.data()?.roles;
-                return (
-                    Array.isArray(roles) &&
-                    roles.some((r) => Array.isArray(r?.volunteers) && r.volunteers.length > 0)
-                );
-            };
-
             let duplicateCount = 0;
-            for (const group of byFfbbId.values()) {
+            const mergedSurvivors: Array<{
+                document: QueryDocumentSnapshot;
+                data: Record<string, unknown>;
+            }> = [];
+            const duplicateGroups = groupDuplicateRecordIndices(
+                upcomingSnapshot.docs.map((document) => document.data())
+            ).map((indices) => indices.map((index) => upcomingSnapshot.docs[index]));
+            for (const group of duplicateGroups) {
                 if (group.length < 2) continue;
                 const sorted = [...group].sort((a, b) => {
-                    const volDiff = Number(hasVolunteers(b)) - Number(hasVolunteers(a));
-                    if (volDiff !== 0) return volDiff;
-                    return b.createTime.toMillis() - a.createTime.toMillis();
+                    const userDataDiff =
+                        countMatchVolunteers(b.data()) + countMatchCarpoolEntries(b.data()) -
+                        countMatchVolunteers(a.data()) - countMatchCarpoolEntries(a.data());
+                    if (userDataDiff !== 0) return userDataDiff;
+                    return b.updateTime.toMillis() - a.updateTime.toMillis();
                 });
-                // Keep the first (volunteers, then newest), delete the rest
+
+                const survivor = sorted[0];
+                const chronological = [...group].sort((a, b) => {
+                    const ffbbPriority =
+                        Number(Boolean(a.data().ffbbMatchId)) -
+                        Number(Boolean(b.data().ffbbMatchId));
+                    if (ffbbPriority !== 0) return ffbbPriority;
+                    return a.updateTime.toMillis() - b.updateTime.toMillis();
+                });
+                mergedSurvivors.push({
+                    document: survivor,
+                    data: mergeDuplicateMatchData(chronological.map((document) => document.data())),
+                });
+
                 for (const dup of sorted.slice(1)) {
                     toDelete.push(dup);
                     duplicateCount++;
@@ -144,15 +168,29 @@ export const cleanupPastMatches = onSchedule(
                 return;
             }
 
-            // Batch deletes (max 500 writes per batch)
-            for (let i = 0; i < toDelete.length; i += 500) {
+            const writes: Array<
+                | { kind: "set"; document: QueryDocumentSnapshot; data: Record<string, unknown> }
+                | { kind: "delete"; document: QueryDocumentSnapshot }
+            > = [
+                ...mergedSurvivors.map(({ document, data }) => ({
+                    kind: "set" as const,
+                    document,
+                    data,
+                })),
+                ...toDelete.map((document) => ({ kind: "delete" as const, document })),
+            ];
+            for (let i = 0; i < writes.length; i += 500) {
                 const batch = db.batch();
-                toDelete.slice(i, i + 500).forEach((doc: QueryDocumentSnapshot) => batch.delete(doc.ref));
+                writes.slice(i, i + 500).forEach((write) => {
+                    if (write.kind === "set") batch.set(write.document.ref, write.data);
+                    else batch.delete(write.document.ref);
+                });
                 await batch.commit();
             }
 
             logger.info("Cleanup completed successfully", {
                 deletedCount: toDelete.length,
+                mergedCount: mergedSurvivors.length,
             });
         } catch (error) {
             logger.error("Error during past matches cleanup", { error });
@@ -173,7 +211,7 @@ export const setAdminRole = functions
     .region("europe-west1")
     .auth.user()
     .onCreate(async (user) => {
-        if (user.email === "benevole@scba.fr") {
+        if (user.email === ADMIN_EMAIL) {
             try {
                 await getAuth().setCustomUserClaims(user.uid, {
                     admin: true,
@@ -199,7 +237,7 @@ export const setAdminClaim = onCall(
             throw new HttpsError("unauthenticated", "Authentification requise.");
         }
         const { email } = request.auth.token;
-        if (email !== "benevole@scba.fr") {
+        if (email !== ADMIN_EMAIL) {
             throw new HttpsError("permission-denied", "Non autorisé.");
         }
         if (request.auth.token.admin === true) {
@@ -300,6 +338,9 @@ export const fetchFFBBMatches = onCall(
         if (!request.auth) {
             throw new HttpsError("unauthenticated", "Authentification requise pour importer les matchs.");
         }
+        if (!isAdminRequest(request)) {
+            throw new HttpsError("permission-denied", "Import réservé aux administrateurs.");
+        }
 
         const teamFilter = (request.data?.team as string | undefined)?.toUpperCase().trim();
         logger.info("Fetching FFBB Matches for SCBA", { teamFilter });
@@ -330,7 +371,7 @@ export const fetchFFBBMatches = onCall(
 
         try {
             // 1. Récupération du token FFBB (avec fallback résilient si /items/configuration est bloqué par BunnyCDN)
-            let bearerToken = process.env.API_FFBB_APP_BEARER_TOKEN || "bvBdsqADOnQmvFNzDRQnzYYw2g2J1ad6";
+            let bearerToken = process.env.API_FFBB_APP_BEARER_TOKEN;
             try {
                 const configRes = await fetch("https://bo.ffbb.com/items/configuration", {
                     headers: FFBB_BROWSER_HEADERS,
@@ -343,7 +384,10 @@ export const fetchFFBBMatches = onCall(
                     }
                 }
             } catch {
-                // Utiliser le jeton résilient par défaut
+                // Le token peut être fourni explicitement par l'environnement.
+            }
+            if (!bearerToken) {
+                throw new Error("Jeton FFBB indisponible sur le serveur.");
             }
 
             const ffbbHeaders = {

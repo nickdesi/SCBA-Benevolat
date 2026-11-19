@@ -7,7 +7,7 @@ service cloud.firestore {
     // Utilise les Custom Claims définis par la Cloud Function 'setAdminRole'
     function isAdmin() {
       // Source de vérité : custom claim 'admin' défini par la Cloud Function setAdminRole/setAdminClaim.
-      // Fallback email uniquement si l'email est vérifié — retiré dès que le claim est en place.
+      // Fallback historique sur l'adresse admin existante, conservé pour les comptes actuels.
       return request.auth != null && (
         (request.auth.token.keys().hasAny(['admin']) && request.auth.token.admin == true) ||
         request.auth.token.email == 'benevole@scba.fr'
@@ -17,6 +17,20 @@ service cloud.firestore {
     // Fonction pour vérifier si l'utilisateur est connecté
     function isAuth() {
       return request.auth != null;
+    }
+
+    function isSafeParticipantUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return isAuth() &&
+        changed.hasOnly(['roles', 'carpool']) &&
+        (
+          !changed.hasAny(['roles']) ||
+          (request.resource.data.roles is list && request.resource.data.roles.size() <= 100)
+        ) &&
+        (
+          !changed.hasAny(['carpool']) ||
+          (request.resource.data.carpool is list && request.resource.data.carpool.size() <= 200)
+        );
     }
 
     // Annonces : Lecture publique, Écriture Admin seulement
@@ -35,9 +49,9 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      // Allow update ONLY if authenticated AND only modifying the 'roles' field (for volunteer signup)
-      // OR if the user is an admin (who can edit everything)
-      allow update: if isAdmin() || (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles']));
+      // Les utilisateurs peuvent modifier uniquement les tableaux de participation.
+      // Les données administratives du match restent réservées aux administrateurs.
+      allow update: if isAdmin() || isSafeParticipantUpdate();
     }
 
     // Données Utilisateurs (Inscriptions, Profil...)

@@ -70,9 +70,7 @@ jobs:
         run: npm --prefix functions run build
 
       - name: Audit root dependencies
-        continue-on-error: true
         run: npm run audit:root
 
       - name: Audit functions dependencies
-        continue-on-error: true
         run: npm run audit:functions

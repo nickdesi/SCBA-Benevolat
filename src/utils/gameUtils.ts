@@ -1,4 +1,8 @@
 import type { Game, Role, CarpoolEntry } from '../types';
+import {
+  groupDuplicateRecordIndices,
+  mergeDuplicateMatchData,
+} from '../../functions/src/matchDedup';
 import { getGameDateValue } from './dateUtils';
 
 /**
@@ -70,6 +74,24 @@ export const sortGames = (games: Game[]): Game[] => {
       return a.timeVal.localeCompare(b.timeVal);
     })
     .map((item) => item.game);
+};
+
+export const mergeDuplicateGames = (games: Game[]): Game[] => {
+  const groups = groupDuplicateRecordIndices(games.map((game) => ({ ...game }))).map((indices) =>
+    indices.map((index) => games[index]),
+  );
+  return groups.map((group) =>
+    group.length === 1
+      ? group[0]
+      : (mergeDuplicateMatchData(
+          [...group]
+            .sort(
+              (left, right) =>
+                Number(Boolean(left.ffbbMatchId)) - Number(Boolean(right.ffbbMatchId)),
+            )
+            .map((game) => ({ ...game })),
+        ) as unknown as Game),
+  );
 };
 
 /**

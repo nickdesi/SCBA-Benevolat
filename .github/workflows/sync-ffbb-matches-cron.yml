@@ -65,15 +65,17 @@ jobs:
       - name: 🚀 Run FFBB Import Script
         env:
           FFBB_API_URL: https://ffbb-api.desimone.fr
+          DRY_RUN: ${{ inputs.dry_run || false }}
+          TEAM_FILTER: ${{ inputs.team || '' }}
         run: |
-          EXTRA_ARGS=""
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            EXTRA_ARGS="$EXTRA_ARGS --dry-run"
+          EXTRA_ARGS=()
+          if [ "$DRY_RUN" = "true" ]; then
+            EXTRA_ARGS+=(--dry-run)
           fi
-          if [ -n "${{ github.event.inputs.team }}" ]; then
-            EXTRA_ARGS="$EXTRA_ARGS --team '${{ github.event.inputs.team }}'"
+          if [ -n "$TEAM_FILTER" ]; then
+            EXTRA_ARGS+=(--team "$TEAM_FILTER")
           fi
-          python scripts/import_ffbb_matches.py $EXTRA_ARGS
+          python scripts/import_ffbb_matches.py "${EXTRA_ARGS[@]}"
 
       - name: 🧹 Cleanup Credentials
         if: always()
