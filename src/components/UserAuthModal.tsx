@@ -125,22 +125,6 @@ const UserAuthModal: React.FC<UserAuthModalProps> = ({
           <span className="font-bold text-sm">Créer un compte</span>
         </button>
       </div>
-
-      <div className="relative flex py-2 items-center">
-        <div className="flex-grow border-t border-slate-200 dark:border-slate-600"></div>
-        <span className="flex-shrink-0 mx-4 text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-semibold">
-          ou
-        </span>
-        <div className="flex-grow border-t border-slate-200 dark:border-slate-600"></div>
-      </div>
-
-      {/* Option 3: Guest */}
-      <button
-        onClick={handleClose}
-        className="w-full px-6 py-3.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-bold text-sm rounded-xl transition-colors hover:shadow-inner"
-      >
-        Continuer en tant qu'invité
-      </button>
     </div>
   );
 
