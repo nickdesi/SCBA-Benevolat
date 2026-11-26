@@ -78,7 +78,7 @@ L'application est alors disponible sur `http://localhost:5173`. 🎉
 - **Tailwind v4** — Styling performant via le nouveau moteur JIT.
 - **Firestore** — Base de données temps réel avec **transactions atomiques** pour la cohérence des inscriptions.
 - **PWA** — Support hors-ligne, installable sur iOS et Android.
-- **API FFBB** — Synchronisation des matchs via [FFBB MCP Server](https://github.com/nickdesi/FFBB-MCP-Server).
+- **API FFBB** — Synchronisation des matchs via [`ffbb-api.desimone.fr`](https://ffbb-api.desimone.fr) ([`ffbb-data-client`](https://github.com/nickdesi/ffbb-data-client)).
 
 ## ⚙️ Installation & configuration
 
