@@ -318,19 +318,9 @@ function cleanOpponentName(raw: string): string {
     return raw.replace(/^(IE\s*[-]?\s*|CTC\s*[-]?\s*)/i, "").trim();
 }
 
-const FFBB_BROWSER_HEADERS: Record<string, string> = {
-    "User-Agent": "FFBB/2.4.1 (iPhone; iOS 18.0; Scale/3.00)",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Referer": "https://competitions.ffbb.com/",
-    "Origin": "https://competitions.ffbb.com",
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-site",
-};
-
-const sleepWithJitter = () =>
-    new Promise((resolve) => setTimeout(resolve, 1200 + Math.random() * 1600));
+const DEFAULT_MEILISEARCH_TOKEN =
+    "98f07e4d3869853c218a0f65edce2ae56cc670728d9bcb8b035a5107ce1b55dc";
+const SCBA_CLUB_CODE = "ARA0063074";
 
 export const fetchFFBBMatches = onCall(
     { region: "europe-west1" },
@@ -345,19 +335,19 @@ export const fetchFFBBMatches = onCall(
         const teamFilter = (request.data?.team as string | undefined)?.toUpperCase().trim();
         logger.info("Fetching FFBB Matches for SCBA", { teamFilter });
 
-        // 0. Essai prioritaire via l'API Cache-First ffbb-api.desimone.fr (0 appel Directus direct)
+        // 1. Source primaire : API Cache-First ffbb-api.desimone.fr (Meilisearch-first, 0 Directus)
         try {
             const proxyUrl = new URL(`https://ffbb-api.desimone.fr/api/v1/club/${SCBA_ORGANISME_ID}/matches`);
             if (teamFilter && teamFilter !== "ALL") {
                 proxyUrl.searchParams.set("team", teamFilter);
             }
             const proxyRes = await fetch(proxyUrl.toString(), {
-                headers: FFBB_BROWSER_HEADERS,
+                headers: { "Accept": "application/json" },
                 signal: AbortSignal.timeout(10000),
             });
             if (proxyRes.ok) {
                 const proxyJson = await proxyRes.json();
-                if (Array.isArray(proxyJson?.matches) && proxyJson.matches.length > 0) {
+                if (Array.isArray(proxyJson?.matches)) {
                     logger.info("FFBB Matches fetched via ffbb-api.desimone.fr", { count: proxyJson.matches.length });
                     return {
                         matches: proxyJson.matches,
@@ -366,243 +356,84 @@ export const fetchFFBBMatches = onCall(
                 }
             }
         } catch (proxyErr) {
-            logger.warn("Proxy ffbb-api.desimone.fr injoignable, bascule sur fallback Directus durci", { error: proxyErr });
+            logger.warn("ffbb-api.desimone.fr indisponible, bascule sur Meilisearch direct", { error: proxyErr });
         }
 
+        // 2. Fallback direct Meilisearch FFBB (sans WAF BunnyCDN ni Directus)
         try {
-            // 1. Récupération du token FFBB (avec fallback résilient si /items/configuration est bloqué par BunnyCDN)
-            let bearerToken = process.env.API_FFBB_APP_BEARER_TOKEN;
-            try {
-                const configRes = await fetch("https://bo.ffbb.com/items/configuration", {
-                    headers: FFBB_BROWSER_HEADERS,
-                    signal: AbortSignal.timeout(5000),
-                });
-                if (configRes.ok) {
-                    const configJson = await configRes.json();
-                    if (configJson?.data?.key_dh) {
-                        bearerToken = configJson.data.key_dh;
-                    }
-                }
-            } catch {
-                // Le token peut être fourni explicitement par l'environnement.
-            }
-            if (!bearerToken) {
-                throw new Error("Jeton FFBB indisponible sur le serveur.");
-            }
-
-            const ffbbHeaders = {
-                ...FFBB_BROWSER_HEADERS,
-                "Authorization": `Bearer ${bearerToken}`
-            };
-
-            // 2. Récupération des engagements du SCBA (Circuit-Breaker 0-retry sur 403/429)
-            const orgRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_organismes/${SCBA_ORGANISME_ID}?fields=*.*`, {
-                headers: ffbbHeaders,
-                signal: AbortSignal.timeout(8000),
+            const msToken = process.env.MEILISEARCH_BEARER_TOKEN || DEFAULT_MEILISEARCH_TOKEN;
+            const msRes = await fetch("https://meilisearch-prod.ffbb.app/indexes/ffbbserver_rencontres/search", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${msToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    q: "",
+                    filter: `idOrganismeEquipe1.code = "${SCBA_CLUB_CODE}" OR idOrganismeEquipe2.code = "${SCBA_CLUB_CODE}"`,
+                    limit: 500,
+                }),
+                signal: AbortSignal.timeout(10000),
             });
-            if (orgRes.status === 403 || orgRes.status === 429) {
-                throw new Error(`Circuit-Breaker WAF/CDN activé (HTTP ${orgRes.status}) — arrêt immédiat sans retry.`);
+            if (!msRes.ok) {
+                throw new Error(`Meilisearch FFBB error (HTTP ${msRes.status})`);
             }
-            if (!orgRes.ok) {
-                throw new Error(`Échec de récupération du club SCBA (status: ${orgRes.status})`);
-            }
-            const orgJson = await orgRes.json();
-            const engagements = orgJson?.data?.engagements || [];
-
+            const msJson = await msRes.json();
+            const hits: any[] = Array.isArray(msJson?.hits) ? msJson.hits : [];
+            const todayISO = new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris" }).format(new Date());
             const matchesList: any[] = [];
-            const seenMatchIds = new Set<string>();
-            const salleCache: Record<string, string> = {};
-            const logoCache: Record<string, string | null> = {
-                [String(SCBA_ORGANISME_ID)]: SCBA_LOGO_URL
-            };
 
-            // 3. Parcours séquentiel de chaque poule avec jitter (1.2s à 2.8s)
-            for (const eng of engagements) {
-                const pouleId = eng?.idPoule?.id || (typeof eng?.idPoule === "string" || typeof eng?.idPoule === "number" ? eng.idPoule : null);
-                const compNom = eng?.idCompetition?.nom || "";
-                if (!pouleId) continue;
+            for (const m of hits) {
+                const matchId = String(m?.id || "");
+                if (!matchId) continue;
 
-                try {
-                    await sleepWithJitter();
-                    const pouleRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_poules/${pouleId}?fields=*.*`, {
-                        headers: ffbbHeaders,
-                        signal: AbortSignal.timeout(8000),
-                    });
-                    if (pouleRes.status === 403 || pouleRes.status === 429) {
-                        logger.warn(`Circuit-Breaker WAF/CDN sur poule ${pouleId} (${pouleRes.status}) — arrêt de la boucle.`);
-                        break;
-                    }
-                    if (!pouleRes.ok) continue;
+                const org1 = m?.idOrganismeEquipe1 || {};
+                const isHome = org1?.code === SCBA_CLUB_CODE;
+                const nomEq1 = m?.nomEquipe1 || "";
+                const nomEq2 = m?.nomEquipe2 || "";
+                const compNom = m?.competitionId?.nom || "";
+                const scbaTeam = normalizeScbaTeam(isHome ? nomEq1 : nomEq2, compNom);
+                const opponent = cleanOpponentName(isHome ? nomEq2 : nomEq1);
 
-                    const pouleJson = await pouleRes.json();
-                    const rencontres = pouleJson?.data?.rencontres || [];
-                    const classementsList = pouleJson?.data?.classements || [];
-                    const rankMap = new Map<string, number | string>();
-
-                    if (Array.isArray(classementsList)) {
-                        for (const c of classementsList) {
-                            const rank = c?.place || c?.position || c?.rang || c?.ordre;
-                            const orgId = String(c?.idOrganisme || c?.id_organisme || "");
-                            const eqNom = (c?.nomEquipe || c?.nom_equipe || c?.nom || "").toUpperCase().trim();
-                            if (rank) {
-                                if (orgId) rankMap.set(`org_${orgId}`, rank);
-                                if (eqNom) rankMap.set(`nom_${eqNom}`, rank);
-                            }
-                        }
-                    }
-
-                    for (const m of rencontres) {
-                        const matchId = String(m?.id || "");
-                        if (!matchId || seenMatchIds.has(matchId)) continue;
-
-                        const nomEq1 = m?.nomEquipe1 || "";
-                        const nomEq2 = m?.nomEquipe2 || "";
-                        const idOrg1 = String(m?.idOrganismeEquipe1 || "");
-                        const idOrg2 = String(m?.idOrganismeEquipe2 || "");
-
-                        const isScba1 = idOrg1 === String(SCBA_ORGANISME_ID) || nomEq1.toUpperCase().includes("STADE CLERMONTOIS") || nomEq1.toUpperCase().includes("SCBA");
-                        const isScba2 = idOrg2 === String(SCBA_ORGANISME_ID) || nomEq2.toUpperCase().includes("STADE CLERMONTOIS") || nomEq2.toUpperCase().includes("SCBA");
-
-                        if (!isScba1 && !isScba2) continue;
-                        seenMatchIds.add(matchId);
-
-                        const isHome = isScba1;
-                        const scbaTeam = normalizeScbaTeam(isHome ? nomEq1 : nomEq2, compNom);
-                        const opponent = cleanOpponentName(isHome ? nomEq2 : nomEq1);
-                        const oppOrgId = isHome ? idOrg2 : idOrg1;
-                        const scbaOrgId = isHome ? idOrg1 : idOrg2;
-                        const oppNom = isHome ? nomEq2 : nomEq1;
-                        const scbaNom = isHome ? nomEq1 : nomEq2;
-
-                        const teamRank = rankMap.get(`org_${scbaOrgId}`) || rankMap.get(`nom_${scbaNom.toUpperCase().trim()}`);
-                        const oppRank = rankMap.get(`org_${oppOrgId}`) || rankMap.get(`nom_${oppNom.toUpperCase().trim()}`);
-
-                        if (teamFilter && teamFilter !== "ALL" && !scbaTeam.toUpperCase().includes(teamFilter)) {
-                            continue;
-                        }
-
-                        // Date & Heure
-                        const dateRaw = String(m?.date_rencontre || m?.date || "");
-                        let dateISO = "";
-                        if (dateRaw.match(/^\d{4}-\d{2}-\d{2}/)) {
-                            dateISO = dateRaw.substring(0, 10);
-                        }
-
-                        // Ignorer les matchs passés (exclut les matchs déjà joués)
-                        const todayISO = new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date());
-                        if (dateISO && dateISO < todayISO) {
-                            continue;
-                        }
-
-                        let timeStr = "15:00";
-                        const horaire = String(m?.horaire || "");
-                        if (horaire) {
-                            const hClean = horaire.replace(/[hH:]/g, "").trim();
-                            if (hClean.length === 4) timeStr = `${hClean.substring(0, 2)}:${hClean.substring(2)}`;
-                            else if (hClean.length === 2) timeStr = `${hClean}:00`;
-                        } else if (dateRaw.includes(" ")) {
-                            const timePart = dateRaw.split(" ")[1]?.substring(0, 5);
-                            if (timePart && timePart.includes(":")) timeStr = timePart;
-                        }
-
-                        // Salle
-                        let location = isHome ? "Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand" : `Extérieur (${opponent})`;
-                        let salleId = m?.salle;
-
-                        if (!salleId && matchId) {
-                            try {
-                                const matchRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_rencontres/${matchId}?fields=salle`, {
-                                    headers: ffbbHeaders
-                                });
-                                if (matchRes.ok) {
-                                    const matchJson = await matchRes.json();
-                                    salleId = matchJson?.data?.salle;
-                                }
-                            } catch (e) {
-                                // Ignore
-                            }
-                        }
-
-                        if (salleId) {
-                            const salleKey = String(salleId);
-                            if (salleCache[salleKey]) {
-                                location = salleCache[salleKey];
-                            } else {
-                                try {
-                                    const salleRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_salles/${salleKey}?fields=*.*`, {
-                                        headers: ffbbHeaders
-                                    });
-                                    if (salleRes.ok) {
-                                        const salleJson = await salleRes.json();
-                                        const sData = salleJson?.data || {};
-                                        const nom = sData?.libelle || sData?.nom || "";
-                                        const adr = sData?.adresse || sData?.adresse1 || "";
-                                        const cp = sData?.code_postal || sData?.codePostal || "";
-                                        const v = typeof sData?.commune === "object" ? sData.commune?.libelle : (sData?.ville || "");
-                                        const parts = [adr, `${cp} ${v}`.trim()].filter(Boolean);
-                                        const full = [nom, parts.join(", ")].filter(Boolean).join(" - ");
-                                        if (full) {
-                                            salleCache[salleKey] = full;
-                                            location = full;
-                                        }
-                                    }
-                                } catch (e) {
-                                    // Fallback to default
-                                }
-                            }
-                        }
-
-                        // Logo adverse
-                        let opponentLogo: string | undefined;
-                        if (oppOrgId) {
-                            if (logoCache[oppOrgId] !== undefined) {
-                                opponentLogo = logoCache[oppOrgId] || undefined;
-                            } else {
-                                try {
-                                    const oppRes = await fetch(`https://bo.ffbb.com/items/ffbbserver_organismes/${oppOrgId}?fields=logo.*`, {
-                                        headers: ffbbHeaders
-                                    });
-                                    if (oppRes.ok) {
-                                        const oppJson = await oppRes.json();
-                                        const logoId = oppJson?.data?.logo?.id || oppJson?.data?.logo;
-                                        if (logoId) {
-                                            const url = `https://bo.ffbb.com/assets/${logoId}`;
-                                            logoCache[oppOrgId] = url;
-                                            opponentLogo = url;
-                                        } else {
-                                            logoCache[oppOrgId] = null;
-                                        }
-                                    }
-                                } catch (e) {
-                                    logoCache[oppOrgId] = null;
-                                }
-                            }
-                        }
-
-                        matchesList.push({
-                            ffbbMatchId: matchId,
-                            team: scbaTeam,
-                            opponent: opponent,
-                            date: formatFrenchDate(dateISO),
-                            dateISO: dateISO,
-                            time: timeStr,
-                            location: location,
-                            isHome: isHome,
-                            competition: compNom,
-                            teamLogo: SCBA_LOGO_URL,
-                            ...(opponentLogo ? { opponentLogo } : {}),
-                            ...(teamRank !== undefined ? { teamRank } : {}),
-                            ...(oppRank !== undefined ? { opponentRank: oppRank } : {}),
-                        });
-                    }
-                } catch (e) {
-                    logger.warn(`Erreur lecture poule ${pouleId}`, { error: e });
+                if (teamFilter && teamFilter !== "ALL" && !scbaTeam.toUpperCase().includes(teamFilter)) {
+                    continue;
                 }
+
+                const dateRaw = String(m?.date_rencontre || m?.date || "");
+                const dateISO = /^\d{4}-\d{2}-\d{2}/.test(dateRaw) ? dateRaw.substring(0, 10) : "";
+                if (dateISO && dateISO < todayISO) {
+                    continue;
+                }
+
+                let timeStr = "15:00";
+                const horaire = String(m?.horaire || "");
+                if (horaire) {
+                    const hClean = horaire.replace(/[hH:]/g, "").trim();
+                    if (hClean.length === 4) timeStr = `${hClean.substring(0, 2)}:${hClean.substring(2)}`;
+                    else if (hClean.length === 2) timeStr = `${hClean}:00`;
+                } else if (dateRaw.length >= 16 && dateRaw.includes("T")) {
+                    timeStr = dateRaw.substring(11, 16);
+                }
+
+                const salleLibelle = m?.salle?.libelle || m?.salle?.nom || "";
+                const location = salleLibelle || (isHome ? "Maison des Sports, Place des Bughes, 63000 Clermont-Ferrand" : `Extérieur (${opponent})`);
+
+                matchesList.push({
+                    ffbbMatchId: matchId,
+                    team: scbaTeam,
+                    opponent,
+                    date: formatFrenchDate(dateISO),
+                    dateISO,
+                    time: timeStr,
+                    location,
+                    isHome,
+                    competition: compNom,
+                    teamLogo: SCBA_LOGO_URL,
+                });
             }
 
             matchesList.sort((a, b) => a.dateISO.localeCompare(b.dateISO) || a.time.localeCompare(b.time));
-
-            logger.info("FFBB Matches fetched successfully", { count: matchesList.length });
+            logger.info("FFBB Matches fetched via Meilisearch fallback", { count: matchesList.length });
             return {
                 matches: matchesList,
                 count: matchesList.length,
